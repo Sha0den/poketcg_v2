@@ -243,18 +243,18 @@ CheckMenuData:
 YourPlayAreaMenuData:
 	textitem  2, 14, YourPokemonText
 	textitem 12, 14, YourHandText
-	textitem  2, 16, YourDiscardPileText2
+	textitem  2, 16, YourDiscardPileText
 	db $ff
 
 OppPlayAreaMenuData:
 	textitem  2, 14, OpponentsPokemonText
-	textitem  2, 16, OpponentsDiscardPileText2
+	textitem  2, 16, OpponentsDiscardPileText
 	db $ff
 
 OppPlayAreaMenuData_WithClairvoyance:
 	textitem  2, 14, OpponentsPokemonText
 	textitem 12, 14, OpponentsHandText
-	textitem  2, 16, OpponentsDiscardPileText2
+	textitem  2, 16, OpponentsDiscardPileText
 	db $ff
 
 ; checks if arrows need to be erased in Your Play Area or Opp. Play Area
@@ -1162,7 +1162,7 @@ DrawInPlayArea_Icons:
 	call DrawPlayArea_IconWithValue
 	ret
 
-; prints text HandText_2 and a cross with decimal value of b
+; prints text HandText and a cross with decimal value of b
 ; input
 ; b = value to print alongside text
 DrawPlayArea_HandText:
@@ -1175,7 +1175,7 @@ DrawPlayArea_HandText:
 	push hl
 	push bc
 	call InitTextPrinting
-	ldtx hl, HandText_2
+	ldtx hl, HandText
 	call ProcessTextFromID
 	pop bc
 

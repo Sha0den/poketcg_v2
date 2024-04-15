@@ -321,7 +321,7 @@ GetDamageText:
 	ldtx hl, AttackDamageText
 	and (1 << RESISTANCE) | (1 << WEAKNESS)
 	ret z ; not weak or resistant
-	ldtx hl, WeaknessMoreDamage2Text
+	ldtx hl, WeaknessMoreDamageText
 	cp (1 << RESISTANCE) | (1 << WEAKNESS)
 	ret z ; weak and resistant
 	and (1 << WEAKNESS)

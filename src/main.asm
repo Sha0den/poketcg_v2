@@ -162,6 +162,9 @@ INCLUDE "engine/duel/ai/common.asm"
 SECTION "Effect Functions", ROMX
 INCLUDE "engine/duel/effect_functions.asm"
 
+SECTION "Effect Functions 2", ROMX
+INCLUDE "engine/duel/effect_functions2.asm"
+
 SECTION "Decks", ROMX
 INCLUDE "data/decks.asm"
 

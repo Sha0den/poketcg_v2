@@ -1,6 +1,6 @@
 EffectCommands::
 ; Each attack has a two-byte effect pointer (attack's 7th param) that points to one of these structures.
-; Similarly, trainer cards have a two-byte pointer (7th param) to one of these structures, which determines the card's function.
+; Similarly, Trainer cards have a two-byte pointer (7th param) to one of these structures, which determines the card's function.
 ; Energy cards also point to one of these, but their data is just $00.
 ;	db EFFECTCMDTYPE_* ($01 - $0a)
 ;	dw Function
@@ -8,11 +8,11 @@ EffectCommands::
 ;	db $00
 
 ; Commands are associated to a time or a scope (EFFECTCMDTYPE_*) that determines when their function is executed during the turn.
-; - EFFECTCMDTYPE_INITIAL_EFFECT_1: Executed right after attack or trainer card is used. Bypasses Smokescreen and Sand Attack effects.
-; - EFFECTCMDTYPE_INITIAL_EFFECT_2: Executed right after attack, Pokemon Power, or trainer card is used.
-; - EFFECTCMDTYPE_DISCARD_ENERGY: For attacks or trainer cards that require putting one or more attached energy cards into the discard pile.
-; - EFFECTCMDTYPE_REQUIRE_SELECTION: For attacks, Pokemon Powers, or trainer cards requiring the user to select a card (from e.g. play area screen or card list).
-; - EFFECTCMDTYPE_BEFORE_DAMAGE: Effect command of an attack executed prior to the damage step. For trainer card or Pokemon Power, usually the main effect.
+; - EFFECTCMDTYPE_INITIAL_EFFECT_1: Executed right after attack or Trainer card is used. Bypasses Smokescreen and Sand Attack effects.
+; - EFFECTCMDTYPE_INITIAL_EFFECT_2: Executed right after attack, Pokemon Power, or Trainer card is used.
+; - EFFECTCMDTYPE_DISCARD_ENERGY: For attacks or Trainer cards that require putting one or more attached energy cards into the discard pile.
+; - EFFECTCMDTYPE_REQUIRE_SELECTION: For attacks, Pokemon Powers, or Trainer cards requiring the user to select a card (from e.g. play area screen or card list).
+; - EFFECTCMDTYPE_BEFORE_DAMAGE: Effect command of an attack executed prior to the damage step. For Trainer card or Pokemon Power, usually the main effect.
 ; - EFFECTCMDTYPE_AFTER_DAMAGE: Effect command executed after the damage step.
 ; - EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN: For attacks that may result in the defending Pokemon being switched out. Called only for AI-executed attacks.
 ; - EFFECTCMDTYPE_PKMN_POWER_TRIGGER: Pokemon Power effects that trigger the moment the Pokemon card is played.
@@ -22,1348 +22,892 @@ EffectCommands::
 ; Attacks that have an EFFECTCMDTYPE_REQUIRE_SELECTION also must have either an EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN or an
 ; EFFECTCMDTYPE_AI_SELECTION (for anything not involving switching the defending Pokemon), to handle selections involving the AI.
 
-; Similar attack effects of different Pokemon cards all point to a different command list,
-; even though in some cases their commands and function pointers match.
+; Effect Commands for attacks are listed first, sorted by the type of effect. The overall ordering is:
+; 1) Effects related to taking cards out of the deck or discard pile 
+; 2) Other effects that benefit the player (excepting substatus effects), this mainly includes switching and healing
+; 3) Effects that inflict Special Conditions (Asleep, Confusion, Paralysis, Poison)
+; 4) Substatus effects (double damage, damage/attack prevention, Destiny Bond, no Retreat, Conversion, and Headache)
+; 5) Other non-damage effects that deal with your opponent's Pokemon
+; 6) Damage Modifying Effects
+; 7) Effects that harm your own Pokemon (e.g. discarding Energy as a cost, recoil, damage to your Bench, etc.)
+; 8) Effects that damage the opponent's Bench
+; 9) Miscellaneous random effects
+;
+; All 26 Pokemon Power effect commands are listed after that, sorted by Pokemon Type
+; The Trainer effect commands are found next, sorted alphabetically
+; Last are the Energy effects commands
 
-; Function name examples
-;	PoisonEffect                     ; generic effect shared by multiple attacks.
-;	Paralysis50PercentEffect         ;
-;	KakunaStiffenEffect              ; unique effect from an attack known by multiple cards.
-;	MetapodStiffenEffect             ;
-;	AcidEffect                       ; unique effect from an attack known by a single card
-;	FoulOdorEffect                   ;
-;	SpitPoison_Poison50PercentEffect ; unique effect made of more than one command.
-;	SpitPoison_AIEffect              ;
+ProphecyEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BothPlayers_DeckCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Prophecy_ReorderEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Prophecy_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, Prophecy_AISelection
+	db  $00
 
-EkansSpitPoisonEffectCommands:
+PokedexEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Pokedex_ReorderEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Pokedex_PlayerSelection
+	db  $00
+
+MayDrawCardEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DrawCard50PercentEffect
+	db  $00
+
+DrawCardEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DrawCardEffect
+	db  $00
+
+Draw2EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Draw2Effect
+	db  $00
+
+EnergySearchEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AddCardFromDeckToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergySearch_PlayerSelection
+	db  $00
+
+EnergySpikeEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AttachBasicEnergyFromDeck_AttachEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AttachBasicEnergyFromDeck_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, AttachBasicEnergyFromDeck_AISelection
+	db  $00
+
+EvolutionSearchEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AddCardFromDeckToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EvolutionSearch_PlayerSelection
+	db  $00
+
+CallForFamilyEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForF_PutInPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, CallForFamily_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, CallForFamily_AISelection
+
+CallForFightingFriendEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForF_PutInPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, CallForFighting_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, CallForFighting_AISelection
+	db  $00
+
+CallForNidoranEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForF_PutInPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, CallForNidoran_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, CallForNidoran_AISelection
+	db  $00
+
+CallForOddishEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForF_PutInPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, CallForOddish_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, CallForOddish_AISelection
+	db  $00
+
+CallForBellsproutEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForF_PutInPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, CallForBellsprout_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, CallForBellsprout_AISelection
+	db  $00
+
+CallForKrabbyEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForF_PutInPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, CallForKrabby_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, CallForKrabby_AISelection
+	db  $00
+
+CallForRandomBasic50PercentEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CallForF_CheckDeckAndPlayArea
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CallForRandomBasic50PercentEffect
+	db  $00
+
+RandomBenchFillEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PlayArea_BenchCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RandomlyFillBothBenchesEffect
+	db  $00
+
+ScavengeEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Scavenge_DiscardPileAndEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedPsychicEnergy_PlayerSelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Scavenge_MoveToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Scavenge_TrainerPlayerSelection
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Scavenge_AISelection
+	db  $00
+
+EnergyConversionEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DiscardedEnergyCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyConversion_RecoilAndMoveCardsToHand
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Choose2EnergyFromDiscardPile_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, Choose2EnergyFromDiscardPile_AISelection
+	db  $00
+
+EnergyAbsorptionEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DiscardedEnergyCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyAbsorption_AttachEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Choose2EnergyFromDiscardPile_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, Choose2EnergyFromDiscardPile_AISelection
+	db  $00
+
+SwitchAfterAttackEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchAfterAttack_SwitchEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Switch_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchAfterAttack_AISelection
+	db  $00
+
+RandomlySwitchBothActiveEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GaleAnimationEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RandomlySwitchBothActivePokemon
+	db  $00
+
+FlipToHeal10EffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_DamageCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Healing50Percent_FlipEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Healing50Percent_Heal10Effect
+	db  $00
+
+Heal10EffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_DamageCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Heal10_HealEffect
+	db  $00
+
+Drain10EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Drain10Effect
+	db  $00
+
+DrainHalfEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DrainHalfEffect
+	db  $00
+
+DrainAllEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DrainAllEffect
+	db  $00
+
+WaterRecoverEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, WaterRecover_EnergyAndHPCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, WaterRecover_PlayerSelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recover_HealEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, WaterRecover_AISelection
+	db  $00
+
+PsychicRecoverEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PsychicRecover_EnergyAndHPCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PsychicRecover_PlayerSelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recover_HealEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, PsychicRecover_AISelection
+	db  $00
+
+MayInflictSleepEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Sleep50PercentEffect
+	db  $00
+
+InflictSleepEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
+	db  $00
+
+DreamEaterEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DefendingPokemon_SleepCheck
+	db  $00
+
+MayInflictConfusionEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentEffect
+	db  $00
+
+InflictConfusionEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ConfusionEffect
+	db  $00
+
+DoubleConfusionEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ConfuseBothActivePokemonEffect
+	db  $00
+
+MayInflictParalysisEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+	db  $00
+
+ClampEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AllOrNothingParalysisEffect
+	db  $00
+
+MayInflictPoisonEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
+	dbw EFFECTCMDTYPE_AI, MayInflictPoison_AIEffect
+	db  $00
+
+SpitPoisonEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SpitPoison_Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, SpitPoison_AIEffect
+	dbw EFFECTCMDTYPE_AI, MayInflictPoison_AIEffect
 	db  $00
 
-EkansWrapEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-ArbokTerrorStrikeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, TerrorStrike_SwitchDefendingPokemon
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, TerrorStrike_50PercentSelectSwitchPokemon
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, TerrorStrike_50PercentSelectSwitchPokemon
-	db  $00
-
-ArbokPoisonFangEffectCommands:
+InflictPoisonEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonEffect
-	dbw EFFECTCMDTYPE_AI, PoisonFang_AIEffect
+	dbw EFFECTCMDTYPE_AI, InflictPoison_AIEffect
 	db  $00
 
-WeepinbellPoisonPowderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, WeepinbellPoisonPowder_AIEffect
+ToxicEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DoublePoisonEffect
+	dbw EFFECTCMDTYPE_AI, Toxic_AIEffect
 	db  $00
 
-VictreebelLureEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, VictreebelLure_AssertPokemonInBench
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, VictreebelLure_SwitchDefendingPokemon
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, VictreebelLure_SelectSwitchPokemon
-	dbw EFFECTCMDTYPE_AI_SELECTION, VictreebelLure_GetBenchPokemonWithLowestHP
+FoulGasEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonOrConfusionEffect
+	dbw EFFECTCMDTYPE_AI, InflictPoison_AIEffect
 	db  $00
 
-VictreebelAcidEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AcidEffect
-	db  $00
-
-PinsirIronGripEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-CaterpieStringShotEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-GloomPoisonPowderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonEffect
-	dbw EFFECTCMDTYPE_AI, GloomPoisonPowder_AIEffect
-	db  $00
-
-GloomFoulOdorEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FoulOdorEffect
-	db  $00
-
-KakunaStiffenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, KakunaStiffenEffect
-	db  $00
-
-KakunaPoisonPowderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, KakunaPoisonPowder_AIEffect
-	db  $00
-
-GolbatLeechLifeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, GolbatLeechLifeEffect
-	db  $00
-
-VenonatStunSporeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-VenonatLeechLifeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, VenonatLeechLifeEffect
+VenomPowderEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonConfusion50PercentEffect
+	dbw EFFECTCMDTYPE_AI, MayInflictPoison_AIEffect
 	db  $00
 
 ScytherSwordsDanceEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SwordsDanceEffect
 	db  $00
 
-ZubatSupersonicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ZubatSupersonicEffect
-	db  $00
-
-ZubatLeechLifeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ZubatLeechLifeEffect
-	db  $00
-
-BeedrillTwineedleEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Twineedle_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, Twineedle_AIEffect
-	db  $00
-
-BeedrillPoisonStingEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, BeedrillPoisonSting_AIEffect
-	db  $00
-
-ExeggcuteHypnosisEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
-	db  $00
-
-ExeggcuteLeechSeedEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ExeggcuteLeechSeedEffect
-	db  $00
-
-KoffingFoulGasEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FoulGas_PoisonOrConfusionEffect
-	dbw EFFECTCMDTYPE_AI, FoulGas_AIEffect
-	db  $00
-
-MetapodStiffenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MetapodStiffenEffect
-	db  $00
-
-MetapodStunSporeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-OddishStunSporeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-OddishSproutEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Sprout_CheckDeckAndPlayArea
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Sprout_PutInPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Sprout_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Sprout_AISelectEffect
-	db  $00
-
-ExeggutorTeleportEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Teleport_CheckBench
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Teleport_SwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Teleport_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Teleport_AISelectEffect
-	db  $00
-
-ExeggutorBigEggsplosionEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, BigEggsplosion_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, BigEggsplosion_AIEffect
-	db  $00
-
-NidokingThrashEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Thrash_ModifierEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Thrash_RecoilEffect
-	dbw EFFECTCMDTYPE_AI, Thrash_AIEffect
-	db  $00
-
-NidokingToxicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Toxic_DoublePoisonEffect
-	dbw EFFECTCMDTYPE_AI, Toxic_AIEffect
-	db  $00
-
-NidoqueenBoyfriendsEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, BoyfriendsEffect
-	db  $00
-
-NidoranFFurySwipesEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NidoranFFurySwipes_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, NidoranFFurySwipes_AIEffect
-	db  $00
-
-NidoranFCallForFamilyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NidoranFCallForFamily_CheckDeckAndPlayArea
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NidoranFCallForFamily_PutInPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, NidoranFCallForFamily_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, NidoranFCallForFamily_AISelectEffect
-	db  $00
-
-NidoranMHornHazardEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HornHazard_NoDamage50PercentEffect
-	dbw EFFECTCMDTYPE_AI, HornHazard_AIEffect
-	db  $00
-
-NidorinaSupersonicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NidorinaSupersonicEffect
-	db  $00
-
-NidorinaDoubleKickEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NidorinaDoubleKick_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, NidorinaDoubleKick_AIEffect
-	db  $00
-
-NidorinoDoubleKickEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NidorinoDoubleKick_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, NidorinoDoubleKick_AIEffect
-	db  $00
-
-ButterfreeWhirlwindEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ButterfreeWhirlwind_SwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, ButterfreeWhirlwind_CheckBench
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, ButterfreeWhirlwind_CheckBench
-	db  $00
-
-ButterfreeMegaDrainEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ButterfreeMegaDrainEffect
-	db  $00
-
-ParasSporeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
-	db  $00
-
-ParasectSporeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
-	db  $00
-
-WeedlePoisonStingEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, WeedlePoisonSting_AIEffect
-	db  $00
-
-IvysaurPoisonPowderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonEffect
-	dbw EFFECTCMDTYPE_AI, IvysaurPoisonPowder_AIEffect
-	db  $00
-
-BulbasaurLeechSeedEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, BulbasaurLeechSeedEffect
-	db  $00
-
-VenusaurEnergyTransEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyTrans_CheckPlayArea
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyTrans_TransferEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyTrans_AIEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyTrans_PrintProcedure
-	db  $00
-
-GrimerNastyGooEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-GrimerMinimizeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GrimerMinimizeEffect
-	db  $00
-
-MukToxicGasEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ToxicGasEffect
-	db  $00
-
-MukSludgeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, Sludge_AIEffect
-	db  $00
-
-BellsproutCallForFamilyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BellsproutCallForFamily_CheckDeckAndPlayArea
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, BellsproutCallForFamily_PutInPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, BellsproutCallForFamily_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, BellsproutCallForFamily_AISelectEffect
-	db  $00
-
-WeezingSmogEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, WeezingSmog_AIEffect
-	db  $00
-
-WeezingSelfdestructEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, WeezingSelfdestructEffect
-	db  $00
-
-VenomothShiftEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Shift_OncePerTurnCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Shift_ChangeColorEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Shift_PlayerSelectEffect
-	db  $00
-
-VenomothVenomPowderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, VenomPowder_PoisonConfusion50PercentEffect
-	dbw EFFECTCMDTYPE_AI, VenomPowder_AIEffect
-	db  $00
-
-TangelaBindEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-TangelaPoisonPowderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonEffect
-	dbw EFFECTCMDTYPE_AI, TangelaPoisonPowder_AIEffect
-	db  $00
-
-VileplumeHealEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Heal_OncePerTurnCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Heal_RemoveDamageEffect
-	db  $00
-
-VileplumePetalDanceEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PetalDance_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, PetalDance_AIEffect
-	db  $00
-
-TangelaStunSporeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-TangelaPoisonWhipEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonEffect
-	dbw EFFECTCMDTYPE_AI, PoisonWhip_AIEffect
-	db  $00
-
-VenusaurSolarPowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SolarPower_CheckUse
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SolarPower_RemoveStatusEffect
-	db  $00
-
-VenusaurMegaDrainEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, VenusaurMegaDrainEffect
-	db  $00
-
-OmastarWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, OmastarWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, OmastarWaterGunEffect
-	db  $00
-
-OmastarSpikeCannonEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, OmastarSpikeCannon_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, OmastarSpikeCannon_AIEffect
-	db  $00
-
-OmanyteClairvoyanceEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ClairvoyanceEffect
-	db  $00
-
-OmanyteWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, OmanyteWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, OmanyteWaterGunEffect
-	db  $00
-
-WartortleWithdrawEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, WartortleWithdrawEffect
-	db  $00
-
-BlastoiseRainDanceEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, RainDanceEffect
-	db  $00
-
-BlastoiseHydroPumpEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HydroPumpEffect
-	dbw EFFECTCMDTYPE_AI, HydroPumpEffect
-	db  $00
-
-GyaradosBubblebeamEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-KinglerFlailEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, KinglerFlail_HPCheck
-	dbw EFFECTCMDTYPE_AI, KinglerFlail_AIEffect
-	db  $00
-
-KrabbyCallForFamilyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, KrabbyCallForFamily_CheckDeckAndPlayArea
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, KrabbyCallForFamily_PutInPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, KrabbyCallForFamily_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, KrabbyCallForFamily_AISelectEffect
-	db  $00
-
-MagikarpFlailEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MagikarpFlail_HPCheck
-	dbw EFFECTCMDTYPE_AI, MagikarpFlail_AIEffect
-	db  $00
-
-PsyduckHeadacheEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HeadacheEffect
-	db  $00
-
-PsyduckFurySwipesEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PsyduckFurySwipes_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, PsyduckFurySwipes_AIEffect
-	db  $00
-
-GolduckPsyshockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-GolduckHyperBeamEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, GolduckHyperBeam_DiscardEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, GolduckHyperBeam_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, GolduckHyperBeam_AISelectEffect
-	db  $00
-
-SeadraWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SeadraWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, SeadraWaterGunEffect
-	db  $00
-
-SeadraAgilityEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SeadraAgilityEffect
-	db  $00
-
-ShellderSupersonicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ShellderSupersonicEffect
-	db  $00
-
-ShellderHideInShellEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HideInShellEffect
-	db  $00
-
-VaporeonQuickAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, VaporeonQuickAttack_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, VaporeonQuickAttack_AIEffect
-	db  $00
-
-VaporeonWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, VaporeonWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, VaporeonWaterGunEffect
-	db  $00
-
-DewgongIceBeamEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-StarmieRecoverEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, StarmieRecover_CheckEnergyHP
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StarmieRecover_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StarmieRecover_HealEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, StarmieRecover_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, StarmieRecover_AISelectEffect
-	db  $00
-
-StarmieStarFreezeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-SquirtleBubbleEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-SquirtleWithdrawEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SquirtleWithdrawEffect
-	db  $00
-
-HorseaSmokescreenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HorseaSmokescreenEffect
-	db  $00
-
-TentacruelSupersonicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TentacruelSupersonicEffect
-	db  $00
-
-TentacruelJellyfishStingEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonEffect
-	dbw EFFECTCMDTYPE_AI, JellyfishSting_AIEffect
-	db  $00
-
-PoliwhirlAmnesiaEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PoliwhirlAmnesia_CheckAttacks
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PoliwhirlAmnesia_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoliwhirlAmnesia_DisableEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, PoliwhirlAmnesia_AISelectEffect
-	db  $00
-
-PoliwhirlDoubleslapEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoliwhirlDoubleslap_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, PoliwhirlDoubleslap_AIEffect
-	db  $00
-
-PoliwrathWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoliwrathWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, PoliwrathWaterGunEffect
-	db  $00
-
-PoliwrathWhirlpoolEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Whirlpool_DiscardEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Whirlpool_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Whirlpool_AISelectEffect
-	db  $00
-
-PoliwagWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoliwagWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, PoliwagWaterGunEffect
-	db  $00
-
-CloysterClampEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ClampEffect
-	db  $00
-
-CloysterSpikeCannonEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CloysterSpikeCannon_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, CloysterSpikeCannon_AIEffect
-	db  $00
-
-ArticunoFreezeDryEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-ArticunoBlizzardEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Blizzard_BenchDamage50PercentEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Blizzard_BenchDamageEffect
-	db  $00
-
-TentacoolCowardiceEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Cowardice_Check
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Cowardice_RemoveFromPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Cowardice_PlayerSelectEffect
-	db  $00
-
-LaprasWaterGunEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, LaprasWaterGunEffect
-	dbw EFFECTCMDTYPE_AI, LaprasWaterGunEffect
-	db  $00
-
-LaprasConfuseRayEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentEffect
-	db  $00
-
-ArticunoQuickfreezeEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Quickfreeze_InitialEffect
-	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Quickfreeze_Paralysis50PercentEffect
-	db  $00
-
-ArticunoIceBreathEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, IceBreath_ZeroDamage
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, IceBreath_RandomPokemonDamageEffect
-	db  $00
-
 VaporeonFocusEnergyEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FocusEnergyEffect
 	db  $00
 
-ArcanineFlamethrowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ArcanineFlamethrower_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ArcanineFlamethrower_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, ArcanineFlamethrower_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, ArcanineFlamethrower_AISelectEffect
-	db  $00
-
-ArcanineTakeDownEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, TakeDownEffect
-	db  $00
-
-ArcanineQuickAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ArcanineQuickAttack_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, ArcanineQuickAttack_AIEffect
-	db  $00
-
-ArcanineFlamesOfRageEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FlamesOfRage_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, FlamesOfRage_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlamesOfRage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, FlamesOfRage_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, FlamesOfRage_AISelectEffect
-	dbw EFFECTCMDTYPE_AI, FlamesOfRage_AIEffect
-	db  $00
-
-RapidashStompEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RapidashStomp_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, RapidashStomp_AIEffect
-	db  $00
-
-RapidashAgilityEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RapidashAgilityEffect
-	db  $00
-
-NinetalesLureEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NinetalesLure_CheckBench
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NinetalesLure_SwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, NinetalesLure_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, NinetalesLure_AISelectEffect
-	db  $00
-
-NinetalesFireBlastEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FireBlast_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, FireBlast_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, FireBlast_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, FireBlast_AISelectEffect
-	db  $00
-
-CharmanderEmberEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Ember_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Ember_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Ember_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Ember_AISelectEffect
-	db  $00
-
-MoltresWildfireEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Wildfire_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Wildfire_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Wildfire_DiscardDeckEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Wildfire_DiscardEnergyEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Wildfire_AISelectEffect
-	db  $00
-
-MoltresLv35DiveBombEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MoltresLv35DiveBomb_Success50PercentEffect
-	dbw EFFECTCMDTYPE_AI, MoltresLv35DiveBomb_AIEffect
-	db  $00
-
-FlareonQuickAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlareonQuickAttack_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, FlareonQuickAttack_AIEffect
-	db  $00
-
-FlareonFlamethrowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FlareonFlamethrower_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, FlareonFlamethrower_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, FlareonFlamethrower_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, FlareonFlamethrower_AISelectEffect
-	db  $00
-
-MagmarFlamethrowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MagmarFlamethrower_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, MagmarFlamethrower_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, MagmarFlamethrower_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, MagmarFlamethrower_AISelectEffect
-	db  $00
-
-MagmarSmokescreenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MagmarSmokescreenEffect
-	db  $00
-
-MagmarSmogEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
-	dbw EFFECTCMDTYPE_AI, MagmarSmog_AIEffect
-	db  $00
-
-CharmeleonFlamethrowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, CharmeleonFlamethrower_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, CharmeleonFlamethrower_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CharmeleonFlamethrower_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, CharmeleonFlamethrower_AISelectEffect
-	db  $00
-
-CharizardEnergyBurnEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyBurnEffect
-	db  $00
-
-CharizardFireSpinEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FireSpin_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, FireSpin_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, FireSpin_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, FireSpin_AISelectEffect
-	db  $00
-
-VulpixConfuseRayEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentEffect
-	db  $00
-
-FlareonRageEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlareonRage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, FlareonRage_AIEffect
-	db  $00
-
-NinetalesMixUpEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MixUpEffect
-	db  $00
-
-NinetalesDancingEmbersEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DancingEmbers_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, DancingEmbers_AIEffect
-	db  $00
-
-MoltresFiregiverEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Firegiver_InitialEffect
-	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Firegiver_AddToHandEffect
-	db  $00
-
-MoltresLv37DiveBombEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MoltresLv37DiveBomb_Success50PercentEffect
-	dbw EFFECTCMDTYPE_AI, MoltresLv37DiveBomb_AIEffect
-	db  $00
-
-AbraPsyshockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-GengarCurseEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Curse_CheckDamageAndBench
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Curse_TransferDamageEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Curse_PlayerSelectEffect
-	db  $00
-
-GengarDarkMindEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, GengarDarkMind_DamageBenchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, GengarDarkMind_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, GengarDarkMind_AISelectEffect
-	db  $00
-
-GastlySleepingGasEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepingGasEffect
-	db  $00
-
-GastlyDestinyBondEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DestinyBond_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DestinyBond_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DestinyBond_DestinyBondEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, DestinyBond_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, DestinyBond_AISelectEffect
-	db  $00
-
-GastlyLickEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-GastlyEnergyConversionEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyConversion_CheckEnergy
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyConversion_AddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyConversion_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, EnergyConversion_AISelectEffect
-	db  $00
-
-HaunterHypnosisEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
-	db  $00
-
-HaunterDreamEaterEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DreamEaterEffect
-	db  $00
-
-HaunterTransparencyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, TransparencyEffect
-	db  $00
-
-HaunterNightmareEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
-	db  $00
-
-HypnoProphecyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Prophecy_CheckDeck
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Prophecy_ReorderDeckEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Prophecy_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Prophecy_AISelectEffect
-	db  $00
-
-HypnoDarkMindEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, HypnoDarkMind_DamageBenchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, HypnoDarkMind_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, HypnoDarkMind_AISelectEffect
-	db  $00
-
-DrowzeeConfuseRayEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentEffect
-	db  $00
-
-MrMimeInvisibleWallEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, InvisibleWallEffect
-	db  $00
-
-MrMimeMeditateEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MrMimeMeditate_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, MrMimeMeditate_AIEffect
-	db  $00
-
-AlakazamDamageSwapEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DamageSwap_CheckDamage
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageSwap_SelectAndSwapEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageSwap_SwapEffect
-	db  $00
-
-AlakazamConfuseRayEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentEffect
-	db  $00
-
-MewPsywaveEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PsywaveEffect
-	db  $00
-
-MewDevolutionBeamEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DevolutionBeam_CheckPlayArea
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionBeam_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DevolutionBeam_LoadAnimation
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DevolutionBeam_DevolveEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, DevolutionBeam_AISelectEffect
-	db  $00
-
-MewNeutralizingShieldEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NeutralizingShieldEffect
-	db  $00
-
-MewPsyshockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-MewtwoPsychicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Psychic_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, Psychic_AIEffect
-	db  $00
-
 MewtwoBarrierEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Barrier_CheckEnergy
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Barrier_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Barrier_BarrierEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Barrier_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Barrier_AISelectEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_PsychicEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedPsychicEnergy_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ImmunityEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedPsychicEnergy_AISelection
 	db  $00
 
-MewtwoAltLV60EnergyAbsorptionEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MewtwoAltLV60EnergyAbsorption_CheckDiscardPile
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MewtwoAltLV60EnergyAbsorption_AddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, MewtwoAltLV60EnergyAbsorption_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, MewtwoAltLV60EnergyAbsorption_AISelectEffect
+AgilityEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Immunity50PercentEffect
 	db  $00
 
-MewtwoLv60EnergyAbsorptionEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MewtwoLv60EnergyAbsorption_CheckDiscardPile
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MewtwoLv60EnergyAbsorption_AddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, MewtwoLv60EnergyAbsorption_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, MewtwoLv60EnergyAbsorption_AISelectEffect
+FlyEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AllOrNothingImmunityEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor30_AIEffect
 	db  $00
 
-SlowbroStrangeBehaviorEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StrangeBehavior_CheckDamage
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StrangeBehavior_SelectAndSwapEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StrangeBehavior_SwapEffect
+WithdrawEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageProtection50PercentEffect
 	db  $00
 
-SlowbroPsyshockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+HardenEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HardenEffect
 	db  $00
 
-SlowpokeSpacingOutEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SpacingOut_CheckDamage
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SpacingOut_Success50PercentEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SpacingOut_HealEffect
+Prevent10DamageEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Prevent10DamageEffect
 	db  $00
 
-SlowpokeScavengeEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Scavenge_CheckDiscardPile
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Scavenge_PlayerSelectEnergyEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Scavenge_AddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Scavenge_PlayerSelectTrainerEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Scavenge_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Scavenge_AISelectEffect
+Prevent20DamageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Prevent20DamageEffect
 	db  $00
 
-SlowpokeAmnesiaEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SlowpokeAmnesia_CheckAttacks
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SlowpokeAmnesia_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SlowpokeAmnesia_DisableEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, SlowpokeAmnesia_AISelectEffect
+HalveDamageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HalveDamageEffect
 	db  $00
 
-KadabraRecoverEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, KadabraRecover_CheckEnergyHP
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, KadabraRecover_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, KadabraRecover_HealEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, KadabraRecover_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, KadabraRecover_AISelectEffect
+DestinyBondEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_PsychicEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedPsychicEnergy_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DestinyBondEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedPsychicEnergy_AISelection
 	db  $00
 
-JynxDoubleslapEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, JynxDoubleslap_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, JynxDoubleslap_AIEffect
+CannotAttackEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttack50PercentEffect
 	db  $00
 
-JynxMeditateEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, JynxMeditate_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, JynxMeditate_AIEffect
+LeerEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentLeerEffect
 	db  $00
 
-MewMysteryAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MysteryAttack_RandomEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MysteryAttack_RecoverEffect
-	dbw EFFECTCMDTYPE_AI, MysteryAttack_AIEffect
+TailWagEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentTailWagEffect
 	db  $00
 
-GeodudeStoneBarrageEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StoneBarrage_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, StoneBarrage_AIEffect
+SmokescreenEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SmokescreenEffect
 	db  $00
 
-OnixHardenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, OnixHardenEffect
+AmnesiaEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DefendingPokemon_AttackCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Amnesia_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AttackDisableEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Amnesia_AISelection
 	db  $00
 
-PrimeapeFurySwipesEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PrimeapeFurySwipes_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, PrimeapeFurySwipes_AIEffect
+ReduceBy10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ReduceBy10Effect
 	db  $00
 
-PrimeapeTantrumEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TantrumEffect
+ReduceBy20EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ReduceBy20Effect
 	db  $00
 
-MachampStrikesBackEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, StrikesBackEffect
+MayPreventRetreatEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoRetreat50PercentEffect
 	db  $00
 
-KabutoKabutoArmorEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, KabutoArmorEffect
+PreventRetreatEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoRetreatEffect
 	db  $00
 
-KabutopsAbsorbEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AbsorbEffect
+Conversion1EffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Conversion1_WeaknessCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Conversion1_PlayerSelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Conversion1_ChangeWeaknessEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Conversion1_AISelection
 	db  $00
 
-CuboneSnivelEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SnivelEffect
+Conversion2EffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Conversion2_ResistanceCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Conversion2_PlayerSelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Conversion2_ChangeResistanceEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Conversion2_AISelection
 	db  $00
 
-CuboneRageEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CuboneRage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, CuboneRage_AIEffect
+HeadacheEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PreventTrainersEffect
 	db  $00
 
-MarowakBonemerangEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Bonemerang_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, Bonemerang_AIEffect
+DiscardEnergyDefendingPokemonEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DefendingPokemonEnergy_DiscardEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, DiscardEnergyDefendingPokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardEnergyDefendingPokemon_AISelection
 	db  $00
 
-MarowakCallforFriendEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MarowakCallForFamily_CheckDeckAndPlayArea
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MarowakCallForFamily_PutInPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, MarowakCallForFamily_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, MarowakCallForFamily_AISelectEffect
+OpponentSwitchesActive50PercentEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentSwitchesActive50Percent_SwitchEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive50Percent_SelectEffect
+	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive50Percent_SelectEffect
 	db  $00
 
-MachokeKarateChopEffectCommands:
+Recoil20OpponentSwitchesActiveEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil20OpponentSwitchesActiveEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_BenchCheck
+	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_BenchCheck
+	db  $00
+
+OpponentSwitchesActiveEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentSwitchesActive_SwitchEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_BenchCheck
+	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_BenchCheck
+	db  $00
+
+SwitchDefendingPokemonEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchDefendingPokemon_SwitchEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SwitchDefendingPokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchDefendingPokemon_AISelection
+	db  $00
+
+GustOfWindEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchDefendingPokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GustOfWind_SwitchEffect
+	db  $00
+
+DevolutionBeamEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PlayArea_EvolvedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionBeam_PlayerSelection
+;	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DevolutionBeam_LoadAnimation
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DevolutionBeam_DevolveEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, DevolutionBeam_AISelection
+	db  $00
+
+HurricaneEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ReturnDefendingPokemonToTheHandEffect
+	db  $00
+
+DamageUnaffectedByColorEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoColorEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NoColor_NullEffect
+	dbw EFFECTCMDTYPE_AI, NoColorEffect
+	db  $00
+
+SuperFangEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HalveHPOfDefendingPokemon
+	dbw EFFECTCMDTYPE_AI, HalveHPOfDefendingPokemon_AIEffect
+	db  $00
+
+KarateChopEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, KarateChop_DamageSubtractionEffect
 	dbw EFFECTCMDTYPE_AI, KarateChop_AIEffect
 	db  $00
 
-MachokeSubmissionEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SubmissionEffect
+FlailEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flail_HPCheck
+	dbw EFFECTCMDTYPE_AI, Flail_AIEffect
 	db  $00
 
-GolemSelfdestructEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, GolemSelfdestructEffect
+RageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Rage_DamageBoostEffect
+	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
 	db  $00
 
-GravelerHardenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GravelerHardenEffect
+RageAndMayConfuseSelfEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RageAndSelfConfusion50PercentEffect
+	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
 	db  $00
 
-RhydonRamEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Ram_RecoilSwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Ram_SelectSwitchEffect
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, Ram_SelectSwitchEffect
+MayConfuseSelfEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SelfConfusion_50PercentEffect
 	db  $00
 
-RhyhornLeerEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, LeerEffect
+MeditateEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CompoundingDamageCounters_DamageBoostEffect
+	dbw EFFECTCMDTYPE_AI, CompoundingDamageCounters_AIEffect
 	db  $00
 
-HitmonleeStretchKickEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, StretchKick_CheckBench
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StretchKick_BenchDamageEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, StretchKick_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, StretchKick_AISelectEffect
+PsywaveEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DefendingPokemonEnergyTimes10_DamageEffect
 	db  $00
 
-SandshrewSandAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SandAttackEffect
+PsychicEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DefendingPokemonEnergy_10MoreDamageEffect
+	dbw EFFECTCMDTYPE_AI, Psychic_AIEffect
 	db  $00
 
-SandslashFurySwipesEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SandslashFurySwipes_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, SandslashFurySwipes_AIEffect
+WWaterGunEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, WWaterGunEffect
+	dbw EFFECTCMDTYPE_AI, WWaterGunEffect
 	db  $00
 
-DugtrioEarthquakeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EarthquakeEffect
+WCWaterGunEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, WCWaterGunEffect
+	dbw EFFECTCMDTYPE_AI, WCWaterGunEffect
 	db  $00
 
-AerodactylPrehistoricPowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PrehistoricPowerEffect
+WWCWaterGunEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, WWCWaterGunEffect
+	dbw EFFECTCMDTYPE_AI, WWCWaterGunEffect
 	db  $00
 
-MankeyPeekEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Peek_OncePerTurnCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Peek_SelectEffect
+WWWHydroPumpEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, WWWHydroPumpEffect
+	dbw EFFECTCMDTYPE_AI, WWWHydroPumpEffect
 	db  $00
 
-MarowakBoneAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, BoneAttackEffect
+EachBenched10MoreDamageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EachBenched10MoreDamageEffect
+	dbw EFFECTCMDTYPE_AI, EachBenched10MoreDamageEffect
 	db  $00
 
-MarowakWailEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Wail_BenchCheck
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Wail_FillBenchEffect
+EachNidoking20MoreDamageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EachNidoking20MoreDamageEffect
 	db  $00
 
-ElectabuzzThundershockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+LeekSlapEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, LeekSlap_OncePerDuelCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoDamage50PercentEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, LeekSlap_SetUsedThisDuelFlag
+	dbw EFFECTCMDTYPE_AI, FlipFor30_AIEffect
 	db  $00
 
-ElectabuzzThunderpunchEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Thunderpunch_ModifierEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Thunderpunch_RecoilEffect
-	dbw EFFECTCMDTYPE_AI, Thunderpunch_AIEffect
+FlipFor30EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoDamage50PercentEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor30_AIEffect
 	db  $00
 
-ElectabuzzLightScreenEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, LightScreenEffect
+FlipFor70EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoDamage50PercentEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor70_AIEffect
 	db  $00
 
-ElectabuzzQuickAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ElectabuzzQuickAttack_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, ElectabuzzQuickAttack_AIEffect
+FlipFor80EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoDamage50PercentEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor80_AIEffect
 	db  $00
 
-MagnemiteThunderWaveEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+Flip2For10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip2For10_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor20_AIEffect
 	db  $00
 
-MagnemiteSelfdestructEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MagnemiteSelfdestructEffect
+Flip3For10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip3For10_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor30_AIEffect
 	db  $00
 
-ZapdosThunderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ZapdosThunder_Recoil50PercentEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ZapdosThunder_RecoilEffect
+Flip8For10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip8For10_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor80_AIEffect
 	db  $00
 
-ZapdosThunderboltEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ThunderboltEffect
+FlipXFor10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlipXFor10_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipXFor10_AIEffect
 	db  $00
 
-ZapdosThunderstormEffectCommands:
+Flip2For20EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip2For20_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor40_AIEffect
+	db  $00
+
+Flip3For20EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip3For20_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor60_AIEffect
+	db  $00
+
+Flip4For20EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip4For20_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor80_AIEffect
+	db  $00
+
+BigEggsplosionEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlipEachEnergyFor20_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipEachEnergyFor20_AIEffect
+	db  $00
+
+Flip2For30EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip2For30_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor60_AIEffect
+	db  $00
+
+Flip2For40EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip2For40_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor80_AIEffect
+	db  $00
+
+Flip3For40SelfConfusionEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flip3For40SelfConfusion_MultiplierEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor120_AIEffect
+	db  $00
+
+FlipForPlus10Base20EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlipForPlus10_DamageBoostEffect
+	dbw EFFECTCMDTYPE_AI, Plus10From20_AIEffect
+	db  $00
+
+FlipForPlus20Base10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlipForPlus20_DamageBoostEffect
+	dbw EFFECTCMDTYPE_AI, Plus20From10_AIEffect
+	db  $00
+
+Plus10OrRecoilEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Plus10OrRecoil_ModifierEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Plus10OrRecoil_RecoilEffect
+	dbw EFFECTCMDTYPE_AI, Plus10OrRecoil_AIEffect
+	db  $00
+
+MayRecoil10EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Recoil10_50PercentEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil10_RecoilEffect
+	db  $00
+
+MayRecoil30EffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlipToRecoil30_50PercentEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, FlipToRecoil30_RecoilEffect
+	db  $00
+
+Recoil20EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil20Effect
+	db  $00
+
+Recoil30EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil30Effect
+	db  $00
+
+Recoil80EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil80Effect
+	db  $00
+
+DiscardAttachedFireEnergyEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_FireEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedFireEnergy_PlayerSelection
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, VariableDiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedFireEnergy_AISelection
+	db  $00
+
+WildfireEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_FireEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardXAttachedFireEnergy_PlayerSelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentDeck_DiscardXCardsEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, DiscardXAttachedFireEnergy_DiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardXAttachedFireEnergy_AISelection
+	db  $00
+
+FlamesOfRageEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_DoubleFireEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Discard2AttachedFireEnergy_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Rage_DamageBoostEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Discard2AttachedFireEnergy_DiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Discard2AttachedFireEnergy_AISelection
+	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
+	db  $00
+
+Discard2AttachedEnergyCardsEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon2CardsAttached_EnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Discard2AttachedEnergyCards_PlayerSelection
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Discard2AttachedEnergyCards_DiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Discard2AttachedEnergyCards_AISelection
+	db  $00
+
+DiscardAllAttachedEnergyEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DiscardAllAttachedEnergyEffect
+	db  $00
+
+EarthquakeEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OwnBench_10DamageEffect
+	db  $00
+
+BlizzardEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageEitherBench_50PercentEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageEitherBench_10DamageEffect
+	db  $00
+
+Selfdestruct40And10EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Selfdestruct40Effect
+	db  $00
+
+Selfdestruct60And10EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Selfdestruct60Effect
+	db  $00
+
+Selfdestruct80And20EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Explosion80DamageEffect
+	db  $00
+
+Selfdestruct100And20EffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Explosion100DamageEffect
+	db  $00
+
+Also10DamageTo1BenchedEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Also10DamageTo1Benched_DamageEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AlsoDamageTo1Benched_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, AlsoDamageTo1Benched_AISelection
+	db  $00
+
+Also10DamageTo3BenchedEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AlsoDamageTo3Benched_10DamageEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AlsoDamageTo3Benched_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, AlsoDamageTo3Benched_AISelection
+	db  $00
+
+ChainLightningEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Also10DamageToSameColorOnBenchEffect
+	db  $00
+
+ThunderstormEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ThunderstormEffect
 	db  $00
 
-JolteonQuickAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, JolteonQuickAttack_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, JolteonQuickAttack_AIEffect
+Benched20DamageEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageTo1Benched_20DamageEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, DamageTo1Benched_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, DamageTo1Benched_AISelection
 	db  $00
 
-JolteonPinMissileEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PinMissile_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, PinMissile_AIEffect
+RandomEnemy20DamageEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RandomEnemy20DamageEffect
 	db  $00
 
-FlyingPikachuThundershockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+RandomEnemy30DamageEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RandomEnemy30DamageEffect
 	db  $00
 
-FlyingPikachuFlyEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Fly_Success50PercentEffect
-	dbw EFFECTCMDTYPE_AI, Fly_AIEffect
+RandomEnemy40DamageEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RandomEnemy40DamageEffect
 	db  $00
 
-PikachuThunderJoltEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ThunderJolt_Recoil50PercentEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ThunderJolt_RecoilEffect
+Random70DamageEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Random70DamageEffect
 	db  $00
 
-PikachuSparkEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Spark_BenchDamageEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Spark_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Spark_AISelectEffect
+MysteryAttackEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MysteryAttack_RandomEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MysteryAttack_RecoverEffect
+	dbw EFFECTCMDTYPE_AI, FlipFor20_AIEffect
 	db  $00
 
-PikachuLv16GrowlEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PikachuLv16GrowlEffect
+MixUpEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentHand_ReplacePokemonInEffect
 	db  $00
 
-PikachuLv16ThundershockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+MagneticStormEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ShuffleAttachedEnergyEffect
 	db  $00
 
-PikachuAltLv16GrowlEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PikachuAltLv16GrowlEffect
-	db  $00
-
-PikachuAltLv16ThundershockEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-ElectrodeChainLightningEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ChainLightningEffect
-	db  $00
-
-RaichuAgilityEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RaichuAgilityEffect
-	db  $00
-
-RaichuThunderEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RaichuThunder_Recoil50PercentEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RaichuThunder_RecoilEffect
-	db  $00
-
-RaichuGigashockEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Gigashock_BenchDamageEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Gigashock_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Gigashock_AISelectEffect
-	db  $00
-
-MagnetonThunderWaveEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-MagnetonLv28SelfdestructEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MagnetonLv28SelfdestructEffect
-	db  $00
-
-MagnetonSonicboomEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MagnetonSonicboom_UnaffectedByColorEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MagnetonSonicboom_NullEffect
-	dbw EFFECTCMDTYPE_AI, MagnetonSonicboom_UnaffectedByColorEffect
-	db  $00
-
-MagnetonLv35SelfdestructEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MagnetonLv35SelfdestructEffect
-	db  $00
-
-ZapdosPealOfThunderEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PealOfThunder_InitialEffect
-	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, PealOfThunder_RandomlyDamageEffect
-	db  $00
-
-ZapdosBigThunderEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, BigThunderEffect
-	db  $00
-
-MagnemiteMagneticStormEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MagneticStormEffect
-	db  $00
-
-ElectrodeSonicboomEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ElectrodeSonicboom_UnaffectedByColorEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ElectrodeSonicboom_NullEffect
-	dbw EFFECTCMDTYPE_AI, ElectrodeSonicboom_UnaffectedByColorEffect
-	db  $00
-
-ElectrodeEnergySpikeEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergySpike_DeckCheck
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergySpike_AttachEnergyEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergySpike_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, EnergySpike_AISelectEffect
-	db  $00
-
-JolteonDoubleKickEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, JolteonDoubleKick_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, JolteonDoubleKick_AIEffect
-	db  $00
-
-JolteonStunNeedleEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-EeveeTailWagEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TailWagEffect
-	db  $00
-
-EeveeQuickAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EeveeQuickAttack_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, EeveeQuickAttack_AIEffect
-	db  $00
-
-SpearowMirrorMoveEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SpearowMirrorMove_InitialEffect1
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SpearowMirrorMove_InitialEffect2
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SpearowMirrorMove_BeforeDamage
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SpearowMirrorMove_AfterDamage
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SpearowMirrorMove_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, SpearowMirrorMove_AISelection
-	dbw EFFECTCMDTYPE_AI, SpearowMirrorMove_AIEffect
-	db  $00
-
-FearowAgilityEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FearowAgilityEffect
-	db  $00
-
-DragoniteStepInEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StepIn_BenchCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StepIn_SwitchEffect
-	db  $00
-
-DragoniteLv45SlamEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DragoniteLv45Slam_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, DragoniteLv45Slam_AIEffect
-	db  $00
-
-SnorlaxThickSkinnedEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ThickSkinnedEffect
-	db  $00
-
-SnorlaxBodySlamEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
-	db  $00
-
-FarfetchdLeekSlapEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, LeekSlap_OncePerDuelCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, LeekSlap_NoDamage50PercentEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, LeekSlap_SetUsedThisDuelFlag
-	dbw EFFECTCMDTYPE_AI, LeekSlap_AIEffect
-	db  $00
-
-KangaskhanFetchEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, FetchEffect
-	db  $00
-
-KangaskhanCometPunchEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CometPunch_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, CometPunch_AIEffect
-	db  $00
-
-TaurosStompEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TaurosStomp_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, TaurosStomp_AIEffect
-	db  $00
-
-TaurosRampageEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Rampage_Confusion50PercentEffect
-	dbw EFFECTCMDTYPE_AI, Rampage_AIEffect
-	db  $00
-
-DoduoFuryAttackEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FuryAttack_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, FuryAttack_AIEffect
-	db  $00
-
-DodrioRetreatAidEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, RetreatAidEffect
-	db  $00
-
-DodrioRageEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DodrioRage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, DodrioRage_AIEffect
-	db  $00
-
-MeowthPayDayEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, PayDayEffect
-	db  $00
-
-DragonairSlamEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DragonairSlam_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, DragonairSlam_AIEffect
-	db  $00
-
-DragonairHyperBeamEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DragonairHyperBeam_DiscardEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, DragonairHyperBeam_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, DragonairHyperBeam_AISelectEffect
-	db  $00
-
-ClefableMetronomeEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ClefableMetronome_CheckAttacks
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ClefableMetronome_UseAttackEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, ClefableMetronome_AISelectEffect
-	db  $00
-
-ClefableMinimizeEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ClefableMinimizeEffect
-	db  $00
-
-PidgeotHurricaneEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, HurricaneEffect
-	db  $00
-
-PidgeottoWhirlwindEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, PidgeottoWhirlwind_SwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PidgeottoWhirlwind_SelectEffect
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, PidgeottoWhirlwind_SelectEffect
-	db  $00
-
-PidgeottoMirrorMoveEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PidgeottoMirrorMove_InitialEffect1
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PidgeottoMirrorMove_InitialEffect2
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PidgeottoMirrorMove_BeforeDamage
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, PidgeottoMirrorMove_AfterDamage
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PidgeottoMirrorMove_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, PidgeottoMirrorMove_AISelection
-	dbw EFFECTCMDTYPE_AI, PidgeottoMirrorMove_AIEffect
-	db  $00
-
-ClefairySingEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SingEffect
+DittoMorphEffectCommands:
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MorphEffect
 	db  $00
 
 ClefairyMetronomeEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ClefairyMetronome_CheckAttacks
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DefendingPokemon_AttackCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ClefairyMetronome_UseAttackEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, ClefairyMetronome_AISelectEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Metronome_AISelection
 	db  $00
 
-WigglytuffLullabyEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
+ClefableMetronomeEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DefendingPokemon_AttackCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ClefableMetronome_UseAttackEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, Metronome_AISelection
 	db  $00
 
-WigglytuffDoTheWaveEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DoTheWaveEffect
-	dbw EFFECTCMDTYPE_AI, DoTheWaveEffect
+MirrorMoveEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MirrorMove_AttackedCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, MirrorMove_AmnesiaCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MirrorMove_BeforeDamage
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MirrorMove_AfterDamage
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, MirrorMove_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, MirrorMove_AISelection
+	dbw EFFECTCMDTYPE_AI, MirrorMove_AIEffect
 	db  $00
 
-JigglypuffLullabyEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SleepEffect
+;
+; POKEMON POWER EFFECT COMMANDS START HERE (ONLY 14/26 HAVE AN ACTUAL EFFECT FUNCTION)
+
+VenusaurEnergyTransEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyTransCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyTrans_TransferEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyTrans_AIEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyTrans_PrintProcedureText
 	db  $00
 
-JigglypuffFirstAidEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FirstAid_DamageCheck
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, FirstAid_HealEffect
+VenusaurSolarPowerEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SolarPowerCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SolarPower_RemoveStatusEffect
 	db  $00
 
-JigglypuffDoubleEdgeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, JigglypuffDoubleEdgeEffect
+VileplumeHealEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, HealCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Heal_RemoveDamageEffect
 	db  $00
 
-PersianPounceEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PounceEffect
+; also handled in home\card_color.asm
+VenomothShiftEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, OncePerTurnPokePowerCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Shift_ChangeColorEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Shift_PlayerSelection
 	db  $00
 
-LickitungTongueWrapEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
+; actual effect handled in substatus.asm and in other Pokemon Power effects
+MukToxicGasEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
 	db  $00
 
-LickitungSupersonicEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, LickitungSupersonicEffect
+; actual effect handled in home\card_color.asm
+CharizardEnergyBurnEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
 	db  $00
 
-PidgeyWhirlwindEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, PidgeyWhirlwind_SwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PidgeyWhirlwind_SelectEffect
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, PidgeyWhirlwind_SelectEffect
+MoltresFiregiverEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Firegiver_AddToHandEffect
 	db  $00
 
-PorygonConversion1EffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Conversion1_WeaknessCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Conversion1_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Conversion1_ChangeWeaknessEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Conversion1_AISelectEffect
+; actual effect handled in engine\duel\core.asm & substatus.asm
+BlastoiseRainDanceEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
 	db  $00
 
-PorygonConversion2EffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Conversion2_ResistanceCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Conversion2_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Conversion2_ChangeResistanceEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, Conversion2_AISelectEffect
+TentacoolCowardiceEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, CowardiceCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Cowardice_RemoveFromPlayAreaEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Cowardice_PlayerSelection
 	db  $00
 
-ChanseyScrunchEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ScrunchEffect
+; actual effect handled in engine\duel\core.asm, engine\menus\duel.asm,
+; engine\menus\play_area.asm, and substatus.asm
+OmanyteClairvoyanceEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
 	db  $00
 
-ChanseyDoubleEdgeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ChanseyDoubleEdgeEffect
+ArticunoQuickfreezeEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Quickfreeze_Paralysis50PercentEffect
 	db  $00
 
-RaticateSuperFangEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SuperFang_HalfHPEffect
-	dbw EFFECTCMDTYPE_AI, SuperFang_AIEffect
+ZapdosPealOfThunderEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, PealOfThunder_RandomlyDamageEffect
 	db  $00
+
+MankeyPeekEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, OncePerTurnPokePowerCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Peek_SelectEffect
+	db  $00
+
+; actual effect handled in home\duel.asm & substatus.asm
+MachampStrikesBackEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+; actual effect handled in substatus.asm
+KabutoKabutoArmorEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+; actual effect handled in engine\duel\core.asm & substatus.asm
+AerodactylPrehistoricPowerEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+AlakazamDamageSwapEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DamageSwapCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageSwap_SelectAndSwapEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageSwap_SwapEffect
+	db  $00
+
+SlowbroStrangeBehaviorEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StrangeBehaviorCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StrangeBehavior_SelectAndSwapEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StrangeBehavior_SwapEffect
+	db  $00
+
+; actual effect handled in substatus.asm
+HaunterTransparencyEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+GengarCurseEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, CurseCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Curse_TransferDamageEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Curse_PlayerSelection
+	db  $00
+
+; actual effect handled in substatus.asm
+MrMimeInvisibleWallEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+; actual effect handled in substatus.asm
+MewNeutralizingShieldEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+; actual effect handled in substatus.asm
+DodrioRetreatAidEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+; actual effect handled in the effect functions that cause special conditions
+SnorlaxThickSkinnedEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	db  $00
+
+DragoniteStepInEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StepInCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StepIn_SwitchEffect
+	db  $00
+
+DragoniteHealingWindEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, HealingWind_PlayAreaHealEffect
+	db  $00
+
+;
+; TRAINER CARD EFFECT COMMANDS START HERE.
+; except for Bill/Draw2, Energy Search, Gust of Wind, and Pokedex, which are listed with attacks
 
 TrainerCardAsPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, TrainerCardAsPokemon_BenchCheck
@@ -1371,111 +915,16 @@ TrainerCardAsPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, TrainerCardAsPokemon_PlayerSelectSwitch
 	db  $00
 
-DragoniteHealingWindEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, HealingWind_InitialEffect
-	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, HealingWind_PlayAreaHealEffect
+ClefairyDollEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchSpaceCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlayThisAsBasicPokemonEffect
 	db  $00
 
-DragoniteLv41SlamEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DragoniteLv41Slam_MultiplierEffect
-	dbw EFFECTCMDTYPE_AI, DragoniteLv41Slam_AIEffect
-	db  $00
-
-MeowthCatPunchEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, CatPunchEffect
-	db  $00
-
-DittoMorphEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MorphEffect
-	db  $00
-
-PidgeotSlicingWindEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SlicingWindEffect
-	db  $00
-
-PidgeotGaleEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Gale_LoadAnimation
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Gale_SwitchEffect
-	db  $00
-
-JigglypuffFriendshipSongEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FriendshipSong_BenchCheck
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, FriendshipSong_AddToBench50PercentEffect
-	db  $00
-
-JigglypuffExpandEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ExpandEffect
-	db  $00
-
-DoubleColorlessEnergyEffectCommands:
-	db  $00
-
-PsychicEnergyEffectCommands:
-	db  $00
-
-FightingEnergyEffectCommands:
-	db  $00
-
-LightningEnergyEffectCommands:
-	db  $00
-
-WaterEnergyEffectCommands:
-	db  $00
-
-FireEnergyEffectCommands:
-	db  $00
-
-GrassEnergyEffectCommands:
-	db  $00
-
-SuperPotionEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SuperPotion_DamageEnergyCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SuperPotion_PlayerSelectEffect
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SuperPotion_HealEffect
-	db  $00
-
-ImakuniEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ImakuniEffect
-	db  $00
-
-EnergyRemovalEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyRemoval_EnergyCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyRemoval_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyRemoval_DiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, EnergyRemoval_AISelection
-	db  $00
-
-EnergyRetrievalEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyRetrieval_HandEnergyCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyRetrieval_PlayerHandSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyRetrieval_DiscardAndAddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyRetrieval_PlayerDiscardPileSelection
-	db  $00
-
-EnergySearchEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergySearch_DeckCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergySearch_AddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergySearch_PlayerSelection
-	db  $00
-
-ProfessorOakEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ProfessorOakEffect
-	db  $00
-
-PotionEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Potion_DamageCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Potion_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Potion_HealEffect
-	db  $00
-
-GamblerEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GamblerEffect
-	db  $00
-
-ItemFinderEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ItemFinder_HandDiscardPileCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ItemFinder_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ItemFinder_DiscardAddToHandEffect
+ComputerSearchEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ComputerSearchCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Discard2Cards_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ComputerSearch_DiscardAddToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, ComputerSearch_PlayerDeckSelection
 	db  $00
 
 DefenderEffectCommands:
@@ -1483,86 +932,47 @@ DefenderEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Defender_AttachDefenderEffect
 	db  $00
 
-MysteriousFossilEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MysteriousFossil_BenchCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MysteriousFossil_PlaceInPlayAreaEffect
+DevolutionSprayEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EvolvedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionSpray_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DevolutionSpray_DevolutionEffect
+	db  $00
+
+EnergyRemovalEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyRemovalCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyRemoval_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyRemoval_DiscardEffect
+	dbw EFFECTCMDTYPE_AI_SELECTION, EnergyRemoval_AISelection
+	db  $00
+
+EnergyRetrievalEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyRetrievalCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyRetrieval_PlayerHandSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyRetrieval_DiscardAndAddToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyRetrieval_PlayerDiscardPileSelection
 	db  $00
 
 FullHealEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, FullHeal_StatusCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FullHeal_ClearStatusEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_StatusCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RemoveSpecialConditionsEffect
+	db  $00
+
+GamblerEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GamblerEffect
+	db  $00
+
+ImakuniEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ImakuniEffect
 	db  $00
 
 ImposterProfessorOakEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ImposterProfessorOakEffect
 	db  $00
 
-ComputerSearchEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ComputerSearch_HandDeckCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ComputerSearch_PlayerDiscardHandSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ComputerSearch_DiscardAddToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, ComputerSearch_PlayerDeckSelection
-	db  $00
-
-ClefairyDollEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ClefairyDoll_BenchCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ClefairyDoll_PlaceInPlayAreaEffect
-	db  $00
-
-MrFujiEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, MrFuji_BenchCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, MrFuji_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MrFuji_ReturnToDeckEffect
-	db  $00
-
-PlusPowerEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlusPowerEffect
-	db  $00
-
-SwitchEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Switch_BenchCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Switch_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Switch_SwitchEffect
-	db  $00
-
-PokemonCenterEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonCenter_DamageCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonCenter_HealDiscardEnergyEffect
-	db  $00
-
-PokemonFluteEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonFlute_BenchCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PokemonFlute_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonFlute_PlaceInPlayAreaText
-	db  $00
-
-PokemonBreederEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonBreeder_HandPlayAreaCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PokemonBreeder_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonBreeder_EvolveEffect
-	db  $00
-
-ScoopUpEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ScoopUp_BenchCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ScoopUp_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ScoopUp_ReturnToHandEffect
-	db  $00
-
-PokemonTraderEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonTrader_HandDeckCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PokemonTrader_PlayerHandSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonTrader_TradeCardsEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PokemonTrader_PlayerDeckSelection
-	db  $00
-
-PokedexEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Pokedex_DeckCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Pokedex_OrderDeckCardsEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Pokedex_PlayerSelection
-	db  $00
-
-BillEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, BillEffect
+ItemFinderEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ItemFinderCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ItemFinder_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ItemFinder_DiscardAddToHandEffect
 	db  $00
 
 LassEffectCommands:
@@ -1570,33 +980,82 @@ LassEffectCommands:
 	db  $00
 
 MaintenanceEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Maintenance_HandCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, OtherCardsInHandCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Maintenance_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Maintenance_ReturnToDeckAndDrawEffect
 	db  $00
 
+MrFujiEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, MrFuji_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MrFuji_ReturnToDeckEffect
+	db  $00
+
+MysteriousFossilEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchSpaceCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlayThisAsBasicPokemonEffect
+	db  $00
+
+PlusPowerEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlusPowerEffect
+	db  $00
+
 PokeBallEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokeBall_DeckCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokeBall_AddToHandEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PokeBall_PlayerSelection
 	db  $00
 
+PokemonBreederEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonBreederCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PokemonBreeder_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonBreeder_EvolveEffect
+	db  $00
+
+PokemonCenterEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, YourPokemon_DamageCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonCenter_HealDiscardEnergyEffect
+	db  $00
+
+PokemonFluteEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonFluteCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PokemonFlute_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonFlute_PlaceInPlayAreaText
+	db  $00
+
+PokemonTraderEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PokemonTraderCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PokemonTrader_PlayerHandSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokemonTrader_TradeCardsEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PokemonTrader_PlayerDeckSelection
+	db  $00
+
+PotionEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, YourPokemon_DamageCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Potion_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HealEffect
+	db  $00
+
+ProfessorOakEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ProfessorOakEffect
+	db  $00
+
 RecycleEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Recycle_DiscardPileCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DiscardPileCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Recycle_AddToHandEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Recycle_PlayerSelection
 	db  $00
 
 ReviveEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Revive_BenchCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ReviveCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Revive_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Revive_PlaceInPlayAreaEffect
 	db  $00
 
-DevolutionSprayEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DevolutionSpray_PlayAreaEvolutionCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionSpray_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DevolutionSpray_DevolutionEffect
+ScoopUpEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, ScoopUp_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ScoopUp_ReturnToHandEffect
 	db  $00
 
 SuperEnergyRemovalEffectCommands:
@@ -1607,13 +1066,44 @@ SuperEnergyRemovalEffectCommands:
 
 SuperEnergyRetrievalEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SuperEnergyRetrieval_HandEnergyCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SuperEnergyRetrieval_PlayerHandSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Discard2Cards_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SuperEnergyRetrieval_DiscardAndAddToHandEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SuperEnergyRetrieval_PlayerDiscardPileSelection
 	db  $00
 
-GustOfWindEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, GustOfWind_BenchCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, GustOfWind_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GustOfWind_SwitchEffect
+SuperPotionEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SuperPotion_DamageEnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SuperPotion_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SuperPotion_HealEffect
+	db  $00
+
+SwitchEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Switch_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SwitchEffect
+	db  $00
+
+;
+; ENERGY CARD EFFECT COMMANDS START HERE.
+; actual effects are handled in home\duel.asm & engine\duel\core.asm (possibly elsewhere too)
+
+GrassEnergyEffectCommands:
+	db  $00
+
+FireEnergyEffectCommands:
+	db  $00
+
+WaterEnergyEffectCommands:
+	db  $00
+
+LightningEnergyEffectCommands:
+	db  $00
+
+FightingEnergyEffectCommands:
+	db  $00
+
+PsychicEnergyEffectCommands:
+	db  $00
+
+DoubleColorlessEnergyEffectCommands:
 	db  $00

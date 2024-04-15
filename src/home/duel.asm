@@ -915,48 +915,6 @@ CheckIfCanEvolveInto::
 	scf
 	ret
 
-; check if the turn holder's Pokemon card at e can evolve this turn, and is a basic
-; Pokemon card that whose second stage evolution is the turn holder's Pokemon card d.
-; e is the play area location offset (PLAY_AREA_*) of the Pokemon trying to evolve.
-; d is the deck index (0-59) of the Pokemon card that was selected to be the evolution target.
-; return carry if not basic to stage 2 evolution, or if evolution not possible this turn.
-CheckIfCanEvolveInto_BasicToStage2::
-	ld a, e
-	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
-	and CAN_EVOLVE_THIS_TURN
-	jr nz, .can_evolve
-	jr .cant_evolve
-.can_evolve
-	ld a, e
-	add DUELVARS_ARENA_CARD
-	ld l, a
-	ld a, [hl]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, d
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld hl, wLoadedCard1PreEvoName
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	call LoadCardDataToBuffer1_FromName
-	ld hl, wLoadedCard2Name
-	ld de, wLoadedCard1PreEvoName
-	ld a, [de]
-	cp [hl]
-	jr nz, .cant_evolve
-	inc de
-	inc hl
-	ld a, [de]
-	cp [hl]
-	jr nz, .cant_evolve
-	or a
-	ret
-.cant_evolve
-	xor a
-	scf
-	ret
-
 ; clear the status, all substatuses, and temporary duelvars of the turn holder's
 ; arena Pokemon. called when sending a new Pokemon into the arena.
 ; does not reset Headache, since it targets a player rather than a Pokemon.
@@ -1371,7 +1329,7 @@ ProcessPlayedPokemonCard::
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 	jr nc, .use_pokemon_power
 	call DisplayUsePokemonPowerScreen
-	ldtx hl, UnableToUsePkmnPowerDueToToxicGasText
+	ldtx hl, UnableDueToToxicGasText
 	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
 	ret
@@ -1511,7 +1469,7 @@ UseAttackOrPokemonPower::
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
 	jp c, DrawWideTextBox_WaitForInput_ReturnCarry
-	call CheckSandAttackOrSmokescreenSubstatus
+	call CheckSmokescreenSubstatus
 	jr c, .sand_attack_smokescreen
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
@@ -1520,7 +1478,7 @@ UseAttackOrPokemonPower::
 	jr .next
 .sand_attack_smokescreen
 	call SendAttackDataToLinkOpponent
-	call HandleSandAttackOrSmokescreenSubstatus
+	call HandleSmokescreenSubstatus
 	jp c, ClearNonTurnTemporaryDuelvars_ResetCarry
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction

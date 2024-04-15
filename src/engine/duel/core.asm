@@ -486,7 +486,7 @@ DuelMenu_Retreat:
 	jr c, .unable_to_retreat
 	call DisplayRetreatScreen
 	jr c, .done
-	ldtx hl, SelectPkmnOnBenchToSwitchWithActiveText
+	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	call OpenPlayAreaScreenForSelection
 	jr c, .done
@@ -516,7 +516,7 @@ DuelMenu_Retreat:
 	call DisplayRetreatScreen
 	jr c, .done
 	call DiscardRetreatCostCards
-	ldtx hl, SelectPkmnOnBenchToSwitchWithActiveText
+	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	call OpenPlayAreaScreenForSelection
 	ld [wBenchSelectedPokemon], a
@@ -6628,7 +6628,7 @@ OppAction_BeginUseAttack:
 	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
 	ld a, $01
 	ld [wSkipDuelistIsThinkingDelay], a
-	call CheckSandAttackOrSmokescreenSubstatus
+	call CheckSmokescreenSubstatus
 	jr c, .has_status
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetTurnDuelistVariable
@@ -6645,7 +6645,7 @@ OppAction_BeginUseAttack:
 	call PrintPokemonsAttackText
 	call WaitForWideTextBoxInput
 	call ExchangeRNG
-	call HandleSandAttackOrSmokescreenSubstatus
+	call HandleSmokescreenSubstatus
 	ret nc ; return if attack is successful (won the coin toss)
 	call ClearNonTurnTemporaryDuelvars
 	; end the turn if the attack fails
@@ -6682,7 +6682,7 @@ OppAction_PlayAttackAnimationDealAttackDamage:
 
 ; force the player to switch the active Pokemon with a benched Pokemon
 OppAction_ForceSwitchActive:
-	ldtx hl, SelectPkmnOnBenchToSwitchWithActiveText
+	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	call SwapTurn
 	call HasAlivePokemonInBench
@@ -7402,7 +7402,7 @@ ReplaceKnockedOutPokemon:
 
 ; prompt the player to replace the knocked out Pokemon with one from bench
 	bank1call DrawDuelMainScene
-	ldtx hl, SelectPokemonToPlaceInTheArenaText
+	ldtx hl, ChooseNextActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	ld a, $01
 	ld [wPlayAreaSelectAction], a

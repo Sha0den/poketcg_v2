@@ -104,7 +104,7 @@ OpenInPlayAreaScreen::
 
 	ld hl, hffb0
 	ld [hl], $01
-	ldtx hl, HandText_2
+	ldtx hl, HandText
 	call ProcessTextFromID
 
 	ld hl, hffb0
@@ -173,7 +173,7 @@ OpenInPlayAreaScreen::
 
 .print_hand_or_discard_pile
 ; if we make it here, cursor position is to Hand or Discard Pile
-; so DuelistHandText_2 or DuelistDiscardPileText will be printed
+; so DuelistHandText or DuelistDiscardPileText will be printed
 
 	ld a, [wInPlayAreaCurPosition]
 	cp INPLAYAREA_OPP_ACTIVE
@@ -315,10 +315,10 @@ OpenInPlayAreaScreen_TextTable:
 	tx PKMNPowerText          ; INPLAYAREA_PLAYER_BENCH_4
 	tx DoneText               ; INPLAYAREA_PLAYER_BENCH_5
 	dw NULL                   ; INPLAYAREA_PLAYER_ACTIVE
-	tx DuelistHandText_2      ; INPLAYAREA_PLAYER_HAND
+	tx DuelistHandText      ; INPLAYAREA_PLAYER_HAND
 	tx DuelistDiscardPileText ; INPLAYAREA_PLAYER_DISCARD_PILE
 	dw NULL                   ; INPLAYAREA_OPP_ACTIVE
-	tx DuelistHandText_2      ; INPLAYAREA_OPP_HAND
+	tx DuelistHandText      ; INPLAYAREA_OPP_HAND
 	tx DuelistDiscardPileText ; INPLAYAREA_OPP_DISCARD_PILE
 	tx HandText               ; INPLAYAREA_OPP_BENCH_1
 	tx CheckText              ; INPLAYAREA_OPP_BENCH_2

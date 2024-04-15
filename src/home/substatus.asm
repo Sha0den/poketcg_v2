@@ -39,9 +39,7 @@ HandleDamageReduction::
 	ret z
 	cp SUBSTATUS2_REDUCE_BY_20
 	jr z, .reduce_damage_by_20
-	cp SUBSTATUS2_POUNCE
-	jr z, .reduce_damage_by_10
-	cp SUBSTATUS2_GROWL
+	cp SUBSTATUS2_REDUCE_BY_10
 	jr z, .reduce_damage_by_10
 	ret
 .reduce_damage_by_20
@@ -68,13 +66,7 @@ HandleDamageReductionExceptSubstatus2::
 	call GetTurnDuelistVariable
 	or a
 	jr z, .not_affected_by_substatus1
-	cp SUBSTATUS1_NO_DAMAGE_STIFFEN
-	jr z, .no_damage
-	cp SUBSTATUS1_NO_DAMAGE_10
-	jr z, .no_damage
-	cp SUBSTATUS1_NO_DAMAGE_11
-	jr z, .no_damage
-	cp SUBSTATUS1_NO_DAMAGE_17
+	cp SUBSTATUS1_NO_DAMAGE
 	jr z, .no_damage
 	cp SUBSTATUS1_REDUCE_BY_10
 	jr z, .reduce_damage_by_10
@@ -279,14 +271,11 @@ HandleCantAttackSubstatus::
 	call GetTurnDuelistVariable
 	or a
 	ret z
-	ldtx hl, UnableToAttackDueToTailWagText
-	cp SUBSTATUS2_TAIL_WAG
+	ldtx hl, UnableToAttackThatPokemonText
+	cp SUBSTATUS2_CANNOT_ATTACK_THIS
 	jr z, .return_with_cant_attack
-	ldtx hl, UnableToAttackDueToLeerText
-	cp SUBSTATUS2_LEER
-	jr z, .return_with_cant_attack
-	ldtx hl, UnableToAttackDueToBoneAttackText
-	cp SUBSTATUS2_BONE_ATTACK
+	ldtx hl, UnableToAttackText
+	cp SUBSTATUS2_CANNOT_ATTACK
 	jr z, .return_with_cant_attack
 	or a
 	ret
@@ -319,8 +308,8 @@ HandleAmnesiaSubstatus::
 	ret
 
 ; return carry if the turn holder's attack was unsuccessful due to sand attack or smokescreen effect
-HandleSandAttackOrSmokescreenSubstatus::
-	call CheckSandAttackOrSmokescreenSubstatus
+HandleSmokescreenSubstatus::
+	call CheckSmokescreenSubstatus
 	ret nc
 	call TossCoin
 	ld [wGotHeadsFromSandAttackOrSmokescreenCheck], a
@@ -332,14 +321,11 @@ HandleSandAttackOrSmokescreenSubstatus::
 	ret
 
 ; return carry if the turn holder's arena card is under the effects of sand attack or smokescreen
-CheckSandAttackOrSmokescreenSubstatus::
+CheckSmokescreenSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
 	or a
 	ret z
-	ldtx de, SandAttackCheckText
-	cp SUBSTATUS2_SAND_ATTACK
-	jr z, .card_is_affected
 	ldtx de, SmokescreenCheckText
 	cp SUBSTATUS2_SMOKESCREEN
 	jr z, .card_is_affected
@@ -365,15 +351,15 @@ HandleNoDamageOrEffectSubstatus::
 	call GetTurnDuelistVariable
 	ld e, NO_DAMAGE_OR_EFFECT_FLY
 	ldtx hl, NoDamageOrEffectDueToFlyText
-	cp SUBSTATUS1_FLY
+	cp SUBSTATUS1_IMMUNITY
 	jr z, .no_damage_or_effect
 	ld e, NO_DAMAGE_OR_EFFECT_BARRIER
 	ldtx hl, NoDamageOrEffectDueToBarrierText
-	cp SUBSTATUS1_BARRIER
+	cp SUBSTATUS1_IMMUNITY
 	jr z, .no_damage_or_effect
 	ld e, NO_DAMAGE_OR_EFFECT_AGILITY
 	ldtx hl, NoDamageOrEffectDueToAgilityText
-	cp SUBSTATUS1_AGILITY
+	cp SUBSTATUS1_IMMUNITY
 	jr z, .no_damage_or_effect
 	call CheckCannotUseDueToStatus
 	ccf
@@ -653,13 +639,9 @@ ClearDamageReductionSubstatus2::
 	ret z
 	cp SUBSTATUS2_REDUCE_BY_20
 	jr z, .zero
-	cp SUBSTATUS2_POUNCE
+	cp SUBSTATUS2_REDUCE_BY_10
 	jr z, .zero
-	cp SUBSTATUS2_GROWL
-	jr z, .zero
-	cp SUBSTATUS2_TAIL_WAG
-	jr z, .zero
-	cp SUBSTATUS2_LEER
+	cp SUBSTATUS2_CANNOT_ATTACK_THIS
 	jr z, .zero
 	ret
 .zero

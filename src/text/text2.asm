@@ -23,18 +23,18 @@ PokemonsSleepCheckText:
 	done
 
 PoisonedIfHeadsConfusedIfTailsText:
-	text "Opponent is Poisoned if Heads,"
-	line "and Confused if Tails."
+	text "Heads: Defending Pokémon is Poisoned"
+	line "Tails: Defending Pokémon is Confused"
 	done
 
 IfHeadsDoNotReceiveDamageOrEffectText:
-	text "If Heads, do not receive damage"
-	line "or effect of opponent's next Attack!"
+	text "If heads, prevent all damage and"
+	line "effects of attacks next turn."
 	done
 
 IfHeadsOpponentCannotAttackText:
-	text "If Heads, opponent cannot Attack"
-	line "next turn!"
+	text "If heads, the Defending Pokémon"
+	line "can't attack next turn!"
 	done
 
 AttackUnsuccessfulText:
@@ -42,8 +42,8 @@ AttackUnsuccessfulText:
 	done
 
 UnableToRetreatDueToAcidText:
-	text "Unable to Retreat due to"
-	line "the effects of Acid."
+	text "This Pokémon can't retreat"
+	line "until your next turn."
 	done
 
 UnableToUseTrainerDueToHeadacheText:
@@ -51,19 +51,17 @@ UnableToUseTrainerDueToHeadacheText:
 	line "due to the effects of Headache."
 	done
 
-UnableToAttackDueToTailWagText:
-	text "Unable to Attack due to"
-	line "the effects of Tail wag."
+CannotUsePokemonFluteText:
+	text "There are no Basic Pokémon in"
+	line "your opponent's discard pile."
 	done
 
-UnableToAttackDueToLeerText:
-	text "Unable to Attack due to"
-	line "the effects of Leer."
+UnableToAttackThatPokemonText:
+	text "You can't attack that Pokémon."
 	done
 
-UnableToAttackDueToBoneAttackText:
-	text "Unable to Attack due to"
-	line "the effects of Bone attack."
+UnableToAttackText:
+	text "This Pokémon can't attack this turn."
 	done
 
 UnableToUseAttackDueToAmnesiaText:
@@ -121,19 +119,19 @@ MetamorphsToText:
 	line "metamorphs to <RAMTEXT>."
 	done
 
-SelectPkmnOnBenchToSwitchWithActiveText:
-	text "Select a Pokémon on the Bench"
-	line "to switch with the Active Pokémon."
+SelectNewDefendingPokemonText:
+	text "Select a Benched Pokémon to switch"
+	line "with your opponent's Active Pokémon."
 	done
 
-SelectPokemonToPlaceInTheArenaText:
-	text "Select a Pokémon to place"
-	line "in the Arena."
+SelectNewActivePokemonText :
+	text "Select 1 of your Benched Pokémon to"
+	line "become your new Active Pokémon."
 	done
 
 DuelistIsSelectingPokemonToPlaceInArenaText:
-	text "<RAMNAME> is selecting a Pokémon"
-	line "to place in the Arena."
+	text "<RAMNAME> is selecting"
+	line "an Active Pokémon..."
 	done
 
 ChooseWeaknessYouWishToChangeText:
@@ -146,9 +144,9 @@ ChooseResistanceYouWishToChangeText:
 	line "to change with Conversion 2."
 	done
 
-ChoosePokemonWishToColorChangeText:
-	text "Choose the Pokémon whose color you"
-	line "wish to change with Color change."
+ChoosePokemonToCopyWithShiftText:
+	text "Choose the Pokémon you want to copy"
+	line "with Venomoth's Shift."
 	done
 
 ChangedTheWeaknessOfPokemonToColorText:
@@ -170,11 +168,11 @@ ChangedTheColorOfText:
 	done
 
 Draw1CardFromTheDeckText:
-	text "Draw 1 card from the Deck."
+	text "Draw a card."
 	done
 
 DrawCardsFromTheDeckText:
-	text "Draw <RAMNUM> card(s) from the Deck."
+	text " Draw <RAMNUM> cards."
 	done
 
 CannotDrawCardBecauseNoCardsInDeckText:
@@ -193,8 +191,8 @@ ChooseUpTo3PkmnOnBenchToGiveDamageText:
 	done
 
 Choose1BasicEnergyCardFromDeckText:
-	text "Choose 1 Basic Energy card"
-	line "from the Deck."
+	text "Choose a basic Energy card"
+	line "from your deck."
 	done
 
 ChoosePokemonToAttachEnergyCardText:
@@ -203,18 +201,16 @@ ChoosePokemonToAttachEnergyCardText:
 	done
 
 UnusedText011e: ; Unused
-	text "Choose and Discard"
-	line "1 Fire Energy card."
+	text "Discard 1 <FIRE> Energy."
 	done
 
 ChooseAndDiscard2FireEnergyCardsText:
-	text "Choose and Discard"
-	line "2 Fire Energy cards."
+	text "Discard 2 <FIRE> Energy."
 	done
 
 DiscardOppDeckAsManyFireEnergyCardsText:
-	text "Discard from opponent's Deck as many"
-	line "Fire Energy cards as were discarded."
+	text "Discard a card from the opponent's"
+	line "deck for each discarded <FIRE> Energy."
 	done
 
 ChooseAndDiscard2EnergyCardsText:
@@ -238,7 +234,7 @@ ChooseAttackOpponentWillNotBeAbleToUseText:
 	done
 
 ChooseBasicFightingPokemonFromDeckText:
-	text "Choose a Basic Fighting Pokémon"
+	text "Choose a Basic <FIGHTING> Pokémon"
 	line "from the Deck."
 	done
 
@@ -256,13 +252,13 @@ ChooseAKrabbyText:
 	done
 
 ChooseBasicEnergyCardText:
-	text "Choose a Basic"
-	line "Energy card."
+	text "Choose a"
+	line "basic Energy card."
 	done
 
 ChooseNidoranFromDeckText:
-	text "Choose a Nidoran♀ or a"
-	line "Nidoran♂ from the Deck."
+	text "Choose a Nidoran♀"
+	line "or a Nidoran♂."
 	done
 
 ChooseNidoranText:
@@ -271,14 +267,14 @@ ChooseNidoranText:
 	done
 
 ChooseBasicFightingPokemonText:
-	text "Choose a Basic"
-	line "Fighting Pokémon"
+	text "Choose a"
+	line "Basic <FIGHTING> Pokémon."
 	done
 
 ProcedureForEnergyTransferText:
 	text "Procedure for Energy Transfer:"
 	line ""
-	line "1. Choose the Pokémon to move Grass"
+	line "1. Choose the Pokémon to move <GRASS>"
 	line "   Energy from.  Press the A Button."
 	line ""
 	line "2. Choose the Pokémon to move the"
@@ -300,7 +296,7 @@ ChooseABellsproutText:
 
 ChoosePkmnToRemoveDamageCounterText:
 	text "Choose a Pokémon to remove"
-	line "the Damage counter from."
+	line "a Damage counter from."
 	done
 
 ProcedureForCurseText:
@@ -317,14 +313,13 @@ ProcedureForCurseText:
 	line "3. Press the B Button to cancel."
 	done
 
-Choose2EnergyCardsFromDiscardPileToAttachText:
-	text "Choose 2 Energy cards from the"
-	line "Discard Pileto attach to a Pokémon."
+EmptyText0132:
+	text " "
 	done
 
-Choose2EnergyCardsFromDiscardPileForHandText:
-	text "Choose 2 Energy cards from the"
-	line "Discard Pile for your Hand."
+Choose2EnergyCardsFromDiscardPileText:
+	text "Choose 2 Energy cards from"
+	line "your discard pile."
 	done
 
 ChooseAnEnergyCardText:
@@ -426,23 +421,23 @@ PleaseSelectThePlayAreaText:
 	done
 
 NidoranMNidoranFText:
-	text "Nidoran♂ Nidoran♀"
+	text "Nidoran♂ or Nidoran♀"
 	done
 
-OddishText:
+EmptyText0140:
 	text "Oddish"
 	done
 
-BellsproutText:
+EmptyText0141:
 	text "Bellsprout"
 	done
 
-KrabbyText:
-	text "Krabby"
+EmptyText0142:
+	text " "
 	done
 
 FightingPokemonDeckText:
-	text "Fighting Pokémon"
+	text "<FIGHTING> Pokémon"
 	done
 
 BasicEnergyText:
@@ -479,23 +474,23 @@ WasUnsuccessfulText:
 	done
 
 ThereWasNoEffectFromTxRam2Text:
-	text "There was no effect"
-	line "from <RAMTEXT>."
+	text "There was no effect from"
+	line "<RAMTEXT>."
 	done
 
 TheEnergyCardFromPlayAreaWasMovedText:
-	text "The Energy card from <RAMNAME>'s"
-	line "Play Area was moved."
+	text "<RAMNAME> moved an Energy card"
+	line "from 1 of their Pokémon to another."
 	done
 
 DrewFireEnergyFromTheHandText:
-	text "<RAMNAME> drew"
-	line "<RAMNUM> Fire Energy from the Hand."
+	text "<RAMNAME> drew <RAMNUM> <FIRE> Energy"
+	line "from their deck."
 	done
 
 ThePkmnCardsInHandAndDeckWereShuffledText:
-	text "The Pokémon cards in <RAMNAME>'s"
-	line "Hand and Deck were shuffled"
+	text "The Pokémon in <RAMNAME>'s hand"
+	line "were replaced."
 	done
 
 UnusedText014f: ; Unused
@@ -503,7 +498,7 @@ UnusedText014f: ; Unused
 	line "A Button is pressed. B Button quits."
 	done
 
-ChoosePokemonToRemoveDamageCounterFromText:
+ChoosePokemonToHealText:
 	text "Choose a Pokémon to remove"
 	line "the Damage counter from."
 	done
@@ -578,19 +573,17 @@ ChooseCardFromYourHandToSwitchText:
 	line "Hand to Switch."
 	done
 
-ChooseCardToSwitchText:
-	text "Choose a card to"
-	line "Switch."
+ChoosePokemonToPutInDeckText:
+	text "Choose a Pokémon"
+	line "to put in the deck."
 	done
 
-ChooseBasicOrEvolutionPokemonCardFromDeckText:
-	text "Choose a Basic or Evolution"
-	line "Pokémon card from the Deck."
+ChoosePokemonFromDeckText:
+	text "Choose a Pokémon from the deck."
 	done
 
 ChoosePokemonCardText:
-	text "Choose"
-	line "a Pokémon card."
+	text "Choose a Pokémon."
 	done
 
 RearrangeThe5CardsAtTopOfDeckText:
@@ -599,12 +592,11 @@ RearrangeThe5CardsAtTopOfDeckText:
 	done
 
 PleaseCheckTheOpponentsHandText:
-	text "Please check the opponent's"
-	line "Hand."
+	text "Please check the opponent's hand."
 	done
 
 EvolutionCardText:
-	text "Evolution card"
+	text "Evolution"
 	done
 
 CardWasChosenText:
@@ -617,13 +609,13 @@ ChooseBasicPokemonToPlaceOnBenchText:
 	done
 
 ChooseEvolutionCardAndPressAButtonToDevolveText:
-	text "Choose an Evolution card and"
-	line "press the A Button to Devolve 1."
+	text "Choose an Evolved Pokémon and"
+	line "press the A Button to devolve it."
 	done
 
 ChoosePokemonInYourAreaThenPokemonInYourOppText:
-	text "Choose a Pokémon in your Area, then"
-	line "a Pokémon in your opponent's."
+	text "Choose 1 of your Pokémon, then"
+	line "choose 1 of your opponent's Pokémon."
 	done
 
 ChooseUpTo4FromDiscardPileText:
@@ -631,9 +623,8 @@ ChooseUpTo4FromDiscardPileText:
 	line "from the Discard Pile."
 	done
 
-ChooseAPokemonToSwitchWithActivePokemonText:
-	text "Choose a Pokémon to switch"
-	line "with the Active Pokémon."
+EmptyText016a:
+	text " "
 	done
 
 PokemonAndAllAttachedCardsWereReturnedToDeckText:
@@ -641,14 +632,14 @@ PokemonAndAllAttachedCardsWereReturnedToDeckText:
 	line "cards were returned to the Deck."
 	done
 
-PokemonWasReturnedFromArenaToHandText:
-	text "<RAMTEXT> was returned"
-	line "from the Arena to the Hand."
+ActivePokemonWasReturnedToHandText:
+	text "The Active <RAMTEXT> was"
+	line "returned to its owner's hand."
 	done
 
-PokemonWasReturnedFromBenchToHandText:
-	text "<RAMTEXT> was returned"
-	line "from the Bench to the Hand."
+BenchedPokemonWasReturnedToHandText:
+	text "A Benched <RAMTEXT> was"
+	line "returned to its owner's hand."
 	done
 
 PokemonWasReturnedToDeckText:
@@ -680,8 +671,8 @@ ChooseTheCardToDiscardText:
 	done
 
 DiscardedCardsFromDeckText:
-	text "Discarded <RAMNUM> cards"
-	line "from <RAMNAME>'s Deck."
+	text "Discarded <RAMNUM> cards from"
+	line "<RAMNAME>'s deck."
 	done
 
 UnusedText0175: ; Unused
@@ -689,13 +680,12 @@ UnusedText0175: ; Unused
 	line "from the Hand."
 	done
 
-NoneCameText:
-	text "None came!"
+EmptyText0176:
+	text " "
 	done
 
-CameToTheBenchText:
-	text "<RAMTEXT>"
-	line "came to the Bench!"
+EmptyText0177:
+	text " "
 	done
 
 DuelistHasNoCardsInHandText:
@@ -709,16 +699,17 @@ PokemonHealedDamageText:
 	done
 
 PokemonDevolvedToText:
-	text "<RAMTEXT> devolved"
-	line "to <RAMTEXT>!"
+	text "<RAMTEXT> devolved into"
+	line "<RAMTEXT>!"
 	done
 
 ThereWasNoFireEnergyText:
-	text "There was no Fire Energy."
+	text "There were no <FIRE> Energy"
+	line "in your deck."
 	done
 
 YouCanSelectMoreCardsQuitText:
-	text "You can select <RAMNUM> more cards. Quit?"
+	text "<RAMNUM> more cards can be chosen. Quit?"
 	done
 
 ThereWasNoEffectText:
@@ -752,12 +743,11 @@ ThereWasNoEffectFromConfusionText:
 
 ThereWasNoEffectFromPoisonConfusionText:
 	text "There was no effet"
-	line "from Poison, Confusion."
+	line "from Poison or Confusion."
 	done
 
-ExchangedCardsInDuelistsHandText:
-	text "Exchanged the cards"
-	line "in <RAMNAME>'s Hand."
+RearrangedCardsInDuelistsDeckText:
+	text "<RAMNAME>'s deck was rearranged."
 	done
 
 UnusedText0185: ; Unused
@@ -781,7 +771,7 @@ PleaseWaitDecidingNumberOfPrizesText:
 
 BeginAPrizeDuelWithText:
 	text "Begin a <RAMNUM>-Prize Duel"
-	line "with <RAMNAME>."
+	line "against <RAMNAME>."
 	done
 
 AreYouBothReadyToCardPopText:
@@ -805,8 +795,8 @@ PositionGameBoyColorsAndPressAButtonText:
 	done
 
 ReceivedThroughCardPopText:
-	text "Received <RAMTEXT>"
-	line "through Card Pop!"
+	text "You got a <RAMTEXT>"
+	line "from the Card Pop!"
 	done
 
 ReceivedCardText:
@@ -815,13 +805,13 @@ ReceivedCardText:
 	done
 
 ReceivedPromotionalCardText:
-	text "<RAMNAME> received a Promotional"
-	line "card <RAMTEXT>!"
+	text "<RAMNAME> received a"
+	line "<RAMTEXT>!"
 	done
 
 ReceivedLegendaryCardText:
 	text "<RAMNAME> received the Legendary"
-	line "card <RAMTEXT>!"
+	line "<RAMTEXT>!"
 	done
 
 ReceivedPromotionalFlyingPikachuText:
@@ -1687,8 +1677,8 @@ YourPokemonText:
 	text "Your Pokémon"
 	done
 
-YourDiscardPileText2:
-	text "Your Discard Pile"
+EmptyText0240:
+	text " "
 	done
 
 YourHandText:
@@ -1703,8 +1693,8 @@ OpponentsPokemonText:
 	text "Opponent's Pokémon"
 	done
 
-OpponentsDiscardPileText2:
-	text "Opponent's Discard Pile"
+EmptyText0244:
+	text " "
 	done
 
 OpponentsHandText:
@@ -1743,12 +1733,12 @@ PleaseChooseAPrizeText:
 	text "Please choose a Prize."
 	done
 
-HandText_2:
-	text "Hand"
+EmptyText024e:
+	text " "
 	done
 
-DuelistHandText_2:
-	text "<RAMNAME>'s Hand"
+EmptyText024f:
+	text " "
 	done
 
 DuelistDiscardPileText:

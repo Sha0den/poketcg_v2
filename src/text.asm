@@ -40,3 +40,6 @@ INCLUDE "text/text12.asm"
 
 SECTION "Text 13", ROMX
 INCLUDE "text/text13.asm"
+
+SECTION "Text 14", ROMX
+INCLUDE "text/text14.asm"
