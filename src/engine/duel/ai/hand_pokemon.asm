@@ -370,6 +370,15 @@ AIDecideEvolution:
 	ldh [hTemp_ffa0], a
 	ld a, OPPACTION_EVOLVE_PKMN
 	bank1call AIMakeDecision
+
+	; disregard PlusPower attack choice
+	; in case the Arena card evolved
+	ld a, [wTempAI]
+	or a
+	jr nz, .skip_reset_pluspower_atk
+	ld hl, wPreviousAIFlags
+	res 0, [hl] ; AI_FLAG_USED_PLUSPOWER
+.skip_reset_pluspower_atk
 	pop bc
 	jr .done_hand_card
 

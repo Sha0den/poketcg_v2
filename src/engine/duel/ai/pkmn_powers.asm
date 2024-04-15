@@ -671,18 +671,21 @@ HandleAIShift:
 	ld b, a
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
+	ld c, PLAY_AREA_ARENA
 .loop_play_area
 	ld a, [hli]
 	cp $ff
 	jr z, .false
 	push bc
-	call GetCardIDFromDeckIndex
-	call GetCardType ; bug, this could be a Trainer card
+	ld a, c
+	call GetPlayAreaCardColor
 	call TranslateColorToWR
 	pop bc
 	and b
-	jr z, .loop_play_area
-; true
+	jr nz, .true
+	inc c
+	jr .loop_play_area
+.true
 	scf
 	ret
 .false
@@ -996,6 +999,10 @@ HandleAICowardice:
 	ld a, c
 	ldh [hTemp_ffa0], a
 	ld e, a
+	add DUELVARS_ARENA_CARD_FLAGS
+	call GetTurnDuelistVariable
+	and CAN_EVOLVE_THIS_TURN
+	ret z ; return if was played this turn
 	call GetCardDamageAndMaxHP
 .asm_22678
 	or a
@@ -1004,12 +1011,7 @@ HandleAICowardice:
 	ldh a, [hTemp_ffa0]
 	or a
 	jr nz, .is_benched
-
-	; this part is buggy if AIDecideBenchPokemonToSwitchTo returns carry
-	; but since this was already checked beforehand, this never happens.
-	; so jr c, .asm_22678 can be safely removed.
 	farcall AIDecideBenchPokemonToSwitchTo
-	jr c, .asm_22678 ; bug, this jumps in the middle of damage checking
 	jr .use_cowardice
 .is_benched
 	ld a, $ff

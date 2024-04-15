@@ -203,9 +203,7 @@ LookUpNameInCardPopNameList:
 	ld de, sPlayerName
 	call .CompareNames
 	pop hl
-	; bug: discards result from comparison
-	; to fix, uncomment line below
-	; jr nc, .found_name
+	jr nc, .found_name
 	ld de, NAME_BUFFER_LENGTH
 	add hl, de
 	dec c

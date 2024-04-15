@@ -43,8 +43,7 @@ InitPromotionalCardAndDeckCounterSaveData:
 	ld [hl], a
 	ld [sUnnamedDeckCounter], a
 	call DisableSRAM
-;	ret missing
-;	unintentional fallthrough
+	ret
 
 ; loads the Hard Cards icon gfx to v0Tiles2
 LoadHandCardsIcon:
