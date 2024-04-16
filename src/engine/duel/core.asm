@@ -2514,39 +2514,50 @@ DrawDuelHUD:
 	lb de, 9, PLAY_AREA_ARENA
 	call PrintPlayAreaCardAttachedEnergies
 
-	; print HP bar
+	; print HP as #/# (current HP/max HP)
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wLoadedCard1HP]
-	ld d, a ; max HP
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
-	ld e, a ; cur HP
-	call DrawHPBar
 	ld hl, wHUDEnergyAndHPBarsX
 	ld b, [hl]
 	inc hl
 	ld c, [hl] ; wHUDEnergyAndHPBarsY
 	inc c ; [wHUDEnergyAndHPBarsY] + 1
-	call BCCoordToBGMap0Address
-	push de
-	ld hl, wDefaultText
-	ld b, HP_BAR_LENGTH / 2 ; first row of the HP bar
-	call SafeCopyDataHLtoDE
-	pop de
-	ld hl, BG_MAP_WIDTH
-	add hl, de
-	ld e, l
-	ld d, h
-	ld hl, wDefaultText + HP_BAR_LENGTH / 2
-	ld b, HP_BAR_LENGTH / 2 ; second row of the HP bar
-	call SafeCopyDataHLtoDE
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetTurnDuelistVariable
+	cp 100
+	jr nc, .threedigits
+	dec b
+	.threedigits
+	call WriteTwoByteNumberInTxSymbolFormat
+	inc b
+	inc b
+	inc b
+	ld a, [wLoadedCard1HP]
+	cp 100
+	jr c, .twodigits
+	ld e, a
+	ld a, SYM_SLASH
+	call WriteByteToBGMap0
+	inc b
+	ld a, e    
+	call WriteTwoByteNumberInTxSymbolFormat
+	jr .skip
+	.twodigits 
+	call WriteTwoByteNumberInTxSymbolFormat
+	ld a, SYM_SLASH
+	call WriteByteToBGMap0
+	.skip
+	inc b
+	inc b
+	inc b
+	ld a, SYM_SPACE
+	call WriteByteToBGMap0
 
 	; print number of attached Pluspower and Defender with respective icon, if any
 	ld hl, wHUDEnergyAndHPBarsX
 	ld a, [hli]
-	add 6
+	add 7
 	ld b, a
 	ld c, [hl] ; wHUDEnergyAndHPBarsY
 	inc c
@@ -5345,7 +5356,7 @@ PrintPlayAreaCardInformation:
 	ld b, 5
 	ld a, SYM_E
 	call WriteByteToBGMap0
-	; print the HP bar
+	; print HP as #/# (current HP/max HP)
 	inc c
 	ld a, SYM_HP
 	call WriteByteToBGMap0
@@ -5355,18 +5366,31 @@ PrintPlayAreaCardInformation:
 	or a
 	jr z, .zero_hp
 	ld e, a
+	ld a, [wCurPlayAreaSlot]
+	add DUELVARS_ARENA_CARD_HP
+	call GetTurnDuelistVariable
+	cp 100
+	jr nc, .threedigits
+	dec b
+	.threedigits
+	call WriteTwoByteNumberInTxSymbolFormat
+	inc b
+	inc b
+	inc b
 	ld a, [wLoadedCard1HP]
-	ld d, a
-	call DrawHPBar
-	ld a, [wCurPlayAreaY]
-	inc a
-	inc a
-	ld c, a
-	ld b, 7
-	call BCCoordToBGMap0Address
-	ld hl, wDefaultText
-	ld b, 12
-	call SafeCopyDataHLtoDE
+	cp 100
+	jr c, .twodigits
+	ld e, a
+	ld a, SYM_SLASH
+	call WriteByteToBGMap0
+	inc b
+	ld a, e    
+	call WriteTwoByteNumberInTxSymbolFormat
+	ret
+	.twodigits
+	call WriteTwoByteNumberInTxSymbolFormat
+	ld a, SYM_SLASH
+	call WriteByteToBGMap0
 	ret
 .zero_hp
 	; if fainted, print "Knock Out" in place of the HP bar
@@ -5907,31 +5931,32 @@ TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1:
 	ld h, a
 	ret
 
+; DrawHPBar is commented out because it's now unreferenced
 ; input d, e: max. HP, current HP
-DrawHPBar:
-	ld a, MAX_HP
-	ld c, SYM_SPACE
-	call .fill_hp_bar ; empty bar
-	ld a, d
-	ld c, SYM_HP_OK
-	call .fill_hp_bar ; fill (max. HP) with HP counters
-	ld a, d
-	sub e
-	ld c, SYM_HP_NOK
-	; fill (max. HP - current HP) with damaged HP counters
-.fill_hp_bar
-	or a
-	ret z
-	ld hl, wDefaultText
-	ld b, HP_BAR_LENGTH
-.tile_loop
-	ld [hl], c
-	inc hl
-	dec b
-	ret z
-	sub MAX_HP / HP_BAR_LENGTH
-	jr nz, .tile_loop
-	ret
+;DrawHPBar:
+;	ld a, MAX_HP
+;	ld c, SYM_SPACE
+;	call .fill_hp_bar ; empty bar
+;	ld a, d
+;	ld c, SYM_HP_OK
+;	call .fill_hp_bar ; fill (max. HP) with HP counters
+;	ld a, d
+;	sub e
+;	ld c, SYM_HP_NOK
+;	; fill (max. HP - current HP) with damaged HP counters
+;.fill_hp_bar
+;	or a
+;	ret z
+;	ld hl, wDefaultText
+;	ld b, HP_BAR_LENGTH
+;.tile_loop
+;	ld [hl], c
+;	inc hl
+;	dec b
+;	ret z
+;	sub MAX_HP / HP_BAR_LENGTH
+;	jr nz, .tile_loop
+;	ret
 
 ; when an opponent's Pokemon card attacks, this displays a screen
 ; containing the description and information of the used attack
