@@ -993,7 +993,6 @@ DrawPlayArea_BenchCards:
 ; draws Your/Opp Play Area icons depending on value in a
 ; the icons correspond to Deck, Discard Pile, and Hand
 ; the corresponding number of cards is printed alongside each icon
-; for "Hand", text is displayed rather than an icon
 ; input:
 ; a = $00: draws player icons
 ; a = $01: draws opponent icons
@@ -1012,8 +1011,8 @@ DrawYourOrOppPlayArea_Icons:
 	ld e, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	ld a, [de]
 	ld b, a
-	ld a, $d0 ; hand icon, unused?
-	call DrawPlayArea_HandText
+	ld a, $d0 ; hand icon
+	call DrawPlayArea_IconWithValue
 
 ; deck icon and value
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
@@ -1106,7 +1105,7 @@ DrawPlayArea_IconWithValue:
 PlayAreaIconCoordinates:
 ; used for "Your/Opp. Play Area" screen
 .player1
-	db 15,  7 ; hand
+	db 15,  6 ; hand
 	db 15,  2 ; deck
 	db 15,  4 ; discard pile
 .opponent1
@@ -1116,7 +1115,7 @@ PlayAreaIconCoordinates:
 
 ; used for "In Play Area" screen
 .player2
-	db 15, 14
+	db 15, 13
 	db 15,  9
 	db 15, 11
 .opponent2
@@ -1127,7 +1126,6 @@ PlayAreaIconCoordinates:
 ; draws In Play Area icons depending on value in a
 ; the icons correspond to Deck, Discard Pile, and Hand
 ; the corresponding number of cards is printed alongside each icon
-; for "Hand", text is displayed rather than an icon
 ; input:
 ; a = $00: draws player icons
 ; a = $01: draws opponent icons
@@ -1137,8 +1135,8 @@ DrawInPlayArea_Icons:
 	ld e, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	ld a, [de]
 	ld b, a
-	ld a, $d0 ; hand icon, unused?
-	call DrawPlayArea_HandText
+	ld a, $d0 ; hand icon
+	call DrawPlayArea_IconWithValue
 
 ; deck
 	ldh a, [hWhoseTurn]
