@@ -84,34 +84,32 @@ UnableToEvolveDueToPrehistoricPowerText:
 	line "effects of Prehistoric Power."
 	done
 
-NoDamageOrEffectDueToFlyText:
-	text "No damage or effect on next Attack"
-	line "due to the effects of Fly."
+EmptyText0107:
+	text " "
 	done
 
-NoDamageOrEffectDueToBarrierText:
-	text "No damage or effect on next Attack"
-	line "due to the effects of Barrier."
+EmptyText0108:
+	text " "
 	done
 
-NoDamageOrEffectDueToAgilityText:
-	text "No damage or effect on next Attack"
-	line "due to the effects of Agility."
+NoDamageOrEffectDueToAttackText:
+	text "The attack failed to affect"
+	line "the Defending Pokémon."
 	done
 
 UnableToUseAttackDueToNShieldText:
-	text "Unable to use this Attack due to"
-	line "the effects of N Shield."
+	text "Unable to use this attack due to"
+	line "Mew's Neutralizing Shield."
 	done
 
 NoDamageOrEffectDueToNShieldText:
-	text "No damage or effect on next Attack"
-	line "due to the effects of N Shield."
+	text "The Neutralizing Shield power"
+	line "protected Mew from the atack."
 	done
 
 NoDamageOrEffectDueToTransparencyText:
-	text "No damage or effect on next Attack"
-	line "due to the effects of Transparency"
+	text "The Transparency power"
+	line "protected Haunter from the atack."
 	done
 
 MetamorphsToText:
