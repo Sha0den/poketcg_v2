@@ -6,6 +6,14 @@ AIDecideWhetherToRetreat:
 	jp nz, .no_carry
 	xor a
 	ld [wAIPlayEnergyCardForRetreat], a
+	call CheckCantRetreatDueToAcid
+	jr nc, .no_acid
+	; affected by acid, set retreat score to zero and return no carry
+	xor a
+	ld [wAIScore], a
+	ld [wAIRetreatScore], a
+	jp .no_carry
+.no_acid
 	call LoadDefendingPokemonColorWRAndPrizeCards
 	ld a, $80 ; initial retreat score
 	ld [wAIScore], a
