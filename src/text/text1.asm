@@ -63,7 +63,7 @@ LbsText:
 	done
 
 PromostarRarityText:
-	textfw " "
+	textfw "☆"
 	done
 
 CircleRarityText:
@@ -130,8 +130,8 @@ DeckPrinterText:
 	text "Deck"
 	done
 
-EmptyText0022:
-	text " "
+EmptySpaceText:
+	text "<SPACE>"
 	done
 
 NoPokemonOnTheBenchText:

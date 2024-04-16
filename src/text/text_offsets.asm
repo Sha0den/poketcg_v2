@@ -35,7 +35,7 @@ TextOffsets::
 	textpointer TrainerCardText                                    ; 0x001f
 	textpointer EnergyCardText                                     ; 0x0020
 	textpointer DeckPrinterText                                    ; 0x0021
-	textpointer EmptyText0022                                      ; 0x0022
+	textpointer EmptySpaceText                                     ; 0x0022
 	textpointer NoPokemonOnTheBenchText                            ; 0x0023
 	textpointer UnableDueToSleepText                               ; 0x0024
 	textpointer UnableDueToParalysisText                           ; 0x0025

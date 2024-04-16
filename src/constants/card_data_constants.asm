@@ -131,7 +131,8 @@ DEF TYPE_TRAINER_F EQU 4
 DEF CIRCLE    EQU $0
 DEF DIAMOND   EQU $1
 DEF STAR      EQU $2
-DEF PROMOSTAR EQU $ff
+DEF PROMOSTAR EQU $3
+DEF NO_RARITY EQU $ff
 
 ; card set constants (set 1)
 	const_def
