@@ -326,7 +326,7 @@ FindAnyPokemon:
 ; create list of all Pokemon cards in deck to search for
 	call CreateDeckCardList
 	ldtx hl, ChoosePokemonFromDeckText
-	ldtx bc, PokemonText
+	ldtx bc, PokemonName
 	lb de, SEARCHEFFECT_POKEMON, 0
 	farcall LookForCardsInDeck
 	jr c, .no_pkmn ; return if Player chose not to check deck

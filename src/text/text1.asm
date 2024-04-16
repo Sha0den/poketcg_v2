@@ -38,8 +38,8 @@ PKMNPWRText:
 	text "PKMN PWR"
 	done
 
-EmptyText000b:
-	textfw " "
+PokemonName:
+	text "Pokémon"
 	done
 
 LengthText:
@@ -51,7 +51,7 @@ WeightText:
 	done
 
 PokemonText:
-	text "Pokémon"
+	text " Pokémon"
 	done
 
 MetresText:

@@ -12,7 +12,7 @@ TextOffsets::
 	textpointer WeaknessText                                       ; 0x0008
 	textpointer ResistanceText                                     ; 0x0009
 	textpointer PKMNPWRText                                        ; 0x000a
-	textpointer EmptyText000b                                      ; 0x000b
+	textpointer PokemonName                                        ; 0x000b
 	textpointer LengthText                                         ; 0x000c
 	textpointer WeightText                                         ; 0x000d
 	textpointer PokemonText                                        ; 0x000e
@@ -264,9 +264,9 @@ TextOffsets::
 	textpointer KnockedOutDueToDestinyBondText                     ; 0x0104
 	textpointer ReceivesDamageDueToStrikesBackText                 ; 0x0105
 	textpointer UnableToEvolveDueToPrehistoricPowerText            ; 0x0106
-	textpointer NoDamageOrEffectDueToFlyText                       ; 0x0107
-	textpointer NoDamageOrEffectDueToBarrierText                   ; 0x0108
-	textpointer NoDamageOrEffectDueToAgilityText                   ; 0x0109
+	textpointer EmptyText0107                                      ; 0x0107
+	textpointer EmptyText0108                                      ; 0x0108
+	textpointer NoDamageOrEffectDueToAttackText                    ; 0x0109
 	textpointer UnableToUseAttackDueToNShieldText                  ; 0x010a
 	textpointer NoDamageOrEffectDueToNShieldText                   ; 0x010b
 	textpointer NoDamageOrEffectDueToTransparencyText              ; 0x010c
