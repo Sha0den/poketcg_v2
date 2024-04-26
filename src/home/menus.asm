@@ -554,19 +554,30 @@ CardListMenuFunction::
 	cp $ff
 	jr z, .skip_printing_indicator
 	; print <sel_item>/<num_items>
+	; adjusts printing to account for single digit numbers
 	ld c, a
+	ld b, 16
+	ld a, [wNumListItems]
+	call OneByteNumberToTxSymbol
+	ld a, [hl]
+	cp SYM_0
+	jr nz, .two_digits
+	ld [hl], SYM_SLASH
+	ld a, 2
+	call CopyDataToBGMap0
+	jr .current_item_number
+.two_digits
+	ld a, 2
+	call CopyDataToBGMap0
+	dec b
+	ld a, SYM_SLASH
+	call WriteByteToBGMap0
+.current_item_number
+	dec b
+	dec b
 	ldh a, [hCurMenuItem]
 	inc a
 	call OneByteNumberToTxSymbol_TrimLeadingZeros
-	ld b, 13
-	ld a, 2
-	call CopyDataToBGMap0
-	ld b, 15
-	ld a, SYM_SLASH
-	call WriteByteToBGMap0
-	ld a, [wNumListItems]
-	call OneByteNumberToTxSymbol_TrimLeadingZeros
-	ld b, 16
 	ld a, 2
 	call CopyDataToBGMap0
 .skip_printing_indicator
