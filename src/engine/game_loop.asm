@@ -51,5 +51,3 @@ SetupResetBackUpRamScreen:
 	lb de, $38, $7f
 	call SetupText
 	ret
-
-	ret ; stray ret

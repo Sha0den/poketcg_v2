@@ -1226,7 +1226,7 @@ Func_80baa:
 	ld [wCurTilemap], a
 
 	push bc
-	farcall LoadTilemap ; unnecessary farcall
+	call LoadTilemap
 	pop bc
 	srl b
 	ld a, c
@@ -1294,8 +1294,6 @@ Func_80baa:
 	db $12, $12, TILEMAP_DECK_MACHINE_MAP_EVENT, TILEMAP_DECK_MACHINE_MAP_EVENT_CGB
 .ChallengeMachine
 	db $0a, $00, TILEMAP_CHALLENGE_MACHINE_MAP_EVENT, TILEMAP_CHALLENGE_MACHINE_MAP_EVENT_CGB
-
-	ret ; stray ret
 
 Func_80c64: ; unreferenced
 	ld a, [wLineSeparation]
@@ -1394,8 +1392,6 @@ Func_80cd7:
 	and SELECT ; if select is pressed, exit
 	jr z, .loop
 	ret
-
-	ret ; stray ret
 
 ; A button makes NPC rotate
 ; D-pad scrolls through the NPCs

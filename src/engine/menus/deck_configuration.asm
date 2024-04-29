@@ -2069,7 +2069,6 @@ OpenCardPageFromCardList:
 
 .skip_change_card
 	pop af
-	jr .handle_regular_card_page_input ; unnecessary jr
 .handle_regular_card_page_input
 	push de
 	bank1call OpenCardPage.input_loop
@@ -2099,23 +2098,6 @@ Func_9ced: ; unreferenced
 	bank1call OpenCardPage_FromHand
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a
-	ret
-
-; adds card in register e to deck configuration
-; and updates the values shown for its count
-; in the card selection list
-; input:
-; e = card ID
-AddCardToDeckAndUpdateCount:
-	call TryAddCardToDeck
-	ret c ; failed to add card
-	push de
-	call PrintCardTypeCounts
-	lb de, 15, 0
-	call PrintTotalCardCount
-	pop de
-	call GetCountOfCardInCurDeck
-	call PrintNumberValueInCursorYPos
 	ret
 
 ; tries to add card ID in register e to wCurDeckCards
@@ -2260,6 +2242,22 @@ GetSelectedVisibleCardID:
 	ld e, [hl]
 	ret
 
+; adds card in register e to deck configuration
+; and updates the values shown for its count
+; in the card selection list
+; input:
+; e = card ID
+AddCardToDeckAndUpdateCount:
+	call TryAddCardToDeck
+	ret c ; failed to add card
+	push de
+	call PrintCardTypeCounts
+	lb de, 15, 0
+	call PrintTotalCardCount
+	pop de
+	call GetCountOfCardInCurDeck
+;	fallthrough
+
 ; appends the digits of value in register a to wDefaultText
 ; then prints it in cursor Y position
 ; a = value to convert to numerical digits
@@ -2296,8 +2294,7 @@ RemoveCardFromDeckAndUpdateCount:
 	call PrintTotalCardCount
 	pop de
 	call GetCountOfCardInCurDeck
-	call PrintNumberValueInCursorYPos
-	ret
+	jr PrintNumberValueInCursorYPos
 
 ; removes card ID in e from wCurDeckCards
 RemoveCardFromDeck:
@@ -2324,9 +2321,7 @@ RemoveCardFromDeck:
 ; and shift all elements up by one
 .RemoveCard
 	ld hl, wCurDeckCards
-	ld d, 0 ; unnecessary
 .loop_1
-	inc d ; unnecessary
 	ld a, [hli]
 	cp e
 	jr nz, .loop_1
@@ -2335,7 +2330,6 @@ RemoveCardFromDeck:
 	dec bc
 
 .loop_2
-	inc d ; unnecessary
 	ld a, [hli]
 	or a
 	jr z, .done
@@ -2543,16 +2537,6 @@ ShowDeckInfoHeaderAndWaitForBButton:
 	call PlaySFXConfirmOrCancel
 	ret
 
-ShowConfirmationCardScreen:
-	call ShowDeckInfoHeader
-	lb de, 3, 5
-	ld hl, wCardListCoords
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	call PrintConfirmationCardList
-	ret
-
 ; counts all values stored in wCardFilterCounts
 ; if the total count is 0, then
 ; prints "No cards chosen."
@@ -2756,6 +2740,15 @@ CreateCurDeckUniqueCardList:
 	ld a, b
 	ld [wNumUniqueCards], a
 	ret
+
+ShowConfirmationCardScreen:
+	call ShowDeckInfoHeader
+	lb de, 3, 5
+	ld hl, wCardListCoords
+	ld [hl], e
+	inc hl
+	ld [hl], d
+;	fallthrough
 
 ; prints the list of cards visible in the window
 ; of the confirmation screen
@@ -2989,8 +2982,7 @@ PrepareToBuildDeckConfigurationToSend:
 	call CopyListFromHLToDE
 	ld hl, .DeckConfigurationParams
 	call InitDeckBuildingParams
-	call HandleDeckBuildScreen
-	ret
+	jp HandleDeckBuildScreen
 
 .text
 	text "Cards chosen to send"
@@ -3291,8 +3283,7 @@ CreateCardCollectionListWithDeckCards:
 	bit DECK_4_F, a
 	ret z
 	ld de, sDeck4Cards
-	call IncrementDeckCardsInTempCollection
-	ret
+;	fallthrough
 
 ; goes through cards in deck in de
 ; and for each card ID, increments its corresponding
@@ -3453,8 +3444,7 @@ PrintPlayersCardsHeaderInfo:
 	call FillBGMapLineWithA
 	call PrintTotalNumberOfCardsInCollection
 	call PrintPlayersCardsText
-	call DrawCardTypeIcons
-	ret
+	jp DrawCardTypeIcons
 
 ; prints "<PLAYER>'s cards"
 PrintPlayersCardsText:
@@ -3558,8 +3548,7 @@ PrintTotalNumberOfCardsInCollection:
 	ld bc, -10
 	call .GetDigit
 	ld bc, -1
-	call .GetDigit
-	ret
+;	fallthrough
 
 .GetDigit
 	ld a, SYM_0 - 1

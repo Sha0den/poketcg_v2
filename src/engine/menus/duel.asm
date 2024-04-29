@@ -492,13 +492,11 @@ Func_82b6:
 	jr nz, .not_equal
 
 	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.player
-	call DrawPlayArea_PrizeCards
-	ret
+	jp DrawPlayArea_PrizeCards
 
 .not_equal
 	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.opponent
-	call DrawPlayArea_PrizeCards
-	ret
+	jp DrawPlayArea_PrizeCards
 
 ; loads tiles and icons to display the In Play Area screen,
 ; and draws the screen
@@ -558,8 +556,7 @@ DrawInPlayAreaScreen:
 	call DrawInPlayArea_Icons
 
 	call SwapTurn
-	call DrawInPlayArea_ActiveCardGfx
-	ret
+	jp DrawInPlayArea_ActiveCardGfx
 
 ; draws players prize cards and bench cards
 _DrawPlayersPrizeAndBenchCards::
@@ -590,8 +587,7 @@ _DrawPlayersPrizeAndBenchCards::
 	call DrawPlayArea_PrizeCards
 	lb de, 1, 0 ; coordinates
 	ld c, 3 ; spacing
-	call DrawPlayArea_BenchCards
-	ret
+	jp DrawPlayArea_BenchCards
 
 ; draws the active card gfx at coordinates de
 ; of the player (or opponent) depending on wCheckMenuPlayAreaWhichDuelist
@@ -1033,8 +1029,7 @@ DrawYourOrOppPlayArea_Icons:
 	ld a, [de]
 	ld b, a
 	ld a, $d8 ; discard pile icon
-	call DrawPlayArea_IconWithValue
-	ret
+;	fallthrough
 
 ; draws the interface icon corresponding to the gfx tile in a
 ; also prints the number in decimal corresponding to the value in b
@@ -1157,8 +1152,7 @@ DrawInPlayArea_Icons:
 	ld a, [de]
 	ld b, a
 	ld a, $d8 ; discard pile tile
-	call DrawPlayArea_IconWithValue
-	ret
+	jp DrawPlayArea_IconWithValue
 
 ; prints text HandText and a cross with decimal value of b
 ; input

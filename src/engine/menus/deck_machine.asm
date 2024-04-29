@@ -19,8 +19,7 @@ HandleDeckMissingCardsList:
 	ld [wTotalCardCount], a
 	ld hl, wCardFilterCounts
 	ld [hl], a
-	call .HandleList ; can skip call and fallthrough instead
-	ret
+;	fallthrough
 
 .HandleList
 	call SortCurDeckCardsByID
@@ -1239,8 +1238,7 @@ CheckIfCanBuildSavedDeck:
 	ld l, a
 	ld bc, DECK_NAME_SIZE
 	add hl, bc
-	call CheckIfHasEnoughCardsToBuildDeck
-	ret
+	jr CheckIfHasEnoughCardsToBuildDeck
 
 ; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM
 ; skips if current SRAM bank is already 0

@@ -533,9 +533,9 @@ PokedexLoopOrder:
 	inc de
 	inc c
 	jr PokedexLoopOrder
+
 ; now hTempList has the list of card deck indices
 ; in the order selected to be place on top of the deck.
-
 .done
 	ld b, $00
 	ld hl, hTempList
@@ -577,8 +577,7 @@ Prophecy_PlayerSelection:
 	cp DECK_SIZE
 	jr nc, .select_deck ; no cards, go back to deck selection
 	call HandleProphecyScreen
-	call ProphecyLoopOrder
-	ret
+	jr ProphecyLoopOrder
 
 Prophecy_AISelection:
 ; AI doesn't ever choose this attack so this does no sorting.
@@ -687,7 +686,7 @@ Draw2Effect:
 	ld c, 2
 .loop_draw
 	call DrawCardFromDeck
-	jr c, .done
+	ret c
 	ldh [hTempCardIndex_ff98], a
 	call AddCardToHand
 	call IsPlayerTurn
@@ -698,7 +697,6 @@ Draw2Effect:
 .skip_display_screen
 	dec c
 	jr nz, .loop_draw
-.done
 	ret
 
 AddCardFromDeckToHandEffect:
@@ -717,7 +715,7 @@ AddCardFromDeckToHandEffect:
 .done
 ;	fallthrough
 
-Func_2c0bd:
+ShuffleCardsInDeck:
 	call ExchangeRNG
 	bank1call Func_4f2d
 	call ShuffleDeck
@@ -766,8 +764,7 @@ AttachBasicEnergyFromDeck_AttachEffect:
 	bank1call DisplayCardDetailScreen
 
 .done
-	call Func_2c0bd
-	ret
+	jr ShuffleCardsInDeck
 
 EvolutionSearch_PlayerSelection:
 	farcall FindEvolution
@@ -798,8 +795,7 @@ CallForF_PutInPlayAreaEffect:
 	ldtx hl, PlacedOnTheBenchText
 	bank1call DisplayCardDetailScreen
 .shuffle
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 CallForFamily_PlayerSelection:
 	farcall FindBasicPokemon
@@ -865,8 +861,7 @@ CallForRandomBasic50PercentEffect:
 	ld a, ATK_ANIM_FRIENDSHIP_SONG
 	jr Func_2c12e
 	call .none_came_text
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 .put_in_bench
 	call SearchCardInDeckAndAddToHand
@@ -877,8 +872,7 @@ CallForRandomBasic50PercentEffect:
 	ldh a, [hTempCardIndex_ff98]
 	ldtx hl, PlacedOnTheBenchText
 	bank1call DisplayCardDetailScreen
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 Func_2c12e:
 	ld [wLoadedAttackAnimation], a
@@ -974,8 +968,7 @@ RandomlyFillBothBenchesEffect:
 	jr .check_bench
 
 .done
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 ;
 ; (4) ATTACK EFFECTS THAT PULL CARDS OUT OF THE DISCARD PILE ARE NEXT.
@@ -1331,6 +1324,72 @@ RandomlySwitchBothActivePokemon:
 	ld [wDuelDisplayedScreen], a
 	ret
 
+Healing50Percent_FlipEffect:
+	ldtx de, AttackSuccessCheckText
+	call TossCoin_BankB
+	ldh [hTemp_ffa0], a
+	jp nc, SetWasUnsuccessful
+	ld a, ATK_ANIM_RECOVER
+	ld [wLoadedAttackAnimation], a
+	ret
+
+Healing50Percent_Heal10Effect:
+	ldh a, [hTemp_ffa0]
+	or a
+	ret z ; coin toss was tails
+	ld e, PLAY_AREA_ARENA
+	call GetCardDamageAndMaxHP
+	or a
+	ret z ; no damage counters
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetTurnDuelistVariable
+	add 10
+	ld [hl], a
+	ret
+
+Heal10_HealEffect:
+	lb de, 0, 10
+	jr ApplyAndAnimateHPRecovery
+
+Drain10Effect:
+	ld hl, wDealtDamage
+	ld a, [hli]
+	or a
+	ret z ; return if no damage dealt
+	ld de, 10
+	jr ApplyAndAnimateHPRecovery
+;Alt_Drain10Effect:
+;	ld hl, wDealtDamage
+;	ld a, [hli]
+;	or [hl]
+;	ret z ; return if no damage dealt
+;	lb de, 0, 10
+;	jr ApplyAndAnimateHPRecovery
+
+DrainHalfEffect:
+	ld hl, wDealtDamage
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	srl h
+	rr l
+	bit 0, l
+	jr z, .rounded
+	; round up to nearest 10
+	ld de, 5 ; or 10 / 2
+	add hl, de
+.rounded
+	ld e, l
+	ld d, h
+	jr ApplyAndAnimateHPRecovery
+
+DrainAllEffect:
+	ld hl, wDealtDamage
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+;	fallthrough
+
 ; applies HP recovery on Pokemon after an attack
 ; with HP recovery effect, and handles its animation.
 ; input:
@@ -1384,77 +1443,6 @@ ApplyAndAnimateHPRecovery:
 	bank1call WaitAttackAnimation
 	ret
 
-Healing50Percent_FlipEffect:
-	ldtx de, AttackSuccessCheckText
-	call TossCoin_BankB
-	ldh [hTemp_ffa0], a
-	jp nc, SetWasUnsuccessful
-	ld a, ATK_ANIM_RECOVER
-	ld [wLoadedAttackAnimation], a
-	ret
-
-Healing50Percent_Heal10Effect:
-	ldh a, [hTemp_ffa0]
-	or a
-	ret z ; coin toss was tails
-	ld e, PLAY_AREA_ARENA
-	call GetCardDamageAndMaxHP
-	or a
-	ret z ; no damage counters
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
-	add 10
-	ld [hl], a
-	ret
-
-Heal10_HealEffect:
-	lb de, 0, 10
-	call ApplyAndAnimateHPRecovery
-	ret
-
-Drain10Effect:
-	ld hl, wDealtDamage
-	ld a, [hli]
-	or a
-	ret z ; return if no damage dealt
-	ld de, 10
-	call ApplyAndAnimateHPRecovery
-	ret
-;Alt_Drain10Effect:
-;	ld hl, wDealtDamage
-;	ld a, [hli]
-;	or [hl]
-;	ret z ; return if no damage dealt
-;	lb de, 0, 10
-;	call ApplyAndAnimateHPRecovery
-;	ret
-
-DrainHalfEffect:
-	ld hl, wDealtDamage
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	srl h
-	rr l
-	bit 0, l
-	jr z, .rounded
-	; round up to nearest 10
-	ld de, 5 ; or 10 / 2
-	add hl, de
-.rounded
-	ld e, l
-	ld d, h
-	call ApplyAndAnimateHPRecovery
-	ret
-
-DrainAllEffect:
-	ld hl, wDealtDamage
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	call ApplyAndAnimateHPRecovery
-	ret
-
 ; returns carry if the player's Active Pokemon has no attached Water Energy
 ; or if it doesn't have any damage counters.
 WaterRecover_EnergyAndHPCheck:
@@ -1492,8 +1480,7 @@ Recover_HealEffect:
 	call GetCardDamageAndMaxHP
 	ld e, a ; all damage for recovery
 	ld d, 0
-	call ApplyAndAnimateHPRecovery
-	ret
+	jr ApplyAndAnimateHPRecovery
 
 ; returns carry if the player's Active Pokemon has no Psychic Energy attached
 ; or if it doesn't have any damage counters
@@ -1625,16 +1612,6 @@ QueueStatusCondition:
 	scf
 	ret
 
-SetNoEffectFromStatus:
-	ld a, EFFECT_FAILED_NO_EFFECT
-	ld [wEffectFailed], a
-	ret
-
-SetWasUnsuccessful:
-	ld a, EFFECT_FAILED_UNSUCCESSFUL
-	ld [wEffectFailed], a
-	ret
-
 ; Defending Pokemon and user become confused
 ConfuseBothActivePokemonEffect:
 	call ConfusionEffect
@@ -1653,7 +1630,11 @@ AllOrNothingParalysisEffect:
 	xor a ; ATK_ANIM_NONE
 	ld [wLoadedAttackAnimation], a
 	call SetDefiniteDamage
-	call SetWasUnsuccessful
+;	fallthrough
+
+SetWasUnsuccessful:
+	ld a, EFFECT_FAILED_UNSUCCESSFUL
+	ld [wEffectFailed], a
 	ret
 
 SpitPoison_Poison50PercentEffect:
@@ -1662,7 +1643,11 @@ SpitPoison_Poison50PercentEffect:
 	jp c, PoisonEffect
 	ld a, ATK_ANIM_SPIT_POISON_SUCCESS
 	ld [wLoadedAttackAnimation], a
-	call SetNoEffectFromStatus
+;	fallthrough
+
+SetNoEffectFromStatus:
+	ld a, EFFECT_FAILED_NO_EFFECT
+	ld [wEffectFailed], a
 	ret
 
 ; Stores information about the attack damage for AI purposes
@@ -1758,21 +1743,18 @@ SwordsDanceEffect:
 	cp SCYTHER
 	ret nz
 	ld a, SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 FocusEnergyEffect:
 	ld a, [wTempTurnDuelistCardID]
 	cp VAPOREON_LV29
 	ret nz ; return if no VaporeonLv29
 	ld a, SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ImmunityEffect:
 	ld a, SUBSTATUS1_IMMUNITY
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ; If heads, prevent all damage and attack effects done to user next turn
 Immunity50PercentEffect:
@@ -1782,8 +1764,7 @@ Immunity50PercentEffect:
 	ld a, ATK_ANIM_AGILITY_PROTECT
 	ld [wLoadedAttackAnimation], a
 	ld a, SUBSTATUS1_IMMUNITY
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 AllOrNothingImmunityEffect:
 	ldtx de, AttackSuccessCheckText
@@ -1792,14 +1773,12 @@ AllOrNothingImmunityEffect:
 	xor a ; ATK_ANIM_NONE
 	ld [wLoadedAttackAnimation], a
 	call SetDefiniteDamage
-	call SetWasUnsuccessful
-	ret
+	jp SetWasUnsuccessful
 .heads
 	ld a, ATK_ANIM_AGILITY_PROTECT
 	ld [wLoadedAttackAnimation], a
 	ld a, SUBSTATUS1_IMMUNITY
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ; If heads, prevent all damage done to user next turn
 DamageProtection50PercentEffect:
@@ -1809,36 +1788,30 @@ DamageProtection50PercentEffect:
 	ld a, ATK_ANIM_PROTECT
 	ld [wLoadedAttackAnimation], a
 	ld a, SUBSTATUS1_NO_DAMAGE
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ; Prevent all damage done to user next turn, as long as it's 30 or less
 HardenEffect:
 	ld a, SUBSTATUS1_HARDEN
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ; Prevent 10 damage done to user next turn
 Prevent10DamageEffect:
 	ld a, SUBSTATUS1_REDUCE_BY_10
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ; Prevent 20 damage done to user next turn
 Prevent20DamageEffect:
 	ld a, SUBSTATUS1_REDUCE_BY_20
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 HalveDamageEffect:
 	ld a, SUBSTATUS1_HALVE_DAMAGE
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 DestinyBondEffect:
 	ld a, SUBSTATUS1_DESTINY_BOND
-	call ApplySubstatus1ToDefendingCard
-	ret
+	jr ApplySubstatus1ToDefendingCard
 
 ; (8) ATTACK EFFECTS THAT CAUSE SUBSTATUS2 EFFECTS ARE NEXT.
 ; THESE ARE HARMFUL EFFECTS THAT ARE APPLIED TO THE OPPONENT'S ACTIVE POKEMON.
@@ -1872,8 +1845,7 @@ CannotAttack50PercentEffect:
 	call TossCoin_BankB
 	ret nc
 	ld a, SUBSTATUS2_CANNOT_ATTACK
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jr ApplySubstatus2ToDefendingCard
 
 CannotAttackThis50PercentLeerEffect:
 	ldtx de, IfHeadsOpponentCannotAttackText
@@ -1882,8 +1854,7 @@ CannotAttackThis50PercentLeerEffect:
 	ld a, ATK_ANIM_LEER
 	ld [wLoadedAttackAnimation], a
 	ld a, SUBSTATUS2_CANNOT_ATTACK_THIS
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jr ApplySubstatus2ToDefendingCard
 
 CannotAttackThis50PercentTailWagEffect:
 	ldtx de, IfHeadsOpponentCannotAttackText
@@ -1892,13 +1863,11 @@ CannotAttackThis50PercentTailWagEffect:
 	ld a, ATK_ANIM_LURE
 	ld [wLoadedAttackAnimation], a
 	ld a, SUBSTATUS2_CANNOT_ATTACK_THIS
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jr ApplySubstatus2ToDefendingCard
 
 SmokescreenEffect:
 	ld a, SUBSTATUS2_SMOKESCREEN
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jr ApplySubstatus2ToDefendingCard
 
 Amnesia_PlayerSelection:
 	ldtx hl, ChooseAttackOpponentWillNotBeAbleToUseText
@@ -2073,14 +2042,12 @@ GetAttackName:
 ; Prevent 10 damage done to user by Defending Pokémon next turn
 ReduceBy10Effect:
 	ld a, SUBSTATUS2_REDUCE_BY_10
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jp ApplySubstatus2ToDefendingCard
 
 ; Prevent 20 damage done to user by Defending Pokémon next turn
 ReduceBy20Effect:
 	ld a, SUBSTATUS2_REDUCE_BY_20
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jp ApplySubstatus2ToDefendingCard
 
 ; If heads, defending Pokemon can't retreat next turn
 NoRetreat50PercentEffect:
@@ -2088,13 +2055,11 @@ NoRetreat50PercentEffect:
 	call TossCoin_BankB
 	ret nc
 	ld a, SUBSTATUS2_UNABLE_RETREAT
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jp ApplySubstatus2ToDefendingCard
 
 NoRetreatEffect:
 	ld a, SUBSTATUS2_UNABLE_RETREAT
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jp ApplySubstatus2ToDefendingCard
 
 ; return carry if Defending card has no weakness
 Conversion1_WeaknessCheck:
@@ -2118,8 +2083,7 @@ Conversion1_PlayerSelection:
 	ret
 
 Conversion1_AISelection:
-	call AISelectConversionColor
-	ret
+	jp AISelectConversionColor
 
 Conversion1_ChangeWeaknessEffect:
 	call HandleNoDamageOrEffect
@@ -2142,8 +2106,7 @@ Conversion1_ChangeWeaknessEffect:
 
 ; apply substatus
 	ld a, SUBSTATUS2_CONVERSION2
-	call ApplySubstatus2ToDefendingCard
-	ret
+	jp ApplySubstatus2ToDefendingCard
 
 ; returns carry if Active Pokemon has no Resistance.
 Conversion2_ResistanceCheck:
@@ -2726,20 +2689,17 @@ OpponentSwitchesActive50Percent_SwitchEffect:
 	or a
 	ret z
 	ldh a, [hTempPlayAreaLocation_ffa1]
-	call HandleSwitchDefendingPokemonEffect
-	ret
+	jr HandleSwitchDefendingPokemonEffect
 
 OpponentSwitchesActive_SwitchEffect:
 	ldh a, [hTemp_ffa0]
-	call HandleSwitchDefendingPokemonEffect
-	ret
+	jr HandleSwitchDefendingPokemonEffect
 
 Recoil20OpponentSwitchesActiveEffect:
 	ld a, 20
 	call DealRecoilDamageToSelf
 	ldh a, [hTemp_ffa0]
-	call HandleSwitchDefendingPokemonEffect
-	ret
+	jr HandleSwitchDefendingPokemonEffect
 
 ; return in hTempPlayAreaLocation_ffa1 the PLAY_AREA_* location of the Bench Pokemon that was selected
 SwitchDefendingPokemon_PlayerSelection:
@@ -3207,8 +3167,7 @@ HalveHPOfDefendingPokemon:
 	; round up
 	add 5
 .rounded
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 KarateChop_AIEffect:
 	jr KarateChop_DamageSubtractionEffect
@@ -3229,8 +3188,7 @@ KarateChop_DamageSubtractionEffect:
 	ret nc
 ; cap it to 0 damage
 	xor a
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Flail_AIEffect:
 	call Flail_HPCheck
@@ -3239,8 +3197,7 @@ Flail_AIEffect:
 Flail_HPCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Rage_AIEffect:
 	call Rage_DamageBoostEffect
@@ -3467,8 +3424,7 @@ NoDamage50PercentEffect:
 	call TossCoin_BankB
 	ret c
 	xor a ; 0 damage
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 ;
 ;Alt_NoDamage50PercentEffect:
 ;	ldtx de, AttackSuccessCheckText
@@ -3477,8 +3433,7 @@ NoDamage50PercentEffect:
 ;; tails
 ;	xor a
 ;	call SetDefiniteDamage
-;	call SetWasUnsuccessful
-;	ret
+;	jp SetWasUnsuccessful
 ;.heads
 ;	ld a, ATK_ANIM_HIT
 ;	ld [wLoadedAttackAnimation], a
@@ -3501,42 +3456,42 @@ SetExpectedAIDamage:
 FlipFor20_AIEffect:
 	ld a, 20 / 2
 	lb de, 0, 20
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 FlipFor30_AIEffect:
 	ld a, 30 / 2
 	lb de, 0, 30
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 FlipFor40_AIEffect:
 	ld a, 40 / 2
 	lb de, 0, 40
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 ;FlipFor50_AIEffect:
 ;	ld a, 50 / 2
 ;	lb de, 0, 50
-;	jp SetExpectedAIDamage
+;	jr SetExpectedAIDamage
 ;
 FlipFor60_AIEffect:
 	ld a, 60 / 2
 	lb de, 0, 60
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 FlipFor70_AIEffect:
 	ld a, 70 / 2
 	lb de, 0, 70
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 FlipFor80_AIEffect:
 	ld a, 80 / 2
 	lb de, 0, 80
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 FlipFor120_AIEffect:
 	ld a, 120 / 2
 	lb de, 0, 120
-	jp SetExpectedAIDamage
+	jr SetExpectedAIDamage
 
 Flip2For10_MultiplierEffect:
 	ld hl, 10
@@ -3545,8 +3500,7 @@ Flip2For10_MultiplierEffect:
 	ld a, 2
 	call TossCoinATimes_BankB
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Flip3For10_MultiplierEffect:
 	ld hl, 10
@@ -3555,8 +3509,7 @@ Flip3For10_MultiplierEffect:
 	ld a, 3
 	call TossCoinATimes_BankB
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Flip8For10_MultiplierEffect:
 	ld hl, 10
@@ -3565,8 +3518,7 @@ Flip8For10_MultiplierEffect:
 	ld a, 8
 	call TossCoinATimes_BankB
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 FlipXFor10_AIEffect:
 	ld a, 10
@@ -3607,8 +3559,7 @@ Flip2For20_MultiplierEffect:
 	call TossCoinATimes_BankB
 	add a ; a = 2 * heads
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Flip3For20_MultiplierEffect:
 	ld hl, 20
@@ -3618,8 +3569,7 @@ Flip3For20_MultiplierEffect:
 	call TossCoinATimes_BankB
 	add a
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Flip4For20_MultiplierEffect:
 	ld hl, 20
@@ -3629,8 +3579,7 @@ Flip4For20_MultiplierEffect:
 	call TossCoinATimes_BankB
 	add a ; a = 2 * heads
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 FlipEachEnergyFor20_AIEffect:
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -3688,8 +3637,7 @@ Flip2For30_MultiplierEffect:
 	add a ; a = 2 * heads
 	add e ; a = 3 * heads
 	call ATimes10
-	call SetDefiniteDamage ; 3 * 10 * heads
-	ret
+	jp SetDefiniteDamage ; 3 * 10 * heads
 
 Flip2For40_MultiplierEffect:
 	ld hl, 40
@@ -3700,8 +3648,7 @@ Flip2For40_MultiplierEffect:
 	add a ; a = 2 * heads
 	add a
 	call ATimes10
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 Flip3For40SelfConfusion_MultiplierEffect:
 	ld hl, 40
@@ -4136,8 +4083,7 @@ OwnBench_10DamageEffect:
 	ld a, $01
 	ld [wIsDamageToSelf], a
 	ld a, 10
-	call DealDamageToAllBenchedPokemon
-	ret
+	jr DealDamageToAllBenchedPokemon
 
 DamageEitherBench_50PercentEffect:
 	ldtx de, DamageToOppBenchIfHeadsDamageToYoursIfTailsText
@@ -4154,8 +4100,7 @@ DamageEitherBench_10DamageEffect:
 	ld a, $01
 	ld [wIsDamageToSelf], a
 	ld a, 10
-	call DealDamageToAllBenchedPokemon
-	ret
+	jr DealDamageToAllBenchedPokemon
 
 .opp_bench
 	call SwapTurn
@@ -4242,8 +4187,7 @@ AlsoDamageTo1Benched_PlayerSelection:
 	call GetNonTurnDuelistVariable
 	cp 2
 	ret c ; has no Bench Pokemon
-	call DamageTo1Benched_PlayerSelection
-	ret
+	jp DamageTo1Benched_PlayerSelection
 ;
 ;Alt_AlsoDamageTo1Benched_PlayerSelection:
 ;	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -4561,8 +4505,7 @@ Also10DamageToSameColorOnBenchEffect:
 ; own Bench
 	ld a, $01
 	ld [wIsDamageToSelf], a
-	call .DamageSameColorBench
-	ret
+;	fallthrough
 
 .DamageSameColorBench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -4753,8 +4696,7 @@ RandomEnemy30DamageEffect:
 ; Used for EFFECTCMDTYPE_BEFORE_DAMAGE in Effect Commands, seems unneccessary
 ;RandomDamage_ZeroDamage:
 ;	xor a
-;	call SetDefiniteDamage
-;	ret
+;	jp SetDefiniteDamage
 ;
 RandomEnemy40DamageEffect:
 	call SwapTurn
@@ -4768,8 +4710,7 @@ RandomEnemy40DamageEffect:
 Random70DamageEffect:
 	call ExchangeRNG
 	ld de, 70 ; damage to inflict
-	call RandomlyDamagePlayAreaPokemon
-	ret
+;	fallthrough
 
 ; randomly damages a Pokemon in play, except card that is in [hTempPlayAreaLocation_ff9d].
 ; plays thunder animation when Play Area is shown.
@@ -4837,8 +4778,7 @@ MysteryAttack_RandomEffect:
 
 .more_damage
 	ld a, 20
-	call SetDefiniteDamage
-	ret
+	jp SetDefiniteDamage
 
 .no_damage
 	ld a, ATK_ANIM_GLOW_EFFECT
@@ -4856,8 +4796,7 @@ MysteryAttack_RecoverEffect:
 	cp 4
 	ret nz
 	lb de, 0, 10
-	call ApplyAndAnimateHPRecovery
-	ret
+	jp ApplyAndAnimateHPRecovery
 
 OpponentHand_ReplacePokemonInEffect:
 	call SwapTurn
@@ -4889,7 +4828,7 @@ OpponentHand_ReplacePokemonInEffect:
 	ldtx hl, ThePkmnCardsInHandAndDeckWereShuffledText
 	call DrawWideTextBox_WaitForInput
 
-	call Func_2c0bd
+	call ShuffleCardsInDeck
 	call CreateDeckCardList
 	pop bc
 	ldh a, [hCurSelectionItem]
@@ -5159,8 +5098,7 @@ Metronome_AISelection:
 
 ClefableMetronome_UseAttackEffect:
 	ld a, 1 ; energy cost of this attack
-	call HandlePlayerMetronomeEffect
-	ret
+	jr HandlePlayerMetronomeEffect
 
 ClefairyMetronome_UseAttackEffect:
 	ld a, 3 ; energy cost of this attack
@@ -5357,8 +5295,7 @@ MirrorMove_BeforeDamage:
 	ret
 
 .apply_amnesia
-	call AttackDisableEffect
-	ret
+	jp AttackDisableEffect
 
 .ExecuteStatusEffect:
 	ld c, a
@@ -5906,8 +5843,7 @@ Firegiver_AddToHandEffect:
 	; return if none found
 	ldtx hl, ThereWasNoFireEnergyText
 	call DrawWideTextBox_WaitForInput
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 .found
 ; pick a random number between 1 and 4,
@@ -5987,8 +5923,7 @@ Firegiver_AddToHandEffect:
 	call LoadTxRam3
 	ldtx hl, DrewFireEnergyFromTheHandText
 	call DrawWideTextBox_WaitForInput
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 ; returns carry if can't use Cowardice
 CowardiceCheck:
@@ -6750,8 +6685,7 @@ PlayThisAsBasicPokemonEffect:
 TrainerCardAsPokemon_BenchCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
-	call BenchedPokemonCheck
-	ret
+	jp BenchedPokemonCheck
 
 TrainerCardAsPokemon_PlayerSelectSwitch:
 	ldh a, [hTemp_ffa0]
@@ -6785,8 +6719,7 @@ TrainerCardAsPokemon_DiscardEffect:
 ComputerSearchCheck:
 	call OtherCardsInHandCheck
 	ret c
-	call DeckCheck
-	ret
+	jp DeckCheck
 
 ComputerSearch_PlayerDeckSelection:
 	call CreateDeckCardList
@@ -6814,8 +6747,7 @@ ComputerSearch_DiscardAddToHandEffect:
 	ld a, [hl]
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 Defender_PlayerSelection:
 	ldtx hl, ChoosePokemonToAttachDefenderToText
@@ -7404,7 +7336,7 @@ GamblerEffect:
 	jr .loop_return_deck
 
 .check_coin_toss
-	call Func_2c0bd
+	call ShuffleCardsInDeck
 	ld c, 8
 	ldh a, [hTemp_ffa0]
 	or a
@@ -7418,11 +7350,10 @@ GamblerEffect:
 	bank1call DisplayDrawNCardsScreen
 .draw_loop
 	call DrawCardFromDeck
-	jr c, .done
+	ret c
 	call AddCardToHand
 	dec c
 	jr nz, .draw_loop
-.done
 	ret
 
 ; returns carry if not enough cards in hand to discard
@@ -7430,8 +7361,7 @@ GamblerEffect:
 ItemFinderCheck:
 	call OtherCardsInHandCheck
 	ret c
-	call CreateTrainerCardListFromDiscardPile
-	ret
+	jp CreateTrainerCardListFromDiscardPile
 
 ItemFinder_PlayerSelection:
 	call Discard2Cards_PlayerSelection
@@ -7527,7 +7457,7 @@ ImposterProfessorOakEffect:
 
 ; then draw 7 cards from the deck.
 .done_return
-	call Func_2c0bd
+	call ShuffleCardsInDeck
 	ld a, 7
 	bank1call DisplayDrawNCardsScreen
 	ld c, 7
@@ -7587,7 +7517,7 @@ LassEffect:
 ; show card list
 	ldh a, [hCurSelectionItem]
 	or a
-	call nz, Func_2c0bd ; only show list if there were any Trainer cards
+	call nz, ShuffleCardsInDeck ; only shuffle if there were any Trainer cards
 	ret
 
 .DisplayLinkOrCPUHand
@@ -7630,8 +7560,7 @@ LassEffect:
 Maintenance_PlayerSelection:
 	ldtx hl, Choose2HandCardsFromHandToReturnToDeckText
 	ldtx de, ChooseTheCardToPutBackText
-	call HandlePlayerSelection2HandCards
-	ret
+	jp HandlePlayerSelection2HandCards
 
 Maintenance_ReturnToDeckAndDrawEffect:
 ; return both selected cards to the deck
@@ -7641,7 +7570,7 @@ Maintenance_ReturnToDeckAndDrawEffect:
 	ldh a, [hTempList + 1]
 	call RemoveCardFromHand
 	call ReturnCardToDeck
-	call Func_2c0bd
+	call ShuffleCardsInDeck
 
 ; draw one card
 	ld a, 1
@@ -7717,8 +7646,7 @@ MrFuji_ReturnToDeckEffect:
 	ldtx hl, PokemonAndAllAttachedCardsWereReturnedToDeckText
 	call DrawWideTextBox_WaitForInput
 .done
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 PlusPowerEffect:
 ; attach this card to the Active Pokemon
@@ -7759,8 +7687,7 @@ PokeBall_AddToHandEffect:
 	ldtx hl, WasPlacedInTheHandText
 	bank1call DisplayCardDetailScreen
 .done
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 PokemonBreederCheck:
 	call CreatePlayableStage2PokemonCardListFromHand
@@ -8160,8 +8087,7 @@ PokemonTrader_TradeCardsEffect:
 	ldtx hl, WasPlacedInTheHandText
 	bank1call DisplayCardDetailScreen
 .done
-	call Func_2c0bd
-	ret
+	jp ShuffleCardsInDeck
 
 ; makes list in wDuelTempList with all Pokemon in Turn Duelist's hand.
 ; returns carry if list is empty.
@@ -8221,8 +8147,7 @@ HealEffect:
 	ldh a, [hTemp_ffa0]
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ldh a, [hTempPlayAreaLocation_ffa1]
-	call HealPlayAreaCardHP
-	ret
+	jp HealPlayAreaCardHP
 
 ProfessorOakEffect:
 ; discard hand
@@ -8243,11 +8168,10 @@ ProfessorOakEffect:
 	ld c, 7
 .draw_loop
 	call DrawCardFromDeck
-	jr c, .done
+	ret c
 	call AddCardToHand
 	dec c
 	jr nz, .draw_loop
-.done
 	ret
 
 Recycle_PlayerSelection:
@@ -8560,8 +8484,7 @@ SuperPotion_HealEffect:
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ldh a, [hPlayAreaEffectTarget]
-	call HealPlayAreaCardHP
-	ret
+	jp HealPlayAreaCardHP
 
 ; handles Player selection for Pokemon in Play Area,
 ; then opens screen to choose one of the energy cards

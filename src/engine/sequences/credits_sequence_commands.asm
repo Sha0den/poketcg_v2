@@ -40,8 +40,6 @@ ExecuteCreditsSequenceCmd:
 	call CallHL2
 	jr ExecuteCreditsSequenceCmd
 
-	ret ; stray ret
-
 AdvanceCreditsSequenceCmdPtrBy2:
 	ld a, 2
 	jr AdvanceCreditsSequenceCmdPtr

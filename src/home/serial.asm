@@ -529,8 +529,7 @@ DuelTransmissionError::
 	ld sp, hl
 	xor a
 	call PlaySong
-	call ResetSerial
-	ret
+	jp ResetSerial
 
 ; exchange RNG during a link duel between both games
 ExchangeRNG::

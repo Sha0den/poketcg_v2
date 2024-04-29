@@ -374,7 +374,7 @@ ReloadCardListItems::
 .next_card
 	ld a, [hl]
 	cp $ff
-	jr z, .done
+	ret z ; done
 	push hl
 	push bc
 	push de
@@ -393,12 +393,11 @@ ReloadCardListItems::
 	dec a
 	inc c
 	cp c
-	jr c, .done
+	ret c ; done
 	inc e
 	inc e
 	dec b
 	jr nz, .next_card
-.done
 	ret
 
 ; reload a list of cards, except don't print their names
@@ -416,12 +415,11 @@ OneByteNumberToTxSymbol_TrimLeadingZerosAndAlign::
 	call OneByteNumberToTxSymbol
 	ld a, [hli]
 	cp SYM_0
-	jr nz, .not_zero
+	ret nz
 	; shift number one tile to the left
 	ld a, [hld]
 	ld [hli], a
 	ld [hl], SYM_SPACE
-.not_zero
 	ret
 
 ; this function is always loaded to wMenuUpdateFunc by PrintCardListItems

@@ -119,23 +119,6 @@ CountPrizes::
 	pop hl
 	ret
 
-; shuffles the turn holder's deck
-; if less than 60 cards remain in the deck, it makes sure that the rest are ignored
-ShuffleDeck::
-	ldh a, [hWhoseTurn]
-	ld h, a
-	ld d, a
-	ld a, DECK_SIZE
-	ld l, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	sub [hl]
-	ld b, a
-	ld a, DUELVARS_DECK_CARDS
-	add [hl]
-	ld l, a ; hl = DUELVARS_DECK_CARDS + [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK]
-	ld a, b ; a = number of cards in the deck
-	call ShuffleCards
-	ret
-
 ; draw a card from the turn holder's deck, saving its location as CARD_LOCATION_JUST_DRAWN.
 ; returns carry if deck is empty, nc if a card was successfully drawn.
 ; AddCardToHand is meant to be called next (unless this function returned carry).
@@ -534,6 +517,22 @@ FindLastCardInHand::
 	ld l, a
 	ld de, wDuelTempList
 	ret
+
+; shuffles the turn holder's deck
+; if less than 60 cards remain in the deck, it makes sure that the rest are ignored
+ShuffleDeck::
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld d, a
+	ld a, DECK_SIZE
+	ld l, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	sub [hl]
+	ld b, a
+	ld a, DUELVARS_DECK_CARDS
+	add [hl]
+	ld l, a ; hl = DUELVARS_DECK_CARDS + [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK]
+	ld a, b ; a = number of cards in the deck
+;	fallthrough
 
 ; shuffles the deck by swapping the position of each card with the position of another random card
 ; input:

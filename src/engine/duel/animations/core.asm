@@ -491,7 +491,6 @@ Func_1cb5e:
 	jp nc, Func_1ce03
 	cp $8c
 	jp nz, InitScreenAnimation
-	jr .damage ; redundant
 .damage
 	ld a, [wDuelAnimDamage + 1]
 	cp HIGH(1000)

@@ -123,7 +123,6 @@ DrawSpriteAnimationFrame::
 	and (1 << OAM_X_FLIP) | (1 << OAM_Y_FLIP) | (1 << OAM_PRIORITY)
 	or b
 	ld b, a
-	inc hl ; unnecessary
 	call SetOneObjectAttributes
 .endCurrentIteration
 	pop hl

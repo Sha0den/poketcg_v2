@@ -451,8 +451,7 @@ IsClairvoyanceActive::
 	ccf
 	ret nc
 	ld a, OMANYTE
-	call CountPokemonIDInPlayArea
-	ret
+	jr CountPokemonIDInPlayArea
 
 ; returns carry if turn holder's arena card is paralyzed, asleep, confused,
 ; and/or toxic gas in play, meaning that attack and/or pkmn power cannot be used
@@ -468,12 +467,11 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	and CNF_SLP_PRZ
 	ldtx hl, CannotUseDueToStatusText
 	scf
-	jr nz, .done ; return carry
+	ret nz ; return carry
 .check_toxic_gas
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	ldtx hl, UnableDueToToxicGasText
-.done
 	ret
 
 ; return, in a, the amount of times that the Pokemon card with a given ID is found in the
