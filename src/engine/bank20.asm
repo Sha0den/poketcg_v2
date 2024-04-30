@@ -1473,7 +1473,7 @@ Func_80cd7:
 	call ProcessTextFromID
 	ld bc, FlushAllPalettes
 	ld a, [wLoadedNPCTempIndex]
-	farcall WriteTwoByteNumberInTxSymbolFormat
+	bank1call WriteTwoByteNumberInTxSymbolFormat
 	ret
 
 .DrawNPCSprite

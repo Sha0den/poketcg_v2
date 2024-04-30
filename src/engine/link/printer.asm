@@ -333,7 +333,85 @@ ResetPrinterCommunicationSettings:
 Func_1a080: ; unreferenced
 	ld bc, 0
 	lb de, PRINTERPKT_NUL, FALSE
-	jp SendPrinterPacket
+;	fallthrough
+
+; send printer packet:
+; - d = PRINTERPKT_* constant
+; - e = in case of PRINTERPKT_DATA, whether it's compressed
+; - bc = number of bytes in data
+SendPrinterPacket:
+	push hl
+	ld hl, wPrinterPacket
+	; Preamble
+	ld a, $88
+	ld [hli], a          ; [wPrinterPacketPreamble + 0] ← $88
+	ld a, $33
+	ld [hli], a          ; [wPrinterPacketPreamble + 1] ← $33
+
+	; Header
+	ld [hl], d           ; [wPrinterPacketInstructions + 0] ← d
+	inc hl
+	ld [hl], e           ; [wPrinterPacketInstructions + 1] ← e
+	inc hl
+	ld [hl], c           ; [wPrinterPacketDataSize + 0] ← c
+	inc hl
+	ld [hl], b           ; [wPrinterPacketDataSize + 1] ← b
+	inc hl
+
+	; Data pointer
+	pop de
+	ld [hl], e           ; [wPrinterPacketDataPtr + 0] ← l
+	inc hl
+	ld [hl], d           ; [wPrinterPacketDataPtr + 1] ← h
+	inc hl
+	ld de, -$bb
+	ld [hl], e           ; [wPrinterPacketChecksum + 0] ← $45
+	inc hl
+	ld [hl], d           ; [wPrinterPacketChecksum + 1] ← $ff
+
+	ld hl, wSerialDataPtr
+	ld [hl], LOW(wPrinterPacket)  ; [wSerialDataPtr] ← $64
+	inc hl
+	ld [hl], HIGH(wPrinterPacket) ; [wSerialDataPtr] ← $ce
+
+	call Func_0e8e
+
+	ld a, $1
+	ld [wPrinterPacketSequence], a        ; [wPrinterPacketSequence] ← 1
+	call SendNextPrinterPacketByte
+.wait_printer_packet_transmission
+	call DoFrame
+	ld a, [wPrinterPacketSequence]
+	or a
+	jr nz, .wait_printer_packet_transmission
+	call ResetSerial
+
+	ld bc, 1500
+.post_transmission_delay
+	dec bc
+	ld a, b
+	or c
+	jr nz, .post_transmission_delay
+
+	; we expect printer to send $81
+	; as the device number, any other value
+	; means that a second device in connected
+	ld a, [wSerialTransferData]
+	cp $81
+	jr nz, .unexpected_device_number
+	ld a, [wPrinterStatus]
+	ld l, a
+	and $f1
+	ld a, l
+	ret z
+	scf
+	ret
+
+.unexpected_device_number
+	ld a, $ff
+	ld [wPrinterStatus], a
+	scf
+	ret
 
 ; tries initiating the communications for
 ; sending data to printer

@@ -1,3 +1,4 @@
+; currently an unreferenced function
 ; reads struct:
 ;   x (1 byte), y (1 byte), data (n bytes), $00
 ; writes data to BGMap0-translated x,y

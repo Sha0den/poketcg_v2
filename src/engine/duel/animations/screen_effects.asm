@@ -267,14 +267,28 @@ Func_1ce03:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	jp Func_3bb5
+	jr .func_3bb5
 
 .asm_1ce17
 	ld a, [wDuelAnimDamage]
 	ld l, a
 	ld a, [wDuelAnimDamage + 1]
 	ld h, a
-	jp Func_3bb5
+
+.func_3bb5:
+	xor a
+	ld [wd4c0], a
+	ldh a, [hBankROM]
+	push af
+	ld a, [wDuelAnimReturnBank]
+	call BankswitchROM
+	call HandleAllSpriteAnimations
+	call CallHL2
+	pop af
+	call BankswitchROM
+	ld a, $80
+	ld [wd4c0], a
+	ret
 
 .pointer_table
 	dw Func_190f4         ; DUEL_ANIM_150

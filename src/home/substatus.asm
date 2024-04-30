@@ -668,34 +668,6 @@ UpdateSubstatusConditions_EndOfTurn::
 	res SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
 	ret
 
-; return carry if turn holder has Blastoise and its Rain Dance Pkmn Power is active
-IsRainDanceActive::
-	ld a, BLASTOISE
-	call CountPokemonIDInPlayArea
-	ret nc ; return if no Pkmn Power-capable Blastoise found in turn holder's play area
-	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
-	ccf
-	ret
-
-; return carry if card at [hTempCardIndex_ff98] is a water energy card AND
-; if card at [hTempPlayAreaLocation_ff9d] is a water Pokemon card.
-CheckRainDanceScenario::
-	ldh a, [hTempCardIndex_ff98]
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	cp TYPE_ENERGY_WATER
-	jr nz, .no_carry
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	call GetPlayAreaCardColor
-	cp TYPE_PKMN_WATER
-	jr nz, .no_carry
-	scf
-	ret
-.no_carry
-	or a
-	ret
-
 ; if the defending (non-turn) card's HP is 0 and the attacking (turn) card's HP
 ;  is not, the attacking card faints if it was affected by destiny bond
 HandleDestinyBondSubstatus::

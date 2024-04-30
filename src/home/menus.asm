@@ -400,27 +400,15 @@ ReloadCardListItems::
 	jr nz, .next_card
 	ret
 
+; unreferenced function
 ; reload a list of cards, except don't print their names
-Func_2827::
-	ld a, $01
-	ldh [hffb0], a
-	call ReloadCardListItems
-	xor a
-	ldh [hffb0], a
-	ret
-
-; convert the number at a to TX_SYMBOL text format and write it to wDefaultText
-; if the first digit is a 0, delete it and shift the number one tile to the left
-OneByteNumberToTxSymbol_TrimLeadingZerosAndAlign::
-	call OneByteNumberToTxSymbol
-	ld a, [hli]
-	cp SYM_0
-	ret nz
-	; shift number one tile to the left
-	ld a, [hld]
-	ld [hli], a
-	ld [hl], SYM_SPACE
-	ret
+;Func_2827::
+;	ld a, $01
+;	ldh [hffb0], a
+;	call ReloadCardListItems
+;	xor a
+;	ldh [hffb0], a
+;	ret
 
 ; this function is always loaded to wMenuUpdateFunc by PrintCardListItems
 ; takes care of things like handling page scrolling and calling the function at wListFunctionPointer
@@ -600,6 +588,20 @@ CardListMenuFunction::
 	ld a, $ff
 	ldh [hCurMenuItem], a
 	scf
+	ret
+
+; currently an unreferenced function
+; convert the number at a to TX_SYMBOL text format and write it to wDefaultText
+; if the first digit is a 0, delete it and shift the number one tile to the left
+OneByteNumberToTxSymbol_TrimLeadingZerosAndAlign::
+	call OneByteNumberToTxSymbol
+	ld a, [hli]
+	cp SYM_0
+	ret nz
+	; shift number one tile to the left
+	ld a, [hld]
+	ld [hli], a
+	ld [hl], SYM_SPACE
 	ret
 
 ; convert the number at a to TX_SYMBOL text format and write it to wDefaultText

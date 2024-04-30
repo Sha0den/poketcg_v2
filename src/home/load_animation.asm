@@ -224,25 +224,27 @@ GetSpriteAnimBufferProperty_SpriteInA::
 	pop bc
 	ret
 
-Func_3ddb::
-	push hl
-	push bc
-	ld c, SPRITE_ANIM_FLAGS
-	call GetSpriteAnimBufferProperty_SpriteInA
-	res 2, [hl]
-	pop bc
-	pop hl
-	ret
-
-Func_3de7::
-	push hl
-	push bc
-	ld c, SPRITE_ANIM_FLAGS
-	call GetSpriteAnimBufferProperty_SpriteInA
-	set 2, [hl]
-	pop bc
-	pop hl
-	ret
+; unreferenced function
+;Func_3ddb::
+;	push hl
+;	push bc
+;	ld c, SPRITE_ANIM_FLAGS
+;	call GetSpriteAnimBufferProperty_SpriteInA
+;	res 2, [hl]
+;	pop bc
+;	pop hl
+;	ret
+;
+; unreferenced function
+;Func_3de7::
+;	push hl
+;	push bc
+;	ld c, SPRITE_ANIM_FLAGS
+;	call GetSpriteAnimBufferProperty_SpriteInA
+;	set 2, [hl]
+;	pop bc
+;	pop hl
+;	ret
 
 LoadScene::
 	push af

@@ -147,6 +147,30 @@ CheckCardInSetAndRarity:
 	pop bc
 	ret
 
+; from the card id in a, returns type into a, rarity into b, and set into c
+GetCardTypeRarityAndSet:
+	push hl
+	push de
+	ld d, 0
+	ld e, a
+	call GetCardPointer
+	jr c, .done
+	ld a, BANK(CardPointers)
+	call BankpushROM2
+	ld e, [hl] ; CARD_DATA_TYPE
+	ld bc, CARD_DATA_RARITY
+	add hl, bc
+	ld b, [hl] ; CARD_DATA_RARITY
+	inc hl
+	ld c, [hl] ; CARD_DATA_SET
+	call BankpopROM
+	ld a, e
+	or a
+.done
+	pop de
+	pop hl
+	ret
+
 ; Convert a card's TYPE_* constant given in a to its BOOSTER_CARD_TYPE_* constant
 ; return the result in a
 GetBoosterCardType:

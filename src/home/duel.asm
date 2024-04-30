@@ -1,61 +1,3 @@
-; save duel state to SRAM
-; called between each two-player turn, just after player draws card (ROM bank 1 loaded)
-SaveDuelStateToSRAM::
-	ld a, $2
-	call BankswitchSRAM
-	; save duel data to sCurrentDuel
-	call SaveDuelData
-	xor a
-	call BankswitchSRAM
-	call EnableSRAM
-	ld hl, s0a008
-	ld a, [hl]
-	inc [hl]
-	call DisableSRAM
-	; select hl = SRAM3:(a000 + $400 * [s0a008] & $3)
-	; save wDuelTurns, non-turn holder's arena card ID, turn holder's arena card ID
-	and $3
-	add HIGH($a000) / 4
-	ld l, $0
-	ld h, a
-	add hl, hl
-	add hl, hl
-	ld a, $3
-	call BankswitchSRAM
-	push hl
-	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	call GetCardIDFromDeckIndex
-	ld a, e
-	ld [wTempTurnDuelistCardID], a
-	call SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	call GetCardIDFromDeckIndex
-	ld a, e
-	ld [wTempNonTurnDuelistCardID], a
-	call SwapTurn
-	pop hl
-	push hl
-	call EnableSRAM
-	ld a, [wDuelTurns]
-	ld [hli], a
-	ld a, [wTempNonTurnDuelistCardID]
-	ld [hli], a
-	ld a, [wTempTurnDuelistCardID]
-	ld [hli], a
-	; save duel data to SRAM3:(a000 + $400 * [s0a008] & $3) + $0010
-	pop hl
-	ld de, $0010
-	add hl, de
-	ld e, l
-	ld d, h
-	call DisableSRAM
-	bank1call SaveDuelDataToDE
-	xor a
-	call BankswitchSRAM
-	ret
-
 ; copies the deck pointed to by de to wPlayerDeck or wOpponentDeck (depending on whose turn it is)
 CopyDeckData::
 	ld hl, wPlayerDeck
@@ -328,21 +270,22 @@ MoveDiscardPileCardToHand::
 	pop hl
 	ret
 
+; unreferenced function
 ; return in the z flag whether turn holder's prize a (0-7) has been drawn or not
 ; z: drawn, nz: not drawn
-CheckPrizeTaken::
-	ld e, a
-	ld d, 0
-	ld hl, PowersOf2
-	add hl, de
-	ld a, [hl]
-	ld e, a
-	cpl
-	ld d, a
-	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
-	and e
-	ret
+;CheckPrizeTaken::
+;	ld e, a
+;	ld d, 0
+;	ld hl, PowersOf2
+;	add hl, de
+;	ld a, [hl]
+;	ld e, a
+;	cpl
+;	ld d, a
+;	ld a, DUELVARS_PRIZES
+;	call GetTurnDuelistVariable
+;	and e
+;	ret
 
 PowersOf2::
 	db $01, $02, $04, $08, $10, $20, $40, $80
@@ -1540,15 +1483,15 @@ PlayAttackAnimation_DealAttackDamage::
 	call PrintKnockedOutIfHLZero
 	jr HandleAfterDamageEffects
 
-; unreferenced
-Func_17ed::
-	call DrawWideTextBox_WaitForInput
-	xor a
-	ld hl, wDamage
-	ld [hli], a
-	ld [hl], a
-	ld a, NO_DAMAGE_OR_EFFECT_ATTACK
-	ld [wNoDamageOrEffect], a
+; unreferenced function
+;Func_17ed::
+;	call DrawWideTextBox_WaitForInput
+;	xor a
+;	ld hl, wDamage
+;	ld [hli], a
+;	ld [hl], a
+;	ld a, NO_DAMAGE_OR_EFFECT_ATTACK
+;	ld [wNoDamageOrEffect], a
 ;	fallthrough
 
 HandleAfterDamageEffects::
@@ -2223,35 +2166,6 @@ GetPlayAreaCardRetreatCost::
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
 	call GetLoadedCard1RetreatCost
-	ret
-
-; move the turn holder's card with ID at de to the discard pile
-; if it's currently in the arena.
-MoveCardToDiscardPileIfInArena::
-	ld c, e
-	ld b, d
-	ld l, DUELVARS_CARD_LOCATIONS
-.next_card
-	ld a, [hl]
-	and CARD_LOCATION_ARENA
-	jr z, .skip ; jump if card not in arena
-	ld a, l
-	call GetCardIDFromDeckIndex
-	ld a, c
-	cp e
-	jr nz, .skip ; jump if not the card id provided in c
-	ld a, b
-	cp d ; card IDs are 8-bit so d is always 0
-	jr nz, .skip
-	ld a, l
-	push bc
-	call PutCardInDiscardPile
-	pop bc
-.skip
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .next_card
 	ret
 
 ; calculate damage and max HP of card at PLAY_AREA_* in e.

@@ -1,3 +1,4 @@
+; currently an unreferenced function
 ; set attributes for [hl] sprites starting from wOAM + [wOAMOffset] / 4
 ; return carry if reached end of wOAM before finishing
 SetManyObjectsAttributes::

@@ -1293,7 +1293,7 @@ RandomlySwitchBothActivePokemon:
 	call GetNonTurnDuelistVariable
 	or a
 	jr nz, .skip_destiny_bond
-	bank1call HandleDestinyBondSubstatus
+	call HandleDestinyBondSubstatus
 .skip_destiny_bond
 	call SwapTurn
 	call .SwitchWithRandomBenchPokemon
@@ -2624,7 +2624,7 @@ HandleSwitchDefendingPokemonEffect:
 
 ; if 0, handle Destiny Bond first
 	push de
-	bank1call HandleDestinyBondSubstatus
+	call HandleDestinyBondSubstatus
 	pop de
 
 .switch
@@ -3206,8 +3206,7 @@ Rage_AIEffect:
 Rage_DamageBoostEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
-	call AddToDamage
-	ret
+	jp AddToDamage
 
 RageAndSelfConfusion50PercentEffect:
 	call Rage_DamageBoostEffect
@@ -3229,8 +3228,7 @@ CompoundingDamageCounters_DamageBoostEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	call SwapTurn
-	call AddToDamage
-	ret
+	jp AddToDamage
 
 ; output in de the number of energy cards attached to the Defending Pokemon times 10.
 ; used for attacks that deal 10x number of energy cards attached to the Defending card.
@@ -3372,8 +3370,7 @@ EachBenched10MoreDamageEffect:
 	call GetTurnDuelistVariable
 	dec a ; don't count Active Pokemon
 	call ATimes10
-	call AddToDamage
-	ret
+	jp AddToDamage
 
 EachNidoking20MoreDamageEffect:
 	ld a, DUELVARS_ARENA_CARD
@@ -3399,8 +3396,7 @@ EachNidoking20MoreDamageEffect:
 	ld a, c
 	add a
 	call ATimes10
-	call AddToDamage ; adds 2 * 10 * c
-	ret
+	jp AddToDamage ; adds 2 * 10 * c
 
 ; return carry if already used attack in this duel
 LeekSlap_OncePerDuelCheck:
@@ -3672,8 +3668,36 @@ FlipForPlus10_DamageBoostEffect:
 	call TossCoin_BankB
 	ret nc ; return if tails
 	ld a, 10
-	call AddToDamage
+;	fallthrough
+
+; [wDamage] += a
+AddToDamage:
+	push hl
+	ld hl, wDamage
+	add [hl]
+	ld [hli], a
+	ld a, 0
+	adc [hl]
+	ld [hl], a
+	pop hl
 	ret
+
+; unreferenced counterpart of AddToDamage
+; [wDamage] -= a
+;SubtractFromDamage:
+;	push de
+;	push hl
+;	ld e, a
+;	ld hl, wDamage
+;	ld a, [hl]
+;	sub e
+;	ld [hli], a
+;	ld a, [hl]
+;	sbc 0
+;	ld [hl], a
+;	pop hl
+;	pop de
+;	ret
 
 FlipForPlus20_DamageBoostEffect:
 	ld hl, 20
@@ -3682,8 +3706,7 @@ FlipForPlus20_DamageBoostEffect:
 	call TossCoin_BankB
 	ret nc ; return if tails
 	ld a, 20
-	call AddToDamage
-	ret
+	jr AddToDamage
 
 Plus10From20_AIEffect:
 	ld a, 30 / 2
@@ -3707,8 +3730,7 @@ Plus10OrRecoil_ModifierEffect:
 	ldh [hTemp_ffa0], a
 	ret nc ; return if got tails
 	ld a, 10
-	call AddToDamage
-	ret
+	jr AddToDamage
 
 Plus10OrRecoil_RecoilEffect:
 	ldh a, [hTemp_ffa0]

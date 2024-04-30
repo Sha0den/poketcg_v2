@@ -2,14 +2,15 @@ ScriptPlaySong::
 	call PlaySong
 	ret
 
-Func_3c87::
-	push af
-	call PauseSong
-	pop af
-	call PlaySong
-	call WaitForSongToFinish
-	call ResumeSong
-	ret
+; unreferenced function
+;Func_3c87::
+;	push af
+;	call PauseSong
+;	pop af
+;	call PlaySong
+;	call WaitForSongToFinish
+;	call ResumeSong
+;	ret
 
 WaitForSongToFinish::
 	call DoFrameIfLCDEnabled

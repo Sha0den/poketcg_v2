@@ -35,65 +35,6 @@ SerialTimerHandler::
 	ld [hl], $0
 	ret
 
-Func_0cc5::
-	ld hl, wSerialRecvCounter
-	or a
-	jr nz, .asm_cdc
-	ld a, [hl]
-	or a
-	ret z
-	ld [hl], $00
-	ld a, [wSerialRecvBuf]
-	ld e, $12
-	cp $29
-	jr z, .asm_cfa
-	xor a
-	scf
-	ret
-.asm_cdc
-	ld a, $29
-	ldh [rSB], a
-	ld a, SC_INTERNAL
-	ldh [rSC], a
-	ld a, SC_START | SC_INTERNAL
-	ldh [rSC], a
-.asm_ce8
-	ld a, [hl]
-	or a
-	jr z, .asm_ce8
-	ld [hl], $00
-	ld a, [wSerialRecvBuf]
-	ld e, $29
-	cp $12
-	jr z, .asm_cfa
-	xor a
-	scf
-	ret
-.asm_cfa
-	xor a
-	ld [wSerialSendBufIndex], a
-	ld [wcb80], a
-	ld [wSerialSendBufToggle], a
-	ld [wSerialSendSave], a
-	ld [wcba3], a
-	ld [wSerialRecvIndex], a
-	ld [wSerialRecvCounter], a
-	ld [wSerialLastReadCA], a
-	ld a, e
-	cp $29
-	jr nz, .asm_d21
-	ld bc, $800
-.asm_d1b
-	dec bc
-	ld a, c
-	or b
-	jr nz, .asm_d1b
-	ld a, e
-.asm_d21
-	ld [wSerialOp], a
-	scf
-	ret
-
 SerialHandler::
 	push af
 	push hl
@@ -452,64 +393,46 @@ SerialRecvBytes::
 	scf
 	ret
 
-Func_0ef1::
-	ld de, wcb79
-	ld hl, sp+$fe
-	ld a, l
-	ld [de], a
-	inc de
-	ld a, h
-	ld [de], a
-	inc de
-	pop hl
-	push hl
-	ld a, l
-	ld [de], a
-	inc de
-	ld a, h
-	ld [de], a
-	or a
-	ret
-
-Func_0f05::
-	push hl
-	ld hl, wcb7b
-	ld a, [hli]
-	or [hl]
-	pop hl
-	ret z
-	ld hl, wcb79
-	ld a, [hli]
-	ld h, a
-	ld l, a
-	ld sp, hl
-	ld hl, wcb7b
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	push hl
-	scf
-	ret
-
-; frame function during Link Opponent's turn
-; if opponent makes a decision, jump directly
-; to the address in wLinkOpponentTurnReturnAddress
-LinkOpponentTurnFrameFunction::
-	ld a, [wSerialFlags]
-	or a
-	jr nz, .return
-	call Func_0e32
-	ret nc
-.return
-	ld a, $01
-	call BankswitchROM
-	ld hl, wLinkOpponentTurnReturnAddress
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	ld sp, hl
-	scf
-	ret
+; unreferenced function
+;Func_0ef1::
+;	ld de, wcb79
+;	ld hl, sp+$fe
+;	ld a, l
+;	ld [de], a
+;	inc de
+;	ld a, h
+;	ld [de], a
+;	inc de
+;	pop hl
+;	push hl
+;	ld a, l
+;	ld [de], a
+;	inc de
+;	ld a, h
+;	ld [de], a
+;	or a
+;	ret
+;
+; unreferenced function
+;Func_0f05::
+;	push hl
+;	ld hl, wcb7b
+;	ld a, [hli]
+;	or [hl]
+;	pop hl
+;	ret z
+;	ld hl, wcb79
+;	ld a, [hli]
+;	ld h, a
+;	ld l, a
+;	ld sp, hl
+;	ld hl, wcb7b
+;	ld a, [hli]
+;	ld h, [hl]
+;	ld l, a
+;	push hl
+;	scf
+;	ret
 
 ; load the number at wSerialFlags (error code?) to TxRam3, print
 ; TransmissionErrorText, exit the duel, and reset serial registers.
@@ -574,20 +497,6 @@ SetOppAction_SerialSendDuelData::
 	call SerialSendBytes
 	call ExchangeRNG
 .not_link
-	pop bc
-	pop hl
-	ret
-
-; receive 10 bytes of data from wSerialRecvBuf and store them into hOppActionTableIndex,
-; hTempCardIndex_ff9f, hTemp_ffa0, and hTempPlayAreaLocation_ffa1,
-; and hTempRetreatCostCards. also exchange RNG data.
-SerialRecvDuelData::
-	push hl
-	push bc
-	ld hl, hOppActionTableIndex
-	ld bc, 10
-	call SerialRecvBytes
-	call ExchangeRNG
 	pop bc
 	pop hl
 	ret

@@ -771,6 +771,34 @@ Func_4597:
 	scf
 	ret
 
+; return carry if turn holder has Blastoise and its Rain Dance Pkmn Power is active
+IsRainDanceActive:
+	ld a, BLASTOISE
+	call CountPokemonIDInPlayArea
+	ret nc ; return if no Pkmn Power-capable Blastoise found in turn holder's play area
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ccf
+	ret
+
+; return carry if card at [hTempCardIndex_ff98] is a water energy card AND
+; if card at [hTempPlayAreaLocation_ff9d] is a water Pokemon card.
+CheckRainDanceScenario:
+	ldh a, [hTempCardIndex_ff98]
+	call GetCardIDFromDeckIndex
+	call GetCardType
+	cp TYPE_ENERGY_WATER
+	jr nz, .no_carry
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	call GetPlayAreaCardColor
+	cp TYPE_PKMN_WATER
+	jr nz, .no_carry
+	scf
+	ret
+.no_carry
+	or a
+	ret
+
 ; check if the turn holder's arena Pokemon is unable to retreat due to
 ; some status condition or due the bench containing no alive Pokemon.
 ; return carry if unable, nc if able.
@@ -5983,6 +6011,64 @@ PrintUsedTrainerCardDescription:
 	call DrawWideTextBox_WaitForInput
 	ret
 
+; save duel state to SRAM
+; called between each two-player turn, just after player draws card (ROM bank 1 loaded)
+SaveDuelStateToSRAM:
+	ld a, $2
+	call BankswitchSRAM
+	; save duel data to sCurrentDuel
+	call SaveDuelData
+	xor a
+	call BankswitchSRAM
+	call EnableSRAM
+	ld hl, s0a008
+	ld a, [hl]
+	inc [hl]
+	call DisableSRAM
+	; select hl = SRAM3:(a000 + $400 * [s0a008] & $3)
+	; save wDuelTurns, non-turn holder's arena card ID, turn holder's arena card ID
+	and $3
+	add HIGH($a000) / 4
+	ld l, $0
+	ld h, a
+	add hl, hl
+	add hl, hl
+	ld a, $3
+	call BankswitchSRAM
+	push hl
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call GetCardIDFromDeckIndex
+	ld a, e
+	ld [wTempTurnDuelistCardID], a
+	call SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call GetCardIDFromDeckIndex
+	ld a, e
+	ld [wTempNonTurnDuelistCardID], a
+	call SwapTurn
+	pop hl
+	push hl
+	call EnableSRAM
+	ld a, [wDuelTurns]
+	ld [hli], a
+	ld a, [wTempNonTurnDuelistCardID]
+	ld [hli], a
+	ld a, [wTempTurnDuelistCardID]
+	ld [hli], a
+	; save duel data to SRAM3:(a000 + $400 * [s0a008] & $3) + $0010
+	pop hl
+	ld de, $0010
+	add hl, de
+	ld e, l
+	ld d, h
+	call DisableSRAM
+	call SaveDuelDataToDE
+	xor a
+	call BankswitchSRAM
+	ret
+
 ; save data of the current duel to sCurrentDuel
 ; byte 0 is $01, bytes 1 and 2 are the checksum, byte 3 is [wDuelType]
 ; next $33a bytes come from DuelDataToSave
@@ -6204,6 +6290,53 @@ LoadPlayerDeck:
 	call DisableSRAM
 	ret
 
+; loads opponent deck at wOpponentDeckID to wOpponentDeck, and initializes wPlayerDuelistType.
+; on a duel against Sam, also loads PRACTICE_PLAYER_DECK to wPlayerDeck.
+; also, sets wRNG1, wRNG2, and wRNGCounter to $57.
+LoadOpponentDeck:
+	xor a
+	ld [wIsPracticeDuel], a
+	ld a, [wOpponentDeckID]
+	cp SAMS_NORMAL_DECK_ID
+	jr z, .normal_sam_duel
+	or a ; cp SAMS_PRACTICE_DECK_ID
+	jr nz, .not_practice_duel
+; only practice duels will display help messages, but
+; any duel with Sam will force the PRACTICE_PLAYER_DECK
+;.practice_sam_duel
+	inc a
+	ld [wIsPracticeDuel], a
+.normal_sam_duel
+	xor a
+	ld [wOpponentDeckID], a
+	call SwapTurn
+	ld a, PRACTICE_PLAYER_DECK
+	call LoadDeck
+	call SwapTurn
+	ld hl, wRNG1
+	ld a, $57
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+	xor a
+.not_practice_duel
+	inc a
+	inc a ; convert from *_DECK_ID constant read from wOpponentDeckID to *_DECK constant
+	call LoadDeck
+	ld a, [wOpponentDeckID]
+	cp NUM_DECK_IDS + 1
+	jr c, .valid_deck
+	ld a, PRACTICE_PLAYER_DECK_ID
+	ld [wOpponentDeckID], a
+.valid_deck
+; set opponent as controlled by AI
+	ld a, DUELVARS_DUELIST_TYPE
+	call GetTurnDuelistVariable
+	ld a, [wOpponentDeckID]
+	or DUELIST_TYPE_AI_OPP
+	ld [hl], a
+	ret
+
 ; returns carry if wSkipDelayAllowed is non-0 and B is being held in order to branch
 ; out of the caller's wait frames loop. probably only used for debugging.
 CheckSkipDelayAllowed:
@@ -6214,6 +6347,76 @@ CheckSkipDelayAllowed:
 	and B_BUTTON
 	ret z
 	scf
+	ret
+
+AIDoAction_Turn:
+	ld a, AIACTION_DO_TURN
+	jr AIDoAction
+
+AIDoAction_StartDuel:
+	ld a, AIACTION_START_DUEL
+	jr AIDoAction
+
+AIDoAction_ForcedSwitch:
+	ld a, AIACTION_FORCED_SWITCH
+	call AIDoAction
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ret
+
+AIDoAction_KOSwitch:
+	ld a, AIACTION_KO_SWITCH
+	call AIDoAction
+	ldh [hTemp_ffa0], a
+	ret
+
+AIDoAction_TakePrize:
+	ld a, AIACTION_TAKE_PRIZE
+	jr AIDoAction ; this line is not needed
+
+; calls the appropriate AI routine to handle action,
+; depending on the deck ID (see engine/duel/ai/deck_ai.asm)
+; input:
+;	- a = AIACTION_* constant
+AIDoAction:
+	ld c, a
+
+; load bank for Opponent Deck pointer table
+	ldh a, [hBankROM]
+	push af
+	ld a, BANK(DeckAIPointerTable)
+	call BankswitchROM
+
+; load hl with the corresponding pointer
+	ld a, [wOpponentDeckID]
+	ld l, a
+	ld h, $0
+	add hl, hl ; two bytes per deck
+	ld de, DeckAIPointerTable
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+
+	ld a, c
+	or a
+	jr nz, .not_zero
+
+; if input was 0, copy deck data of turn player
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	call CopyDeckData
+	jr .done
+
+; jump to corresponding AI routine related to input
+.not_zero
+	call JumpToFunctionInTable
+
+.done
+	ld c, a
+	pop af
+	call BankswitchROM
+	ld a, c
 	ret
 
 ; related to AI taking their turn in a duel
@@ -6402,11 +6605,24 @@ SetLinkDuelTransmissionFrameFunction:
 	ld [hl], d
 	ret
 
-ResetDoFrameFunction_Bank1:
-	xor a
-	ld hl, wDoFrameFunction
-	ld [hli], a
-	ld [hl], a
+; frame function during Link Opponent's turn
+; if opponent makes a decision, jump directly
+; to the address in wLinkOpponentTurnReturnAddress
+LinkOpponentTurnFrameFunction:
+	ld a, [wSerialFlags]
+	or a
+	jr nz, .return
+	call Func_0e32
+	ret nc
+.return
+	ld a, $01
+	call BankswitchROM
+	ld hl, wLinkOpponentTurnReturnAddress
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld sp, hl
+	scf
 	ret
 
 ; print the AttachedEnergyToPokemonText, given the energy card to attach in hTempCardIndex_ff98,
@@ -6433,6 +6649,27 @@ PrintPokemonEvolvedIntoPokemon:
 	call LoadCardNameToTxRam2_b
 	ldtx hl, PokemonEvolvedIntoPokemonText
 	call DrawWideTextBox_WaitForInput
+	ret
+
+ResetDoFrameFunction_Bank1:
+	xor a
+	ld hl, wDoFrameFunction
+	ld [hli], a
+	ld [hl], a
+	ret
+
+; receive 10 bytes of data from wSerialRecvBuf and store them into hOppActionTableIndex,
+; hTempCardIndex_ff9f, hTemp_ffa0, and hTempPlayAreaLocation_ffa1,
+; and hTempRetreatCostCards. also exchange RNG data.
+SerialRecvDuelData:
+	push hl
+	push bc
+	ld hl, hOppActionTableIndex
+	ld bc, 10
+	call SerialRecvBytes
+	call ExchangeRNG
+	pop bc
+	pop hl
 	ret
 
 ; handle the opponent's turn in a link duel
@@ -6898,7 +7135,7 @@ DiscardAttachedPluspowers:
 	dec e
 	jr nz, .unattach_pluspower_loop
 	ld de, PLUSPOWER
-	jp MoveCardToDiscardPileIfInArena
+	jr MoveCardToDiscardPileIfInArena
 
 ; discard any DEFENDER attached to the turn holder's arena and/or bench Pokemon
 DiscardAttachedDefenders:
@@ -6911,7 +7148,36 @@ DiscardAttachedDefenders:
 	dec e
 	jr nz, .unattach_defender_loop
 	ld de, DEFENDER
-	jp MoveCardToDiscardPileIfInArena
+;	fallthrough
+
+; move the turn holder's card with ID at de to the discard pile
+; if it's currently in the arena.
+MoveCardToDiscardPileIfInArena:
+	ld c, e
+	ld b, d
+	ld l, DUELVARS_CARD_LOCATIONS
+.next_card
+	ld a, [hl]
+	and CARD_LOCATION_ARENA
+	jr z, .skip ; jump if card not in arena
+	ld a, l
+	call GetCardIDFromDeckIndex
+	ld a, c
+	cp e
+	jr nz, .skip ; jump if not the card id provided in c
+	ld a, b
+	cp d ; card IDs are 8-bit so d is always 0
+	jr nz, .skip
+	ld a, l
+	push bc
+	call PutCardInDiscardPile
+	pop bc
+.skip
+	inc l
+	ld a, l
+	cp DECK_SIZE
+	jr c, .next_card
+	ret
 
 ; return carry if the turn holder's arena Pokemon card is asleep, poisoned, or double poisoned.
 ; also, if confused, paralyzed, or asleep, return the status condition in a.
@@ -8433,4 +8699,63 @@ DecideLinkDuelVariables:
 	ret
 .link_continue
 	or a
+	ret
+
+Func_0cc5:
+	ld hl, wSerialRecvCounter
+	or a
+	jr nz, .asm_cdc
+	ld a, [hl]
+	or a
+	ret z
+	ld [hl], $00
+	ld a, [wSerialRecvBuf]
+	ld e, $12
+	cp $29
+	jr z, .asm_cfa
+	xor a
+	scf
+	ret
+.asm_cdc
+	ld a, $29
+	ldh [rSB], a
+	ld a, SC_INTERNAL
+	ldh [rSC], a
+	ld a, SC_START | SC_INTERNAL
+	ldh [rSC], a
+.asm_ce8
+	ld a, [hl]
+	or a
+	jr z, .asm_ce8
+	ld [hl], $00
+	ld a, [wSerialRecvBuf]
+	ld e, $29
+	cp $12
+	jr z, .asm_cfa
+	xor a
+	scf
+	ret
+.asm_cfa
+	xor a
+	ld [wSerialSendBufIndex], a
+	ld [wcb80], a
+	ld [wSerialSendBufToggle], a
+	ld [wSerialSendSave], a
+	ld [wcba3], a
+	ld [wSerialRecvIndex], a
+	ld [wSerialRecvCounter], a
+	ld [wSerialLastReadCA], a
+	ld a, e
+	cp $29
+	jr nz, .asm_d21
+	ld bc, $800
+.asm_d1b
+	dec bc
+	ld a, c
+	or b
+	jr nz, .asm_d1b
+	ld a, e
+.asm_d21
+	ld [wSerialOp], a
+	scf
 	ret

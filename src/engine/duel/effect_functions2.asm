@@ -328,7 +328,7 @@ FindAnyPokemon:
 	ldtx hl, ChoosePokemonFromDeckText
 	ldtx bc, PokemonName
 	lb de, SEARCHEFFECT_POKEMON, 0
-	farcall LookForCardsInDeck
+	call LookForCardsInDeck
 	jr c, .no_pkmn ; return if Player chose not to check deck
 
 ; handle input

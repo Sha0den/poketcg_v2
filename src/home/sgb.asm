@@ -209,50 +209,51 @@ MltReq2Packet::
 	db MLT_REQ_2_PLAYERS
 	ds $0e
 
+; unreferenced function
 ; fill v*Tiles1 and v*Tiles2 with data at hl
 ; write $0d sequences of $80,$81,$82,...,$94 separated each by $0c bytes to v*BGMap0
 ; send the SGB packet at de
-Func_0bcb::
-	di
-	push de
-.wait_vblank
-	ldh a, [rLY]
-	cp LY_VBLANK + 3
-	jr nz, .wait_vblank
-	ld a, LCDC_BGON | LCDC_OBJON | LCDC_WIN9C00
-	ldh [rLCDC], a
-	ld a, %11100100
-	ldh [rBGP], a
-	ld de, v0Tiles1
-	ld bc, v0BGMap0 - v0Tiles1
-.tiles_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec bc
-	ld a, b
-	or c
-	jr nz, .tiles_loop
-	ld hl, v0BGMap0
-	ld de, $000c
-	ld a, $80
-	ld c, $0d
-.bgmap_outer_loop
-	ld b, $14
-.bgmap_inner_loop
-	ld [hli], a
-	inc a
-	dec b
-	jr nz, .bgmap_inner_loop
-	add hl, de
-	dec c
-	jr nz, .bgmap_outer_loop
-	ld a, LCDC_BGON | LCDC_OBJON | LCDC_WIN9C00 | LCDC_ON
-	ldh [rLCDC], a
-	pop hl
-	call SendSGB
-	ei
-	ret
+;Func_0bcb::
+;	di
+;	push de
+;.wait_vblank
+;	ldh a, [rLY]
+;	cp LY_VBLANK + 3
+;	jr nz, .wait_vblank
+;	ld a, LCDC_BGON | LCDC_OBJON | LCDC_WIN9C00
+;	ldh [rLCDC], a
+;	ld a, %11100100
+;	ldh [rBGP], a
+;	ld de, v0Tiles1
+;	ld bc, v0BGMap0 - v0Tiles1
+;.tiles_loop
+;	ld a, [hli]
+;	ld [de], a
+;	inc de
+;	dec bc
+;	ld a, b
+;	or c
+;	jr nz, .tiles_loop
+;	ld hl, v0BGMap0
+;	ld de, $000c
+;	ld a, $80
+;	ld c, $0d
+;.bgmap_outer_loop
+;	ld b, $14
+;.bgmap_inner_loop
+;	ld [hli], a
+;	inc a
+;	dec b
+;	jr nz, .bgmap_inner_loop
+;	add hl, de
+;	dec c
+;	jr nz, .bgmap_outer_loop
+;	ld a, LCDC_BGON | LCDC_OBJON | LCDC_WIN9C00 | LCDC_ON
+;	ldh [rLCDC], a
+;	pop hl
+;	call SendSGB
+;	ei
+;	ret
 
 ; loops 63000 * bc cycles (~15 * bc ms)
 Wait::
