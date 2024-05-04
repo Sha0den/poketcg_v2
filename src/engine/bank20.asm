@@ -399,24 +399,6 @@ LoadGraphicsPointerFromHL:
 	ld [wTempPointerBank], a
 	ret
 
-Func_80238: ; unreferenced
-	push hl
-	ld l, $2 ; Tilesets
-	ld a, [wCurTileset]
-	call GetMapDataPointer
-	call LoadGraphicsPointerFromHL
-	ld a, [hl]
-	ld [wTotalNumTiles], a
-	ld a, $10
-	ld [wCurSpriteTileSize], a
-	xor a
-	ld [wd4cb], a
-	ld a, $80
-	ld [wd4ca], a
-	call LoadGfxDataFromTempPointerToVRAMBank_Tiles0ToTiles2
-	pop hl
-	ret
-
 ; loads graphics data from third map data pointers
 ; input:
 ; a = sprite index within the data map
@@ -1295,72 +1277,6 @@ Func_80baa:
 .ChallengeMachine
 	db $0a, $00, TILEMAP_CHALLENGE_MACHINE_MAP_EVENT, TILEMAP_CHALLENGE_MACHINE_MAP_EVENT_CGB
 
-Func_80c64: ; unreferenced
-	ld a, [wLineSeparation]
-	push af
-	ld a, $01 ; no line separator
-	ld [wLineSeparation], a
-	; load opponent's name
-	ld a, [wOpponentName]
-	ld [wTxRam2], a
-	ld a, [wOpponentName + 1]
-	ld [wTxRam2 + 1], a
-	ld a, [wNPCDuelistCopy]
-	ld [wTxRam3_b], a
-	xor a
-	ld [wTxRam3_b + 1], a
-	; load number of duel prizes
-	ld a, [wNPCDuelPrizes]
-	ld [wTxRam3], a
-	xor a
-	ld [wTxRam3 + 1], a
-
-	lb de, 2, 13
-	call InitTextPrinting
-	ldtx hl, WinLosePrizesDuelWithText
-	call PrintTextNoDelay
-
-	ld a, [wNPCDuelDeckID]
-	ld [wTxRam3], a
-	xor a
-	ld [wTxRam3 + 1], a
-	lb de, 2, 15
-	call InitTextPrinting
-	ldtx hl, UseDuelistsDeckText
-	call PrintTextNoDelay
-
-	pop af
-	ld [wLineSeparation], a
-	xor a
-	ld hl, .menu_parameters
-	call InitializeMenuParameters
-	ret
-
-.menu_parameters
-	db 1, 13 ; cursor x, cursor y
-	db 1 ; y displacement between items
-	db 2 ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
-
-; fills Tiles0 with random bytes
-Func_80cc3: ; unreferenced
-	call DisableLCD
-	ld hl, v0Tiles0
-	ld bc, $800
-.loop
-	call UpdateRNGSources
-	ld [hli], a
-	dec bc
-	ld a, b
-	or c
-	jr nz, .loop
-	ret
-
-Func_80cd6:
-	ret
-
 ; seems to be used to look at each OW NPC sprites
 ; with functions to rotate NPC and animate them
 Func_80cd7:
@@ -1557,3 +1473,95 @@ SpriteNullAnimationPointer::
 
 SpriteNullAnimationFrame:
 	db 0
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+;Func_80238:
+;	push hl
+;	ld l, $2 ; Tilesets
+;	ld a, [wCurTileset]
+;	call GetMapDataPointer
+;	call LoadGraphicsPointerFromHL
+;	ld a, [hl]
+;	ld [wTotalNumTiles], a
+;	ld a, $10
+;	ld [wCurSpriteTileSize], a
+;	xor a
+;	ld [wd4cb], a
+;	ld a, $80
+;	ld [wd4ca], a
+;	call LoadGfxDataFromTempPointerToVRAMBank_Tiles0ToTiles2
+;	pop hl
+;	ret
+;
+;
+;Func_80c64:
+;	ld a, [wLineSeparation]
+;	push af
+;	ld a, $01 ; no line separator
+;	ld [wLineSeparation], a
+;	; load opponent's name
+;	ld a, [wOpponentName]
+;	ld [wTxRam2], a
+;	ld a, [wOpponentName + 1]
+;	ld [wTxRam2 + 1], a
+;	ld a, [wNPCDuelistCopy]
+;	ld [wTxRam3_b], a
+;	xor a
+;	ld [wTxRam3_b + 1], a
+;	; load number of duel prizes
+;	ld a, [wNPCDuelPrizes]
+;	ld [wTxRam3], a
+;	xor a
+;	ld [wTxRam3 + 1], a
+;
+;	lb de, 2, 13
+;	call InitTextPrinting
+;	ldtx hl, WinLosePrizesDuelWithText
+;	call PrintTextNoDelay
+;
+;	ld a, [wNPCDuelDeckID]
+;	ld [wTxRam3], a
+;	xor a
+;	ld [wTxRam3 + 1], a
+;	lb de, 2, 15
+;	call InitTextPrinting
+;	ldtx hl, UseDuelistsDeckText
+;	call PrintTextNoDelay
+;
+;	pop af
+;	ld [wLineSeparation], a
+;	xor a
+;	ld hl, .menu_parameters
+;	call InitializeMenuParameters
+;	ret
+;
+;.menu_parameters
+;	db 1, 13 ; cursor x, cursor y
+;	db 1 ; y displacement between items
+;	db 2 ; number of items
+;	db SYM_CURSOR_R ; cursor tile number
+;	db SYM_SPACE ; tile behind cursor
+;	dw NULL ; function pointer if non-0
+;
+;
+; fills Tiles0 with random bytes
+;Func_80cc3:
+;	call DisableLCD
+;	ld hl, v0Tiles0
+;	ld bc, $800
+;.loop
+;	call UpdateRNGSources
+;	ld [hli], a
+;	dec bc
+;	ld a, b
+;	or c
+;	jr nz, .loop
+;	ret
+;
+; contents of function were commented out by the developers
+;Func_80cd6:
+;	ret

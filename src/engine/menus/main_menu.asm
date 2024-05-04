@@ -19,10 +19,6 @@ _GameLoop::
 	jr c, .main_menu_loop ; return to main menu
 	jr _GameLoop ; virtually restart game
 
-; this is never reached
-	scf
-	ret
-
 MainMenuFunctionTable:
 	dw MainMenu_CardPop
 	dw MainMenu_ContinueFromDiary

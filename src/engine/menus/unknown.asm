@@ -1,4 +1,9 @@
-Func_18661: ; unreferenced
+;----------------------------------------
+;  THIS FILE WAS REMOVED FROM THE BUILD
+;----------------------------------------
+
+; unreferenced function
+Func_18661:
 	xor a
 	ld [wMenuInputSFX], a
 	ld a, [wCheckMenuCursorXPosition]

@@ -330,14 +330,13 @@ DrawYourOrOppPlayArea_DrawArrows:
 .loop
 	ld a, [hli]
 	cp $ff
-	jr z, .done
+	ret z
 	ld b, a
 	ld a, [hli]
 	ld c, a
 	ld a, d
 	call WriteByteToBGMap0
 	jr .loop
-.done
 	ret
 
 YourOrOppPlayAreaArrowPositions:
@@ -2058,67 +2057,6 @@ _DrawPlayAreaToPlacePrizeCards::
 	db  0,  4
 	db  0,  2
 
-; seems like a function to draw prize cards
-; given a list of coordinates in hl
-; hl = pointer to coords
-Func_8bf2: ; unreferenced
-	push hl
-	ld a, [wCheckMenuPlayAreaWhichDuelist]
-	ld h, a
-	ld l, DUELVARS_PRIZES
-	ld a, [hl]
-	pop hl
-
-	ld b, 0
-	push af
-.loop_prize_cards
-	inc b
-	ld a, [wDuelInitialPrizes]
-	inc a
-	cp b
-	jr z, .done
-	pop af
-	srl a
-	push af
-	jr c, .not_taken
-	; same tile whether the prize card is taken or not
-	ld a, $ac
-	jr .got_tile
-.not_taken
-	ld a, $ac
-.got_tile
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	inc hl
-	push hl
-	push bc
-	lb hl, 0, 0
-	lb bc, 1, 1
-	call FillRectangle
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	jr nz, .skip_pal
-	ld a, $02
-	lb bc, 1, 1
-	lb hl, 0, 0
-	call BankswitchVRAM1
-	call FillRectangle
-	call BankswitchVRAM0
-.skip_pal
-	pop bc
-	pop hl
-	jr .loop_prize_cards
-.done
-	pop af
-	ret
-
-; unknown data
-Data_8c3f: ; unreferenced
-	db $06, $05, $06, $06, $07, $05, $07, $06
-	db $08, $05, $08, $06, $05, $0e, $05, $0d
-	db $04, $0e, $04, $0d, $03, $0e, $03, $0d
-
 ; gets the first prize card index that is set
 ; beginning from index in register a
 ; a = prize card index
@@ -2170,3 +2108,70 @@ GetFirstSetPrizeCard:
 	ld a, b
 	pop bc
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; seems like a function to draw prize cards
+; given a list of coordinates in hl
+; hl = pointer to coords
+;Func_8bf2:
+;	push hl
+;	ld a, [wCheckMenuPlayAreaWhichDuelist]
+;	ld h, a
+;	ld l, DUELVARS_PRIZES
+;	ld a, [hl]
+;	pop hl
+;
+;	ld b, 0
+;	push af
+;.loop_prize_cards
+;	inc b
+;	ld a, [wDuelInitialPrizes]
+;	inc a
+;	cp b
+;	jr z, .done
+;	pop af
+;	srl a
+;	push af
+;	jr c, .not_taken
+;	; same tile whether the prize card is taken or not
+;	ld a, $ac
+;	jr .got_tile
+;.not_taken
+;	ld a, $ac
+;.got_tile
+;	ld e, [hl]
+;	inc hl
+;	ld d, [hl]
+;	inc hl
+;	push hl
+;	push bc
+;	lb hl, 0, 0
+;	lb bc, 1, 1
+;	call FillRectangle
+;	ld a, [wConsole]
+;	cp CONSOLE_CGB
+;	jr nz, .skip_pal
+;	ld a, $02
+;	lb bc, 1, 1
+;	lb hl, 0, 0
+;	call BankswitchVRAM1
+;	call FillRectangle
+;	call BankswitchVRAM0
+;.skip_pal
+;	pop bc
+;	pop hl
+;	jr .loop_prize_cards
+;.done
+;	pop af
+;	ret
+;
+;
+; unknown data
+;Data_8c3f:
+;	db $06, $05, $06, $06, $07, $05, $07, $06
+;	db $08, $05, $08, $06, $05, $0e, $05, $0d
+;	db $04, $0e, $04, $0d, $03, $0e, $03, $0d

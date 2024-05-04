@@ -1,5 +1,3 @@
-INCLUDE "engine/duel/ai/decks/unreferenced.asm"
-
 ; returns carry if damage dealt from any of
 ; a card's attacks KOs defending Pokémon
 ; outputs index of the attack that KOs
@@ -532,28 +530,6 @@ ConvertColorToEnergyCardID:
 	db FIGHTING_ENERGY
 	db PSYCHIC_ENERGY
 	db DOUBLE_COLORLESS_ENERGY
-
-; returns carry if loaded attack effect has
-; an "initial effect 2" or "require selection" command type
-; unreferenced
-Func_14323:
-	ld hl, wLoadedAttackEffectCommands
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	push hl
-	call CheckMatchingCommand
-	pop hl
-	jr nc, .set_carry
-	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
-	call CheckMatchingCommand
-	jr nc, .set_carry
-	or a
-	ret
-.set_carry
-	scf
-	ret
 
 ; return carry depending on card index in a:
 ;	- if energy card, return carry if no energy card has been played yet
@@ -1214,97 +1190,6 @@ TrySetUpBossStartingPlayArea:
 .not_found
 	scf
 	ret
-
-; expects a $00-terminated list of 3-byte data with the following:
-; - non-zero value (anything but $1 is ignored)
-; - card ID to look for in Play Area
-; - number of energy cards
-; returns carry if a card ID is found in bench with at least the
-; listed number of energy cards
-; unreferenced
-Func_1585b:
-	ld a, [hli]
-	or a
-	jr z, .no_carry
-	dec a
-	jr nz, .next_1
-	ld a, [hli]
-	ld b, PLAY_AREA_BENCH_1
-	push hl
-	call LookForCardIDInPlayArea_Bank5
-	jr nc, .next_2
-	ld e, a
-	push de
-	call CountNumberOfEnergyCardsAttached
-	pop de
-	pop hl
-	ld b, [hl]
-	cp b
-	jr nc, .set_carry
-	inc hl
-	jr Func_1585b
-
-.next_1
-	inc hl
-	inc hl
-	jr Func_1585b
-
-.next_2
-	pop hl
-	inc hl
-	jr Func_1585b
-
-.no_carry
-	or a
-	ret
-
-.set_carry
-	ld a, e
-	scf
-	ret
-
-; expects a $00-terminated list of 3-byte data with the following:
-; - non-zero value
-; - card ID
-; - number of energy cards
-; goes through the given list and if a card with a listed ID is found
-; with less than the number of energy cards corresponding to its entry
-; then have AI try to play an energy card from the hand to it
-; unreferenced
-Func_15886:
-	push hl
-	call CreateEnergyCardListFromHand
-	pop hl
-	ret c ; quit if no energy cards in hand
-
-.loop_energy_cards
-	ld a, [hli]
-	or a
-	ret z ; done
-	ld a, [hli]
-	ld b, PLAY_AREA_ARENA
-	push hl
-	call LookForCardIDInPlayArea_Bank5
-	jr nc, .next ; skip if not found in Play Area
-	ld e, a
-	push de
-	call CountNumberOfEnergyCardsAttached
-	pop de
-	pop hl
-	cp [hl]
-	inc hl
-	jr nc, .loop_energy_cards
-	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
-	push hl
-	call AITryToPlayEnergyCard
-	pop hl
-	ret c
-	jr .loop_energy_cards
-.next
-	pop hl
-	inc hl
-	jr .loop_energy_cards
 
 INCLUDE "engine/duel/ai/retreat.asm"
 
@@ -2046,8 +1931,6 @@ AISelectSpecialAttackParameters:
 	ldh [hTemp_ffa0], a
 	call LookForCardThatIsKnockedOutOnDevolution
 	ldh [hTempPlayAreaLocation_ffa1], a
-
-.set_carry_1
 	scf
 	ret
 
@@ -2079,7 +1962,7 @@ AISelectSpecialAttackParameters:
 .loop_energy_cards
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry_2
+	jr z, .set_carry
 	ld b, a
 	ldh a, [hTemp_ffa0]
 	cp b
@@ -2090,7 +1973,7 @@ AISelectSpecialAttackParameters:
 	ldh [hTempPlayAreaLocation_ffa1], a
 	; fallthrough
 
-.set_carry_2
+.set_carry
 	scf
 	ret
 
@@ -2769,3 +2652,122 @@ HandleLegendaryArticunoEnergyScoring:
 .articuno_deck
 	call ScoreLegendaryArticunoCards
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;INCLUDE "engine/duel/ai/decks/unreferenced.asm"
+;
+;
+; returns carry if loaded attack effect has
+; an "initial effect 2" or "require selection" command type
+;Func_14323:
+;	ld hl, wLoadedAttackEffectCommands
+;	ld a, [hli]
+;	ld h, [hl]
+;	ld l, a
+;	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+;	push hl
+;	call CheckMatchingCommand
+;	pop hl
+;	jr nc, .set_carry
+;	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
+;	call CheckMatchingCommand
+;	jr nc, .set_carry
+;	or a
+;	ret
+;.set_carry
+;	scf
+;	ret
+;
+;
+; expects a $00-terminated list of 3-byte data with the following:
+; - non-zero value (anything but $1 is ignored)
+; - card ID to look for in Play Area
+; - number of energy cards
+; returns carry if a card ID is found in bench with at least the
+; listed number of energy cards
+;Func_1585b:
+;	ld a, [hli]
+;	or a
+;	jr z, .no_carry
+;	dec a
+;	jr nz, .next_1
+;	ld a, [hli]
+;	ld b, PLAY_AREA_BENCH_1
+;	push hl
+;	call LookForCardIDInPlayArea_Bank5
+;	jr nc, .next_2
+;	ld e, a
+;	push de
+;	call CountNumberOfEnergyCardsAttached
+;	pop de
+;	pop hl
+;	ld b, [hl]
+;	cp b
+;	jr nc, .set_carry
+;	inc hl
+;	jr Func_1585b
+;
+;.next_1
+;	inc hl
+;	inc hl
+;	jr Func_1585b
+;
+;.next_2
+;	pop hl
+;	inc hl
+;	jr Func_1585b
+;
+;.no_carry
+;	or a
+;	ret
+;
+;.set_carry
+;	ld a, e
+;	scf
+;	ret
+;
+;
+; expects a $00-terminated list of 3-byte data with the following:
+; - non-zero value
+; - card ID
+; - number of energy cards
+; goes through the given list and if a card with a listed ID is found
+; with less than the number of energy cards corresponding to its entry
+; then have AI try to play an energy card from the hand to it
+;Func_15886:
+;	push hl
+;	call CreateEnergyCardListFromHand
+;	pop hl
+;	ret c ; quit if no energy cards in hand
+;
+;.loop_energy_cards
+;	ld a, [hli]
+;	or a
+;	ret z ; done
+;	ld a, [hli]
+;	ld b, PLAY_AREA_ARENA
+;	push hl
+;	call LookForCardIDInPlayArea_Bank5
+;	jr nc, .next ; skip if not found in Play Area
+;	ld e, a
+;	push de
+;	call CountNumberOfEnergyCardsAttached
+;	pop de
+;	pop hl
+;	cp [hl]
+;	inc hl
+;	jr nc, .loop_energy_cards
+;	ld a, e
+;	ldh [hTempPlayAreaLocation_ff9d], a
+;	push hl
+;	call AITryToPlayEnergyCard
+;	pop hl
+;	ret c
+;	jr .loop_energy_cards
+;.next
+;	pop hl
+;	inc hl
+;	jr .loop_energy_cards

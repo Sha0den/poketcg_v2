@@ -63,7 +63,6 @@ ROMX $06
 	"Link Functions"
 	"Promotional Card"
 	"Booster Pack Menu"
-	"Unused Save Validation"
 	"Input Name"
 	"Auto Deck Machines"
 ROMX $07
@@ -71,7 +70,6 @@ ROMX $07
 	"Duel Animations"
 	"Start Menu"
 	"Intro Sequence"
-	"Unused Copyright"
 	"Credits Sequence"
 	"Booster Packs"
 ROMX $08

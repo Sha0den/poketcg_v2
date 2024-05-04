@@ -224,28 +224,6 @@ GetSpriteAnimBufferProperty_SpriteInA::
 	pop bc
 	ret
 
-; unreferenced function
-;Func_3ddb::
-;	push hl
-;	push bc
-;	ld c, SPRITE_ANIM_FLAGS
-;	call GetSpriteAnimBufferProperty_SpriteInA
-;	res 2, [hl]
-;	pop bc
-;	pop hl
-;	ret
-;
-; unreferenced function
-;Func_3de7::
-;	push hl
-;	push bc
-;	ld c, SPRITE_ANIM_FLAGS
-;	call GetSpriteAnimBufferProperty_SpriteInA
-;	set 2, [hl]
-;	pop bc
-;	pop hl
-;	ret
-
 LoadScene::
 	push af
 	ldh a, [hBankROM]
@@ -300,3 +278,29 @@ Func_3e31::
 	pop af
 	call BankswitchROM
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+;Func_3ddb::
+;	push hl
+;	push bc
+;	ld c, SPRITE_ANIM_FLAGS
+;	call GetSpriteAnimBufferProperty_SpriteInA
+;	res 2, [hl]
+;	pop bc
+;	pop hl
+;	ret
+;
+;
+;Func_3de7::
+;	push hl
+;	push bc
+;	ld c, SPRITE_ANIM_FLAGS
+;	call GetSpriteAnimBufferProperty_SpriteInA
+;	set 2, [hl]
+;	pop bc
+;	pop hl
+;	ret

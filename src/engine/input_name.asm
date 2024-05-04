@@ -550,7 +550,7 @@ NamingScreen_ProcessInput:
 	ld a, [hli]
 	ld d, a
 	cp $09
-	jp z, .on_end
+	jp z, TransformCharacter.return_carry
 	cp $07
 	jr nz, .asm_6ab8
 	ld a, [wd009]
@@ -690,9 +690,6 @@ NamingScreen_ProcessInput:
 .nothing
 	or a
 	ret
-.on_end
-	scf
-	ret
 
 ; this transforms the last japanese character
 ; in the name buffer into its dakuon shape or something.
@@ -702,7 +699,7 @@ NamingScreen_ProcessInput:
 TransformCharacter:
 	ld a, [wNamingScreenBufferLength]
 	or a
-	jr z, .return ; if the length is zero, just return.
+	jr z, .return_carry ; if the length is zero, just return.
 	dec a
 	dec a
 	push hl
@@ -726,7 +723,7 @@ TransformCharacter:
 .loop
 	ld a, [hli]
 	or a
-	jr z, .return
+	jr z, .return_carry
 	cp d
 	jr nz, .next
 	ld a, [hl]
@@ -743,7 +740,7 @@ TransformCharacter:
 	inc hl
 	inc hl
 	jr .loop
-.return
+.return_carry
 	scf
 	ret
 

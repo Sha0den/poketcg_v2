@@ -1,5 +1,7 @@
+;---------------------------------------------------------------------------------
 ; (1) HERE ARE A VARIETY OF CHECK EFFECTS.
 ; THESE ARE USED TO DETERMINE WHETHER OR NOT A CARD OR ATTACK CAN BE PLAYED.
+;---------------------------------------------------------------------------------
 
 ; returns carry if no cards left in deck
 DeckCheck:
@@ -232,8 +234,10 @@ DefendingPokemon_SleepCheck:
 	scf
 	ret
 
-;
-; (2) NEXT ARE SOME FUNCTIONS THAT ARE FREQUENTLY CALLED BY MANY OTHER FUNCTIONS
+
+;---------------------------------------------------------------------------------
+; (2) NEXT ARE SOME FUNCTIONS THAT ARE FREQUENTLY CALLED BY OTHER FUNCTIONS
+;---------------------------------------------------------------------------------
 
 TossCoin_BankB:
 	call TossCoin
@@ -362,8 +366,11 @@ GetNextPositionInTempList:
 	pop de
 	ret
 
+
+;---------------------------------------------------------------------------------
 ; (3) THIS IS THE START OF THE ATTACK FUNCTIONS
-; ATTACK EFFECTS THAT REARRANGE, DRAW FROM, OR PULL CARDS OUT OF THE DECK ARE LISTED FIRST.
+; EFFECTS THAT REARRANGE, DRAW FROM, OR PULL CARDS OUT OF THE DECK ARE FIRST.
+;---------------------------------------------------------------------------------
 
 ; draw and handle player selection for reordering the top 3 cards of the deck.
 ; the resulting list is output in order in hTempList.
@@ -705,17 +712,16 @@ Draw2Effect:
 AddCardFromDeckToHandEffect:
 	ldh a, [hTemp_ffa0]
 	cp $ff
-	jr z, .done
+	jr z, ShuffleCardsInDeck
 ; add to hand
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
 	call IsPlayerTurn
-	jr c, .done ; done if Player played card
+	jr c, ShuffleCardsInDeck ; done if Player played card
 ; display card in screen
 	ldh a, [hTemp_ffa0]
 	ldtx hl, WasPlacedInTheHandText
 	bank1call DisplayCardDetailScreen
-.done
 ;	fallthrough
 
 ; formerly Func_2c0bd
@@ -739,7 +745,7 @@ AttachBasicEnergyFromDeck_AISelection:
 AttachBasicEnergyFromDeck_AttachEffect:
 	ldh a, [hTemp_ffa0]
 	cp $ff
-	jr z, .done
+	jr z, ShuffleCardsInDeck
 
 ; add card to hand and attach it to the selected Pokemon
 	call SearchCardInDeckAndAddToHand
@@ -749,7 +755,7 @@ AttachBasicEnergyFromDeck_AttachEffect:
 	ldh a, [hTemp_ffa0]
 	call PutHandCardInPlayArea
 	call IsPlayerTurn
-	jr c, .done
+	jr c, ShuffleCardsInDeck
 
 ; not Player, so show detail screen and which Pokemon was chosen to attach Energy
 	ldh a, [hTempPlayAreaLocation_ffa1]
@@ -766,8 +772,6 @@ AttachBasicEnergyFromDeck_AttachEffect:
 	ldh a, [hTemp_ffa0]
 	ldtx hl, AttachedEnergyToPokemonText
 	bank1call DisplayCardDetailScreen
-
-.done
 	jr ShuffleCardsInDeck
 
 EvolutionSearch_PlayerSelection:
@@ -974,8 +978,10 @@ RandomlyFillBothBenchesEffect:
 .done
 	jp ShuffleCardsInDeck
 
-;
+
+;---------------------------------------------------------------------------------
 ; (4) ATTACK EFFECTS THAT PULL CARDS OUT OF THE DISCARD PILE ARE NEXT.
+;---------------------------------------------------------------------------------
 
 ; makes a list in wDuelTempList with the deck indices
 ; of cards found in Turn Duelist's Discard Pile.
@@ -1250,8 +1256,10 @@ EnergyAbsorption_AttachEffect:
 	pop hl
 	jr .loop
 
-;
-; (5) ATTACK EFFECTS THAT BENEFIT THE PLAYER'S POKEMON ARE NEXT. (MAINLY HEAL EFFECTS)
+
+;---------------------------------------------------------------------------------
+; (5) ATTACK EFFECTS THAT BENEFIT THE PLAYER'S POKEMON ARE NEXT. (MAINLY HEALING)
+;---------------------------------------------------------------------------------
 
 SwitchAfterAttack_PlayerSelection:
 	ldtx hl, SelectNewActivePokemonText
@@ -1523,8 +1531,10 @@ RemoveSpecialConditionsEffect:
 	bank1call DrawDuelHUDs
 	ret
 
-;
+
+;---------------------------------------------------------------------------------
 ; (6) ATTACK EFFECTS THAT CAUSE SPECIAL CONDITIONS ARE NEXT
+;---------------------------------------------------------------------------------
 
 Sleep50PercentEffect:
 	ldtx de, SleepCheckText
@@ -1730,8 +1740,11 @@ PoisonConfusion50PercentEffect:
 	ld [wNoEffectFromWhichStatus], a
 	ret
 
+
+;---------------------------------------------------------------------------------
 ; (7) ATTACK EFFECTS THAT CAUSE SUBSTATUS1 EFFECTS ARE NEXT.
 ; THESE ARE BENEFICIAL EFFECTS THAT ARE APPLIED TO THE PLAYER'S ACTIVE POKEMON.
+;---------------------------------------------------------------------------------
 
 ; apply a status condition of type 1 identified by register a to the target
 ApplySubstatus1ToDefendingCard:
@@ -1817,8 +1830,12 @@ DestinyBondEffect:
 	ld a, SUBSTATUS1_DESTINY_BOND
 	jr ApplySubstatus1ToDefendingCard
 
+
+;---------------------------------------------------------------------------------
 ; (8) ATTACK EFFECTS THAT CAUSE SUBSTATUS2 EFFECTS ARE NEXT.
 ; THESE ARE HARMFUL EFFECTS THAT ARE APPLIED TO THE OPPONENT'S ACTIVE POKEMON.
+; (THE LAST FUNCTION IS ACTUALLY SUBSTATUS3)
+;---------------------------------------------------------------------------------
 
 ; apply a status condition of type 2 identified by register a to the target,
 ; unless prevented by wNoDamageOrEffect
@@ -2477,8 +2494,10 @@ PreventTrainersEffect:
 	set SUBSTATUS3_HEADACHE_F, [hl]
 	ret
 
-; The previous function is actually Substatus3 and not 2.
-; (9) ANY OTHER NON-DAMAGE ATTACK EFFECTS THAT DEAL WITH YOUR OPPONENT'S POKEMON ARE NEXT.
+
+;---------------------------------------------------------------------------------
+; (9) ANY OTHER NON-DAMAGE ATTACK EFFECTS THAT AFFECT THE OPPONENT'S POKEMON ARE NEXT.
+;---------------------------------------------------------------------------------
 
 ; handles screen for selecting an Energy card to discard from the Defending Pokemon
 ; and store the Player selection in [hTemp_ffa0].
@@ -3146,8 +3165,10 @@ ReturnDefendingPokemonToTheHandEffect:
 	call SwapTurn
 	ret
 
-;
+
+;---------------------------------------------------------------------------------
 ; (10) THE DAMAGE-MODIFYING ATTACK EFFECTS ARE NEXT.
+;---------------------------------------------------------------------------------
 
 ; Ignores Weakness and Resistance for attack damage
 NoColorEffect:
@@ -3744,8 +3765,10 @@ Plus10OrRecoil_RecoilEffect:
 	call DealRecoilDamageToSelf
 	ret
 
-;
+
+;---------------------------------------------------------------------------------
 ; (11) ATTACK EFFECTS THAT NEGATIVELY AFFECT THE PLAYER'S POKEMON ARE NEXT.
+;---------------------------------------------------------------------------------
 
 Recoil10_50PercentEffect:
 	ld hl, 10
@@ -4203,8 +4226,10 @@ Explosion100DamageEffect:
 	call SwapTurn
 	ret
 
-;
+
+;---------------------------------------------------------------------------------
 ; (12) ATTACK EFFECTS THAT DAMAGE THE OPPONENT'S BENCH ARE NEXT.
+;---------------------------------------------------------------------------------
 
 AlsoDamageTo1Benched_PlayerSelection:
 	ld a, $ff
@@ -4688,8 +4713,11 @@ DamageTo1Benched_20DamageEffect:
 	call SwapTurn
 	ret
 
-;
-; (13) THE REMAINING ATTACK EFFECTS THAT UTILIZE RANDOMNESS ARE NEXT. (ALSO METRONOME AND MIRROR MOVE)
+
+;---------------------------------------------------------------------------------
+; (13) THE REMAINING ATTACK EFFECTS THAT UTILIZE RANDOMNESS ARE NEXT.
+; (METRONOME AND MIRROR MOVE ARE ALSO INCLUDED)
+;---------------------------------------------------------------------------------
 
 ; randomly finds an occupied zone in turn player's Play Area and stores the location in a.
 PickRandomPlayAreaCard:
@@ -5413,8 +5441,11 @@ MirrorMove_AfterDamage:
 	call SwapTurn
 	ret
 
+
+;---------------------------------------------------------------------------------
 ; (14) POKEMON POWER EFFECTS START HERE.
-; 12/26 POWERS ARE ACTUALLY HANDLED ELSEWHERE (They are paired with NoEffect_SetCarry)
+; 12/26 POWERS ARE ACTUALLY HANDLED ELSEWHERE (They're paired with NoEffect_SetCarry)
+;---------------------------------------------------------------------------------
 
 ; returns carry if Pokemon Power can't be used.
 OncePerTurnPokePowerCheck:
@@ -6599,8 +6630,11 @@ HealingWind_PlayAreaHealEffect:
 	jr nz, .loop_play_area
 	ret
 
-;
-; (15) TRAINER CARD EFFECTS ARE NEXT. (Bill/Energy Search/Gust of Wind/Pokedex are sorted with attacks effects)
+
+;---------------------------------------------------------------------------------
+; (15) TRAINER CARD EFFECTS ARE NEXT.
+; (Bill/Energy Search/Gust of Wind/Pokedex are sorted with attacks effects)
+;---------------------------------------------------------------------------------
 
 ; handles screen for Player to select 2 cards from the hand to discard.
 ; first prints text informing Player to choose cards to discard
@@ -8559,12 +8593,15 @@ SwitchEffect:
 	ret
 
 ;
-; (16) THESE FUNCTIONS WERE ALL UNUSED, SO I COMMENTED THEM OUT.
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
 ;
 ; formerly Func_2c08c
 ;Serial_TossZeroCoins:
 ;	xor a
-;	jr Serial_TossCoinATimes
+;	jp Serial_TossCoinATimes
+;
 ;
 ;Func_2c0a8:
 ;	ldh a, [hTemp_ffa0]
@@ -8580,10 +8617,12 @@ SwitchEffect:
 ;	ld a, c
 ;	ret
 ;
+;
 ;Func_2c6d9:
 ;	ldtx hl, IncompleteText
 ;	call DrawWideTextBox_WaitForInput
 ;	ret
+;
 ;
 ;CopyPlayAreaHPToBackup_Unreferenced:
 ;	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -8598,6 +8637,7 @@ SwitchEffect:
 ;	dec c
 ;	jr nz, .loop_play_area
 ;	ret
+;
 ;
 ;CopyPlayAreaHPFromBackup_Unreferenced:
 ;	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA

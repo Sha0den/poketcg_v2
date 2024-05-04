@@ -338,10 +338,10 @@ PrintCardSetListEntries:
 	jr .asm_a76d
 
 	; this code is never reached
-	pop de
-	push hl
-	call InitTextPrinting
-	ld hl, Text_9a36
+;	pop de
+;	push hl
+;	call InitTextPrinting
+;	ld hl, Text_9a36
 
 .asm_a76d
 	call ProcessText

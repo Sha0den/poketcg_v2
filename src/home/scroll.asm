@@ -129,7 +129,7 @@ GetNextBackgroundScroll::
 	ld c, a
 	ld a, [hl]
 	dec c
-	jr z, .done
+	ret z
 	dec c
 	jr z, .halve
 	dec c
@@ -140,7 +140,6 @@ GetNextBackgroundScroll::
 	sra a
 .halve
 	sra a
-.done
 	ret
 
 ; enable lcdc interrupt on LYC=LC coincidence

@@ -209,7 +209,28 @@ MltReq2Packet::
 	db MLT_REQ_2_PLAYERS
 	ds $0e
 
-; unreferenced function
+; loops 63000 * bc cycles (~15 * bc ms)
+Wait::
+	ld de, 1750
+.loop
+	nop
+	nop
+	nop
+	dec de
+	ld a, d
+	or e
+	jr nz, .loop
+	dec bc
+	ld a, b
+	or c
+	jr nz, Wait
+	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
 ; fill v*Tiles1 and v*Tiles2 with data at hl
 ; write $0d sequences of $80,$81,$82,...,$94 separated each by $0c bytes to v*BGMap0
 ; send the SGB packet at de
@@ -254,20 +275,3 @@ MltReq2Packet::
 ;	call SendSGB
 ;	ei
 ;	ret
-
-; loops 63000 * bc cycles (~15 * bc ms)
-Wait::
-	ld de, 1750
-.loop
-	nop
-	nop
-	nop
-	dec de
-	ld a, d
-	or e
-	jr nz, .loop
-	dec bc
-	ld a, b
-	or c
-	jr nz, Wait
-	ret

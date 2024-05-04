@@ -273,14 +273,11 @@ HandleCantAttackSubstatus::
 	ret z
 	ldtx hl, UnableToAttackThatPokemonText
 	cp SUBSTATUS2_CANNOT_ATTACK_THIS
-	jr z, .return_with_cant_attack
+	jp z, ReturnCarry ; can't attack
 	ldtx hl, UnableToAttackText
 	cp SUBSTATUS2_CANNOT_ATTACK
-	jr z, .return_with_cant_attack
+	jp z, ReturnCarry ; can't attack
 	or a
-	ret
-.return_with_cant_attack
-	scf
 	ret
 
 ; return carry if the turn holder's arena Pokemon cannot use

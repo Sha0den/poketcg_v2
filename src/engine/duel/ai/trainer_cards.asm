@@ -3397,7 +3397,6 @@ AIDecide_EnergySearch:
 ; only for Grass type Pokemon cards
 ; in Play Area. If none found, return carry.
 .CheckUsefulGrassEnergy
-; unreferenced
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	ld d, a

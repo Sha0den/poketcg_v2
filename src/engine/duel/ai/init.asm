@@ -54,7 +54,7 @@ InitAITurnVars:
 	inc a
 	ld [wAIBarrierFlagCounter], a
 	cp 3
-	jr c, .done
+	ret c
 
 ; this means that the Player used Barrier
 ; at least 3 turns in a row.
@@ -74,12 +74,12 @@ InitAITurnVars:
 ; reset wAIBarrierFlagCounter
 	xor a
 	ld [wAIBarrierFlagCounter], a
-	jr .done
+	ret
 
 .set_flag
 	ld a, AI_MEWTWO_MILL
 	ld [wAIBarrierFlagCounter], a
-	jr .done
+	ret
 
 .check_flag
 ; increase counter by 1 if flag is set
@@ -88,11 +88,10 @@ InitAITurnVars:
 	jr z, .reset_2
 	inc a
 	ld [wAIBarrierFlagCounter], a
-	jr .done
+	ret
 
 .reset_2
 ; reset wAIBarrierFlagCounter
 	xor a
 	ld [wAIBarrierFlagCounter], a
-.done
 	ret

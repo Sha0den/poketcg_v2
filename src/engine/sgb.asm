@@ -60,18 +60,6 @@ SetSGBBorder:
 	dw SGBBorderMedalsGfxPointers, SGBData_BorderMedals4, SGBData_BorderMedals5
 	dw SGBBorderDebugGfxPointers,  SGBData_BorderDebug3,  SGBData_BorderDebug4
 
-; forces SGB border intro
-; unreferenced?
-Func_7006f:
-	ld a, [wConsole]
-	cp CONSOLE_SGB
-	ret nz ; exit if not SGB
-	ld de, SGBData_BorderIntro3
-	ld hl, SGBData_BorderIntro4
-	call SetMainSGBBorderPalsAndMap
-	call Func_701c0
-	ret
-
 DecompressAndSendSGBBorder:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -1025,3 +1013,19 @@ SGBData_GameBoyPrinter:
 SGBData_TitleScreen:
 	dw $40 ; length
 	INCBIN "data/sgb_data/title_screen_pals.bin.lz"
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; forces SGB border intro
+;Func_7006f:
+;	ld a, [wConsole]
+;	cp CONSOLE_SGB
+;	ret nz ; exit if not SGB
+;	ld de, SGBData_BorderIntro3
+;	ld hl, SGBData_BorderIntro4
+;	call SetMainSGBBorderPalsAndMap
+;	call Func_701c0
+;	ret

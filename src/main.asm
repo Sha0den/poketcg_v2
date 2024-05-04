@@ -57,7 +57,7 @@ INCLUDE "data/multichoice.asm"
 INCLUDE "data/overworld_map/player_movement_paths.asm"
 
 SECTION "Menus 3", ROMX
-INCLUDE "engine/menus/debug_main.asm"
+;INCLUDE "engine/menus/debug_main.asm"
 INCLUDE "engine/menus/main_menu.asm"
 INCLUDE "engine/menus/debug.asm"
 INCLUDE "engine/menus/wait_keys.asm"
@@ -85,7 +85,7 @@ SECTION "Menus 4", ROMX
 INCLUDE "engine/copy_card_name.asm"
 INCLUDE "engine/menus/play_area.asm"
 INCLUDE "engine/menus/glossary.asm"
-INCLUDE "engine/menus/unknown.asm"
+;INCLUDE "engine/menus/unknown.asm"
 
 SECTION "Effect Commands", ROMX
 INCLUDE "engine/duel/effect_commands.asm"
@@ -114,8 +114,8 @@ INCLUDE "engine/promotional_card.asm"
 SECTION "Booster Pack Menu", ROMX
 INCLUDE "engine/menus/booster_pack.asm"
 
-SECTION "Unused Save Validation", ROMX
-INCLUDE "engine/unused_save_validation.asm"
+;SECTION "Unused Save Validation", ROMX
+;INCLUDE "engine/unused_save_validation.asm"
 
 SECTION "Input Name", ROMX
 INCLUDE "engine/input_name.asm"
@@ -129,7 +129,7 @@ INCLUDE "engine/overworld/warp.asm"
 INCLUDE "engine/overworld/load_map_header.asm"
 INCLUDE "engine/overworld/npc_core.asm"
 INCLUDE "engine/masters_beaten_list.asm"
-INCLUDE "engine/debug_sprites.asm"
+;INCLUDE "engine/debug_sprites.asm"
 
 SECTION "Duel Animations", ROMX
 INCLUDE "engine/duel/animations/core.asm"
@@ -143,8 +143,8 @@ SECTION "Intro Sequence", ROMX
 INCLUDE "engine/intro.asm"
 INCLUDE "engine/sequences/intro_sequence_commands.asm"
 
-SECTION "Unused Copyright", ROMX
-INCLUDE "engine/unused_copyright.asm"
+;SECTION "Unused Copyright", ROMX
+;INCLUDE "engine/unused_copyright.asm"
 
 SECTION "Credits Sequence", ROMX
 INCLUDE "engine/credits.asm"

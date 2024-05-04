@@ -808,8 +808,12 @@ GetFullWidthFontTileOffset::
 	add hl, bc
 	ret
 
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
 ; pointers to VRAM?
-; unreferenced
 ;Unknown_2589::
 ;	db $18
 ;	dw $8140

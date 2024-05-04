@@ -839,14 +839,12 @@ HandlePlayerMoveModeInput:
 	call AttemptPlayerMovementFromDirection
 	ld a, [wPlayerCurrentlyMoving]
 	and $1
-	jr nz, .done
+	ret nz
 .skip_moving
 	ldh a, [hKeysPressed]
 	and A_BUTTON
-	jr z, .done
+	ret z
 	call FindNPCOrObject
-	jr .done
-.done
 	ret
 
 UpdatePlayerDirectionFromDPad:

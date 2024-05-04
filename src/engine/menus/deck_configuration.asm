@@ -2082,24 +2082,6 @@ OpenCardPageFromCardList:
 	ld [wTempCardListCursorPos], a
 	ret
 
-; opens card page from the card list
-Func_9ced: ; unreferenced
-	ld hl, wVisibleListCardIDs
-	ld a, [wCardListCursorPos]
-	ld c, a
-	ld b, $00
-	add hl, bc
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	call LoadCardDataToBuffer1_FromCardID
-	ld de, $389f
-	call SetupText
-	bank1call OpenCardPage_FromHand
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
-	ret
-
 ; tries to add card ID in register e to wCurDeckCards
 ; fails to add card if one of the following conditions are met:
 ; - total cards are equal to wMaxNumCardsAllowed
@@ -3565,3 +3547,26 @@ PrintTotalNumberOfCardsInCollection:
 	sbc b
 	ld h, a
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; opens card page from the card list
+;Func_9ced:
+;	ld hl, wVisibleListCardIDs
+;	ld a, [wCardListCursorPos]
+;	ld c, a
+;	ld b, $00
+;	add hl, bc
+;	ld e, [hl]
+;	inc hl
+;	ld d, [hl]
+;	call LoadCardDataToBuffer1_FromCardID
+;	ld de, $389f
+;	call SetupText
+;	bank1call OpenCardPage_FromHand
+;	ld a, $01
+;	ld [wVBlankOAMCopyToggle], a
+;	ret

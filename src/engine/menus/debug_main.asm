@@ -1,3 +1,6 @@
+;----------------------------------------
+;  THIS FILE WAS REMOVED FROM THE BUILD
+;----------------------------------------
 ; unreferenced debug menu
 Func_12661:
 	xor a

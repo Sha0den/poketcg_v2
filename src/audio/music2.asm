@@ -241,10 +241,9 @@ Music2_StopAllChannels:
 	xor a
 	ld [wMusicIsPlaying + 2], a
 	bit 2, d
-	jr nz, .done
+	ret nz
 	ld a, $0
 	ldh [rNR32], a
-.done
 	ret
 
 ; plays the song given by the id in a
@@ -1490,10 +1489,10 @@ Music2_f490b:
 	jr nz, .not_channel_1
 	ld a, [wMusicVibratoDelay]
 	cp $0
-	jr z, .done
+	ret z
 	ld a, [wdd8c]
 	bit 0, a
-	jr nz, .done
+	ret nz
 	ld a, e
 	ldh [rNR13], a
 	ldh a, [rNR11]
@@ -1508,10 +1507,10 @@ Music2_f490b:
 	jr nz, .not_channel_2
 	ld a, [wMusicVibratoDelay + 1]
 	cp $0
-	jr z, .done
+	ret z
 	ld a, [wdd8c]
 	bit 1, a
-	jr nz, .done
+	ret nz
 	ld a, e
 	ldh [rNR23], a
 	ldh a, [rNR21]
@@ -1522,20 +1521,19 @@ Music2_f490b:
 	ret
 .not_channel_2
 	cp $2
-	jr nz, .done
+	ret nz
 	ld a, [wMusicVibratoDelay + 2]
 	cp $0
-	jr z, .done
+	ret z
 	ld a, [wdd8c]
 	bit 2, a
-	jr nz, .done
+	ret nz
 	ld a, e
 	ldh [rNR33], a
 	xor a
 	ldh [rNR31], a
 	ld a, d
 	ldh [rNR34], a
-.done
 	ret
 
 Music2_f4967:

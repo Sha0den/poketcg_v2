@@ -400,16 +400,6 @@ ReloadCardListItems::
 	jr nz, .next_card
 	ret
 
-; unreferenced function
-; reload a list of cards, except don't print their names
-;Func_2827::
-;	ld a, $01
-;	ldh [hffb0], a
-;	call ReloadCardListItems
-;	xor a
-;	ldh [hffb0], a
-;	ret
-
 ; this function is always loaded to wMenuUpdateFunc by PrintCardListItems
 ; takes care of things like handling page scrolling and calling the function at wListFunctionPointer
 CardListMenuFunction::
@@ -983,3 +973,17 @@ ContinueDuel::
 	ld a, BANK(_ContinueDuel)
 	call BankswitchROM
 	jp _ContinueDuel
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; reload a list of cards, except don't print their names
+;Func_2827::
+;	ld a, $01
+;	ldh [hffb0], a
+;	call ReloadCardListItems
+;	xor a
+;	ldh [hffb0], a
+;	ret

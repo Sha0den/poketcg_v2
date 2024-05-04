@@ -241,14 +241,13 @@ Func_190f4:
 
 Func_190fb:
 	cp SET_ANIM_SCREEN_MAIN
-	jr nz, .done
+	ret nz
 	ld a, DUEL_ANIM_SCREEN_MAIN_SCENE
 	ld [wDuelAnimationScreen], a
 	ld a, [wDuelDisplayedScreen]
 	cp $01
-	jr z, .done
+	ret z
 	bank1call DrawDuelMainScene
-.done
 	ret
 
 Func_1910f:

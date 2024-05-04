@@ -55,17 +55,15 @@ OverworldMap_HandleKeyPress:
 	farcall GetDirectionFromDPad
 	ld [wPlayerDirection], a
 	call OverworldMap_HandleDPad
-	jr .done
+	ret
 .no_d_pad
 	ldh a, [hKeysPressed]
 	and A_BUTTON
-	jr z, .done
+	ret z
 	ld a, SFX_02
 	call PlaySFX
 	call OverworldMap_UpdateCursorAnimation
 	call OverworldMap_BeginPlayerMovement
-	jr .done
-.done
 	ret
 
 ; update wOverworldMapSelection based on the pressed direction in wPlayerDirection

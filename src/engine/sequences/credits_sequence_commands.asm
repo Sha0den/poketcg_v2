@@ -446,17 +446,16 @@ CreditsSequenceCmd_TransformOverlay:
 ; if it's equal or $ff: do nothing
 .Func_1dade
 	cp $ff
-	jr z, .done
+	ret z
 	cp c
-	jr z, .done
+	ret z
 	inc l
 	jr c, .incr_a
 ; decr a
 	dec a
 	dec a
-	jr .done
+	ret
 .incr_a
 	inc a
 	inc a
-.done
 	ret

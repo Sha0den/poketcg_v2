@@ -137,11 +137,10 @@ PlayLoadedDuelAnimation::
 
 	farcall StartNewSpriteAnimation
 	or a
-	jr .done
+	ret
 
 .return_with_carry
 	scf
-.done
 	ret
 
 ; loads the correct coordinates/flags for
@@ -606,12 +605,11 @@ GetDamageNumberChars:
 .loop_check_zeroes
 	ld a, [hl]
 	cp SPRITE_ANIM_79 ; 0 char
-	jr nz, .done
+	ret nz
 	ld [hl], $00
 	inc hl
 	dec c
 	jr nz, .loop_check_zeroes
-.done
 	ret
 
 .ConvertDigitToCharTile

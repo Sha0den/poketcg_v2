@@ -1,22 +1,3 @@
-; processes AI energy card playing logic
-; with AI_ENERGY_FLAG_DONT_PLAY flag on
-; unreferenced
-Func_16488:
-	ld a, AI_ENERGY_FLAG_DONT_PLAY
-	ld [wAIEnergyAttachLogicFlags], a
-	ld de, wTempPlayAreaAIScore
-	ld hl, wPlayAreaAIScore
-	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-	ld a, [wAIScore]
-	ld [de], a
-	jr AIProcessAndTryToPlayEnergy.has_logic_flags
-
 ; have AI choose an energy card to play, but do not play it.
 ; does not consider whether the cards have evolutions to be played.
 ; return carry if an energy card is chosen to use in any Play Area card,
@@ -615,12 +596,12 @@ FindPlayAreaCardWithHighestAIScore:
 ; else, store Play Area location and return carry.
 	ld a, e
 	cp $85
-	jr c, .not_enough_score
+	jr c, .no_carry ; not enough score
 	ld a, d
 	ldh [hTempPlayAreaLocation_ff9d], a
 	scf
 	ret
-.not_enough_score
+.no_carry
 	or a
 	ret
 
@@ -652,9 +633,6 @@ FindPlayAreaCardWithHighestAIScore:
 	ld a, d
 	ldh [hTempPlayAreaLocation_ff9d], a
 	scf
-	ret
-.no_carry
-	or a
 	ret
 
 ; returns carry if there's an evolution card
@@ -1038,3 +1016,26 @@ CheckSpecificDecksToAttachDoubleColorless:
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; processes AI energy card playing logic
+; with AI_ENERGY_FLAG_DONT_PLAY flag on
+;Func_16488:
+;	ld a, AI_ENERGY_FLAG_DONT_PLAY
+;	ld [wAIEnergyAttachLogicFlags], a
+;	ld de, wTempPlayAreaAIScore
+;	ld hl, wPlayAreaAIScore
+;	ld b, MAX_PLAY_AREA_POKEMON
+;.loop
+;	ld a, [hli]
+;	ld [de], a
+;	inc de
+;	dec b
+;	jr nz, .loop
+;	ld a, [wAIScore]
+;	ld [de], a
+;	jp AIProcessAndTryToPlayEnergy.has_logic_flags

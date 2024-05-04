@@ -270,23 +270,6 @@ MoveDiscardPileCardToHand::
 	pop hl
 	ret
 
-; unreferenced function
-; return in the z flag whether turn holder's prize a (0-7) has been drawn or not
-; z: drawn, nz: not drawn
-;CheckPrizeTaken::
-;	ld e, a
-;	ld d, 0
-;	ld hl, PowersOf2
-;	add hl, de
-;	ld a, [hl]
-;	ld e, a
-;	cpl
-;	ld d, a
-;	ld a, DUELVARS_PRIZES
-;	call GetTurnDuelistVariable
-;	and e
-;	ret
-
 PowersOf2::
 	db $01, $02, $04, $08, $10, $20, $40, $80
 
@@ -387,11 +370,8 @@ CreateArenaOrBenchEnergyCardList::
 	ld [de], a
 	ld a, [wDuelTempList]
 	cp $ff
-	jr z, .no_energies_found
+	jp z, ReturnCarry ; no energies found
 	or a
-	ret
-.no_energies_found
-	scf
 	ret
 
 ; fill wDuelTempList with the turn holder's hand cards (their 0-59 deck indexes)
@@ -809,10 +789,6 @@ EvolvePokemonCard::
 	ld a, [wLoadedCard1Stage]
 	ld [hl], a
 	or a
-	ret
-
-; never executed
-	scf
 	ret
 
 ; check if the turn holder's Pokemon card at e can evolve into the turn holder's Pokemon card d.
@@ -1481,17 +1457,6 @@ PlayAttackAnimation_DealAttackDamage::
 	pop hl
 .skip_draw_huds
 	call PrintKnockedOutIfHLZero
-	jr HandleAfterDamageEffects
-
-; unreferenced function
-;Func_17ed::
-;	call DrawWideTextBox_WaitForInput
-;	xor a
-;	ld hl, wDamage
-;	ld [hli], a
-;	ld [hl], a
-;	ld a, NO_DAMAGE_OR_EFFECT_ATTACK
-;	ld [wNoDamageOrEffect], a
 ;	fallthrough
 
 HandleAfterDamageEffects::
@@ -2278,3 +2243,35 @@ CopyOpponentName::
 .print_player2
 	ldtx hl, Player2Text
 	jp CopyText
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; return in the z flag whether turn holder's prize a (0-7) has been drawn or not
+; z: drawn, nz: not drawn
+;CheckPrizeTaken::
+;	ld e, a
+;	ld d, 0
+;	ld hl, PowersOf2
+;	add hl, de
+;	ld a, [hl]
+;	ld e, a
+;	cpl
+;	ld d, a
+;	ld a, DUELVARS_PRIZES
+;	call GetTurnDuelistVariable
+;	and e
+;	ret
+;
+;
+;Func_17ed::
+;	call DrawWideTextBox_WaitForInput
+;	xor a
+;	ld hl, wDamage
+;	ld [hli], a
+;	ld [hl], a
+;	ld a, NO_DAMAGE_OR_EFFECT_ATTACK
+;	ld [wNoDamageOrEffect], a
+;	jp HandleAfterDamageEffects

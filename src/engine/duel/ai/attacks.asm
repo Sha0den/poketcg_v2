@@ -185,7 +185,7 @@ GetAIScoreOfAttack:
 .unusable
 	xor a
 	ld [wAIScore], a
-	jp .done
+	ret
 
 ; load arena card IDs
 .usable
@@ -336,12 +336,12 @@ GetAIScoreOfAttack:
 .dismiss_high_recoil_atk
 	xor a
 	ld [wAIScore], a
-	jp .done
+	ret
 
 .encourage_high_recoil_atk
 	ld a, 20
 	call AddToAIScore
-	jp .done
+	ret
 
 ; Zapping Selfdestruct deck only uses this attack
 ; if number of cards in deck >= 30 and
@@ -431,13 +431,13 @@ GetAIScoreOfAttack:
 ; attack causes player to draw all prize cards
 	xor a
 	ld [wAIScore], a
-	jp .done
+	ret
 
 ; attack causes CPU to draw all prize cards
 .wins_the_duel
 	ld a, 20
 	call AddToAIScore
-	jp .done
+	ret
 
 ; subtract from AI score number of own benched Pokémon KO'd
 .count_own_ko_bench
@@ -496,8 +496,8 @@ GetAIScoreOfAttack:
 	call SwapTurn
 	pop de
 	cp d
-	jp c, .set_carry
-	jp z, .set_carry
+	jr c, .set_carry
+	jr z, .set_carry
 	or a
 	ret
 .set_carry
@@ -703,18 +703,16 @@ GetAIScoreOfAttack:
 .handle_special_atks
 	ld a, ATTACK_FLAG3_ADDRESS | SPECIAL_AI_HANDLING_F
 	call CheckLoadedAttackFlag
-	jr nc, .done
+	ret nc
 	call HandleSpecialAIAttacks
 	cp $80
 	jr c, .negative_score
 	sub $80
 	call AddToAIScore
-	jr .done
+	ret
 .negative_score
 	ld b, a
 	ld a, $80
 	sub b
 	call SubFromAIScore
-
-.done
 	ret

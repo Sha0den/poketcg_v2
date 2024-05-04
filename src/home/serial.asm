@@ -299,13 +299,10 @@ SerialExchangeBytes::
 .asm_e81
 	ld a, [wSerialFlags]
 	or a
-	jr nz, .asm_e8c
+	jp nz, ReturnCarry
 	ld a, c
 	or b
 	jr nz, .asm_e64
-	ret
-.asm_e8c
-	scf
 	ret
 
 ; go into slave mode (external clock) for serial transfer?
@@ -392,47 +389,6 @@ SerialRecvBytes::
 	pop bc
 	scf
 	ret
-
-; unreferenced function
-;Func_0ef1::
-;	ld de, wcb79
-;	ld hl, sp+$fe
-;	ld a, l
-;	ld [de], a
-;	inc de
-;	ld a, h
-;	ld [de], a
-;	inc de
-;	pop hl
-;	push hl
-;	ld a, l
-;	ld [de], a
-;	inc de
-;	ld a, h
-;	ld [de], a
-;	or a
-;	ret
-;
-; unreferenced function
-;Func_0f05::
-;	push hl
-;	ld hl, wcb7b
-;	ld a, [hli]
-;	or [hl]
-;	pop hl
-;	ret z
-;	ld hl, wcb79
-;	ld a, [hli]
-;	ld h, a
-;	ld l, a
-;	ld sp, hl
-;	ld hl, wcb7b
-;	ld a, [hli]
-;	ld h, [hl]
-;	ld l, a
-;	push hl
-;	scf
-;	ret
 
 ; load the number at wSerialFlags (error code?) to TxRam3, print
 ; TransmissionErrorText, exit the duel, and reset serial registers.
@@ -581,3 +537,48 @@ SerialRecv8Bytes::
 	pop hl
 	pop af
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+;Func_0ef1::
+;	ld de, wcb79
+;	ld hl, sp+$fe
+;	ld a, l
+;	ld [de], a
+;	inc de
+;	ld a, h
+;	ld [de], a
+;	inc de
+;	pop hl
+;	push hl
+;	ld a, l
+;	ld [de], a
+;	inc de
+;	ld a, h
+;	ld [de], a
+;	or a
+;	ret
+;
+;
+;Func_0f05::
+;	push hl
+;	ld hl, wcb7b
+;	ld a, [hli]
+;	or [hl]
+;	pop hl
+;	ret z
+;	ld hl, wcb79
+;	ld a, [hli]
+;	ld h, a
+;	ld l, a
+;	ld sp, hl
+;	ld hl, wcb7b
+;	ld a, [hli]
+;	ld h, [hl]
+;	ld l, a
+;	push hl
+;	scf
+;	ret

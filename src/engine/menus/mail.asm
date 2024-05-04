@@ -55,11 +55,6 @@ _PCMenu_ReadMail:
 	ld [wd291], a
 	ret
 
-; unreferenced?
-Unknown_107c2:
-	db $01, $00, $00, $4a, $21, $b5, $42, $e0
-	db $03, $4a, $29, $94, $52, $fF, $7f, $00
-
 MailScreenLabels:
 	db 1, 0
 	tx MailText
@@ -542,3 +537,12 @@ TryGivePCPack:
 	pop bc
 	pop hl
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+;Unknown_107c2:
+;	db $01, $00, $00, $4a, $21, $b5, $42, $e0
+;	db $03, $4a, $29, $94, $52, $fF, $7f, $00

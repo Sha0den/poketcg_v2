@@ -1,3 +1,7 @@
+;----------------------------------------
+;  THIS FILE WAS REMOVED FROM THE BUILD
+;----------------------------------------
+
 ; this is a commented out routine for save data validation
 ; sUnusedSaveDataValidationByte would be used to store some validation byte
 ; and xor'd with $250 bytes in SRAM starting from sCardCollection
@@ -6,7 +10,8 @@
 StubbedUnusedSaveDataValidation:
 	ret
 
-UnusedSaveDataValidation: ; unreferenced
+; unreferenced function
+UnusedSaveDataValidation:
 	ldh a, [hBankSRAM]
 	or a
 	ret nz
@@ -68,7 +73,8 @@ UnusedSaveDataValidation: ; unreferenced
 
 	ret
 
-UnusedCalculateSaveDataValidationByte: ; unreferenced
+; unreferenced function
+UnusedCalculateSaveDataValidationByte:
 	ldh a, [hBankSRAM]
 	or a
 	ret nz

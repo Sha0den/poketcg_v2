@@ -1,96 +1,3 @@
-; currently an unreferenced function, as are the following 4 functions
-; all are now commented out because the game doesn't appear to use binary coded decimal numbers
-; converts the two-digit BCD number provided in a to text (ascii) format,
-; writes them to [wStringBuffer] and [wStringBuffer + 1], and to the BGMap0 address at bc
-;WriteTwoDigitBCDNumber::
-;	push hl
-;	push bc
-;	push de
-;	ld hl, wStringBuffer
-;	push hl
-;	push bc
-;	call WriteBCDNumberInTextFormat
-;	pop bc
-;	call BCCoordToBGMap0Address
-;	pop hl
-;	ld b, 2
-;	call JPHblankCopyDataHLtoDE
-;	pop de
-;	pop bc
-;	pop hl
-;	ret
-
-; currently an unreferenced function
-; converts the one-digit BCD number provided in the lower nybble of a to text
-; (ascii) format, and writes it to [wStringBuffer] and to the BGMap0 address at bc
-;WriteOneDigitBCDNumber::
-;	push hl
-;	push bc
-;	push de
-;	ld hl, wStringBuffer
-;	push hl
-;	push bc
-;	call WriteBCDDigitInTextFormat
-;	pop bc
-;	call BCCoordToBGMap0Address
-;	pop hl
-;	ld b, 1
-;	call JPHblankCopyDataHLtoDE
-;	pop de
-;	pop bc
-;	pop hl
-;	ret
-
-; currently an unreferenced function
-; converts the four-digit BCD number provided in h and l to text (ascii) format,
-; writes them to [wStringBuffer] through [wStringBuffer + 3], and to the BGMap0 address at bc
-;WriteFourDigitBCDNumber::
-;	push hl
-;	push bc
-;	push de
-;	ld e, l
-;	ld d, h
-;	ld hl, wStringBuffer
-;	push hl
-;	push bc
-;	ld a, d
-;	call WriteBCDNumberInTextFormat
-;	ld a, e
-;	call WriteBCDNumberInTextFormat
-;	pop bc
-;	call BCCoordToBGMap0Address
-;	pop hl
-;	ld b, 4
-;	call JPHblankCopyDataHLtoDE
-;	pop de
-;	pop bc
-;	pop hl
-;	ret
-
-; currently an unreferenced function
-; given two BCD digits in the two nybbles of register a,
-; write them in text (ascii) format to hl (most significant nybble first).
-; numbers above 9 end up converted to half-width font tiles.
-;WriteBCDNumberInTextFormat::
-;	push af
-;	swap a
-;	call WriteBCDDigitInTextFormat
-;	pop af
-;	fallthrough
-
-; currently an unreferenced function
-; given a BCD digit in the (lower nybble) of register a, write it in text (ascii)
-;  format to hl. numbers above 9 end up converted to half-width font tiles.
-;WriteBCDDigitInTextFormat::
-;	and $0f
-;	add "0"
-;	cp "9" + 1
-;	jr c, .write_num
-;	add $07
-;.write_num
-;	ld [hli], a
-;	ret
-
 ; currently an unreferenced function
 ; converts the one-byte number at a to text (ascii) format,
 ; and writes it to [wStringBuffer] and the BGMap0 address at bc
@@ -164,3 +71,98 @@ TwoByteNumberToText::
 	sbc b
 	ld h, a
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; converts the two-digit BCD number provided in a to text (ascii) format,
+; writes them to [wStringBuffer] and [wStringBuffer + 1], and to the BGMap0 address at bc
+;WriteTwoDigitBCDNumber::
+;	push hl
+;	push bc
+;	push de
+;	ld hl, wStringBuffer
+;	push hl
+;	push bc
+;	call WriteBCDNumberInTextFormat
+;	pop bc
+;	call BCCoordToBGMap0Address
+;	pop hl
+;	ld b, 2
+;	call JPHblankCopyDataHLtoDE
+;	pop de
+;	pop bc
+;	pop hl
+;	ret
+;
+;
+; converts the one-digit BCD number provided in the lower nybble of a to text
+; (ascii) format, and writes it to [wStringBuffer] and to the BGMap0 address at bc
+;WriteOneDigitBCDNumber::
+;	push hl
+;	push bc
+;	push de
+;	ld hl, wStringBuffer
+;	push hl
+;	push bc
+;	call WriteBCDDigitInTextFormat
+;	pop bc
+;	call BCCoordToBGMap0Address
+;	pop hl
+;	ld b, 1
+;	call JPHblankCopyDataHLtoDE
+;	pop de
+;	pop bc
+;	pop hl
+;	ret
+;
+;
+; converts the four-digit BCD number provided in h and l to text (ascii) format,
+; writes them to [wStringBuffer] through [wStringBuffer + 3], and to the BGMap0 address at bc
+;WriteFourDigitBCDNumber::
+;	push hl
+;	push bc
+;	push de
+;	ld e, l
+;	ld d, h
+;	ld hl, wStringBuffer
+;	push hl
+;	push bc
+;	ld a, d
+;	call WriteBCDNumberInTextFormat
+;	ld a, e
+;	call WriteBCDNumberInTextFormat
+;	pop bc
+;	call BCCoordToBGMap0Address
+;	pop hl
+;	ld b, 4
+;	call JPHblankCopyDataHLtoDE
+;	pop de
+;	pop bc
+;	pop hl
+;	ret
+;
+;
+; given two BCD digits in the two nybbles of register a,
+; write them in text (ascii) format to hl (most significant nybble first).
+; numbers above 9 end up converted to half-width font tiles.
+;WriteBCDNumberInTextFormat::
+;	push af
+;	swap a
+;	call WriteBCDDigitInTextFormat
+;	pop af
+;	; fallthrough
+;
+; given a BCD digit in the (lower nybble) of register a, write it in text (ascii)
+;  format to hl. numbers above 9 end up converted to half-width font tiles.
+;WriteBCDDigitInTextFormat::
+;	and $0f
+;	add "0"
+;	cp "9" + 1
+;	jr c, .write_num
+;	add $07
+;.write_num
+;	ld [hli], a
+;	ret

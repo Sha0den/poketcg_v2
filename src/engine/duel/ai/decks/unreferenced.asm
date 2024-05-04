@@ -1,4 +1,9 @@
-AIActionTable_Unreferenced: ; unreferenced
+;----------------------------------------
+;  THIS FILE WAS REMOVED FROM THE BUILD
+;----------------------------------------
+
+; unreferenced function
+AIActionTable_Unreferenced:
 	dw $406c
 	dw .do_turn
 	dw .do_turn

@@ -1,10 +1,15 @@
+;----------------------------------------
+;  THIS FILE WAS REMOVED FROM THE BUILD
+;----------------------------------------
+
+; contents of function were commented out by the develepors
 Func_1c865:
 	ret
 
-; debug function
+; unreferenced debug function
 ; adjusts hSCX and hSCY by using the arrow keys
 ; pressing B makes it scroll faster
-Func_1c866: ; unreferenced
+Func_1c866:
 	ldh a, [hKeysHeld]
 	and B_BUTTON
 	call nz, .asm_1c86d ; executes following part twice
@@ -36,8 +41,9 @@ Func_1c866: ; unreferenced
 	ldh [hSCY], a
 	ret
 
+; unreferenced debug function
 ; sets some flags on a given sprite
-Func_1c890: ; unreferenced
+Func_1c890:
 	ld a, [wVBlankCounter]
 	and %111111
 	ret nz

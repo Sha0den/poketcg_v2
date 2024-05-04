@@ -132,17 +132,6 @@ RunOverworldScript::
 	pop bc
 	jp hl
 
-; unreferenced function
-;Func_3b11::
-;	ldh a, [hBankROM]
-;	push af
-;	ld a, BANK(_GameLoop)
-;	call BankswitchROM
-;	call _GameLoop
-;	pop af
-;	call BankswitchROM
-;	ret
-
 ResetAnimationQueue::
 	ldh a, [hBankROM]
 	push af
@@ -170,3 +159,18 @@ FinishQueuedAnimations::
 	pop af
 	call BankswitchROM
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+;Func_3b11::
+;	ldh a, [hBankROM]
+;	push af
+;	ld a, BANK(_GameLoop)
+;	call BankswitchROM
+;	call _GameLoop
+;	pop af
+;	call BankswitchROM
+;	ret

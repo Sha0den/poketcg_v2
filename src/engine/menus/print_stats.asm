@@ -19,7 +19,7 @@ LoadCollectedMedalTilemaps:
 	ld a, EVENT_MEDAL_FLAGS
 	farcall GetEventValue
 	or a
-	jr z, .done ; no medals?
+	ret z ; no medals?
 
 ; load tilemaps of only the collected medals
 	ld c, NUM_MEDALS
@@ -59,7 +59,6 @@ LoadCollectedMedalTilemaps:
 	ld [wd4cb], a
 	ld a, $76
 	farcall SetBGPAndLoadedPal
-.done
 	ret
 
 MedalCoordsAndTilemaps:
@@ -166,12 +165,11 @@ ConvertWordToNumericalDigits:
 .loop_digits
 	ld a, [hl]
 	cp SYM_0
-	jr nz, .done ; reached a non-zero digit?
+	ret nz ; reached a non-zero digit?
 	ld [hl], SYM_SPACE
 	inc hl
 	dec c
 	jr nz, .loop_digits
-.done
 	ret
 
 .GetNumberSymbol

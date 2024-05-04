@@ -4,7 +4,7 @@ DebugLookAtSprite:
 	ret
 
 DebugVEffect:
-	farcall Func_80cd6
+;	farcall Func_80cd6 ; this function was commented out by the developers
 	scf
 	ret
 
@@ -71,7 +71,7 @@ DebugCredits:
 	ret
 
 DebugCGBTest:
-	farcall Func_1c865
+;	farcall Func_1c865 ; this function was commented out by the developers
 	scf
 	ret
 

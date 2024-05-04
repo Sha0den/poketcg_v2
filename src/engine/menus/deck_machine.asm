@@ -216,10 +216,6 @@ GiftCenter_SendCard:
 	xor a
 	ret
 
-; never reached
-	scf
-	ret
-
 GiftCenter_ReceiveCard:
 	xor a
 	ld [wDuelTempList], a
@@ -1098,30 +1094,6 @@ PrintNumSavedDecks:
 	ld a, SYM_SLASH
 	ld [hli], a
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
-	call ConvertToNumericalDigits
-	ld [hl], TX_END
-	lb de, 14, 1
-	call InitTextPrinting
-	ld hl, wDefaultText
-	call ProcessText
-	ret
-
-; prints "X/Y" where X is the current list index
-; and Y is the total number of saved decks
-; unreferenced?
-Func_b568:
-	ld a, [wCardListCursorPos]
-	ld b, a
-	ld a, [wCardListVisibleOffset]
-	add b
-	inc a
-	ld hl, wDefaultText
-	call ConvertToNumericalDigits
-	ld a, TX_SYMBOL
-	ld [hli], a
-	ld a, SYM_SLASH
-	ld [hli], a
-	ld a, [wNumSavedDecks]
 	call ConvertToNumericalDigits
 	ld [hl], TX_END
 	lb de, 14, 1
@@ -2289,3 +2261,31 @@ GiftCenter_ReceiveDeck:
 	call DisableSRAM
 	xor a
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; prints "X/Y" where X is the current list index
+; and Y is the total number of saved decks
+;Func_b568:
+;	ld a, [wCardListCursorPos]
+;	ld b, a
+;	ld a, [wCardListVisibleOffset]
+;	add b
+;	inc a
+;	ld hl, wDefaultText
+;	call ConvertToNumericalDigits
+;	ld a, TX_SYMBOL
+;	ld [hli], a
+;	ld a, SYM_SLASH
+;	ld [hli], a
+;	ld a, [wNumSavedDecks]
+;	call ConvertToNumericalDigits
+;	ld [hl], TX_END
+;	lb de, 14, 1
+;	call InitTextPrinting
+;	ld hl, wDefaultText
+;	call ProcessText
+;	ret

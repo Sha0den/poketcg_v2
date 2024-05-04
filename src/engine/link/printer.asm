@@ -329,12 +329,6 @@ ResetPrinterCommunicationSettings:
 	pop af
 	ret
 
-; send some bytes through serial
-Func_1a080: ; unreferenced
-	ld bc, 0
-	lb de, PRINTERPKT_NUL, FALSE
-;	fallthrough
-
 ; send printer packet:
 ; - d = PRINTERPKT_* constant
 ; - e = in case of PRINTERPKT_DATA, whether it's compressed
@@ -436,7 +430,7 @@ TryInitPrinterCommunications:
 	ld bc, 0
 	lb de, PRINTERPKT_INIT, FALSE
 	call SendPrinterPacket
-	jr nc, .no_carry
+	ret nc
 	ld hl, wPrinterInitAttempts
 	inc [hl]
 	ld a, [hl]
@@ -444,8 +438,6 @@ TryInitPrinterCommunications:
 	jr c, .wait_input
 	; time out
 	scf
-	ret
-.no_carry
 	ret
 
 .b_button
@@ -570,21 +562,6 @@ GetPrinterContrastSerialData:
 
 .contrast_level_data
 	db $00, $20, $40, $60, $7f
-
-Func_1a14b: ; unreferenced
-	ld a, $01
-	jr .asm_1a15d
-	ld a, $02
-	jr .asm_1a15d
-	ld a, $03
-	jr .asm_1a15d
-	ld a, $04
-	jr .asm_1a15d
-	ld a, $05
-.asm_1a15d
-	ld [wce9d], a
-	scf
-	ret
 
 ; a = saved deck index to print
 _PrintDeckConfiguration:
@@ -1207,3 +1184,30 @@ CheckDataCompression:
 	dec e
 	dec e
 	jr .no_carry
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; send some bytes through serial
+;Func_1a080:
+;	ld bc, 0
+;	lb de, PRINTERPKT_NUL, FALSE
+;	jp SendPrinterPacket
+;
+;
+;Func_1a14b:
+;	ld a, $01
+;	jr .asm_1a15d
+;	ld a, $02
+;	jr .asm_1a15d
+;	ld a, $03
+;	jr .asm_1a15d
+;	ld a, $04
+;	jr .asm_1a15d
+;	ld a, $05
+;.asm_1a15d
+;	ld [wce9d], a
+;	scf
+;	ret

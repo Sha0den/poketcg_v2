@@ -404,7 +404,7 @@ InputCurDeckName:
 DeckSelectionSubMenu_SelectOrCancel:
 	ld a, [wCheckMenuCursorYPosition]
 	or a
-	jp nz, CancelDeckSelectionSubMenu
+	ret nz
 
 ; select deck
 	call CheckIfCurDeckIsValid
@@ -472,38 +472,6 @@ CheckIfCurDeckIsValid:
 	scf
 	ret ; is not valid
 
-; write to $d00a the decimal representation (number characters)
-; of the value in hl
-; unreferenced?
-Func_9001:
-	ld de, $d00a
-	ld bc, -100
-	call .GetNumberChar
-	ld bc, -10
-	call .GetNumberChar
-	ld bc, -1
-	call .GetNumberChar
-	ret
-
-.GetNumberChar
-	ld a, SYM_0 - 1
-.loop
-	inc a
-	add hl, bc
-	jr c, .loop
-	ld [de], a
-	inc de
-	ld a, l
-	sub c
-	ld l, a
-	ld a, h
-	sbc b
-	ld h, a
-	ret
-
-CancelDeckSelectionSubMenu:
-	ret
-
 DeckSelectionData:
 	textitem  2, 14, ModifyDeckText
 	textitem 12, 14, SelectDeckText
@@ -543,3 +511,36 @@ ResetCheckMenuCursorPositionAndBlink:
 	ld [wCheckMenuCursorYPosition], a
 	ld [wCheckMenuCursorBlinkCounter], a
 	ret
+
+;
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; write to $d00a the decimal representation (number characters)
+; of the value in hl
+;Func_9001:
+;	ld de, $d00a
+;	ld bc, -100
+;	call .GetNumberChar
+;	ld bc, -10
+;	call .GetNumberChar
+;	ld bc, -1
+;	call .GetNumberChar
+;	ret
+;
+;.GetNumberChar
+;	ld a, SYM_0 - 1
+;.loop
+;	inc a
+;	add hl, bc
+;	jr c, .loop
+;	ld [de], a
+;	inc de
+;	ld a, l
+;	sub c
+;	ld l, a
+;	ld a, h
+;	sbc b
+;	ld h, a
+;	ret

@@ -159,14 +159,14 @@ ImakuniPossibleRooms:
 DetermineChallengeHallEvent:
 	ld a, [wOverworldMapSelection]
 	cp OWMAP_CHALLENGE_HALL
-	jr z, .done
+	ret z
 	get_event_value EVENT_RECEIVED_LEGENDARY_CARDS
 	or a
 	jr nz, .challenge_cup_three
 ; challenge cup two
 	get_event_value EVENT_CHALLENGE_CUP_2_STATE
 	cp CHALLENGE_CUP_OVER
-	jr z, .done
+	ret z
 	or a ; cp CHALLENGE_CUP_NOT_STARTED
 	jr z, .challenge_cup_one
 	cp CHALLENGE_CUP_WON
@@ -177,14 +177,14 @@ DetermineChallengeHallEvent:
 .challenge_cup_one
 	get_event_value EVENT_CHALLENGE_CUP_1_STATE
 	cp CHALLENGE_CUP_OVER
-	jr z, .done
+	ret z
 	or a ; cp CHALLENGE_CUP_NOT_STARTED
-	jr z, .done
+	ret z
 	cp CHALLENGE_CUP_WON
-	jr z, .done
+	ret z
 	ld c, CHALLENGE_CUP_READY_TO_START
 	set_event_value EVENT_CHALLENGE_CUP_1_STATE
-	jr .done
+	ret
 .challenge_cup_three
 	call UpdateRNGSources
 	ld c, CHALLENGE_CUP_READY_TO_START
@@ -201,7 +201,6 @@ DetermineChallengeHallEvent:
 .close_challenge_cup_one
 	ld c, CHALLENGE_CUP_OVER
 	set_event_value EVENT_CHALLENGE_CUP_1_STATE
-.done
 	ret
 
 GetStackEventValue:
