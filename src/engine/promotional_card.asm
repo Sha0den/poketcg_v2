@@ -46,7 +46,7 @@ _ShowPromotionalCardScreen:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	bank1call LoadTxRam2 ; switch to bank 1, but call a home func
+	call LoadTxRam2
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a
 	pop hl

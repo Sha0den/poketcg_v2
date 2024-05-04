@@ -449,7 +449,7 @@ HandleAIPkmnPowers:
 
 .execute_effect
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	bank1call TryExecuteEffectCommandFunction
+	call TryExecuteEffectCommandFunction
 	pop bc
 	jr c, .next_3
 

@@ -1713,7 +1713,8 @@ _DisplayCardDetailScreen:
 	call DrawWideTextBox_WaitForInput
 	ret
 
-Func_4b38:
+; formerly Func_4b38
+DisplayCardListDetails:
 	ld a, [wDuelTempList]
 	cp $ff
 	ret z
@@ -2294,7 +2295,8 @@ PlayShuffleAndDrawCardsAnimation:
 	pop bc
 	ret
 
-Func_4f2d:
+; formerly Func_4f2d
+DeckShuffleAnimation:
 	ld a, [wDuelDisplayedScreen]
 	cp SHUFFLE_DECK
 	jr z, .skip_draw_scene
@@ -6820,7 +6822,7 @@ OppAction_AttemptRetreat:
 	push hl
 	call LoadCardNameToTxRam2
 	pop hl
-	call DrawWideTextBox_WaitForInput_Bank1
+	call DrawWideTextBox_WaitForInput
 	ret
 
 ; play trainer card from hand
@@ -6941,7 +6943,7 @@ OppAction_UsePokemonPower:
 	ld a, [hl]
 	ld [wTxRam2_b + 1], a
 	ldtx hl, WillUseThePokemonPowerText
-	call DrawWideTextBox_WaitForInput_Bank1
+	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
 	ld a, $01
 	ld [wSkipDuelistIsThinkingDelay], a
@@ -6979,7 +6981,7 @@ OppAction_6b30:
 	push af
 	ldh a, [hTemp_ffa0]
 	ldh [hWhoseTurn], a
-	call Func_4f2d
+	call DeckShuffleAnimation
 	pop af
 	ldh [hWhoseTurn], a
 	ret
@@ -7034,10 +7036,6 @@ LoadCardNameToTxRam2_b:
 	ld [wTxRam2_b], a
 	ld a, [wLoadedCard1Name + 1]
 	ld [wTxRam2_b + 1], a
-	ret
-
-DrawWideTextBox_WaitForInput_Bank1:
-	call DrawWideTextBox_WaitForInput
 	ret
 
 Func_6ba2:
@@ -7640,7 +7638,7 @@ ReplaceKnockedOutPokemon:
 	jr nc, .can_replace_pokemon
 
 ; if we made it here, the duelist can't replace the knocked out Pokemon
-	bank1call DrawDuelMainScene
+	call DrawDuelMainScene
 	ldtx hl, ThereAreNoPokemonInPlayAreaText
 	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
@@ -7654,7 +7652,7 @@ ReplaceKnockedOutPokemon:
 	jr nz, .opponent
 
 ; prompt the player to replace the knocked out Pokemon with one from bench
-	bank1call DrawDuelMainScene
+	call DrawDuelMainScene
 	ldtx hl, ChooseNextActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	ld a, $01
@@ -7680,7 +7678,7 @@ ReplaceKnockedOutPokemon:
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
 	ldtx hl, DuelistPlacedACardText
-	bank1call DisplayCardDetailScreen
+	call DisplayCardDetailScreen
 	call ExchangeRNG
 	or a
 	ret
@@ -7696,7 +7694,7 @@ ReplaceKnockedOutPokemon:
 
 ; wait for link opponent to replace the knocked out Pokemon with one from bench
 .link_opponent
-	bank1call DrawDuelMainScene
+	call DrawDuelMainScene
 	ldtx hl, DuelistIsSelectingPokemonToPlaceInArenaText
 	call DrawWideTextBox_PrintText
 	call SerialRecv8Bytes
@@ -7708,11 +7706,11 @@ Func_6fa5:
 	ret nc
 	; at least one Pokemon knocked out
 	call SwapTurn
-	bank1call TurnDuelistTakePrizes
+	call TurnDuelistTakePrizes
 	call SwapTurn
 	ret nc
 	call SwapTurn
-	bank1call DrawDuelMainScene
+	call DrawDuelMainScene
 	ldtx hl, TookAllThePrizesText
 	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
@@ -8652,7 +8650,7 @@ Func_74dc:
 .got_card_id
 	ld [wPrizeCardSelectionFrameCounter], a
 	lb bc, 5, 5
-	bank1call WriteTwoByteNumberInTxSymbolFormat
+	call WriteTwoByteNumberInTxSymbolFormat
 	ldh a, [hKeysPressed]
 	and START
 	jr z, .wait_input

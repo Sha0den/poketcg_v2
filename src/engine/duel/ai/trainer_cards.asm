@@ -59,7 +59,7 @@ _AIProcessHandTrainerCards:
 
 ; if Headache effects prevent playing card
 ; move on to the next item in list.
-	bank1call CheckCantUseTrainerDueToHeadache
+	call CheckCantUseTrainerDueToHeadache
 	jp c, .next_in_data
 
 	call LoadNonPokemonCardEffectCommands
@@ -802,7 +802,7 @@ AIDecide_Pluspower1:
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
-	bank1call HandleNoDamageOrEffectSubstatus
+	call HandleNoDamageOrEffectSubstatus
 	call SwapTurn
 	jr c, .no_carry
 
@@ -4248,7 +4248,7 @@ AIPlay_Recycle:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
 	ldtx de, TrainerCardSuccessCheckText
-	bank1call TossCoin
+	call TossCoin
 	jr nc, .asm_216ae
 	ld a, [wAITrainerCardParameter]
 	ldh [hTemp_ffa0], a
@@ -4800,7 +4800,7 @@ AIPlay_Pokeball:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
 	ldtx de, TrainerCardSuccessCheckText
-	bank1call TossCoin
+	call TossCoin
 	ldh [hTemp_ffa0], a
 	jr nc, .asm_219bc
 	ld a, [wAITrainerCardParameter]

@@ -203,7 +203,7 @@ GiftCenter_SendCard:
 	call CopyListFromHLToDE
 	xor a
 	ld [wNameBuffer], a
-	bank1call SendCard
+	call SendCard
 	ret c
 	call EnableSRAM
 	ld hl, wCurDeckCards
@@ -224,7 +224,7 @@ GiftCenter_ReceiveCard:
 	xor a
 	ld [wDuelTempList], a
 	ld [wNameBuffer], a
-	bank1call ReceiveCard
+	call ReceiveCard
 	ret c
 
 	call EnableSRAM

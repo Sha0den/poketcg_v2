@@ -207,7 +207,7 @@ FindBasicEnergy:
 	or a
 	ret
 .play_sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .read_input
 
 .try_exit
@@ -285,7 +285,7 @@ FindBasicEnergyToAttach:
 	ret
 
 .play_sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .select_card
 
 .try_cancel
@@ -356,7 +356,7 @@ FindAnyPokemon:
 	ret
 
 .play_sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .read_input
 
 .try_exit
@@ -396,7 +396,7 @@ FindEvolution:
 	or a
 	ret
 .play_sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .read_input
 
 .try_exit
@@ -467,7 +467,7 @@ FindBasicPokemon:
 
 .play_sfx
 	; play SFX and loop back
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop
 
 .pressed_b
@@ -551,7 +551,7 @@ FindBasicFightingPokemon:
 
 .play_sfx
 	; play SFX and loop back
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop
 
 .pressed_b
@@ -636,7 +636,7 @@ FindNidoran:
 
 .play_sfx
 	; play SFX and loop back
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop
 
 .pressed_b
@@ -717,7 +717,7 @@ FindOddish:
 
 .play_sfx
 	; play SFX and loop back
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop
 
 .pressed_b
@@ -793,7 +793,7 @@ FindBellsprout:
 
 .play_sfx
 	; play SFX and loop back
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop
 
 .pressed_b
@@ -869,7 +869,7 @@ FindKrabby:
 
 .play_sfx
 	; play SFX and loop back
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop
 
 .pressed_b

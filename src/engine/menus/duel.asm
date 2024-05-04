@@ -1148,7 +1148,7 @@ DrawInPlayArea_Icons:
 ; discard pile
 	ldh a, [hWhoseTurn]
 	ld d, a
-	ld e, $ed
+	ld e, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	ld a, [de]
 	ld b, a
 	ld a, $d8 ; discard pile tile

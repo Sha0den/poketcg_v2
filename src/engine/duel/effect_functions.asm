@@ -243,6 +243,23 @@ TossCoinATimes_BankB:
 	call TossCoinATimes
 	ret
 
+; formerly Func_2c08a
+Serial_TossCoin:
+	ld a, $1
+;	fallthrough
+
+; formerly Func_2c08c
+Serial_TossCoinATimes:
+	push de
+	push af
+	ld a, OPPACTION_TOSS_COIN_A_TIMES
+	call SetOppAction_SerialSendDuelData
+	pop af
+	pop de
+	call SerialSend8Bytes
+	call TossCoinATimes
+	ret
+
 ; overwrites wDamage, wAIMinDamage and wAIMaxDamage with the value in a.
 SetDefiniteDamage:
 	ld [wDamage], a
@@ -259,21 +276,6 @@ SetDefiniteAIDamage:
 	ld [wAIMaxDamage], a
 	ret
 
-Func_2c08a:
-	ld a, $1
-;	fallthrough
-
-Func_2c08c:
-	push de
-	push af
-	ld a, OPPACTION_TOSS_COIN_A_TIMES
-	call SetOppAction_SerialSendDuelData
-	pop af
-	pop de
-	call SerialSend8Bytes
-	call TossCoinATimes
-	ret
-
 Func_2c10b:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	bank1call Func_61a1
@@ -281,9 +283,10 @@ Func_2c10b:
 	bank1call Func_6194
 	ret
 
+; formerly Func_2fea9
 ; input:
 ;	a = attack animation to play
-Func_2fea9:
+PlayTrainerEffectAnimation:
 	ld [wLoadedAttackAnimation], a
 	bank1call Func_7415
 	ld bc, $0
@@ -715,9 +718,10 @@ AddCardFromDeckToHandEffect:
 .done
 ;	fallthrough
 
+; formerly Func_2c0bd
 ShuffleCardsInDeck:
 	call ExchangeRNG
-	bank1call Func_4f2d
+	bank1call DeckShuffleAnimation
 	call ShuffleDeck
 	ret
 
@@ -1230,7 +1234,7 @@ EnergyConversion_RecoilAndMoveCardsToHand:
 .done
 	call IsPlayerTurn
 	ret c
-	bank1call Func_4b38
+	bank1call DisplayCardListDetails
 	ret
 
 EnergyAbsorption_AttachEffect:
@@ -1512,7 +1516,7 @@ PsychicRecover_AISelection:
 
 RemoveSpecialConditionsEffect:
 	ld a, ATK_ANIM_FULL_HEAL
-	call Func_2fea9
+	call PlayTrainerEffectAnimation
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetTurnDuelistVariable
 	ld [hl], NO_STATUS
@@ -1826,7 +1830,7 @@ ApplySubstatus2ToDefendingCard:
 	call GetNonTurnDuelistVariable
 	pop af
 	ld [hl], a
-	ld l, $f6
+	ld l, DUELVARS_ARENA_CARD_LAST_TURN_SUBSTATUS2
 	ld [hl], a
 	ret
 
@@ -2674,7 +2678,7 @@ OpponentSwitchesActive50Percent_SelectEffect:
 ; toss coin and store whether it was tails (0) or heads (1) in hTemp_ffa0.
 ; return if it was tails.
 	ldtx de, IfHeadsChangeOpponentsActivePokemonText
-	call Func_2c08a
+	call Serial_TossCoin
 	ldh [hTemp_ffa0], a
 	ret nc
 
@@ -2780,7 +2784,7 @@ SwitchDefendingPokemon_SwitchEffect:
 GustOfWind_SwitchEffect:
 ; play whirlwind animation
 	ld a, ATK_ANIM_GUST_OF_WIND
-	call Func_2fea9
+	call PlayTrainerEffectAnimation
 
 ; switch Active Pokemon
 	call SwapTurn
@@ -4301,7 +4305,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	call .CheckIfChosenAlready
 	jr nc, .not_chosen
 	; play SFX
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop_input
 
 .not_chosen
@@ -5180,7 +5184,7 @@ HandlePlayerMetronomeEffect:
 	; successful
 
 ; send data to link opponent
-	bank1call SendAttackDataToLinkOpponent
+	call SendAttackDataToLinkOpponent
 	ld a, OPPACTION_USE_METRONOME_ATTACK
 	call SetOppAction_SerialSendDuelData
 	ld hl, wMetronomeSelectedAttack
@@ -5561,7 +5565,7 @@ EnergyTrans_TransferEffect:
 	jr .draw_play_area
 
 .play_sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop_input_take
 
 ; returns carry if no Grass Energy cards attached to card in Play Area location of a.
@@ -5811,7 +5815,7 @@ Shift_ChangeColorEffect:
 ; or if the Active Pokemon is not Charizard
 ;EnergyBurnCheck_Unreferenced:
 ;	xor a
-;	bank1call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+;	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 ;	ret c
 ;	ld a, DUELVARS_ARENA_CARD
 ;	push de
@@ -6023,7 +6027,7 @@ Quickfreeze_Paralysis50PercentEffect:
 ; tails
 	call SetWasUnsuccessful
 	bank1call DrawDuelMainScene
-	bank1call PrintFailedEffectText
+	call PrintFailedEffectText
 	call WaitForWideTextBoxInput
 	ret
 
@@ -6039,7 +6043,7 @@ Quickfreeze_Paralysis50PercentEffect:
 	bank1call WaitAttackAnimation
 	bank1call ApplyStatusConditionQueue
 	bank1call DrawDuelHUDs
-	bank1call PrintFailedEffectText
+	call PrintFailedEffectText
 	call c, WaitForWideTextBoxInput
 	ret
 
@@ -6213,7 +6217,7 @@ DamageSwap_SelectAndSwapEffect:
 	jr .start
 
 .no_damage
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop_input_first
 
 ; tries to give damage counter to hPlayAreaEffectTarget,
@@ -6324,7 +6328,7 @@ StrangeBehavior_SelectAndSwapEffect:
 	jr .start
 
 .play_sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop_input
 
 StrangeBehavior_SwapEffect:
@@ -6402,7 +6406,7 @@ Curse_PlayerSelection:
 	or a
 	jr nz, .picked_first ; test if has damage
 	; play sfx
-	call Func_3794
+	call PlaySFX_InvalidChoice
 	jr .loop_input_first
 
 .picked_first
@@ -7095,7 +7099,7 @@ SuperEnergyRemoval_PlayerSelection:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hPlayAreaEffectTarget], a
 ; store which energy card to discard from it
-	bank1call CreateArenaOrBenchEnergyCardList
+	call CreateArenaOrBenchEnergyCardList
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	bank1call DisplayEnergyDiscardScreen
 	ld a, 2
@@ -7256,7 +7260,7 @@ EnergyRetrieval_DiscardAndAddToHandEffect:
 .done
 	call IsPlayerTurn
 	ret c
-	bank1call Func_4b38
+	bank1call DisplayCardListDetails
 	ret
 
 ; returns carry if not enough cards in hand to discard
@@ -7333,7 +7337,7 @@ SuperEnergyRetrieval_DiscardAndAddToHandEffect:
 	call IsPlayerTurn
 	ret c
 ; if not, show card list selected by Opponent
-	bank1call Func_4b38
+	bank1call DisplayCardListDetails
 	ret
 
 GamblerEffect:
@@ -7445,7 +7449,7 @@ ImakuniEffect:
 .failed
 ; play confusion animation and print failure text
 	ld a, ATK_ANIM_OWN_CONFUSION
-	call Func_2fea9
+	call PlayTrainerEffectAnimation
 	ldtx hl, ThereWasNoEffectText
 	call DrawWideTextBox_WaitForInput
 	ret
@@ -7453,7 +7457,7 @@ ImakuniEffect:
 .success
 ; play confusion animation and confuse card
 	ld a, ATK_ANIM_OWN_CONFUSION
-	call Func_2fea9
+	call PlayTrainerEffectAnimation
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetTurnDuelistVariable
 	and PSN_DBLPSN
@@ -7684,7 +7688,7 @@ PlusPowerEffect:
 
 PokeBall_PlayerSelection:
 	ldtx de, TrainerCardSuccessCheckText
-	call Func_2c08a
+	call Serial_TossCoin
 	ldh [hTempList], a ; store coin result
 	ret nc
 	farcall FindAnyPokemon
@@ -7714,7 +7718,7 @@ PokeBall_AddToHandEffect:
 PokemonBreederCheck:
 	call CreatePlayableStage2PokemonCardListFromHand
 	jr c, .cannot_evolve
-	bank1call IsPrehistoricPowerActive
+	call IsPrehistoricPowerActive
 	ret
 .cannot_evolve
 	ldtx hl, ConditionsForEvolvingToStage2NotFulfilledText
@@ -7794,7 +7798,7 @@ PokemonBreeder_EvolveEffect:
 	call PlaySFX
 	ldtx hl, PokemonEvolvedIntoPokemonText
 	call DrawWideTextBox_WaitForInput
-	bank1call ProcessPlayedPokemonCard
+	call ProcessPlayedPokemonCard
 	pop af
 	ldh [hTempCardIndex_ff9f], a
 	ret
@@ -8198,7 +8202,7 @@ ProfessorOakEffect:
 
 Recycle_PlayerSelection:
 	ldtx de, TrainerCardSuccessCheckText
-	call Func_2c08a
+	call Serial_TossCoin
 	jr nc, .tails
 
 	call CreateDiscardPileCardList
@@ -8476,7 +8480,7 @@ SuperPotion_PlayerSelection:
 ; Pokemon has damage and Energy cards attached,
 ; prompt the Player for Energy selection to discard.
 	ldh a, [hCurMenuItem]
-	bank1call CreateArenaOrBenchEnergyCardList
+	call CreateArenaOrBenchEnergyCardList
 	ldh a, [hCurMenuItem]
 	bank1call DisplayEnergyDiscardScreen
 	bank1call HandleEnergyDiscardMenuInput
@@ -8529,7 +8533,7 @@ HandlePokemonAndEnergySelectionScreen:
 
 .has_energy
 	ldh a, [hCurMenuItem]
-	bank1call CreateArenaOrBenchEnergyCardList
+	call CreateArenaOrBenchEnergyCardList
 	ldh a, [hCurMenuItem]
 	bank1call DisplayEnergyDiscardScreen
 	bank1call HandleEnergyDiscardMenuInput
@@ -8557,9 +8561,10 @@ SwitchEffect:
 ;
 ; (16) THESE FUNCTIONS WERE ALL UNUSED, SO I COMMENTED THEM OUT.
 ;
-;Func_2c087:
+; formerly Func_2c08c
+;Serial_TossZeroCoins:
 ;	xor a
-;	jr Func_2c08c
+;	jr Serial_TossCoinATimes
 ;
 ;Func_2c0a8:
 ;	ldh a, [hTemp_ffa0]
@@ -8568,7 +8573,7 @@ SwitchEffect:
 ;	ldh [hTemp_ffa0], a
 ;	ld a, OPPACTION_6B30
 ;	call SetOppAction_SerialSendDuelData
-;	bank1call Func_4f2d
+;	bank1call DeckShuffleAnimation
 ;	ld c, a
 ;	pop af
 ;	ldh [hTemp_ffa0], a

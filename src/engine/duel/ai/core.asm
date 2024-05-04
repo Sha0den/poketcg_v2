@@ -346,7 +346,7 @@ CheckIfSelectedAttackIsUnusable:
 	or a
 	jr nz, .bench
 
-	bank1call HandleCantAttackSubstatus
+	call HandleCantAttackSubstatus
 	ret c
 	bank1call CheckIfActiveCardParalyzedOrAsleep
 	ret c
@@ -407,7 +407,7 @@ CheckEnergyNeededForAttack:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	bank1call HandleEnergyBurn
+	call HandleEnergyBurn
 
 	xor a
 	ld [wTempLoadedAttackEnergyCost], a
@@ -590,7 +590,7 @@ CheckIfCardCanBePlayed:
 	ret
 
 .evolution_card
-	bank1call IsPrehistoricPowerActive
+	call IsPrehistoricPowerActive
 	ret c
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -611,7 +611,7 @@ CheckIfCardCanBePlayed:
 	ret
 
 .trainer_card
-	bank1call CheckCantUseTrainerDueToHeadache
+	call CheckCantUseTrainerDueToHeadache
 	ret c
 	call LoadNonPokemonCardEffectCommands
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
@@ -880,7 +880,7 @@ CheckEnergyNeededForAttackAfterDiscard:
 	dec [hl]
 
 .asm_1570c
-	bank1call HandleEnergyBurn
+	call HandleEnergyBurn
 	xor a
 	ld [wTempLoadedAttackEnergyCost], a
 	ld [wTempLoadedAttackEnergyNeededAmount], a
@@ -2162,7 +2162,7 @@ CheckIfNoSurplusEnergyForAttack:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	bank1call HandleEnergyBurn
+	call HandleEnergyBurn
 	xor a
 	ld [wTempLoadedAttackEnergyCost], a
 	ld [wTempLoadedAttackEnergyNeededAmount], a

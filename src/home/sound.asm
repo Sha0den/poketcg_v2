@@ -18,7 +18,8 @@ AssertSFXFinished::
 	farcall _AssertSFXFinished
 	ret
 
-Func_3794::
+; formerly Func_3794
+PlaySFX_InvalidChoice::
 	ld a, SFX_04
 PlaySFX::
 	farcall _PlaySFX

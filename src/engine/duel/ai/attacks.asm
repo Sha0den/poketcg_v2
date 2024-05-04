@@ -208,7 +208,7 @@ GetAIScoreOfAttack:
 ; has a residual effect, or if it can damage the opposing bench.
 ; If none of those are true, render the attack unusable.
 ; also if it's a PKMN power, consider it unusable as well.
-	bank1call HandleNoDamageOrEffectSubstatus
+	call HandleNoDamageOrEffectSubstatus
 	call SwapTurn
 	jr nc, .check_if_can_ko
 
