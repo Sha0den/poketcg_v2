@@ -408,12 +408,9 @@ AIDecideWhetherToRetreat:
 ; if wAIScore is at least 131, set carry
 	ld a, [wAIScore]
 	cp 131
-	jr nc, .set_carry
+	jp nc, SetCarryAICore
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; set carry regardless if active card is
@@ -440,7 +437,7 @@ AIDecideWhetherToRetreat:
 	call CheckIfCanDamageDefendingPokemon
 	pop de
 	jr nc, .loop_ko_3
-	jr .set_carry
+	jp SetCarryAICore
 
 ; if player's turn and loaded attack is not a Pokémon Power OR
 ; if opponent's turn and wAITriedAttack == 0
@@ -846,9 +843,9 @@ AITryToRetreat:
 	ld b, a
 	and CNF_SLP_PRZ
 	cp ASLEEP
-	jp z, .set_carry
+	jp z, SetCarryAICore
 	cp PARALYZED
-	jp z, .set_carry
+	jp z, SetCarryAICore
 	ld a, b
 	ldh [hTemp_ffa0], a
 	ld a, $ff
@@ -960,7 +957,7 @@ AITryToRetreat:
 .loop_4
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryAICore
 	ld [de], a
 	inc de
 	push de
@@ -984,9 +981,6 @@ AITryToRetreat:
 	bank1call AIMakeDecision
 	or a
 	ret
-.set_carry
-	scf
-	ret
 
 ; handle Mysterious Fossil and Clefairy Doll
 ; if there are bench Pokémon, use effect to discard card
@@ -998,7 +992,7 @@ AITryToRetreat:
 	jr nc, .has_bench
 	; doesn't have any bench
 	pop af
-	jr .set_carry
+	jp SetCarryAICore
 
 .has_bench
 	ld a, DUELVARS_ARENA_CARD

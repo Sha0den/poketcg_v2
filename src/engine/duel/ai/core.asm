@@ -40,10 +40,7 @@ CheckIfAnyDefendingPokemonAttackDealsSameDamageAsHP:
 	call GetTurnDuelistVariable
 	ld hl, wDamage
 	sub [hl]
-	jr z, .true
-	ret
-.true
-	scf
+	jp z, SetCarryAICore ; true
 	ret
 
 ; checks AI scores for all benched Pokémon
@@ -256,10 +253,9 @@ AIPickPrizeCards:
 	ld a, DUELVARS_PRIZES
 	call GetTurnDuelistVariable
 	or a
-	jr z, .done
+	ret z
 	dec b
 	jr nz, .loop
-.done
 	ret
 
 ; picks a prize card at random
@@ -1129,7 +1125,7 @@ TrySetUpBossStartingPlayArea:
 	ld de, wAICardListArenaPriority
 	ld a, d
 	or a
-	jr z, .set_carry ; return if null
+	jp z, SetCarryAICore ; return if null
 
 ; pick Arena card
 	call CreateHandCardList
@@ -1149,9 +1145,6 @@ TrySetUpBossStartingPlayArea:
 
 .done
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; runs through input card ID list in de.
@@ -1173,7 +1166,7 @@ TrySetUpBossStartingPlayArea:
 	ld a, [de]
 	inc de
 	or a
-	jr z, .not_found
+	jp z, SetCarryAICore ; not found
 	push de
 	ld e, a
 	call RemoveCardIDInList
@@ -1185,10 +1178,6 @@ TrySetUpBossStartingPlayArea:
 	call PutHandPokemonCardInPlayArea
 	pop hl
 	or a
-	ret
-
-.not_found
-	scf
 	ret
 
 INCLUDE "engine/duel/ai/retreat.asm"
@@ -1220,14 +1209,11 @@ CheckDamageToMrMime:
 	ld a, e
 	cp MR_MIME
 	pop bc
-	jr nz, .set_carry
+	jp nz, SetCarryAICore
 	ld a, b
 	call CheckIfCanDamageDefendingPokemon
-	jr c, .set_carry
+	jp c, SetCarryAICore
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; returns carry if arena card
@@ -1238,7 +1224,7 @@ CheckIfActiveCardCanKnockOut:
 	call CheckIfAnyAttackKnocksOutDefendingCard
 	jr nc, .fail
 	call CheckIfSelectedAttackIsUnusable
-	jp c, .fail
+	jr c, .fail
 	scf
 	ret
 
@@ -1257,7 +1243,7 @@ CheckIfActivePokemonCanUseAnyNonResidualAttack:
 	jr c, .next_atk
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
-	jr z, .ok
+	jp z, SetCarryAICore
 
 .next_atk
 ; second atk
@@ -1267,13 +1253,9 @@ CheckIfActivePokemonCanUseAnyNonResidualAttack:
 	jr c, .fail
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
-	jr z, .ok
+	jp z, SetCarryAICore
 .fail
 	or a
-	ret
-
-.ok
-	scf
 	ret
 
 ; looks for energy card(s) in hand depending on
@@ -2033,15 +2015,10 @@ CheckIfNoSurplusEnergyForAttack:
 	ld hl, wLoadedAttackName
 	ld a, [hli]
 	or [hl]
-	jr z, .not_attack
+	jp z, SetCarryAICore
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
-	jr nz, .is_attack
-.not_attack
-	scf
-	ret
-
-.is_attack
+	jp z, SetCarryAICore
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
@@ -2184,7 +2161,7 @@ CheckIfCanDamageDefendingPokemon:
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
 	or a
-	jr nz, .set_carry
+	jr nz, SetCarryAICore
 
 .second_attack
 	ld a, SECOND_ATTACK
@@ -2195,13 +2172,10 @@ CheckIfCanDamageDefendingPokemon:
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
 	or a
-	jr nz, .set_carry
+	jr nz, SetCarryAICore
 
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; checks if defending Pokémon can knock out
@@ -2242,9 +2216,11 @@ CheckIfDefendingPokemonCanKnockOut:
 	ld b, a
 	ld a, [wAISecondAttackDamage]
 	cp b
-	jr nc, .set_carry ; wAIFirstAttackDamage < wAISecondAttackDamage
+	jr nc, SetCarryAICore ; wAIFirstAttackDamage < wAISecondAttackDamage
 	ld a, b
-.set_carry
+;	fallthrough
+
+SetCarryAICore:
 	scf
 	ret
 
@@ -2275,11 +2251,7 @@ CheckIfDefendingPokemonCanKnockOutWithAttack:
 	call GetTurnDuelistVariable
 	ld hl, wDamage
 	sub [hl]
-	jr z, .set_carry
-	ret
-
-.set_carry
-	scf
+	jr z, SetCarryAICore
 	ret
 
 .done
@@ -2315,14 +2287,11 @@ CheckIfNotABossDeckID:
 	or a
 	jr nz, .no_carry
 	call CheckIfOpponentHasBossDeckID
-	jr nc, .set_carry
+	jr nc, SetCarryAICore
 .no_carry
 	or a
 	ret
 
-.set_carry
-	scf
-	ret
 
 ; probability to return carry:
 ; - 50% if deck AI is playing is on the list;
@@ -2671,14 +2640,11 @@ HandleLegendaryArticunoEnergyScoring:
 ;	push hl
 ;	call CheckMatchingCommand
 ;	pop hl
-;	jr nc, .set_carry
+;	jp nc, SetCarryAICore
 ;	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
 ;	call CheckMatchingCommand
-;	jr nc, .set_carry
+;	jp nc, SetCarryAICore
 ;	or a
-;	ret
-;.set_carry
-;	scf
 ;	ret
 ;
 ;

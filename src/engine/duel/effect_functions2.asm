@@ -54,17 +54,13 @@ LookForCardsInDeck:
 	dw .SearchDeckForBasicFighting
 	dw .SearchDeckForNidoran
 
-.set_carry
-	scf
-	ret
-
 ; returns carry if no card with same card ID as e is found in the player's deck
 .SearchDeckForCardID
 	ld hl, wDuelTempList
 .loop_deck_e
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF2
 	push de
 	call GetCardIDFromDeckIndex
 	ld a, e
@@ -80,7 +76,7 @@ LookForCardsInDeck:
 .loop_deck_energy
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF2
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_ENERGY_DOUBLE_COLORLESS
@@ -96,7 +92,7 @@ LookForCardsInDeck:
 .loop_deck_trainer
     ld a, [hli]
     cp $ff
-    jr z, .set_carry
+    jp z, SetCarryEF2
     call GetCardIDFromDeckIndex
     call GetCardType
     cp TYPE_TRAINER
@@ -110,7 +106,7 @@ LookForCardsInDeck:
 .loop_deck_pkmn
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jr z, SetCarryEF2
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_ENERGY
@@ -124,7 +120,7 @@ LookForCardsInDeck:
 .loop_deck_evolution
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jr z, SetCarryEF2
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
@@ -140,7 +136,7 @@ LookForCardsInDeck:
 .loop_deck_bscpkmn
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jr z, SetCarryEF2
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
@@ -156,7 +152,7 @@ LookForCardsInDeck:
 .loop_deck_fighting
 	ld a, [hli]
 	cp $ff
-	jp z, .set_carry
+	jr z, SetCarryEF2
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_PKMN_FIGHTING
@@ -172,7 +168,7 @@ LookForCardsInDeck:
 .loop_deck_nidoran
 	ld a, [hli]
 	cp $ff
-	jp z, .set_carry
+	jr z, SetCarryEF2
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp NIDORANF
@@ -181,6 +177,10 @@ LookForCardsInDeck:
 	jr nz, .loop_deck_nidoran
 .found_nidoran
 	or a
+	ret
+
+SetCarryEF2:
+	scf
 	ret
 
 FindBasicEnergy:
@@ -232,14 +232,11 @@ CheckIfCardIsBasicEnergy:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr c, .not_basic_energy
+	jr c, SetCarryEF2 ; not energy
 	cp TYPE_ENERGY_DOUBLE_COLORLESS
-	jr nc, .not_basic_energy
+	jr nc, SetCarryEF2 ; not basic energy
 ; is basic energy
 	or a
-	ret
-.not_basic_energy
-	scf
 	ret
 
 FindBasicEnergyToAttach:
@@ -421,15 +418,12 @@ CheckIfCardIsEvolution:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr nc, .not_evolution ; skip if not Pokemon card
+	jp nc, SetCarryEF2 ; skip if not Pokemon card
 	ld a, [wLoadedCard2Stage]
 	or a
-	jr z, .not_evolution
+	jp z, SetCarryEF2 ; not evolution
 ; is evolution
 	or a
-	ret
-.not_evolution
-	scf
 	ret
 
 FindBasicPokemon:

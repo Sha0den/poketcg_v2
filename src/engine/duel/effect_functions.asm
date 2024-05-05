@@ -17,16 +17,13 @@ BothPlayers_DeckCheck:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
 	cp DECK_SIZE
-	jr c, .no_carry
+	jr c, NoCarryEF
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetNonTurnDuelistVariable
 	cp DECK_SIZE
-	jr c, .no_carry
+	jr c, NoCarryEF
 	ldtx hl, NoCardsLeftInTheDeckText
 	scf
-	ret
-.no_carry
-	or a
 	ret
 
 ; return carry if not enough cards in hand for effect
@@ -82,15 +79,16 @@ PlayArea_BenchCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	cp MAX_PLAY_AREA_POKEMON
-	jr c, .no_carry
+	jr c, NoCarryEF
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	cp MAX_PLAY_AREA_POKEMON
-	jr c, .no_carry
+	jr c, NoCarryEF
 	ldtx hl, NoSpaceOnTheBenchText
 	scf
 	ret
-.no_carry
+
+NoCarryEF:
 	or a
 	ret
 
@@ -174,16 +172,13 @@ PlayAreaAttachedEnergyCheck:
 	cp TYPE_TRAINER
 	jr z, .next_card ; skip if it's a Trainer card
 	cp TYPE_ENERGY
-	jr nc, .found
+	jr nc, NoCarryEF ; found
 .next_card
 	inc l
 	ld a, l
 	cp DECK_SIZE
 	jr c, .loop_deck
 	scf
-	ret
-.found
-	or a
 	ret
 
 ; return carry if Active Pokemon has less than 2 Energy cards
@@ -324,11 +319,8 @@ IsPlayerTurn:
 	ld a, DUELVARS_DUELIST_TYPE
 	call GetTurnDuelistVariable
 	cp DUELIST_TYPE_PLAYER
-	jr z, .player
+	jp z, SetCarryEF ; player
 	or a
-	ret
-.player
-	scf
 	ret
 
 ; returns carry if Defending has No Damage or Effect
@@ -905,7 +897,7 @@ PickRandomBasicCardFromDeck:
 	ld a, [hli]
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
@@ -915,9 +907,6 @@ PickRandomBasicCardFromDeck:
 	jr nz, .loop_deck ; skip if not Basic
 	ldh a, [hTempCardIndex_ff98]
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 RandomlyFillBothBenchesEffect:
@@ -1097,12 +1086,8 @@ CreateEnergyCardListFromDiscardPile:
 ; if none were found, return carry.
 	ld a, [wDuelTempList]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF
 	or a
-	ret
-
-.set_carry
-	scf
 	ret
 
 ; returns carry if no Trainer cards are in the Discard Pile.
@@ -2222,16 +2207,13 @@ HandleColorChangeScreen:
 	call HandleMenuInput
 	jr nc, .loop_input
 	cp -1 ; b pressed?
-	jr z, .set_carry
+	jp z, SetCarryEF
 	ld e, a
 	ld d, $00
 	ld hl, ShiftListItemToColor
 	add hl, de
 	ld a, [hl]
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 .menu_params
@@ -2835,14 +2817,11 @@ CheckIfTurnDuelistHasEvolvedCards:
 .loop
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF
 	ld a, [de]
 	inc de
 	or a
 	jr z, .loop ; is Basic Stage
-	ret
-.set_carry
-	scf
 	ret
 
 ; returns carry if Player cancelled selection.
@@ -2859,7 +2838,7 @@ DevolutionBeam_PlayerSelection:
 	call TwoItemHorizontalMenu
 	ldh a, [hKeysHeld]
 	and B_BUTTON
-	jr nz, .set_carry
+	jp nz, SetCarryEF
 
 ; a Play Area was selected
 	ldh a, [hCurMenuItem]
@@ -2886,10 +2865,6 @@ DevolutionBeam_PlayerSelection:
 	jr c, .start
 	ld a, $01
 	jr .store_selection
-
-.set_carry
-	scf
-	ret
 
 DevolutionBeam_AISelection:
 	ld a, $01
@@ -4068,15 +4043,11 @@ Discard2AttachedEnergyCards_PlayerSelection:
 	inc [hl]
 	ldh a, [hCurSelectionItem]
 	cp 2
-	jr nc, .done
+	jp nc, NoCarryEF ; end loop and return when 2 have been chosen
 	ldh a, [hTempCardIndex_ff98]
 	call RemoveCardFromDuelTempList
 	bank1call DisplayEnergyDiscardMenu
 	jr .loop_input
-.done
-; return when 2 have been chosen
-	or a
-	ret
 
 Discard2AttachedEnergyCards_AISelection:
 	xor a ; PLAY_AREA_ARENA
@@ -5128,7 +5099,7 @@ MorphEffect:
 	ld a, [hli]
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
@@ -5141,9 +5112,6 @@ MorphEffect:
 	jr z, .loop_deck ; skip cards with same ID as the Active Pokemon
 	ldh a, [hTempCardIndex_ff98]
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; does nothing for AI.
@@ -5460,10 +5428,9 @@ OncePerTurnPokePowerCheck:
 	ret
 .already_used
 	ldtx hl, OnlyOncePerTurnText
-	scf
-	ret
+;	fallthrough
 
-NoEffect_SetCarry:
+SetCarryEF:
 	scf
 	ret
 
@@ -5855,11 +5822,8 @@ Shift_ChangeColorEffect:
 ;	ld a, e
 ;	pop de
 ;	cp CHARIZARD
-;	jr nz, .not_charizard
+;	jp nz, SetCarryEF
 ;	or a
-;	ret
-;.not_charizard
-;	scf
 ;	ret
 
 Firegiver_AddToHandEffect:
@@ -6268,7 +6232,7 @@ TryGiveDamageCounter:
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	sub 10
-	jr z, .set_carry ; would bring HP to zero?
+	jp z, SetCarryEF ; would bring HP to zero?
 ; has enough HP to receive a damage counter
 	ld [hl], a
 	ldh a, [hTempPlayAreaLocation_ffa1]
@@ -6279,9 +6243,6 @@ TryGiveDamageCounter:
 	ld [hl], a
 	or a
 	ret
-.set_carry
-	scf
-	ret
 
 ; returns carry if Strange Behavior cannot be used.
 StrangeBehaviorCheck:
@@ -6290,21 +6251,17 @@ StrangeBehaviorCheck:
 	ldh [hTemp_ffa0], a
 	call PlayAreaDamageCheck
 	ldtx hl, NoPokemonWithDamageCountersText
-	jr c, .set_carry
+	jp c, SetCarryEF
 ; can Slowbro receive any damage counters without KO-ing?
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	ldtx hl, CannotUseBecauseItWillBeKnockedOutText
 	cp 10 + 10
-	jr c, .set_carry
+	jp c, SetCarryEF
 ; can Pokemon Power be used?
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
-
-.set_carry
-	scf
 	ret
 
 StrangeBehavior_SelectAndSwapEffect:
@@ -6381,7 +6338,7 @@ CurseCheck:
 	call GetTurnDuelistVariable
 	ldtx hl, OnlyOncePerTurnText
 	and USED_PKMN_POWER_THIS_TURN
-	jr nz, .set_carry
+	jp nz, SetCarryEF
 
 ; fails if opponent only has 1 Pokemon
 	call SwapTurn
@@ -6390,22 +6347,18 @@ CurseCheck:
 	call SwapTurn
 	ldtx hl, CannotUseSinceTheresOnly1PkmnText
 	cp 2
-	jr c, .set_carry
+	jp c, SetCarryEF
 
 ; fails if opponent's Pokemon have no damage counters
 	call SwapTurn
 	call PlayAreaDamageCheck
 	call SwapTurn
 	ldtx hl, NoPokemonWithDamageCountersText
-	jr c, .set_carry
+	jp c, SetCarryEF
 
 ; return carry if power cannot be used due to Toxic Gas or status.
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
-
-.set_carry
-	scf
 	ret
 
 Curse_PlayerSelection:
@@ -6552,20 +6505,16 @@ StepInCheck:
 	ldh [hTemp_ffa0], a
 	ldtx hl, CanOnlyBeUsedOnTheBenchText
 	or a
-	jr z, .set_carry
+	jp z,SetCarryEF
 
 	add DUELVARS_ARENA_CARD_FLAGS
 	call GetTurnDuelistVariable
 	ldtx hl, OnlyOncePerTurnText
 	and USED_PKMN_POWER_THIS_TURN
-	jr nz, .set_carry
+	jp nz, SetCarryEF
 
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
-
-.set_carry
-	scf
 	ret
 
 StepIn_SwitchEffect:
@@ -6672,7 +6621,7 @@ HandlePlayerSelection2HandCards:
 	push hl
 	bank1call DisplayCardList
 	pop hl
-	jr c, .set_carry ; was B pressed?
+	jp c, SetCarryEF ; was B pressed?
 	push hl
 	call GetNextPositionInTempList
 	ldh a, [hTempCardIndex_ff98]
@@ -6683,9 +6632,6 @@ HandlePlayerSelection2HandCards:
 	cp 2
 	jr c, .loop ; is selection over?
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; heals amount of damage in register e for card in
@@ -8174,11 +8120,8 @@ CreatePokemonCardListFromHand:
 	ld [de], a
 	ld a, [wDuelTempList]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 Potion_PlayerSelection:
@@ -8314,11 +8257,8 @@ CreateBasicPokemonCardListFromDiscardPile:
 	ld [de], a
 	ld a, [wDuelTempList]
 	cp $ff
-	jr z, .set_carry
+	jp z, SetCarryEF
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 ; returns carry if Bench is full or there are no Basic Pokemon in the Discard Pile.

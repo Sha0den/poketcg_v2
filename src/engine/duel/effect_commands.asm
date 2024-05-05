@@ -792,22 +792,22 @@ VenomothShiftEffectCommands:
 
 ; actual effect handled in substatus.asm and in other Pokemon Power effects
 MukToxicGasEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ; actual effect handled in home\card_color.asm
 CharizardEnergyBurnEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 MoltresFiregiverEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Firegiver_AddToHandEffect
 	db  $00
 
 ; actual effect handled in engine\duel\core.asm & substatus.asm
 BlastoiseRainDanceEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 TentacoolCowardiceEffectCommands:
@@ -819,16 +819,16 @@ TentacoolCowardiceEffectCommands:
 ; actual effect handled in engine\duel\core.asm, engine\menus\duel.asm,
 ; engine\menus\play_area.asm, and substatus.asm
 OmanyteClairvoyanceEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ArticunoQuickfreezeEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Quickfreeze_Paralysis50PercentEffect
 	db  $00
 
 ZapdosPealOfThunderEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, PealOfThunder_RandomlyDamageEffect
 	db  $00
 
@@ -839,17 +839,17 @@ MankeyPeekEffectCommands:
 
 ; actual effect handled in home\duel.asm & substatus.asm
 MachampStrikesBackEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ; actual effect handled in substatus.asm
 KabutoKabutoArmorEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ; actual effect handled in engine\duel\core.asm & substatus.asm
 AerodactylPrehistoricPowerEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 AlakazamDamageSwapEffectCommands:
@@ -866,7 +866,7 @@ SlowbroStrangeBehaviorEffectCommands:
 
 ; actual effect handled in substatus.asm
 HaunterTransparencyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 GengarCurseEffectCommands:
@@ -877,22 +877,22 @@ GengarCurseEffectCommands:
 
 ; actual effect handled in substatus.asm
 MrMimeInvisibleWallEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ; actual effect handled in substatus.asm
 MewNeutralizingShieldEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ; actual effect handled in substatus.asm
 DodrioRetreatAidEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 ; actual effect handled in the effect functions that cause special conditions
 SnorlaxThickSkinnedEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
 DragoniteStepInEffectCommands:
@@ -901,7 +901,7 @@ DragoniteStepInEffectCommands:
 	db  $00
 
 DragoniteHealingWindEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NoEffect_SetCarry
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, HealingWind_PlayAreaHealEffect
 	db  $00
 

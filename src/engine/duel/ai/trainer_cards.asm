@@ -534,20 +534,20 @@ AIDecide_SuperPotion2:
 	jr c, .second_attack_1
 	ld a, ATTACK_FLAG3_ADDRESS | BOOST_IF_TAKEN_DAMAGE_F
 	call CheckLoadedAttackFlag
-	jr c, .true_1
+	jr c, .true
 .second_attack_1
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	farcall CheckIfSelectedAttackIsUnusable
-	jr c, .false_1
+	jr c, .false
 	ld a, ATTACK_FLAG3_ADDRESS | BOOST_IF_TAKEN_DAMAGE_F
 	call CheckLoadedAttackFlag
-	jr c, .true_1
-.false_1
+	jr c, .true
+.false
 	pop de
 	or a
 	ret
-.true_1
+.true
 	pop de
 	scf
 	ret
@@ -563,7 +563,7 @@ AIDecide_SuperPotion2:
 	farcall CheckEnergyNeededForAttack
 	jr c, .second_attack_2
 	farcall CheckEnergyNeededForAttackAfterDiscard
-	jr c, .true_2
+	jr c, .true
 
 .second_attack_2
 	pop de
@@ -573,18 +573,10 @@ AIDecide_SuperPotion2:
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckEnergyNeededForAttack
-	jr c, .false_2
+	jr c, .false
 	farcall CheckEnergyNeededForAttackAfterDiscard
-	jr c, .true_2
-
-.false_2
-	pop de
-	or a
-	ret
-.true_2
-	pop de
-	scf
-	ret
+	jr c, .true
+	jr .false
 
 AIPlay_Defender:
 	ld a, [wAITrainerCardToPlay]
@@ -1212,10 +1204,7 @@ AIDecide_GustOfWind:
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	call .CheckIfAttackDealsNoDamage
-	jr c, .true
-	ret
-.true
-	scf
+	jr c, .set_carry ; true
 	ret
 
 ; returns carry if attack is Pokemon Power
@@ -1231,7 +1220,7 @@ AIDecide_GustOfWind:
 
 	; skip if attack is a Power or has 0 damage
 	cp POKEMON_POWER
-	jr z, .no_damage
+	jr z, .set_carry ; no damage
 	ld a, [wDamage]
 	or a
 	ret z
@@ -1242,10 +1231,7 @@ AIDecide_GustOfWind:
 	ld a, [wAIMaxDamage]
 	or a
 	ret nz
-
-.no_damage
-	scf
-	ret
+	jr .set_carry
 
 ; returns carry if there is a player's bench card that
 ; the opponent's current active card can KO
@@ -2443,10 +2429,6 @@ AIDecide_ProfessorOak:
 	or a
 	ret
 
-.set_carry
-	scf
-	ret
-
 ; return carry if there's a card in the hand that
 ; can evolve the card in Play Area location in e.
 ; sets wce08 to $01 if any card is found that can
@@ -2518,7 +2500,7 @@ AIDecide_ProfessorOak:
 	cp e
 	jr nz, .loop_play_area_articuno
 
-.set_carry_articuno
+.set_carry
 	scf
 	ret
 
@@ -2527,7 +2509,7 @@ AIDecide_ProfessorOak:
 .check_playable_cards
 	call CountOppEnergyCardsInHand
 	cp 4
-	jr nc, .no_carry_articuno
+	jr nc, .no_carry
 
 ; remove both Professor Oak cards from list
 ; before checking for playable cards
@@ -2544,13 +2526,13 @@ AIDecide_ProfessorOak:
 .loop_hand_articuno
 	ld a, [hli]
 	cp $ff
-	jr z, .set_carry_articuno
+	jr z, .set_carry
 	push hl
 	farcall CheckIfCardCanBePlayed
 	pop hl
 	jr c, .loop_hand_articuno
 
-.no_carry_articuno
+.no_carry
 	or a
 	ret
 
@@ -5626,7 +5608,7 @@ AIDecide_PokemonTrader_LegendaryDragonite:
 	ld a, DRATINI
 	call CheckIfHasCardIDInHand
 	jr c, .set_carry
-	; non found
+	; none found
 
 .no_carry
 	or a
@@ -5896,7 +5878,7 @@ AIDecide_PokemonTrader_PowerGenerator:
 	ld b, MAGNETON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
-	jr .no_carry
+	ret
 
 ; a card in deck was found to look for,
 ; check if there are duplicates in hand to trade with.
@@ -5908,8 +5890,6 @@ AIDecide_PokemonTrader_PowerGenerator:
 	ret
 .set_carry
 	scf
-; fallthrough
-.no_carry
 	ret
 
 AIDecide_PokemonTrader_FlowerGarden:
