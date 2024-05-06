@@ -1,4 +1,4 @@
-rom := poketcg.gbc
+rom := poketcg_v2.gbc
 
 rom_obj := \
 	src/main.o \
