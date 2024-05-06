@@ -581,14 +581,13 @@ EmptyText0083:
 	text " "
 	done
 
-PlayCheck1Text:
+PlayCheckText:
 	text "  Play"
 	line "  Check"
 	done
 
-PlayCheck2Text:
-	text "  Play"
-	line "  Check"
+EmptyText0085:
+	text " "
 	done
 
 SelectCheckText:

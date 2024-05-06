@@ -4,26 +4,13 @@ HandleDoubleDamageSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	call GetTurnDuelistVariable
 	bit SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
-	call nz, .double_damage_at_de
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
-	or a
-	call nz, .ret1
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
-	or a
-	call nz, .ret2
-	ret
-.ret1
-	ret
-.double_damage_at_de
+	ret z
+; double damage at de
 	ld a, e
 	or d
 	ret z
 	sla e
 	rl d
-	ret
-.ret2
 	ret
 
 ; check if the attacking card (non-turn holder's arena card) has any substatus that
@@ -40,16 +27,15 @@ HandleDamageReduction::
 	cp SUBSTATUS2_REDUCE_BY_20
 	jr z, .reduce_damage_by_20
 	cp SUBSTATUS2_REDUCE_BY_10
-	jr z, .reduce_damage_by_10
-	ret
-.reduce_damage_by_20
-	ld hl, -20
+	ret nz
+; reduce damage by 10
+	ld hl, -10
 	add hl, de
 	ld e, l
 	ld d, h
 	ret
-.reduce_damage_by_10
-	ld hl, -10
+.reduce_damage_by_20
+	ld hl, -20
 	add hl, de
 	ld e, l
 	ld d, h
@@ -87,7 +73,16 @@ HandleDamageReductionExceptSubstatus2::
 	cp MR_MIME
 	jr z, .prevent_less_than_30_damage ; invisible wall
 	cp KABUTO
-	jr z, .halve_damage2 ; kabuto armor
+	ret nz
+.halve_damage
+	sla d
+	rr e
+	bit 0, e
+	ret z
+	ld hl, -5
+	add hl, de
+	ld e, l
+	ld d, h
 	ret
 .no_damage
 	ld de, 0
@@ -110,16 +105,6 @@ HandleDamageReductionExceptSubstatus2::
 	ret nc
 	ld de, 0
 	ret
-.halve_damage
-	sla d
-	rr e
-	bit 0, e
-	ret z
-	ld hl, -5
-	add hl, de
-	ld e, l
-	ld d, h
-	ret
 .prevent_less_than_30_damage
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
@@ -128,16 +113,6 @@ HandleDamageReductionExceptSubstatus2::
 	call CompareDEtoBC
 	ret c
 	ld de, 0
-	ret
-.halve_damage2
-	sla d
-	rr e
-	bit 0, e
-	ret z
-	ld hl, -5
-	add hl, de
-	ld e, l
-	ld d, h
 	ret
 
 ; check for Invisible Wall, Kabuto Armor, NShield, or Transparency, in order to
@@ -286,9 +261,8 @@ HandleAmnesiaSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
 	or a
-	jr nz, .check_amnesia
-	ret
-.check_amnesia
+	ret z
+; check amnesia
 	cp SUBSTATUS2_AMNESIA
 	jr z, .affected_by_amnesia
 .not_the_disabled_atk
@@ -627,8 +601,7 @@ ClearDamageReductionSubstatus2::
 	cp SUBSTATUS2_REDUCE_BY_10
 	jr z, .zero
 	cp SUBSTATUS2_CANNOT_ATTACK_THIS
-	jr z, .zero
-	ret
+	ret nz
 .zero
 	ld [hl], 0
 	ret
@@ -671,10 +644,8 @@ HandleDestinyBondSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
 	call GetNonTurnDuelistVariable
 	cp SUBSTATUS1_DESTINY_BOND
-	jr z, .check_hp
-	ret
-
-.check_hp
+	ret nz
+; check hp
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	cp -1
@@ -701,8 +672,7 @@ HandleDestinyBondSubstatus::
 	ld l, a
 	call LoadTxRam2
 	ldtx hl, KnockedOutDueToDestinyBondText
-	call DrawWideTextBox_WaitForInput
-	ret
+	jp DrawWideTextBox_WaitForInput
 
 ; when MACHAMP is damaged, if its Strikes Back is active, the
 ; attacking Pokemon (turn holder's arena Pokemon) takes 10 damage.
@@ -710,9 +680,7 @@ HandleDestinyBondSubstatus::
 HandleStrikesBack_AgainstResidualAttack::
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
-	jr z, .strikes_back
-	ret
-.strikes_back
+	ret nz
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
 	ret nz

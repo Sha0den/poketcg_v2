@@ -22,8 +22,7 @@ AIProcessButDontUseAttack:
 
 ; copies wTempPlayAreaAIScore to wPlayAreaAIScore
 ; and loads wAIScore with value in wTempAIScore.
-; identical to RetrievePlayAreaAIScoreFromBackup1.
-RetrievePlayAreaAIScoreFromBackup2:
+RetrievePlayAreaAIScoreFromBackup:
 	push af
 	ld de, wPlayAreaAIScore
 	ld hl, wTempPlayAreaAIScore
@@ -111,7 +110,7 @@ AIProcessAttacks:
 ; set carry and reset Play Area AI score
 ; to the previous values.
 	scf
-	jp RetrievePlayAreaAIScoreFromBackup2
+	jp RetrievePlayAreaAIScoreFromBackup
 
 .execute
 	ld a, AI_TRAINER_CARD_PHASE_14
@@ -159,7 +158,7 @@ AIProcessAttacks:
 	jr z, .failed_to_use
 ; reset Play Area AI score
 ; to the previous values.
-	jp RetrievePlayAreaAIScoreFromBackup2
+	jp RetrievePlayAreaAIScoreFromBackup
 
 ; return no carry if no viable attack.
 .failed_to_use

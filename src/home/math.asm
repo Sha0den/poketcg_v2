@@ -36,3 +36,20 @@ ADividedBy10::
 	ld a, e
 	pop de
 	ret
+
+; returns a /= 2 rounded up
+HalfARoundedUp::
+	srl a
+	bit 0, a
+	ret z  ; rounded
+	add 5  ; round up to nearest 10
+	ret
+
+; unreferenced counterpart of HalfARoundedUp
+; returns a /= 2 rounded down
+;HalfARoundedDown::
+;	srl a
+;	bit 0, a
+;	ret z  ; rounded
+;	sub 5  ; round down to nearest 10
+;	ret

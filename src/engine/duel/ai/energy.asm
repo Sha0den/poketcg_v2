@@ -46,25 +46,6 @@ AIProcessButDontPlayEnergy_SkipEvolutionAndArena:
 
 	jr AIProcessEnergyCards
 
-; copies wTempPlayAreaAIScore to wPlayAreaAIScore
-; and loads wAIScore with value in wTempAIScore.
-; identical to RetrievePlayAreaAIScoreFromBackup2.
-RetrievePlayAreaAIScoreFromBackup1:
-	push af
-	ld de, wPlayAreaAIScore
-	ld hl, wTempPlayAreaAIScore
-	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-	ld a, [hl]
-	ld [wAIScore], a
-	pop af
-	ret
-
 ; have AI decide whether to play energy card from hand
 ; and determine which card is best to attach it.
 AIProcessAndTryToPlayEnergy:
@@ -79,7 +60,7 @@ AIProcessAndTryToPlayEnergy:
 	ld a, [wAIEnergyAttachLogicFlags]
 	or a
 	jr z, .exit
-	jp RetrievePlayAreaAIScoreFromBackup1
+	jp RetrievePlayAreaAIScoreFromBackup
 .exit
 	or a
 	ret
@@ -355,7 +336,7 @@ AIProcessEnergyCards:
 	or a
 	jr z, .play_card
 	scf
-	jp RetrievePlayAreaAIScoreFromBackup1
+	jp RetrievePlayAreaAIScoreFromBackup
 
 .play_card
 	call CreateEnergyCardListFromHand
@@ -365,7 +346,7 @@ AIProcessEnergyCards:
 	ld a, [wAIEnergyAttachLogicFlags]
 	or a
 	jr z, .no_carry
-	jp RetrievePlayAreaAIScoreFromBackup1
+	jp RetrievePlayAreaAIScoreFromBackup
 .no_carry
 	or a
 	ret

@@ -870,7 +870,7 @@ VulpixDescription:
 	done
 
 NinetalesName:
-	text "Ninetails"
+	text "Ninetales"
 	done
 
 NinetalesLureDescription:

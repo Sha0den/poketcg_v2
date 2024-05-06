@@ -133,8 +133,8 @@ TextOffsets::
 	textpointer WasKnockedOutText                                  ; 0x0081
 	textpointer HavePokemonPowerText                               ; 0x0082
 	textpointer EmptyText0083                                      ; 0x0083
-	textpointer PlayCheck1Text                                     ; 0x0084
-	textpointer PlayCheck2Text                                     ; 0x0085
+	textpointer PlayCheckText                                      ; 0x0084
+	textpointer EmptyText0085                                      ; 0x0085
 	textpointer SelectCheckText                                    ; 0x0086
 	textpointer UnusedText0087                                     ; 0x0087
 	textpointer DuelistIsThinkingText                              ; 0x0088
