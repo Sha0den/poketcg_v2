@@ -321,11 +321,11 @@ PickTwoAttachedEnergyCards:
 .found_double_colorless
 	ld a, [wTempAI]
 	cp $ff
-	jr nz, .already_chosen_1
+	jr nz, .already_chosen
 	ld a, [hli]
 	ld [wTempAI], a
 	jr .loop_1
-.already_chosen_1
+.already_chosen
 	ld a, [hl]
 	ld [wCurCardCanAttack], a
 	jr .done
@@ -344,14 +344,10 @@ PickTwoAttachedEnergyCards:
 .found_useful
 	ld a, [wTempAI]
 	cp $ff
-	jr nz, .already_chosen_2
+	jr nz, .already_chosen
 	ld a, [hli]
 	ld [wTempAI], a
 	jr .loop_2
-.already_chosen_2
-	ld a, [hl]
-	ld [wCurCardCanAttack], a
-	jr .done
 
 ; if none were found with the above criteria,
 ; just return the first 2 options

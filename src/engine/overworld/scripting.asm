@@ -1684,13 +1684,12 @@ ShowMultichoiceTextbox:
 	ld h, [hl]
 	ld l, a
 	or h
-	jr z, .no_text_2
+	ret z ; no text
 	add hl, bc
 	ld a, [hli]
 	ld [wTxRam2], a
 	ld a, [hl]
 	ld [wTxRam2 + 1], a
-.no_text_2
 	ret
 
 ScriptCommand_ShowSamNormalMultichoice:

@@ -7982,6 +7982,14 @@ TakeAPrizes:
 	ld [hl], b
 	ret
 
+; same as ClearNonTurnTemporaryDuelvars, except the non-turn holder's arena
+; Pokemon status condition is copied to wccc5
+ClearNonTurnTemporaryDuelvars_CopyStatus::
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	call GetNonTurnDuelistVariable
+	ld [wccc5], a
+;	fallthrough
+
 ; clear the non-turn holder's duelvars starting at DUELVARS_ARENA_CARD_DISABLED_ATTACK_INDEX
 ; these duelvars only last a two-player turn at most.
 ClearNonTurnTemporaryDuelvars::
@@ -7997,14 +8005,6 @@ ClearNonTurnTemporaryDuelvars::
 	ld [hli], a
 	ld [hl], a
 	ret
-
-; same as ClearNonTurnTemporaryDuelvars, except the non-turn holder's arena
-; Pokemon status condition is copied to wccc5
-ClearNonTurnTemporaryDuelvars_CopyStatus::
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetNonTurnDuelistVariable
-	ld [wccc5], a
-	jr ClearNonTurnTemporaryDuelvars
 
 ; update non-turn holder's DUELVARS_ARENA_CARD_LAST_TURN_DAMAGE
 ; if wDefendingWasForcedToSwitch == 0: set to [wDealtDamage]

@@ -547,10 +547,6 @@ AIDecide_SuperPotion2:
 	pop de
 	or a
 	ret
-.true
-	pop de
-	scf
-	ret
 
 ; returns carry if discarding energy card renders any attack unusable,
 ; given that they have enough energy to be used before discarding.
@@ -575,8 +571,11 @@ AIDecide_SuperPotion2:
 	farcall CheckEnergyNeededForAttack
 	jr c, .false
 	farcall CheckEnergyNeededForAttackAfterDiscard
-	jr c, .true
-	jr .false
+	jr nc, .false
+.true
+	pop de
+	scf
+	ret
 
 AIPlay_Defender:
 	ld a, [wAITrainerCardToPlay]

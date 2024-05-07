@@ -5424,7 +5424,6 @@ EnergyTrans_TransferEffect:
 	jr c, .play_sfx ; no Grass attached
 
 	ldh [hAIEnergyTransEnergyCard], a
-	ldh a, [hAIEnergyTransEnergyCard] ; useless
 	; temporarily take card away to draw Play Area
 	call AddCardToHand
 	bank1call PrintPlayAreaCardList_EnableLCD

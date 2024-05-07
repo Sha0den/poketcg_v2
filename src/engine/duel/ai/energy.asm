@@ -561,18 +561,7 @@ FindPlayAreaCardWithHighestAIScore:
 	ld d, c
 	ld hl, wPlayAreaAIScore
 ; find highest Play Area AI score.
-.loop_1
-	ld a, [hli]
-	cp e
-	jr c, .next_1
-	jr z, .next_1
-	ld e, a ; overwrite highest score found
-	ld d, c ; overwrite Play Area of highest score
-.next_1
-	inc c
-	dec b
-	jr nz, .loop_1
-
+	call .loop
 ; if highest AI score is below $85, return no carry.
 ; else, store Play Area location and return carry.
 	ld a, e
@@ -598,22 +587,25 @@ FindPlayAreaCardWithHighestAIScore:
 	ld c, PLAY_AREA_BENCH_1
 	ld d, c
 	ld hl, wPlayAreaAIScore + 1
-.loop_2
-	ld a, [hli]
-	cp e
-	jr c, .next_2
-	jr z, .next_2
-	ld e, a ; overwrite highest score found
-	ld d, c ; overwrite Play Area of highest score
-.next_2
-	inc c
-	dec b
-	jr nz, .loop_2
+	call .loop
 
 ; in this case, there is no minimum threshold AI score.
 	ld a, d
 	ldh [hTempPlayAreaLocation_ff9d], a
 	scf
+	ret
+
+.loop
+	ld a, [hli]
+	cp e
+	jr c, .next
+	jr z, .next
+	ld e, a ; overwrite highest score found
+	ld d, c ; overwrite Play Area of highest score
+.next
+	inc c
+	dec b
+	jr nz, .loop
 	ret
 
 ; returns carry if there's an evolution card

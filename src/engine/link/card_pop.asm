@@ -193,8 +193,6 @@ LookUpNameInCardPopNameList:
 ; name was not found in wCardPopNameList
 
 ; searches for this player's name in the other game's name list
-; this is useless since it discards the result from the name comparisons
-; as a result this loop will always return no carry
 	call EnableSRAM
 	ld hl, wOtherPlayerCardPopNameList
 	ld c, CARDPOP_NAME_LIST_MAX_ELEMS

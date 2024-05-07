@@ -521,7 +521,7 @@ HandleCardAlbumCardPage:
 	add [hl]
 	ld hl, wFirstOwnedCardIndex
 	cp [hl]
-	jr z, .open_card_page_pop_af_2
+	jr z, .open_card_page_pop_af
 	pop af
 
 	dec a
@@ -563,7 +563,7 @@ HandleCardAlbumCardPage:
 	add hl, bc
 	ld a, [hl]
 	or a
-	jr z, .open_card_page_pop_af_1
+	jr z, .open_card_page_pop_af
 	ld a, [wCardListVisibleOffset]
 	inc a
 	ld [wCardListVisibleOffset], a
@@ -577,9 +577,6 @@ HandleCardAlbumCardPage:
 	jp z, HandleCardAlbumCardPage
 	call PlaySFX
 	jp HandleCardAlbumCardPage
-.open_card_page_pop_af_1
-	pop af
-	jr .open_card_page
 
 .asm_a8d6
 	ld a, [wced2]
@@ -594,7 +591,7 @@ HandleCardAlbumCardPage:
 	jr z, .open_card_page
 	call TryAddCardToDeck
 
-.open_card_page_pop_af_2
+.open_card_page_pop_af
 	pop af
 .open_card_page
 	push de

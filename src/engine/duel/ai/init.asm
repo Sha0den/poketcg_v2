@@ -67,10 +67,10 @@ InitAITurnVars:
 	call SwapTurn
 	ld a, e
 	cp MEWTWO_LV53
-	jr nz, .reset_1
+	jr nz, .reset
 	farcall CheckIfPlayerHasPokemonOtherThanMewtwoLv53
 	jr nc, .set_flag
-.reset_1
+.reset
 ; reset wAIBarrierFlagCounter
 	xor a
 	ld [wAIBarrierFlagCounter], a
@@ -85,13 +85,7 @@ InitAITurnVars:
 ; increase counter by 1 if flag is set
 	ld a, [wAIBarrierFlagCounter]
 	bit AI_MEWTWO_MILL_F, a
-	jr z, .reset_2
+	jr z, .reset
 	inc a
-	ld [wAIBarrierFlagCounter], a
-	ret
-
-.reset_2
-; reset wAIBarrierFlagCounter
-	xor a
 	ld [wAIBarrierFlagCounter], a
 	ret
