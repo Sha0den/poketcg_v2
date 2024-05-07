@@ -468,7 +468,9 @@ CheckIfAnyBasicPokemonInDeck:
 	jr nc, .next
 	ld a, [wLoadedCard2Stage]
 	or a
-	jp z, SetCarryAICore
+	jr nz, .next
+	scf
+	ret
 .next
 	inc e
 	ld a, DECK_SIZE

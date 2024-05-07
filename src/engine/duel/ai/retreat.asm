@@ -408,7 +408,7 @@ AIDecideWhetherToRetreat:
 ; if wAIScore is at least 131, set carry
 	ld a, [wAIScore]
 	cp 131
-	jp nc, SetCarryAICore
+	jr nc, .set_carry
 .no_carry
 	or a
 	ret
@@ -437,7 +437,9 @@ AIDecideWhetherToRetreat:
 	call CheckIfCanDamageDefendingPokemon
 	pop de
 	jr nc, .loop_ko_3
-	jp SetCarryAICore
+.set_carry
+	scf
+	ret
 
 ; if player's turn and loaded attack is not a Pokémon Power OR
 ; if opponent's turn and wAITriedAttack == 0
@@ -843,9 +845,9 @@ AITryToRetreat:
 	ld b, a
 	and CNF_SLP_PRZ
 	cp ASLEEP
-	jp z, SetCarryAICore
+	jr z, .set_carry
 	cp PARALYZED
-	jp z, SetCarryAICore
+	jr z, .set_carry
 	ld a, b
 	ldh [hTemp_ffa0], a
 	ld a, $ff
@@ -881,6 +883,10 @@ AITryToRetreat:
 	cp $ff
 	jr nz, .loop_1
 	jp .retreat
+
+.set_carry
+	scf
+	ret
 
 ; if cost > 0 and number of energy cards attached > cost
 ; choose energy cards to discard according to color
@@ -957,7 +963,7 @@ AITryToRetreat:
 .loop_4
 	ld a, [hli]
 	cp $ff
-	jp z, SetCarryAICore
+	jr z, .set_carry
 	ld [de], a
 	inc de
 	push de
@@ -992,7 +998,7 @@ AITryToRetreat:
 	jr nc, .has_bench
 	; doesn't have any bench
 	pop af
-	jp SetCarryAICore
+	jp .set_carry
 
 .has_bench
 	ld a, DUELVARS_ARENA_CARD

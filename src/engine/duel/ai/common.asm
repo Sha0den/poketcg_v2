@@ -124,12 +124,16 @@ FindBasicEnergyCardsInLocation:
 ; check if any were found
 	ld a, d
 	or a
-	jr z, HandleAIAntiMewtwoDeckStrategy.set_carry
+	jr z, .set_carry
 
 ; some were found, add the termination byte on TempList
 	ld a, $ff
 	ld [hl], a
 	ld a, d
+	ret
+
+.set_carry
+	scf
 	ret
 
 ; returns in a the card index of energy card
