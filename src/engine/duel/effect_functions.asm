@@ -2526,7 +2526,7 @@ DuelistSelectForcedSwitch:
 
 ; AI opponent
 	call SwapTurn
-	bank1call AIDoAction_ForcedSwitch
+	call AIDoAction_ForcedSwitch
 	call SwapTurn
 
 	ld a, [wPlayerAttackingAttackIndex]
