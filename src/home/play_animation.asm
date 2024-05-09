@@ -71,6 +71,21 @@ UpdateQueuedAnimations::
 	pop af
 	call BankswitchROM
 	ret
+	
+Func_3bb5::
+	xor a
+	ld [wd4c0], a
+	ldh a, [hBankROM]
+	push af
+	ld a, [wDuelAnimReturnBank]
+	call BankswitchROM
+	call HandleAllSpriteAnimations
+	call CallHL
+	pop af
+	call BankswitchROM
+	ld a, $80
+	ld [wd4c0], a
+	ret
 
 ; writes from hl the pointer to the function to be called by DoFrame
 SetDoFrameFunction::
