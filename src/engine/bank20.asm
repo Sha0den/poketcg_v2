@@ -1403,7 +1403,7 @@ Func_80cd7:
 	add hl, bc
 	ld a, [hli]
 	cp $ff
-	jr z, .skip_draw_sprite
+	ret z ; skip draw sprite
 	farcall CreateSpriteAndAnimBufferEntry
 	ld a, [wConsole]
 	cp CONSOLE_CGB
@@ -1419,7 +1419,6 @@ Func_80cd7:
 	ld [hli], a
 	ld a, $40
 	ld [hl], a ; SPRITE_ANIM_COORD_Y
-.skip_draw_sprite
 	ret
 
 .NPCSpriteAnimData

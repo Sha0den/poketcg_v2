@@ -67,7 +67,7 @@ FadeScreenFromWhite:
 	ld de, wTempBackgroundPalettesCGB
 	ld bc, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
 	call CopyDataHLtoDE_SaveRegisters
-	jr SetWhitePalettes ; can be fallthrough
+;	fallthrough
 
 ; fills wBackgroundPalettesCGB with white pal
 SetWhitePalettes:

@@ -195,7 +195,7 @@ ActivePokemon_FireEnergyCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
 	ldtx hl, NotEnoughFireEnergyText
-	ld a, [wAttachedEnergies]
+	ld a, [wAttachedEnergies + FIRE]
 	cp 1
 	ret
 
@@ -203,7 +203,7 @@ ActivePokemon_FireEnergyCheck:
 ActivePokemon_DoubleFireEnergyCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wAttachedEnergies]
+	ld a, [wAttachedEnergies + FIRE]
 	ldtx hl, NotEnoughFireEnergyText
 	cp 2
 	ret
@@ -858,13 +858,8 @@ PickRandomBasicCardFromDeck:
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
 	jp z, SetCarryEF
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .loop_deck ; skip non-Pokemon cards
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .loop_deck ; skip if not Basic
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .loop_deck ; skip if not a Basic Pokemon
 	ldh a, [hTempCardIndex_ff98]
 	or a
 	ret
@@ -907,13 +902,8 @@ RandomlyFillBothBenchesEffect:
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
 	jp z, ShuffleCardsInDeck ; done with loop
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .loop ; is Pokemon card?
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .loop ; is Basic?
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .loop ; skip if not a Basic Pokemon
 ; place card in Bench
 	push hl
 	ldh a, [hTempCardIndex_ff98]
@@ -1258,7 +1248,7 @@ RandomlySwitchBothActivePokemon:
 	ld [hl], a
 .skip_clear_damage
 	call SwapTurn
-;	fallthrough for attacking card switch
+	; fallthrough for attacking card switch
 
 .SwitchWithRandomBenchPokemon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -3761,7 +3751,7 @@ SelfConfusion_50PercentEffect:
 ; that are attached to the the player's Active Pokemon card.
 CreateListOfFireEnergyAttachedToActive:
 	ld a, TYPE_ENERGY_FIRE
-	; fallthrough
+;	fallthrough
 
 ; creates in wDuelTempList a list of cards that
 ; are in the Arena of the same type as input a.
@@ -4026,16 +4016,14 @@ DiscardAllAttachedEnergyEffect:
 	jr .loop
 
 OwnBench_10DamageEffect:
-	ld a, $01
+	ld a, TRUE
 	ld [wIsDamageToSelf], a
-	ld a, 10
+	ld de, 10
 ;	fallthrough
 
 ; deal damage to all the turn holder's Benched Pokemon
-; input: a = amount of damage to deal to each Pokemon
+; input: de = amount of damage to deal to each Pokemon
 DealDamageToAllBenchedPokemon:
-	ld e, a
-	ld d, $00
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	ld c, a
@@ -4051,7 +4039,6 @@ DealDamageToAllBenchedPokemon:
 	jr nz, .loop
 	ret
 
-
 DamageEitherBench_50PercentEffect:
 	ldtx de, DamageToOppBenchIfHeadsDamageToYoursIfTailsText
 	call TossCoin_BankB
@@ -4061,17 +4048,11 @@ DamageEitherBench_50PercentEffect:
 DamageEitherBench_10DamageEffect:
 	ldh a, [hTemp_ffa0]
 	or a
-	jr nz, .opp_bench
-
-; own bench
-	ld a, $01
-	ld [wIsDamageToSelf], a
-	ld a, 10
-	jr DealDamageToAllBenchedPokemon
-
-.opp_bench
+	jr z, OwnBench_10DamageEffect
+	
+	; damage opponent's bench
 	call SwapTurn
-	ld a, 10
+	ld de, 10
 	call DealDamageToAllBenchedPokemon
 	jp SwapTurn
 
@@ -4081,16 +4062,13 @@ Selfdestruct40Effect:
 ;	fallthrough
 
 DamageBothBenches_10DamageEffect:
-; own bench
-	ld a, $01
-	ld [wIsDamageToSelf], a
-	ld a, 10
-	call DealDamageToAllBenchedPokemon
-; opponent's bench
+	call OwnBench_10DamageEffect
+
+	; damage opponent's bench
 	call SwapTurn
 	xor a
 	ld [wIsDamageToSelf], a
-	ld a, 10
+	ld de, 10
 	call DealDamageToAllBenchedPokemon
 	jp SwapTurn
 
@@ -4102,26 +4080,26 @@ Selfdestruct60Effect:
 Explosion80DamageEffect:
 	ld a, 80
 	call DealRecoilDamageToSelf
+	jr DamageBothBenches_20DamageEffect
+	
+Explosion100DamageEffect:
+	ld a, 100
+	call DealRecoilDamageToSelf
 ;	fallthrough
 
 DamageBothBenches_20DamageEffect:
 ; own bench
-	ld a, $01
+	ld a, TRUE
 	ld [wIsDamageToSelf], a
-	ld a, 20
+	ld de, 20
 	call DealDamageToAllBenchedPokemon
 ; opponent's bench
 	call SwapTurn
 	xor a
 	ld [wIsDamageToSelf], a
-	ld a, 20
+	ld de, 20
 	call DealDamageToAllBenchedPokemon
 	jp SwapTurn
-
-Explosion100DamageEffect:
-	ld a, 100
-	call DealRecoilDamageToSelf
-	jr DamageBothBenches_20DamageEffect
 
 
 ;---------------------------------------------------------------------------------
@@ -4444,9 +4422,9 @@ Also10DamageToSameColorOnBenchEffect:
 	call SwapTurn
 
 ; own Bench
-	ld a, $01
+	ld a, TRUE
 	ld [wIsDamageToSelf], a
-;	fallthrough
+	; fallthrough
 
 .DamageSameColorBench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -4662,7 +4640,7 @@ RandomlyDamagePlayAreaPokemon:
 	jr nz, .opp_play_area
 
 ; own Play Area
-	ld a, $01
+	ld a, TRUE
 	ld [wIsDamageToSelf], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -5005,13 +4983,8 @@ MorphEffect:
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
 	jp z, SetCarryEF
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .loop_deck ; skip non-Pokemon cards
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .loop_deck ; skip if not Basic
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .loop_deck ; skip if not a Basic Pokemon
 	ld a, [wLoadedCard2ID]
 	cp DUELVARS_ARENA_CARD
 	jr z, .loop_deck ; skip cards with same ID as the Active Pokemon
@@ -5070,7 +5043,7 @@ HandlePlayerMetronomeEffect:
 	ldtx hl, UnableToSelectText
 .failed
 	call DrawWideTextBox_WaitForInput
-.set_carry
+; set carry
 	scf
 	ret
 
@@ -5081,7 +5054,7 @@ HandlePlayerMetronomeEffect:
 	jr c, .failed
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
-	jr c, .set_carry
+	ret c
 	; successful
 
 ; send data to link opponent
@@ -5328,8 +5301,7 @@ OncePerTurnPokePowerCheck:
 	and USED_PKMN_POWER_THIS_TURN
 	jr nz, .already_used
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 .already_used
 	ldtx hl, OnlyOncePerTurnText
 ;	fallthrough
@@ -5583,8 +5555,7 @@ HealCheck:
 	ret c ; no damage counters to heal
 
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 
 .already_used
 	ldtx hl, OnlyOncePerTurnText
@@ -6014,8 +5985,7 @@ DamageSwapCheck:
 	call PlayAreaDamageCheck
 	jr c, .no_damage
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 .no_damage
 	ldtx hl, NoPokemonWithDamageCountersText
 	scf
@@ -6149,18 +6119,17 @@ StrangeBehaviorCheck:
 	ldh [hTemp_ffa0], a
 	call PlayAreaDamageCheck
 	ldtx hl, NoPokemonWithDamageCountersText
-	jp c, SetCarryEF
+	ret c
 ; can Slowbro receive any damage counters without KO-ing?
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	ldtx hl, CannotUseBecauseItWillBeKnockedOutText
 	cp 10 + 10
-	jp c, SetCarryEF
+	ret c
 ; can Pokemon Power be used?
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 
 StrangeBehavior_SelectAndSwapEffect:
 	ld a, DUELVARS_DUELIST_TYPE
@@ -6245,19 +6214,18 @@ CurseCheck:
 	call SwapTurn
 	ldtx hl, CannotUseSinceTheresOnly1PkmnText
 	cp 2
-	jp c, SetCarryEF
+	ret c
 
 ; fails if opponent's Pokemon have no damage counters
 	call SwapTurn
 	call PlayAreaDamageCheck
 	call SwapTurn
 	ldtx hl, NoPokemonWithDamageCountersText
-	jp c, SetCarryEF
+	ret c
 
 ; return carry if power cannot be used due to Toxic Gas or status.
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 
 Curse_PlayerSelection:
 	ldtx hl, ProcedureForCurseText
@@ -6412,8 +6380,7 @@ StepInCheck:
 	jp nz, SetCarryEF
 
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 
 StepIn_SwitchEffect:
 	ldh a, [hTemp_ffa0]
@@ -6519,7 +6486,7 @@ HandlePlayerSelection2HandCards:
 	push hl
 	bank1call DisplayCardList
 	pop hl
-	jp c, SetCarryEF ; was B pressed?
+	ret c ; was B pressed?
 	push hl
 	call GetNextPositionInTempList
 	ldh a, [hTempCardIndex_ff98]
@@ -7326,8 +7293,7 @@ LassEffect:
 	call SwapTurn
 	call .ShuffleDuelistHandTrainerCardsInDeck
 	call SwapTurn
-	; do for Turn Duelist
-;	fallthrough
+	; do for Turn Duelist, fallthrough
 
 .ShuffleDuelistHandTrainerCardsInDeck
 	call CreateHandCardList
@@ -8110,13 +8076,8 @@ CreateBasicPokemonCardListFromDiscardPile:
 
 .check_card
 	ld a, [hl]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .next_discard_pile_card ; if not Pokemon card, skip
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .next_discard_pile_card ; if not Basic stage, skip
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .next_discard_pile_card ; skip if not a Basic Pokemon
 
 ; write this card's index to wDuelTempList
 	ld a, [hl]
@@ -8229,13 +8190,8 @@ ScoopUp_ReturnToHandEffect:
 	cp e
 	jr nz, .next_card ; skip if not in selected location
 	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .next_card ; skip if not Pokemon card
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .next_card  ; skip if not Basic stage
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .next_card  ; skip if not a Basic Pokemon
 ; found
 	ld a, l
 	ldh [hTempCardIndex_ff98], a

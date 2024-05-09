@@ -161,7 +161,7 @@ HandleStartButtonInDeckSelectionMenu:
 	ld a, [wCurMenuItem]
 	ld [wCurDeck], a
 	call CheckIfCurDeckIsValid
-	jp nc, .valid_deck ; can be jr
+	jr nc, .valid_deck
 
 ; not a valid deck, cancel
 	ld a, $ff ; cancel

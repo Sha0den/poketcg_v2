@@ -314,12 +314,15 @@ UpdateMailMenuCursor:
 	and $10
 	jr z, ShowMailMenuCursor
 	jr HideMailMenuCursor
+	
 ShowMailMenuCursor:
 	ld a, SYM_CURSOR_R
 	jr DrawMailMenuCursor
+	
 HideMailMenuCursor:
 	ld a, SYM_SPACE
-	jr DrawMailMenuCursor ; can be fallthrough
+;	fallthrough
+
 DrawMailMenuCursor:
 	push af
 	call GePCPackSelectionCoordinates

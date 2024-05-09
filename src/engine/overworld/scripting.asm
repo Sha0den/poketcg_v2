@@ -45,7 +45,7 @@ Func_c943:
 	ld h, a
 	or l
 	jr z, .no_script
-	call CallHL2
+	call CallHL
 	jr nc, .next_npc
 .no_script
 	ld a, [wTempNPC]

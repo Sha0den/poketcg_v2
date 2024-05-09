@@ -425,7 +425,7 @@ _UpdateQueuedAnimations::
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call CallHL2
+	call CallHL
 	ld a, [wActiveScreenAnim]
 	jr .asm_1cafb
 

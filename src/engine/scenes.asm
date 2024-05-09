@@ -182,7 +182,7 @@ LoadScene_LoadSGBPacket:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call CallHL2
+	call CallHL
 	jr .done
 .use_default
 	ld l, %001010 ; outside, border, inside palette numbers

@@ -117,6 +117,7 @@ PrintPlayTime:
 	ld a, [wPlayTimeCounter + 4]
 	ld [wPlayTimeHourMinutes + 2], a
 ;	fallthrough
+
 PrintPlayTime_SkipUpdateTime:
 	push bc
 	ld a, [wPlayTimeHourMinutes + 1]
@@ -194,6 +195,7 @@ PrintAlbumProgress:
 	call GetCardAlbumProgress
 	pop bc
 ;	fallthrough
+
 PrintAlbumProgress_SkipGetProgress:
 	push bc
 	push de

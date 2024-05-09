@@ -94,7 +94,7 @@ HandleCheckMenuInput:
 ; draws in the cursor position
 EraseCheckMenuCursor:
 	ld a, SYM_SPACE ; empty cursor
-; fallthrough
+;	fallthrough
 
 ; draws in the cursor position
 ; input:

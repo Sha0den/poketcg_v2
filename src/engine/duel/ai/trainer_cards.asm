@@ -1197,13 +1197,11 @@ AIDecide_GustOfWind:
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	ld [wSelectedAttack], a
 	call .CheckIfAttackDealsNoDamage
-	jr c, .second_attack
-	ret
-.second_attack
+	ret nc
+; second attack
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	call .CheckIfAttackDealsNoDamage
-	jr c, .set_carry ; true
 	ret
 
 ; returns carry if attack is Pokemon Power
@@ -1271,17 +1269,9 @@ AIDecide_GustOfWind:
 	farcall LookForEnergyNeededForAttackInHand
 	jr c, .found
 
-; the following two local routines can be condensed into one
-; since they both revert the player's arena card
+; revert player's arena card and return to loop
 .next
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetNonTurnDuelistVariable
-	pop af
-	ld [hl], a
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
-	pop af
-	ld [hl], a
+	call .revert_active
 	pop de
 	inc e
 	pop hl
@@ -1289,6 +1279,14 @@ AIDecide_GustOfWind:
 
 ; revert player's arena card and set carry
 .found
+	call .revert_active
+	pop de
+	ld a, e
+	pop hl
+	scf
+	ret
+
+.revert_active
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	pop af
@@ -1297,10 +1295,6 @@ AIDecide_GustOfWind:
 	call GetNonTurnDuelistVariable
 	pop af
 	ld [hl], a
-	pop de
-	ld a, e
-	pop hl
-	scf
 	ret
 
 ; returns carry if any of arena card's attacks
@@ -1359,18 +1353,8 @@ AIDecide_GustOfWind:
 	farcall CheckIfCanDamageDefendingPokemon
 	jr c, .can_damage
 
-; the following two local routines can be condensed into one
-; since they both revert the player's arena card
-
 ; can't damage
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetNonTurnDuelistVariable
-	pop af
-	ld [hl], a
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
-	pop af
-	ld [hl], a
+	call .revert_active
 	pop hl
 	pop de
 	pop bc
@@ -1378,14 +1362,7 @@ AIDecide_GustOfWind:
 	ret
 
 .can_damage
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetNonTurnDuelistVariable
-	pop af
-	ld [hl], a
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
-	pop af
-	ld [hl], a
+	call .revert_active
 	pop hl
 	pop de
 	pop bc
@@ -2225,7 +2202,15 @@ AIDecide_PokemonBreeder:
 	ld a, 7
 	cp c
 	jr c, .no_carry
-	jr .set_carry
+	; fallthrough
+
+.set_carry
+	pop hl
+	pop de
+	pop bc
+	pop af
+	scf
+	ret
 
 .active_card_dragonite
 ; the card that is evolving is active card
@@ -2242,21 +2227,13 @@ AIDecide_PokemonBreeder:
 	farcall CountNumberOfEnergyCardsAttached
 	cp 3
 	jr c, .set_carry
-	jr .no_carry
+	; fallthrough
 
 .no_carry
 	pop hl
 	pop de
 	pop bc
 	pop af
-	ret
-
-.set_carry
-	pop hl
-	pop de
-	pop bc
-	pop af
-	scf
 	ret
 
 AIPlay_ProfessorOak:
@@ -3178,7 +3155,7 @@ AIDecide_ImposterProfessorOak:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	call GetNonTurnDuelistVariable
 	cp 6
-	jr c, .set_carry
+	ret c
 .no_carry
 	or a
 	ret
@@ -3190,7 +3167,7 @@ AIDecide_ImposterProfessorOak:
 	call GetNonTurnDuelistVariable
 	cp 9
 	jr c, .no_carry
-.set_carry
+; more than 8 cards in deck, so set carry
 	scf
 	ret
 
@@ -3771,13 +3748,13 @@ AIDecide_FullHeal:
 ; cards are in the Play Area.
 	ld a, GASTLY_LV8
 	call .CheckPlayerArenaCard
-	jr c, .set_carry
+	ret c
 	ld a, GASTLY_LV17
 	call .CheckPlayerArenaCard
-	jr c, .set_carry
+	ret c
 	ld a, HAUNTER_LV22
 	call .CheckPlayerArenaCard
-	jr c, .set_carry
+	ret c
 	jr .paralyzed
 
 ; returns carry if player's Arena card
@@ -3812,7 +3789,7 @@ AIDecide_FullHeal:
 	pop bc
 	pop hl
 	ld [hl], b
-	jr c, .set_carry
+	ret c
 
 ; if it can play an energy card to retreat, set carry.
 	ld a, [wAIPlayEnergyCardForRetreat]
@@ -5223,7 +5200,7 @@ AIDecide_ComputerSearch_WondersOfScience:
 	ld e, PROFESSOR_OAK
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation
-	jp nc, .look_in_hand ; can be a jr
+	jr nc, .look_in_hand
 	ld [wce06], a
 	jr .find_discard_cards
 
@@ -5249,7 +5226,7 @@ AIDecide_ComputerSearch_WondersOfScience:
 	ld e, GRIMER
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation
-	jp nc, .no_carry ; can be a jr
+	jr nc, .no_carry
 	ld [wce06], a
 	jr .find_discard_cards
 
@@ -5259,7 +5236,7 @@ AIDecide_ComputerSearch_WondersOfScience:
 	ld e, MUK
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation
-	jp nc, .no_carry ; can be a jr
+	jr nc, .no_carry
 	ld [wce06], a
 
 ; only discard Trainer cards from hand.
@@ -5502,21 +5479,17 @@ AIDecide_PokemonTrader_LegendaryArticuno:
 .check_hand
 	ld a, CHANSEY
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Chansey
 	ld a, DITTO
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Ditto
 	ld a, ARTICUNO_LV37
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Articuno
 	; doesn't have any of the cards in hand
 
 .no_carry
 	or a
-	ret
-
-.set_carry
-	scf
 	ret
 
 AIDecide_PokemonTrader_LegendaryDragonite:
@@ -5591,29 +5564,26 @@ AIDecide_PokemonTrader_LegendaryDragonite:
 	ld [wce1a], a
 	ld a, DRAGONAIR
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Dragonair
 	ld a, CHARMELEON
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Charmeleon
 	ld a, GYARADOS
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Gyarados
 	ld a, MAGIKARP
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Magikarp
 	ld a, CHARMANDER
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Charmander
 	ld a, DRATINI
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; found Dratini
 	; none found
 
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 AIDecide_PokemonTrader_LegendaryRonald:
@@ -5661,8 +5631,8 @@ AIDecide_PokemonTrader_LegendaryRonald:
 	ld a, DRAGONAIR
 	ld b, DRAGONITE_LV41
 	call LookForCardIDInDeck_GivenCardIDInHand
-	jr c, .choose_hand
-	jr .no_carry
+	jr nc, .no_carry
+	; fallthrough
 
 ; card was found as target in deck,
 ; look for card in hand to trade with
@@ -5670,20 +5640,17 @@ AIDecide_PokemonTrader_LegendaryRonald:
 	ld [wce1a], a
 	ld a, ZAPDOS_LV68
 	call LookForCardIDInHandList_Bank8
-	jr c, .set_carry
+	ret c ; found Zapdos
 	ld a, ARTICUNO_LV37
 	call LookForCardIDInHandList_Bank8
-	jr c, .set_carry
+	ret c ; found Articuno
 	ld a, MOLTRES_LV37
 	call LookForCardIDInHandList_Bank8
-	jr c, .set_carry
+	ret c ; found Moltres
 	; none found
 
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 AIDecide_PokemonTrader_BlisteringPokemon:
@@ -5715,20 +5682,17 @@ AIDecide_PokemonTrader_BlisteringPokemon:
 	ld a, PONYTA
 	ld b, RAPIDASH
 	call LookForCardIDInDeck_GivenCardIDInHand
-	jr c, .find_duplicates
-	jr .no_carry
+	jr nc, .no_carry
+	; fallthrough
 
 ; a card in deck was found to look for,
 ; check if there are duplicates in hand to trade with.
 .find_duplicates
 	ld [wce1a], a
 	call FindDuplicatePokemonCards
-	jr c, .set_carry
+	ret c ; found
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 AIDecide_PokemonTrader_SoundOfTheWaves:
@@ -5776,8 +5740,8 @@ AIDecide_PokemonTrader_SoundOfTheWaves:
 	ld a, TENTACOOL
 	ld b, TENTACRUEL
 	call LookForCardIDInDeck_GivenCardIDInHand
-	jr c, .choose_hand
-	jr .no_carry
+	jr nc, .no_carry
+	; fallthrough
 
 ; card was found as target in deck,
 ; look for card in hand to trade with
@@ -5785,26 +5749,23 @@ AIDecide_PokemonTrader_SoundOfTheWaves:
 	ld [wce1a], a
 	ld a, SEEL
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; Seel found
 	ld a, KRABBY
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; Krabby found
 	ld a, HORSEA
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; Horsea found
 	ld a, SHELLDER
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; Shellder found
 	ld a, TENTACOOL
 	call CheckIfHasCardIDInHand
-	jr c, .set_carry
+	ret c ; Tentacool found
 	; none found
 
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 AIDecide_PokemonTrader_PowerGenerator:
@@ -5884,11 +5845,8 @@ AIDecide_PokemonTrader_PowerGenerator:
 .find_duplicates
 	ld [wce1a], a
 	call FindDuplicatePokemonCards
-	jr c, .set_carry
+	ret c ; found
 	or a
-	ret
-.set_carry
-	scf
 	ret
 
 AIDecide_PokemonTrader_FlowerGarden:
@@ -5944,20 +5902,17 @@ AIDecide_PokemonTrader_FlowerGarden:
 	ld a, GLOOM
 	ld b, VILEPLUME
 	call LookForCardIDInDeck_GivenCardIDInHand
-	jr c, .find_duplicates
-	jr .no_carry
+	jr nc, .no_carry
+	; fallthrough
 
 ; a card in deck was found to look for,
 ; check if there are duplicates in hand to trade with.
 .find_duplicates
 	ld [wce1a], a
 	call FindDuplicatePokemonCards
-	jr c, .found
+	ret c ; found
 .no_carry
 	or a
-	ret
-.found
-	scf
 	ret
 
 AIDecide_PokemonTrader_StrangePower:
@@ -6022,18 +5977,15 @@ AIDecide_PokemonTrader_Flamethrower:
 	ld a, EEVEE
 	ld b, FLAREON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHand
-	jr c, .find_duplicates
-	jr .no_carry
+	jr nc, .no_carry
+	; fallthrough
 
 ; a card in deck was found to look for,
 ; check if there are duplicates in hand to trade with.
 .find_duplicates
 	ld [wce1a], a
 	call FindDuplicatePokemonCards
-	jr c, .set_carry
+	ret c ; found
 .no_carry
 	or a
-	ret
-.set_carry
-	scf
 	ret

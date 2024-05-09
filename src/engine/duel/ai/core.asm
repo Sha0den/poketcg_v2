@@ -1216,7 +1216,7 @@ CheckDamageToMrMime:
 	jr nz, .set_carry
 	ld a, b
 	call CheckIfCanDamageDefendingPokemon
-	jr c, .set_carry
+	ret c
 	or a
 	ret
 .set_carry
@@ -1918,7 +1918,7 @@ AISelectSpecialAttackParameters:
 ; the location of card to select to devolve
 	ld a, [wSelectedAttack]
 	or a
-	jp z, .no_carry ; can be jr
+	jr z, .no_carry
 
 	ld a, $01
 	ldh [hTemp_ffa0], a
@@ -1932,7 +1932,7 @@ AISelectSpecialAttackParameters:
 ; make list from energy cards in Discard Pile
 	ld a, [wSelectedAttack]
 	or a
-	jp nz, .no_carry  ; can be jr
+	jr nz, .no_carry
 
 	ld a, $ff
 	ldh [hTempPlayAreaLocation_ffa1], a
@@ -1975,7 +1975,7 @@ AISelectSpecialAttackParameters:
 ; decide Bench card to switch to.
 	ld a, [wSelectedAttack]
 	or a
-	jp nz, .no_carry  ; can be jr
+	jr nz, .no_carry
 	call AIDecideBenchPokemonToSwitchTo
 	jr c, .no_carry
 	ldh [hTemp_ffa0], a
@@ -1987,7 +1987,7 @@ AISelectSpecialAttackParameters:
 ; decide basic energy card to fetch from Deck.
 	ld a, [wSelectedAttack]
 	or a
-	jp z, .no_carry  ; can be jr
+	jr z, .no_carry
 
 	ld a, CARD_LOCATION_DECK
 	ld e, LIGHTNING_ENERGY
@@ -1995,12 +1995,12 @@ AISelectSpecialAttackParameters:
 ; if none were found in Deck, return carry...
 	call CheckIfAnyCardIDinLocation
 	ldh [hTemp_ffa0], a
-	jp nc, .no_carry  ; can be jr
+	jr nc, .no_carry
 
 ; ...else find a suitable Play Area Pokemon to
 ; attach the energy card to.
 	call AIProcessButDontPlayEnergy_SkipEvolution
-	jp nc, .no_carry  ; can be jr
+	jr nc, .no_carry
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	scf

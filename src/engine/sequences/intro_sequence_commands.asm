@@ -24,7 +24,7 @@ ExecuteIntroSequenceCmd:
 	ld b, a
 	ld l, e
 	ld h, d
-	call CallHL2
+	call CallHL
 	jr c, ExecuteIntroSequenceCmd
 	ret
 

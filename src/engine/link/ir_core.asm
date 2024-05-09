@@ -52,7 +52,7 @@ TransmitByteThroughIR:
 	pop hl
 	ldh a, [rJOYP]
 	bit 1, a ; P11
-	jr z, ReturnZFlagUnsetAndCarryFlagSet
+	jp z, ReturnZFlagUnsetAndCarryFlagSet
 	xor a ; return z set
 	ret
 
@@ -134,12 +134,6 @@ ReceiveByteThroughIR:
 	or a
 	ret
 
-ReturnZFlagUnsetAndCarryFlagSet:
-	ld a, $ff
-	or a ; z not set
-	scf  ; carry set
-	ret
-
 ; called when expecting to transmit data
 Func_19705:
 	ld hl, rRP
@@ -172,12 +166,9 @@ Func_1971e:
 	xor a
 	ret
 
-ReturnZFlagUnsetAndCarryFlagSet2:
-	jp ReturnZFlagUnsetAndCarryFlagSet
-
 TransmitIRDataBuffer:
 	call Func_19705
-	jr c, ReturnZFlagUnsetAndCarryFlagSet2
+	jr c, ReturnZFlagUnsetAndCarryFlagSet
 	ld a, $49
 	call TransmitByteThroughIR
 	ld a, $52
@@ -188,7 +179,7 @@ TransmitIRDataBuffer:
 
 ReceiveIRDataBuffer:
 	call Func_1971e
-	jr c, ReturnZFlagUnsetAndCarryFlagSet2
+	jr c, ReturnZFlagUnsetAndCarryFlagSet
 	call ReceiveByteThroughIR
 	cp $49
 	jr nz, ReceiveIRDataBuffer
@@ -225,7 +216,7 @@ ReceiveNBytesToHLThroughIR:
 	ld b, 0
 .loop_data_bytes
 	call ReceiveByteThroughIR
-	jr c, ReturnZFlagUnsetAndCarryFlagSet2
+	jr c, ReturnZFlagUnsetAndCarryFlagSet
 	ld [hli], a
 	add b
 	ld b, a
@@ -234,7 +225,13 @@ ReceiveNBytesToHLThroughIR:
 	call ReceiveByteThroughIR
 	add b
 	or a
-	jr nz, ReturnZFlagUnsetAndCarryFlagSet2
+	ret z
+;	fallthrough
+
+ReturnZFlagUnsetAndCarryFlagSet:
+	ld a, $ff
+	or a ; z not set
+	scf  ; carry set
 	ret
 
 ; disables interrupts, and sets joypad and IR communication port

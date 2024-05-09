@@ -645,8 +645,8 @@ wDuelInitialPrizes:: ; cc08
 wDuelType:: ; cc09
 	ds $1
 
-; set to 1 if the coin toss during the CheckSandAttackOrSmokescreenSubstatus check is heads
-wGotHeadsFromSandAttackOrSmokescreenCheck:: ; cc0a
+; set to 1 if the coin toss during the CheckSmokescreenSubstatus check is heads
+wGotHeadsFromSmokescreenCheck:: ; cc0a
 	ds $1
 
 wAlreadyPlayedEnergy:: ; cc0b

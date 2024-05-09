@@ -7,7 +7,7 @@ SFX_UpdateSFX:
 SFX_Play:
 	ld hl, NumberOfSFX
 	cp [hl]
-	jr nc, .invalidID
+	ret nc ; invalid ID
 	add a
 	ld c, a
 	ld b, $0
@@ -56,7 +56,6 @@ SFX_Play:
 	ld a, $4
 	cp c
 	jr nz, .asm_fc031
-.invalidID
 	ret
 
 SFX_Update:

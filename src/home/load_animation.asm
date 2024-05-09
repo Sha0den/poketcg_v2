@@ -1,7 +1,8 @@
 EnableAndClearSpriteAnimations::
 	xor a
 	ld [wAllSpriteAnimationsDisabled], a
-	; fallthrough
+;	fallthrough
+
 ClearSpriteAnimations::
 	ldh a, [hBankROM]
 	push af

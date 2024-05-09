@@ -148,7 +148,7 @@ LoadPlacingThePrizesScreenTiles::
 	ld de, v0Tiles1 + $20 tiles
 	ld b, $d
 	call CopyFontsOrDuelGraphicsTiles
-; fallthrough
+;	fallthrough
 
 ; load the Deck and the Discard Pile icons
 LoadDeckAndDiscardPileIcons::

@@ -1121,13 +1121,13 @@ SaveDeckInDeckSaveMachine:
 	call HandleStartButtonInDeckSelectionMenu
 	jr c, .wait_input
 	call HandleMenuInput
-	jp nc, .wait_submenu_input ; can be jr
+	jr nc, .wait_submenu_input
 	ldh a, [hCurMenuItem]
 	cp $ff
 	ret z ; operation cancelled
 	ld [wCurDeck], a
 	call CheckIfCurDeckIsValid
-	jp nc, .SaveDeckInSelectedEntry ; can be jr
+	jr nc, .SaveDeckInSelectedEntry
 	; is an empty deck
 	call PrintThereIsNoDeckHereText
 	ld a, [wCurDeck]
@@ -1421,7 +1421,7 @@ HandleDismantleDeckToMakeSpace:
 	call HandleStartButtonInDeckSelectionMenu
 	jr c, .init_menu_params
 	call HandleMenuInput
-	jp nc, .loop_input ; can be jr
+	jr nc, .loop_input
 	ldh a, [hCurMenuItem]
 	cp $ff
 	jr nz, .selected_deck

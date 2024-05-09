@@ -391,7 +391,7 @@ DrawYourOrOppPlayAreaScreen:
 	ld [wCheckMenuPlayAreaWhichDuelist], a
 	ld a, l
 	ld [wCheckMenuPlayAreaWhichLayout], a
-; fallthrough
+;	fallthrough
 
 ; loads tiles and icons to display Your Play Area / Opp. Play Area screen,
 ; and draws the screen according to the turn player
@@ -1324,13 +1324,13 @@ HandleCheckMenuInput_YourOrOppPlayArea:
 	ld a, SYM_CURSOR_R ; cursor byte
 	bit 4, [hl] ; only draw cursor if blink counter's fourth bit is not set
 	jr z, DrawCheckMenuCursor_YourOrOppPlayArea
-; fallthrough
+;	fallthrough
 
 ; transforms cursor position into coordinates
 ; in order to draw byte on menu cursor
 EraseCheckMenuCursor_YourOrOppPlayArea:
 	ld a, SYM_SPACE ; white tile
-; fallthrough
+;	fallthrough
 
 ; draws in the cursor position
 ; input:
@@ -1516,7 +1516,7 @@ ENDR
 	ld a, %01111111
 	ld [wce5c], a
 	ld a, [wDuelTempList]
-; fallthrough
+	; fallthrough
 
 ; input:
 ; a = deck index of card to be loaded
@@ -1962,7 +1962,7 @@ _SelectPrizeCards::
 	ld a, DUELVARS_PRIZES
 	call GetTurnDuelistVariable
 	and b
-	jp z, .loop_handle_input ; can be jr
+	jr z, .loop_handle_input
 
 	; remove prize
 	ld a, DUELVARS_PRIZES

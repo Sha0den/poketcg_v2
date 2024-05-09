@@ -44,7 +44,7 @@ RetrievePlayAreaAIScoreFromBackup:
 AIProcessAndTryToUseAttack:
 	xor a
 	ld [wAIExecuteProcessedAttack], a
-	; fallthrough
+;	fallthrough
 
 ; checks which of the Active card's attacks for AI to use.
 ; If any of the attacks has enough AI score to be used,
@@ -495,7 +495,7 @@ GetAIScoreOfAttack:
 	call SwapTurn
 	pop de
 	cp d
-	jr c, .set_carry
+	ret c
 	jr z, .set_carry
 	or a
 	ret

@@ -36,7 +36,7 @@ PlayAttackAnimationCommands:
 	call PlayDuelAnimation
 .read_command
 	pop de
-	; fallthrough
+;	fallthrough
 
 PlayAttackAnimationCommands_NextCommand:
 	ld a, [de]
@@ -237,7 +237,7 @@ Func_190f4:
 	ld a, [wDuelAnimSetScreen]
 	cp SET_ANIM_SCREEN_PLAY_AREA
 	jr z, Func_1910f
-	; fallthrough
+;	fallthrough
 
 Func_190fb:
 	cp SET_ANIM_SCREEN_MAIN

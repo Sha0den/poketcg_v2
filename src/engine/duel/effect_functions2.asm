@@ -121,13 +121,8 @@ LookForCardsInDeck:
 	ld a, [hli]
 	cp $ff
 	jr z, SetCarryEF2
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .loop_deck_evolution ; skip if not Pokemon card
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr z, .loop_deck_evolution
+	call CheckDeckIndexForStage1OrStage2Pokemon
+	jr nc, .loop_deck_evolution ; skip if not a Stage 1/2 Pokemon
 	ret
 
 ; returns carry if no Basic Pokemon are found in the player's deck
@@ -137,13 +132,8 @@ LookForCardsInDeck:
 	ld a, [hli]
 	cp $ff
 	jr z, SetCarryEF2
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .loop_deck_bscpkmn ; skip if not Pokemon card
-	ld a, [wLoadedCard2Stage]
-	or a ; BASIC
-	jr nz, .loop_deck_bscpkmn
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .loop_deck_bscpkmn ; skip if not a Basic Pokemon
 	ret
 
 ; returns carry if no Basic Fighting Pokemon are found in the player's deck
@@ -156,10 +146,10 @@ LookForCardsInDeck:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_PKMN_FIGHTING
-	jr nz, .loop_deck_fighting
+	jr nz, .loop_deck_fighting ; skip if type isn't Fighting
 	ld a, [wLoadedCard2Stage]
-	or a ; BASIC
-	jr nz, .loop_deck_fighting
+	or a
+	jr nz, .loop_deck_fighting ; skip if stage isn't Basic
 	ret
 
 ; returns carry if no NidoranM or NidoranF are found in the player's deck
@@ -232,9 +222,9 @@ CheckIfCardIsBasicEnergy:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr c, SetCarryEF2 ; not energy
+	jr c, SetCarryEF2 ; skip if a Pokemon
 	cp TYPE_ENERGY_DOUBLE_COLORLESS
-	jr nc, SetCarryEF2 ; not basic energy
+	jr nc, SetCarryEF2 ; skip if DCE or a Trainer
 ; is basic energy
 	or a
 	ret
@@ -261,9 +251,9 @@ FindBasicEnergyToAttach:
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_ENERGY_DOUBLE_COLORLESS
-	jr nc, .select_card ; not a Basic Energy card
+	jr nc, .select_card ; skip if DCE or a Trainer
 	and TYPE_ENERGY
-	jr z, .select_card ; not a Basic Energy card
+	jr z, .select_card ; skip if not an Energy card
 	; Energy card selected
 
 	ldh a, [hTempCardIndex_ff98]
@@ -388,8 +378,8 @@ FindEvolution:
 	jr c, .try_exit ; B pressed?
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
-	call CheckIfCardIsEvolution
-	jr c, .play_sfx
+	call CheckDeckIndexForStage1OrStage2Pokemon
+	jr nc, .play_sfx
 	or a
 	ret
 .play_sfx
@@ -403,8 +393,8 @@ FindEvolution:
 	ld a, [hli]
 	cp $ff
 	jr z, .exit
-	call CheckIfCardIsEvolution
-	jr c, .next_card
+	call CheckDeckIndexForStage1OrStage2Pokemon
+	jr nc, .next_card
 	jr .read_input ; no, has to select Evolution card
 .exit
 	ld a, $ff
@@ -413,17 +403,17 @@ FindEvolution:
 	ret
 
 ; check if card index in a is an Evolution Pokemon
-; returns carry in case it's not
-CheckIfCardIsEvolution:
+; sets the carry flag if the check is a success
+CheckDeckIndexForStage1OrStage2Pokemon:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jp nc, SetCarryEF2 ; skip if not Pokemon card
+	ret nc ; not a Pokemon
 	ld a, [wLoadedCard2Stage]
 	or a
-	jp z, SetCarryEF2 ; not evolution
-; is evolution
-	or a
+	ret z ; is Basic
+	; is an evolution
+	scf
 	ret
 
 FindBasicPokemon:
@@ -447,13 +437,8 @@ FindBasicPokemon:
 	bank1call DisplayCardList
 	jr c, .pressed_b
 
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .play_sfx ; is Basic?
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .play_sfx ; is Basic?
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .play_sfx ; not a Basic Pokemon
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
@@ -501,13 +486,8 @@ AIFindBasicPokemon:
 	ldh [hTemp_ffa0], a
 	cp $ff
 	ret z ; none found
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .loop_deck
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .loop_deck
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .loop_deck ; not a Basic Pokemon
 	ret ; Basic Pokemon found
 
 FindBasicFightingPokemon:

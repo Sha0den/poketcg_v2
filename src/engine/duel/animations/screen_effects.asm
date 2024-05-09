@@ -54,7 +54,7 @@ LoadDefaultScreenAnimationUpdateWhenFinished:
 	ld a, [wScreenAnimDuration]
 	or a
 	ret nz
-	; fallthrough
+;	fallthrough
 
 ; function called for the screen animation update when it is over
 DefaultScreenAnimationUpdate:
@@ -79,7 +79,7 @@ DoScreenAnimationUpdate:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call CallHL2
+	call CallHL
 	jr DefaultScreenAnimationUpdate
 
 ShakeScreenX_Small:
@@ -275,7 +275,7 @@ Func_1ce03:
 	ld a, [wDuelAnimDamage + 1]
 	ld h, a
 
-.func_3bb5:
+.func_3bb5
 	xor a
 	ld [wd4c0], a
 	ldh a, [hBankROM]
@@ -283,7 +283,7 @@ Func_1ce03:
 	ld a, [wDuelAnimReturnBank]
 	call BankswitchROM
 	call HandleAllSpriteAnimations
-	call CallHL2
+	call CallHL
 	pop af
 	call BankswitchROM
 	ld a, $80

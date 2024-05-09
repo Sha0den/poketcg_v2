@@ -41,8 +41,7 @@ Func_1d705:
 	call Func_1d7ee
 	ld hl, Func_3e31
 	call SetDoFrameFunction
-	call .Func_1d720 ; can be fallthrough
-	ret
+	; fallthrough
 
 .Func_1d720
 	ld a, $91
@@ -53,8 +52,7 @@ Func_1d705:
 	ld [wd64a], a
 	call Func_1d765
 	call SetWindowOn
-	call .Func_1d73a ; can be fallthrough
-	ret
+	; fallthrough
 
 .Func_1d73a
 	push hl

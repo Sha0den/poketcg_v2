@@ -643,7 +643,7 @@ SaveDeckConfiguration:
 ; handle deck configuration size
 	ld a, [wTotalCardCount]
 	cp DECK_SIZE
-	jp z, .ask_to_save_deck ; can be jr
+	jr z, .ask_to_save_deck
 	ldtx hl, ThisIsntA60CardDeckText
 	call DrawWideTextBox_WaitForInput
 	ldtx hl, ReturnToOriginalConfigurationText
@@ -686,7 +686,7 @@ DismantleDeck:
 	call YesOrNoMenuWithText
 	jr c, SaveDeckConfiguration.go_back
 	call CheckIfHasOtherValidDecks
-	jp nc, .Dismantle ; can be jr
+	jr nc, .Dismantle
 	ldtx hl, ThereIsOnly1DeckSoCannotBeDismantledText
 	call DrawWideTextBox_WaitForInput
 	call EmptyScreen
@@ -2553,7 +2553,7 @@ ShowDeckInfoHeader:
 	call DrawRegularTextBox
 	ld a, [wCurDeckName]
 	or a
-	jp z, .print_card_count ; can be jr
+	jr z, .print_card_count
 
 ; draw hand cards icon if it's the current dueling deck
 	call PrintCurDeckNumberAndName
@@ -2929,7 +2929,7 @@ GetCardTypeIconPalette:
 	cp b
 	jr z, .done
 	inc hl
-	jp .loop ; can be jr
+	jr .loop
 .done
 	ld a, [hl]
 	pop hl

@@ -474,17 +474,17 @@ DuelMenu_Retreat:
 	call CheckAbleToRetreat
 	jr c, .unable_to_retreat
 	call DisplayRetreatScreen
-	jr c, .done
+	jp c, DuelMainInterface
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	call OpenPlayAreaScreenForSelection
-	jr c, .done
+	jp c, DuelMainInterface
 	ld [wBenchSelectedPokemon], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld a, OPPACTION_ATTEMPT_RETREAT
 	call SetOppAction_SerialSendDuelData
 	call AttemptRetreat
-	jr nc, .done
+	jp nc, DuelMainInterface
 	call DrawDuelMainScene
 
 .unable_due_to_confusion
@@ -502,7 +502,7 @@ DuelMenu_Retreat:
 	call CheckAbleToRetreat
 	jr c, .unable_to_retreat
 	call DisplayRetreatScreen
-	jr c, .done
+	jp c, DuelMainInterface
 	call DiscardRetreatCostCards
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
@@ -516,8 +516,6 @@ DuelMenu_Retreat:
 	ld a, OPPACTION_ATTEMPT_RETREAT
 	call SetOppAction_SerialSendDuelData
 	call AttemptRetreat
-
-.done
 	jp DuelMainInterface
 
 .unable_to_retreat
@@ -2071,7 +2069,7 @@ IsLoadedCard1BasicPokemon:
 	jr z, .basic
 	cp CLEFAIRY_DOLL
 	jr z, .basic
-;	fallthrough
+	; fallthrough
 
 ; return nc if the card at wLoadedCard1 is a basic Pokemon card
 ; MYSTERIOUS_FOSSIL and CLEFAIRY_DOLL do NOT count unless already checked
@@ -3185,7 +3183,7 @@ InitAndDrawCardListScreenLayout:
 	ldtx [hl], DuelistHandText, & $ff
 	inc hl
 	ldtx [hl], DuelistHandText, >> 8
-; fallthrough
+;	fallthrough
 
 ; same as InitAndDrawCardListScreenLayout, except that variables like wSelectedDuelSubMenuItem,
 ; wNoItemSelectionMenuKeys, wCardListInfoBoxText, wCardListHeaderText, etc already set by caller.
@@ -4831,7 +4829,7 @@ PrintPokemonCardLength:
 	pop hl
 	ld h, $00
 	ldtx de, InchesText ; "
-;	fallthrough
+	; fallthrough
 
 .print_feet_or_inches
 ; keep track how many digits each number consists of in wPokemonLengthPrintOffset,
@@ -5111,7 +5109,7 @@ SelectingBenchPokemonMenu:
 .got_menu_item
 	ld [wCurrentDuelMenuItem], a
 	call EraseCursor
-;	fallthrough
+	; fallthrough
 
 .InitMenu:
 	ld a, [wCurrentDuelMenuItem]
@@ -6721,8 +6719,8 @@ OppAction_ExecuteTrainerCardEffectCommands:
 	call ExchangeRNG
 	jp DrawDuelMainScene
 
-; begin the execution of an attack and handle the attack being
-; possibly unsuccessful due to Sand Attack or Smokescreen
+; begin the execution of an attack and handle the attack potentially being
+; unsuccessful due to an attack like Smokescreen or Sand Attack
 OppAction_BeginUseAttack:
 	ldh a, [hTempCardIndex_ff9f]
 	ld d, a
@@ -6741,8 +6739,8 @@ OppAction_BeginUseAttack:
 	jr z, .has_status
 	jp ExchangeRNG
 
-; we make it here is attacker is affected by
-; Sand Attack, Smokescreen, or confusion
+; we make it here ifs attacker is affected by the Confused status
+; or an attack like Smokescreen or Sand Attack
 .has_status
 	call DrawDuelMainScene
 	call PrintPokemonsAttackText
@@ -7366,7 +7364,7 @@ ApplyStatusConditionToArenaPokemon:
 
 Func_6e49::
 	call HandleDestinyBondSubstatus
-	; fallthrough
+;	fallthrough
 
 HandleBetweenTurnKnockOuts:
 	call .ClearDamageReductionSubstatus2OfKnockedOutPokemon
@@ -7794,7 +7792,7 @@ InitVariablesToBeginTurn:
 	xor a
 	ld [wAlreadyPlayedEnergy], a
 	ld [wGotHeadsFromConfusionCheckDuringRetreat], a
-	ld [wGotHeadsFromSandAttackOrSmokescreenCheck], a
+	ld [wGotHeadsFromSmokescreenCheck], a
 	ldh a, [hWhoseTurn]
 	ld [wWhoseTurn], a
 	ret

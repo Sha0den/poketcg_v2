@@ -157,7 +157,7 @@ CreateCardSetList:
 
 .SetMewLv15OwnedFlag
 	ld a, (1 << MEW_OWNED_PHANTOM_F)
-;	fallthrough
+	; fallthrough
 
 .SetPhantomOwnedFlag
 	push hl
@@ -184,7 +184,7 @@ CreateCardSetList:
 	push af
 	push hl
 	ld e, VENUSAUR_LV64
-;	fallthrough
+	; fallthrough
 
 ; places card in register e directly in the list
 .PlaceCardInList
@@ -632,7 +632,7 @@ CardAlbum:
 .loop_input_1
 	call DoFrame
 	call HandleMenuInput
-	jp nc, .loop_input_1 ; can be jr
+	jr nc, .loop_input_1
 	ldh a, [hCurMenuItem]
 	cp $ff
 	ret z

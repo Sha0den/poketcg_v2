@@ -37,7 +37,7 @@ ExecuteCreditsSequenceCmd:
 	ld a, [hli]
 	ld d, a
 	pop hl
-	call CallHL2
+	call CallHL
 	jr ExecuteCreditsSequenceCmd
 
 AdvanceCreditsSequenceCmdPtrBy2:

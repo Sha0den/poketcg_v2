@@ -104,7 +104,7 @@ FillNewSpriteAnimBufferEntry:
 
 DisableCurSpriteAnim:
 	ld a, [wWhichSprite]
-	; fallthrough
+;	fallthrough
 
 ; sets SPRITE_ANIM_ENABLED to false
 ; of sprite in register a
@@ -251,7 +251,7 @@ StartNewSpriteAnimation:
 	cp [hl]
 	pop hl
 	ret z
-	; fallthrough
+;	fallthrough
 
 StartSpriteAnimation:
 	push hl

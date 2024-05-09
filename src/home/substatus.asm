@@ -278,12 +278,12 @@ HandleAmnesiaSubstatus::
 	scf
 	ret
 
-; return carry if the turn holder's attack was unsuccessful due to sand attack or smokescreen effect
+; return carry if the turn holder's attack was unsuccessful due to smokescreen
 HandleSmokescreenSubstatus::
 	call CheckSmokescreenSubstatus
 	ret nc
 	call TossCoin
-	ld [wGotHeadsFromSandAttackOrSmokescreenCheck], a
+	ld [wGotHeadsFromSmokescreenCheck], a
 	ccf
 	ret nc
 	ldtx hl, AttackUnsuccessfulText
@@ -291,7 +291,7 @@ HandleSmokescreenSubstatus::
 	scf
 	ret
 
-; return carry if the turn holder's arena card is under the effects of sand attack or smokescreen
+; return carry if the turn holder's arena card is under the effects of smokescreen
 CheckSmokescreenSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
@@ -303,7 +303,7 @@ CheckSmokescreenSubstatus::
 	or a
 	ret
 .card_is_affected
-	ld a, [wGotHeadsFromSandAttackOrSmokescreenCheck]
+	ld a, [wGotHeadsFromSmokescreenCheck]
 	or a
 	ret nz
 	scf

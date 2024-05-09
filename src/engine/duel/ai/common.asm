@@ -11,7 +11,7 @@ CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 	pop de
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jp nc, .next ; can be a jr
+	jr nc, .next
 	ld a, [wLoadedCard2ID]
 	cp MEWTWO_LV53
 	jr nz, .not_mewtwo1
@@ -51,14 +51,18 @@ HandleAIAntiMewtwoDeckStrategy:
 ; and return carry.
 	xor a
 	ld [wAIBarrierFlagCounter], a
-	jr .set_carry
+	; fallthrough
+	
+.set_carry
+	scf
+	ret
 
 ; else, check number of Pokemon that are set up in Bench
 ; if less than 4, return carry.
 .count_bench
 	farcall CountNumberOfSetUpBenchPokemon
 	cp 4
-	jr c, .set_carry
+	ret c
 
 ; if there's at least 4 Pokemon in the Bench set up,
 ; process Trainer hand cards of AI_TRAINER_CARD_PHASE_05
@@ -67,9 +71,6 @@ HandleAIAntiMewtwoDeckStrategy:
 	or a
 	ret
 
-.set_carry
-	scf
-	ret
 
 ; lists in wDuelTempList all the basic energy cards
 ; in card location of a.
