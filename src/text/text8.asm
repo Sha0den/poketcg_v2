@@ -1234,4 +1234,4 @@ Text073e:
 	line "the Legendary Pokémon Cards."
 	done
 
-	ds $17a
+;	ds $17a

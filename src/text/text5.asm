@@ -1021,4 +1021,4 @@ RonaldChallengeCup2Missed1Text:
 	line "What are you doing here?"
 	done
 
-	ds $d6
+;	ds $d6

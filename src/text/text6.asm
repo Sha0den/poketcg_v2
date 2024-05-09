@@ -1186,4 +1186,4 @@ Text05da:
 	line "carefully."
 	done
 
-	ds $bc
+;	ds $bc

@@ -1059,4 +1059,4 @@ ChrisFightingClubWouldYouLikeToDuelText:
 	text "Would you like to duel Chris?"
 	done
 
-	ds $8
+;	ds $8

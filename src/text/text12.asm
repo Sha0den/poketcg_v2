@@ -1412,4 +1412,4 @@ ScoopUpName:
 	text "Scoop Up"
 	done
 
-	ds $9
+;	ds $9

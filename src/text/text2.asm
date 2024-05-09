@@ -1865,4 +1865,4 @@ ThisDeckCanOnlyBeBuiltIfYouDismantleText:
 	line "you dismantle another Deck."
 	done
 
-	ds $26
+;	ds $26

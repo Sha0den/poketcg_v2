@@ -1136,4 +1136,4 @@ DamageCheckIfHeadsXDamageText:
 	text "<RAMNUM> damage for each heads!"
 	done
 
-	ds $d
+;	ds $d

@@ -1487,7 +1487,7 @@ NidorinaCardGfx::
 	INCBIN "gfx/cards/nidorina.2bpp"
 	INCBIN "gfx/cards/nidorina.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 2", ROMX
 
@@ -1575,7 +1575,7 @@ KoffingCardGfx::
 	INCBIN "gfx/cards/koffing.2bpp"
 	INCBIN "gfx/cards/koffing.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 3", ROMX
 
@@ -1663,7 +1663,7 @@ MoltresLv35CardGfx::
 	INCBIN "gfx/cards/moltres1.2bpp"
 	INCBIN "gfx/cards/moltres1.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 4", ROMX
 
@@ -1751,7 +1751,7 @@ SeakingCardGfx::
 	INCBIN "gfx/cards/seaking.2bpp"
 	INCBIN "gfx/cards/seaking.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 5", ROMX
 
@@ -1839,7 +1839,7 @@ MagnemiteLv13CardGfx::
 	INCBIN "gfx/cards/magnemite1.2bpp"
 	INCBIN "gfx/cards/magnemite1.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 6", ROMX
 
@@ -1927,7 +1927,7 @@ MachokeCardGfx::
 	INCBIN "gfx/cards/machoke.2bpp"
 	INCBIN "gfx/cards/machoke.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 7", ROMX
 
@@ -2015,7 +2015,7 @@ SlowbroCardGfx::
 	INCBIN "gfx/cards/slowbro.2bpp"
 	INCBIN "gfx/cards/slowbro.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 8", ROMX
 
@@ -2103,7 +2103,7 @@ RaticateCardGfx::
 	INCBIN "gfx/cards/raticate.2bpp"
 	INCBIN "gfx/cards/raticate.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 9", ROMX
 
@@ -2191,7 +2191,7 @@ PorygonCardGfx::
 	INCBIN "gfx/cards/porygon.2bpp"
 	INCBIN "gfx/cards/porygon.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 10", ROMX
 
@@ -2279,7 +2279,7 @@ SwitchCardGfx::
 	INCBIN "gfx/cards/switch.2bpp"
 	INCBIN "gfx/cards/switch.pal"
 
-	ds $58
+;	ds $58
 
 SECTION "Card Gfx 11", ROMX
 
