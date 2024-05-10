@@ -1143,6 +1143,8 @@ AttackPageDisplayPointerTable:
 ; display ATTACKPAGE_ATTACK1_1
 DisplayAttackPage_Attack1Page1:
 	call DisplayCardPage_PokemonAttack1Page1
+	ld hl, wLoadedCard1Atk1Description + 2
+	call PrintDownArrowIfSecondDescriptionPage
 	jr SwitchAttackPage
 
 ; display ATTACKPAGE_ATTACK1_2 if it exists. otherwise return in order
@@ -1153,11 +1155,14 @@ DisplayAttackPage_Attack1Page2:
 	or [hl]
 	ret z
 	call DisplayCardPage_PokemonAttack1Page2
+	call PrintUpArrowOnSecondDescriptionPage
 	jr SwitchAttackPage
 
 ; display ATTACKPAGE_ATTACK2_1
 DisplayAttackPage_Attack2Page1:
 	call DisplayCardPage_PokemonAttack2Page1
+	ld hl, wLoadedCard1Atk2Description + 2
+	call PrintDownArrowIfSecondDescriptionPage
 	jr SwitchAttackPage
 
 ; display ATTACKPAGE_ATTACK2_2 if it exists. otherwise return in order
@@ -1168,6 +1173,7 @@ DisplayAttackPage_Attack2Page2:
 	or [hl]
 	ret z
 	call DisplayCardPage_PokemonAttack2Page2
+	call PrintUpArrowOnSecondDescriptionPage
 ;	fallthrough
 
 ; switch to ATTACKPAGE_ATTACK*_2 if in ATTACKPAGE_ATTACK*_1 and vice versa.
@@ -4511,22 +4517,46 @@ CardPageNoTextTileData:
 DisplayCardPage_PokemonAttack1Page1:
 	ld hl, wLoadedCard1Atk1Name
 	ld de, wLoadedCard1Atk1Description
-	jr DisplayPokemonAttackCardPage
+	call DisplayPokemonAttackCardPage
+	ld hl, wLoadedCard1Atk1Description + 2
+;	fallthrough
+
+; input:
+;   hl: loaded attack description pointer (e.g., wLoadedCard1Atk1Description + 2)
+PrintDownArrowIfSecondDescriptionPage:
+	; ld hl, wLoadedCard1Atk1Description + 2
+	ld a, [hli]
+	or [hl]
+	ret z
+	ld b, 18
+	ld c, 16
+	ld a, SYM_CURSOR_D
+	jp WriteByteToBGMap0
 
 DisplayCardPage_PokemonAttack1Page2:
 	ld hl, wLoadedCard1Atk1Name
 	ld de, wLoadedCard1Atk1Description + 2
-	jr DisplayPokemonAttackCardPage
+	call DisplayPokemonAttackCardPage
+;	fallthrough
+
+PrintUpArrowOnSecondDescriptionPage:
+	ld b, 18
+	ld c, 16
+	ld a, SYM_CURSOR_U
+	jp WriteByteToBGMap0
 
 DisplayCardPage_PokemonAttack2Page1:
 	ld hl, wLoadedCard1Atk2Name
 	ld de, wLoadedCard1Atk2Description
-	jr DisplayPokemonAttackCardPage
+	call DisplayPokemonAttackCardPage
+	ld hl, wLoadedCard1Atk2Description + 2
+	jr PrintDownArrowIfSecondDescriptionPage
 
 DisplayCardPage_PokemonAttack2Page2:
 	ld hl, wLoadedCard1Atk2Name
 	ld de, wLoadedCard1Atk2Description + 2
-;	fallthrough
+	call DisplayPokemonAttackCardPage
+	jr PrintUpArrowOnSecondDescriptionPage
 
 ; input:
    ; hl = address of the attack's name (text id)
@@ -4662,12 +4692,15 @@ CardRarityTextIDs:
 DisplayCardPage_TrainerPage1:
 	xor a ; HEADER_TRAINER
 	ld hl, wLoadedCard1NonPokemonDescription
-	jr DisplayEnergyOrTrainerCardPage
+	call DisplayEnergyOrTrainerCardPage
+	ld hl, wLoadedCard1NonPokemonDescription + 2
+	jp PrintDownArrowIfSecondDescriptionPage
 
 DisplayCardPage_TrainerPage2:
 	xor a ; HEADER_TRAINER
 	ld hl, wLoadedCard1NonPokemonDescription + 2
-	jr DisplayEnergyOrTrainerCardPage
+	call DisplayEnergyOrTrainerCardPage
+	jp PrintUpArrowOnSecondDescriptionPage
 
 DisplayCardPage_Energy:
 	ld a, HEADER_ENERGY
