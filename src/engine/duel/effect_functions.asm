@@ -182,7 +182,7 @@ PlayAreaAttachedEnergyCheck:
 	ret
 
 ; return carry if Active Pokemon has less than 2 Energy cards
-ActivePokemon2CardsAttached_EnergyCheck:
+ActivePokemon_2EnergyCardsCheck:
 	xor a ; PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
 	call CountCardsInDuelTempList
@@ -229,10 +229,85 @@ DefendingPokemon_SleepCheck:
 	scf
 	ret
 
+; returns carry if neither player has any evolved Pokemon.
+EitherPlayArea_EvolvedPokemonCheck:
+	call SwapTurn
+	call YourPlayArea_EvolvedPokemonCheck
+	call SwapTurn
+	ret nc
+;	fallthrough
+
+; checks if there is at least one Evolved Pokemon
+; in the Turn Duelist's Play Area.
+; returns carry if none are found
+YourPlayArea_EvolvedPokemonCheck:
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	ld d, h
+	ld e, DUELVARS_ARENA_CARD_STAGE
+.loop
+	ld a, [hli]
+	cp $ff
+	jr z, .set_carry
+	ld a, [de]
+	inc de
+	or a
+	jr z, .loop ; is Basic Stage
+	ret
+.set_carry
+	ldtx hl, NoEvolvedPokemonText
+	scf
+	ret
+;
+;Alt_YourPlayArea_EvolvedPokemonCheck:
+;	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+;	call GetTurnDuelistVariable
+;	ld c, a
+;	ld l, DUELVARS_ARENA_CARD
+;.loop
+;	ld a, [hli]
+;	call LoadCardDataToBuffer2_FromDeckIndex
+;	ld a, [wLoadedCard2Stage]
+;	or a
+;	ret nz ; found an Evolution card
+;	dec c
+;	jr nz, .loop
+;
+;	ldtx hl, NoEvolvedPokemonText
+;	scf
+;	ret
+
+; returns carry if Pokemon Power can't be used.
+OncePerTurnPokePowerCheck:
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh [hTemp_ffa0], a
+	add DUELVARS_ARENA_CARD_FLAGS
+	call GetTurnDuelistVariable
+	and USED_PKMN_POWER_THIS_TURN
+	jr nz, .already_used
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+.already_used
+	ldtx hl, OnlyOncePerTurnText
+;	fallthrough
+
+SetCarryEF:
+	scf
+	ret
+
 
 ;---------------------------------------------------------------------------------
 ; (2) NEXT ARE SOME FUNCTIONS THAT ARE FREQUENTLY CALLED BY OTHER FUNCTIONS
 ;---------------------------------------------------------------------------------
+
+; returns carry if Player is the Turn Duelist
+IsPlayerTurn:
+	ld a, DUELVARS_DUELIST_TYPE
+	call GetTurnDuelistVariable
+	cp DUELIST_TYPE_PLAYER
+	jr z, SetCarryEF ; player
+	or a
+	ret
 
 TossCoin_BankB:
 	jp TossCoin
@@ -293,15 +368,6 @@ AskWhetherToQuitSelectingCards:
 	call LoadTxRam3
 	ldtx hl, YouCanSelectMoreCardsQuitText
 	jp YesOrNoMenuWithText
-
-; returns carry if Player is the Turn Duelist
-IsPlayerTurn:
-	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
-	cp DUELIST_TYPE_PLAYER
-	jp z, SetCarryEF ; player
-	or a
-	ret
 
 ; returns carry if Defending has No Damage or Effect
 ; if so, print its appropriate text.
@@ -1041,7 +1107,6 @@ Scavenge_DiscardPileAndEnergyCheck:
 	call ActivePokemon_PsychicEnergyCheck
 	ret c ; return if no Psychic energy attached
 	call CreateTrainerCardListFromDiscardPile
-	ldtx hl, NoTrainerCardsInDiscardPileText ; this is redundant
 	ret
 
 Scavenge_AISelection:
@@ -1397,10 +1462,8 @@ WaterRecover_EnergyAndHPCheck:
 	ldtx hl, NotEnoughWaterEnergyText
 	cp 1
 	ret c ; return if not enough energy
-	call GetCardDamageAndMaxHP
-	ldtx hl, NoDamageCountersText
-	cp 10
-	ret ; return carry if no damage
+	call ActivePokemon_DamageCheck
+	ret
 
 WaterRecover_PlayerSelection:
 	ld a, TYPE_ENERGY_WATER
@@ -1432,10 +1495,8 @@ Recover_HealEffect:
 PsychicRecover_EnergyAndHPCheck:
 	call ActivePokemon_PsychicEnergyCheck
 	ret c ; return if not enough energy
-	call GetCardDamageAndMaxHP
-	ldtx hl, NoDamageCountersText
-	cp 10
-	ret ; return carry if no damage
+	call ActivePokemon_DamageCheck
+	ret
 
 PsychicRecover_PlayerSelection:
 	ld a, TYPE_ENERGY_PSYCHIC
@@ -1496,6 +1557,11 @@ ParalysisEffect:
 	lb bc, PSN_DBLPSN, PARALYZED
 	jr QueueStatusCondition
 
+; Defending Pokémon becomes double poisoned (takes 20 damage per turn rather than 10)
+DoublePoisonEffect:
+	lb bc, CNF_SLP_PRZ, DOUBLE_POISONED
+	jr QueueStatusCondition
+
 Poison50PercentEffect:
 	ldtx de, PoisonCheckText
 	call TossCoin_BankB
@@ -1503,11 +1569,6 @@ Poison50PercentEffect:
 
 PoisonEffect:
 	lb bc, CNF_SLP_PRZ, POISONED
-	jr QueueStatusCondition
-
-; Defending Pokémon becomes double poisoned (takes 20 damage per turn rather than 10)
-DoublePoisonEffect:
-	lb bc, CNF_SLP_PRZ, DOUBLE_POISONED
 ;	fallthrough
 
 QueueStatusCondition:
@@ -2732,32 +2793,6 @@ GustOfWind_SwitchEffect:
 	ld [wDuelDisplayedScreen], a
 	ret
 
-; returns carry if neither player has any evolved Pokemon.
-PlayArea_EvolvedPokemonCheck:
-	call CheckIfTurnDuelistHasEvolvedCards
-	ret nc
-	call SwapTurn
-	call CheckIfTurnDuelistHasEvolvedCards
-	call SwapTurn
-	ldtx hl, NoEvolvedPokemonText
-	ret
-
-; returns carry if Turn Duelist has no Evolution cards in Play Area.
-CheckIfTurnDuelistHasEvolvedCards:
-	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	ld d, h
-	ld e, DUELVARS_ARENA_CARD_STAGE
-.loop
-	ld a, [hli]
-	cp $ff
-	jp z, SetCarryEF
-	ld a, [de]
-	inc de
-	or a
-	jr z, .loop ; is Basic Stage
-	ret
-
 ; returns carry if Player cancelled selection.
 ; otherwise, output in hTemp_ffa0 which Play Area
 ; was selected ($0 = own Play Area, $1 = opp. Play Area)
@@ -3426,14 +3461,13 @@ FlipXFor10_AIEffect:
 
 ; input:
 ;   a: number of coins to flip
-;   hl: amount of damage to add per heads (display)
 ; outputs:
 ;   a: amount of bonus damage to add (heads x 10)
 ;   [wCoinTossTotalNum]: number of flipped coins
 ;   [wCoinTossNumHeads]: number of flipped heads
-; preserves: hl
 Plus10DamagePerHeads_TossCoins:
 	ld e, a
+	ld hl, 10 ; ram number for text display
 	call LoadTxRam3
 	ld a, e
 	ldtx de, DamageCheckIfHeadsXDamageText
@@ -3442,7 +3476,6 @@ Plus10DamagePerHeads_TossCoins:
 	ret
 
 Flip2For10_MultiplierEffect:
-	ld hl, 10
 	ld a, 2
 	call Plus10DamagePerHeads_TossCoins
 ;	fallthrough
@@ -3457,13 +3490,11 @@ SetDefiniteDamage:
 	ret
 
 Flip3For10_MultiplierEffect:
-	ld hl, 10
 	ld a, 3
 	call Plus10DamagePerHeads_TossCoins
 	jr SetDefiniteDamage
 
 Flip8For10_MultiplierEffect:
-	ld hl, 10
 	ld a, 8
 	call Plus10DamagePerHeads_TossCoins
 	jr SetDefiniteDamage
@@ -3494,34 +3525,36 @@ FlipXFor10_MultiplierEffect:
 	ld [de], a
 	ret
 
-Flip2For20_MultiplierEffect:
-	ld hl, 20
+; input:
+;   a: number of coins to flip
+; outputs:
+;   a: amount of bonus damage to add (heads x 20)
+;   [wCoinTossTotalNum]: number of flipped coins
+;   [wCoinTossNumHeads]: number of flipped heads
+Plus20DamagePerHeads_TossCoins:
+	ld e, a
+	ld hl, 20 ; ram number for text display
 	call LoadTxRam3
+	ld a, e
 	ldtx de, DamageCheckIfHeadsXDamageText
-	ld a, 2
 	call TossCoinATimes_BankB
 	add a ; a = 2 * heads
 	call ATimes10
+	ret
+
+Flip2For20_MultiplierEffect:
+	ld a, 2
+	call Plus20DamagePerHeads_TossCoins
 	jp SetDefiniteDamage
 
 Flip3For20_MultiplierEffect:
-	ld hl, 20
-	call LoadTxRam3
-	ldtx de, DamageCheckIfHeadsXDamageText
 	ld a, 3
-	call TossCoinATimes_BankB
-	add a
-	call ATimes10
+	call Plus20DamagePerHeads_TossCoins
 	jp SetDefiniteDamage
 
 Flip4For20_MultiplierEffect:
-	ld hl, 20
-	call LoadTxRam3
-	ldtx de, DamageCheckIfHeadsXDamageText
 	ld a, 4
-	call TossCoinATimes_BankB
-	add a ; a = 2 * heads
-	call ATimes10
+	call Plus20DamagePerHeads_TossCoins
 	jp SetDefiniteDamage
 
 FlipEachEnergyFor20_AIEffect:
@@ -3546,7 +3579,7 @@ FlipEachEnergyFor20_AIEffect:
 FlipEachEnergyFor20_MultiplierEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
-	ld hl, 20
+	ld hl, 20 ; ram number for text display
 	call LoadTxRam3
 	ld a, [wTotalAttachedEnergies]
 	ldtx de, DamageCheckIfHeadsXDamageText
@@ -3571,7 +3604,7 @@ SetDamageToATimes20:
 	ret
 
 Flip2For30_MultiplierEffect:
-	ld hl, 30
+	ld hl, 30 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, DamageCheckIfHeadsXDamageText
 	ld a, 2
@@ -3583,7 +3616,7 @@ Flip2For30_MultiplierEffect:
 	jp SetDefiniteDamage ; 3 * 10 * heads
 
 Flip2For40_MultiplierEffect:
-	ld hl, 40
+	ld hl, 40 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, DamageCheckIfHeadsXDamageText
 	ld a, 2
@@ -3594,7 +3627,7 @@ Flip2For40_MultiplierEffect:
 	jp SetDefiniteDamage
 
 Flip3For40SelfConfusion_MultiplierEffect:
-	ld hl, 40
+	ld hl, 40 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, DamageCheckIfHeadsXDamageText
 	ld a, 3
@@ -3608,7 +3641,7 @@ Flip3For40SelfConfusion_MultiplierEffect:
 	jp SwapTurn
 
 FlipForPlus10_DamageBoostEffect:
-	ld hl, 10
+	ld hl, 10 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, DamageCheckIfHeadsPlusDamageText
 	call TossCoin_BankB
@@ -3646,7 +3679,7 @@ AddToDamage:
 ;	ret
 
 FlipForPlus20_DamageBoostEffect:
-	ld hl, 20
+	ld hl, 20 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, DamageCheckIfHeadsPlusDamageText
 	call TossCoin_BankB
@@ -3691,7 +3724,7 @@ Plus10OrRecoil_RecoilEffect:
 ;---------------------------------------------------------------------------------
 
 Recoil10_50PercentEffect:
-	ld hl, 10
+	ld hl, 10 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, IfTailsDamageToYourselfTooText
 	call TossCoin_BankB
@@ -3699,7 +3732,7 @@ Recoil10_50PercentEffect:
 	ret
 
 Recoil10_RecoilEffect:
-	ld hl, 10
+	ld hl, 10 ; ram number for text display
 	call LoadTxRam3
 	ldh a, [hTemp_ffa0]
 	or a
@@ -3708,7 +3741,7 @@ Recoil10_RecoilEffect:
 	jp DealRecoilDamageToSelf
 
 FlipToRecoil30_50PercentEffect:
-	ld hl, 30
+	ld hl, 30 ; ram number for text display
 	call LoadTxRam3
 	ldtx de, IfTailsDamageToYourselfTooText
 	call TossCoin_BankB
@@ -3716,7 +3749,7 @@ FlipToRecoil30_50PercentEffect:
 	ret
 
 FlipToRecoil30_RecoilEffect:
-	ld hl, 30
+	ld hl, 30 ; ram number for text display
 	call LoadTxRam3
 	ldh a, [hTemp_ffa0]
 	or a
@@ -4996,12 +5029,12 @@ MorphEffect:
 Metronome_AISelection:
 	ret
 
-ClefableMetronome_UseAttackEffect:
-	ld a, 1 ; energy cost of this attack
-	jr HandlePlayerMetronomeEffect
-
 ClefairyMetronome_UseAttackEffect:
 	ld a, 3 ; energy cost of this attack
+	jr HandlePlayerMetronomeEffect
+
+ClefableMetronome_UseAttackEffect:
+	ld a, 1 ; energy cost of this attack
 ;	fallthrough
 
 ; handles Metronome selection, and validates whether it can use the selected attack.
@@ -5289,26 +5322,8 @@ MirrorMove_AfterDamage:
 
 ;---------------------------------------------------------------------------------
 ; (14) POKEMON POWER EFFECTS START HERE.
-; 12/26 POWERS ARE ACTUALLY HANDLED ELSEWHERE (They're paired with NoEffect_SetCarry)
+; 12/26 POWERS ARE ACTUALLY HANDLED ELSEWHERE (They're paired with SetCarryEF)
 ;---------------------------------------------------------------------------------
-
-; returns carry if Pokemon Power can't be used.
-OncePerTurnPokePowerCheck:
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hTemp_ffa0], a
-	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
-	and USED_PKMN_POWER_THIS_TURN
-	jr nz, .already_used
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-.already_used
-	ldtx hl, OnlyOncePerTurnText
-;	fallthrough
-
-SetCarryEF:
-	scf
-	ret
 
 PlayAreaSelectionMenuParameters:
 	db 0, 0 ; cursor x, cursor y
@@ -5485,15 +5500,7 @@ EnergyTrans_AIEffect:
 	ret
 
 SolarPowerCheck:
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hTemp_ffa0], a
-	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
-	and USED_PKMN_POWER_THIS_TURN
-	jr nz, .already_used
-
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call OncePerTurnPokePowerCheck
 	ret c ; can't use power due to status or Toxic Gas
 
 ; returns carry if no Active Pokemon are affected by special conditions
@@ -5504,17 +5511,13 @@ SolarPowerCheck:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
 	or a
-	jr z, .no_status
-.has_status
-	or a
-	ret
-.already_used
-	ldtx hl, OnlyOncePerTurnText
-	scf
-	ret
-.no_status
+	jr nz, .has_status
+; neither active has any special conditions
 	ldtx hl, NotAffectedByPoisonSleepParalysisOrConfusionText
 	scf
+	ret
+.has_status
+	or a
 	ret
 
 SolarPower_RemoveStatusEffect:
@@ -5543,23 +5546,10 @@ SolarPower_RemoveStatusEffect:
 	ret
 
 HealCheck:
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hTemp_ffa0], a
-	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
-	and USED_PKMN_POWER_THIS_TURN
-	jr nz, .already_used
-
+	call OncePerTurnPokePowerCheck
+	ret c
 	call PlayAreaDamageCheck
 	ldtx hl, NoPokemonWithDamageCountersText
-	ret c ; no damage counters to heal
-
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-
-.already_used
-	ldtx hl, OnlyOncePerTurnText
-	scf
 	ret
 
 Heal_RemoveDamageEffect:
@@ -6197,35 +6187,20 @@ StrangeBehavior_SwapEffect:
 ; returns carry if Pokemon Power cannot be used
 ; and sets the correct text in hl for failure.
 CurseCheck:
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hTemp_ffa0], a
-
-; fails if power has already been used
-	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
-	ldtx hl, OnlyOncePerTurnText
-	and USED_PKMN_POWER_THIS_TURN
-	jp nz, SetCarryEF
-
-; fails if opponent only has 1 Pokemon
-	call SwapTurn
+	call OncePerTurnPokePowerCheck
+	ret c
+	; returns carry if opponent only has 1 Pokemon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
-	call SwapTurn
+	call GetNonTurnDuelistVariable
 	ldtx hl, CannotUseSinceTheresOnly1PkmnText
 	cp 2
 	ret c
-
-; fails if opponent's Pokemon have no damage counters
+	; returns carry if opponent's Pokemon have no damage counters
 	call SwapTurn
 	call PlayAreaDamageCheck
 	call SwapTurn
 	ldtx hl, NoPokemonWithDamageCountersText
-	ret c
-
-; return carry if power cannot be used due to Toxic Gas or status.
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	ret
 
 Curse_PlayerSelection:
 	ldtx hl, ProcedureForCurseText
@@ -6371,16 +6346,8 @@ StepInCheck:
 	ldh [hTemp_ffa0], a
 	ldtx hl, CanOnlyBeUsedOnTheBenchText
 	or a
-	jp z,SetCarryEF
-
-	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
-	ldtx hl, OnlyOncePerTurnText
-	and USED_PKMN_POWER_THIS_TURN
-	jp nz, SetCarryEF
-
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	jp z, SetCarryEF
+	jp OncePerTurnPokePowerCheck
 
 StepIn_SwitchEffect:
 	ldh a, [hTemp_ffa0]
@@ -6595,25 +6562,6 @@ Defender_AttachDefenderEffect:
 
 	ldh a, [hTemp_ffa0]
 	jp Func_2c10b
-
-; returns carry if player has no Evolution cards in Play Area
-EvolvedPokemonCheck:
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
-	ld c, a
-	ld l, DUELVARS_ARENA_CARD
-.loop
-	ld a, [hli]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Stage]
-	or a
-	ret nz ; found an Evolution card
-	dec c
-	jr nz, .loop
-
-	ldtx hl, NoEvolvedPokemonText
-	scf
-	ret
 
 DevolutionSpray_PlayerSelection:
 ; display textbox

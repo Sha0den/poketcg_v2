@@ -416,7 +416,7 @@ GustOfWindEffectCommands:
 	db  $00
 
 DevolutionBeamEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PlayArea_EvolvedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EitherPlayArea_EvolvedPokemonCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionBeam_PlayerSelection
 ;	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DevolutionBeam_LoadAnimation
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DevolutionBeam_DevolveEffect
@@ -645,7 +645,7 @@ FlamesOfRageEffectCommands:
 	db  $00
 
 Discard2AttachedEnergyCardsEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon2CardsAttached_EnergyCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_2EnergyCardsCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Discard2AttachedEnergyCards_PlayerSelection
 	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Discard2AttachedEnergyCards_DiscardEffect
 	dbw EFFECTCMDTYPE_AI_SELECTION, Discard2AttachedEnergyCards_AISelection
@@ -933,7 +933,7 @@ DefenderEffectCommands:
 	db  $00
 
 DevolutionSprayEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EvolvedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, YourPlayArea_EvolvedPokemonCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionSpray_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DevolutionSpray_DevolutionEffect
 	db  $00
