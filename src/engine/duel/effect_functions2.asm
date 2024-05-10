@@ -66,7 +66,7 @@ LookForCardsInDeck:
 	ld a, e
 	pop de
 	cp e
-	jr nz, .loop_deck_e
+	jr nz, .loop_deck_e ; skip if wrong card id
 	or a
 	ret
 
@@ -76,13 +76,9 @@ LookForCardsInDeck:
 .loop_deck_energy
 	ld a, [hli]
 	cp $ff
-	jp z, SetCarryEF2
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	cp TYPE_ENERGY_DOUBLE_COLORLESS
-	jr z, .loop_deck_energy
-	and TYPE_ENERGY
-	jr z, .loop_deck_energy
+	jr z, SetCarryEF2
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .loop_deck_energy ; skip if not a basic energy
 	or a
 	ret
 
@@ -92,11 +88,11 @@ LookForCardsInDeck:
 .loop_deck_trainer
     ld a, [hli]
     cp $ff
-    jp z, SetCarryEF2
+    jr z, SetCarryEF2
     call GetCardIDFromDeckIndex
     call GetCardType
     cp TYPE_TRAINER
-    jr nz, .loop_deck_trainer
+    jr nz, .loop_deck_trainer ; skip if not a Trainer
     or a
     ret
 
@@ -110,7 +106,7 @@ LookForCardsInDeck:
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_ENERGY
-	jr nc, .loop_deck_pkmn
+	jr nc, .loop_deck_pkmn ; skip if not a Pokemon
 	or a
 	ret
 
@@ -164,7 +160,7 @@ LookForCardsInDeck:
 	cp NIDORANF
 	jr z, .found_nidoran
 	cp NIDORANM
-	jr nz, .loop_deck_nidoran
+	jr nz, .loop_deck_nidoran ; skip if not a Nidoran
 .found_nidoran
 	or a
 	ret
@@ -192,8 +188,8 @@ FindBasicEnergy:
 	jr c, .try_exit ; B pressed?
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
-	call CheckIfCardIsBasicEnergy
-	jr c, .play_sfx
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .play_sfx
 	or a
 	ret
 .play_sfx
@@ -207,8 +203,8 @@ FindBasicEnergy:
 	ld a, [hli]
 	cp $ff
 	jr z, .exit
-	call CheckIfCardIsBasicEnergy
-	jr c, .next_card
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .next_card
 	jr .read_input ; no, has to select Energy card
 .exit
 	ld a, $ff
@@ -216,16 +212,19 @@ FindBasicEnergy:
 	or a
 	ret
 
-; check if card index in a is a Basic Energy card.
-; returns carry in case it's not.
-CheckIfCardIsBasicEnergy:
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+; check if card index in a is a basic energy
+; sets the carry flag if the check is a success
+CheckDeckIndexForBasicEnergy:
+;	call LoadCardDataToBuffer2_FromDeckIndex
+;	ld a, [wLoadedCard2Type]
+	call GetCardIDFromDeckIndex
+	call GetCardType
 	cp TYPE_ENERGY
-	jr c, SetCarryEF2 ; skip if a Pokemon
-	cp TYPE_ENERGY_DOUBLE_COLORLESS
-	jr nc, SetCarryEF2 ; skip if DCE or a Trainer
-; is basic energy
+	jr c, .no_carry ; it's a Pokemon
+	cp TYPE_ENERGY + NUM_COLORED_TYPES
+	ret c ; it's a basic energy
+; it must be a Trainer or Special Energy
+.no_carry
 	or a
 	ret
 
@@ -248,13 +247,8 @@ FindBasicEnergyToAttach:
 .select_card
 	bank1call DisplayCardList
 	jr c, .try_cancel
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	cp TYPE_ENERGY_DOUBLE_COLORLESS
-	jr nc, .select_card ; skip if DCE or a Trainer
-	and TYPE_ENERGY
-	jr z, .select_card ; skip if not an Energy card
-	; Energy card selected
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .select_card ; skip if not a basic energy
 
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
@@ -290,7 +284,7 @@ FindBasicEnergyToAttach:
 	call GetCardType
 	and TYPE_ENERGY
 	jr z, .next_card
-	cp TYPE_ENERGY_DOUBLE_COLORLESS
+	cp TYPE_ENERGY + NUM_COLORED_TYPES
 	jr c, .play_sfx
 .next_card
 	inc l
@@ -308,6 +302,22 @@ AIFindBasicEnergyToAttach:
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	ret
+
+; Maybe this could be used to replace the broken ai function.
+; I'm not entirely sure; more code might be needed.
+; finds the first basic energy in the deck
+;AIFindBasicEnergyToAttach:
+;	call CreateDeckCardList
+;	ld hl, wDuelTempList
+;.loop_deck
+;	ld a, [hli]
+;	ldh [hTemp_ffa0], a
+;	cp $ff
+;	ret z ; reached the end of the list
+;	call CheckDeckIndexForBasicEnergy
+;	jr nc, .loop_deck ; card isn't a basic energy
+;	or a ; reset the carry flag
+;	ret ; basic energy found
 
 FindAnyPokemon:
 ; create list of all Pokemon cards in deck to search for
@@ -478,6 +488,7 @@ FindBasicPokemon:
 	or a
 	ret
 
+; finds the first Basic Pokemon in the deck
 AIFindBasicPokemon:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -485,9 +496,10 @@ AIFindBasicPokemon:
 	ld a, [hli]
 	ldh [hTemp_ffa0], a
 	cp $ff
-	ret z ; none found
+	ret z ; reached the end of the list
 	call CheckDeckIndexForBasicPokemon
-	jr nc, .loop_deck ; not a Basic Pokemon
+	jr nc, .loop_deck ; card isn't a Basic Pokemon
+	or a ; reset the carry flag
 	ret ; Basic Pokemon found
 
 FindBasicFightingPokemon:
@@ -557,6 +569,7 @@ FindBasicFightingPokemon:
 	or a
 	ret
 
+; finds the first Basic Fighting Pokemon in the deck
 AIFindBasicFighting:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -564,14 +577,14 @@ AIFindBasicFighting:
 	ld a, [hli]
 	ldh [hTemp_ffa0], a
 	cp $ff
-	ret z ; none found
+	ret z ; reached the end of the list
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp FIGHTING
 	jr nz, .loop_deck
 	ld a, [wLoadedCard2Stage]
 	or a
-	jr nz, .loop_deck
+	jr nz, .loop_deck ; card isn't a Basic Fighting Pokemon
 	ret ; Fighting Pokemon found
 
 FindNidoran:
@@ -641,6 +654,7 @@ FindNidoran:
 	or a
 	ret
 
+; finds the first Nidoran in the deck
 AIFindNidoran:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -648,15 +662,14 @@ AIFindNidoran:
 	ld a, [hli]
 	ldh [hTemp_ffa0], a
 	cp $ff
-	ret z ; none found
+	ret z ; reached the end of the list
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp NIDORANF
-	jr z, .found
+	ret z
 	cp NIDORANM
-	jr nz, .loop_deck
-.found
-	ret
+	jr nz, .loop_deck ; card isn't a Nidoran
+	ret ; Nidoran found
 
 FindOddish:
 	ld a, $ff
@@ -720,6 +733,7 @@ FindOddish:
 	or a
 	ret
 
+; finds the first Oddish in the deck
 AIFindOddish:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -727,11 +741,11 @@ AIFindOddish:
 	ld a, [hli]
 	ldh [hTemp_ffa0], a
 	cp $ff
-	ret z ; no Oddish
+	ret z ; reached the end of the list
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp ODDISH
-	jr nz, .loop_deck
+	jr nz, .loop_deck ; card isn't an Oddish
 	ret ; Oddish found
 
 FindBellsprout:
@@ -796,6 +810,7 @@ FindBellsprout:
 	or a
 	ret
 
+; finds the first Bellsprout in the deck
 AIFindBellsprout:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -803,11 +818,11 @@ AIFindBellsprout:
 	ld a, [hli]
 	ldh [hTemp_ffa0], a
 	cp $ff
-	ret z ; no Bellsprout
+	ret z ; reached the end of the list
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp BELLSPROUT
-	jr nz, .loop_deck
+	jr nz, .loop_deck ; card isn't a Bellsprout
 	ret ; Bellsprout found
 
 FindKrabby:
@@ -872,6 +887,7 @@ FindKrabby:
 	or a
 	ret
 
+; finds the first Krabby in the deck
 AIFindKrabby:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -879,9 +895,9 @@ AIFindKrabby:
 	ld a, [hli]
 	ldh [hTemp_ffa0], a
 	cp $ff
-	ret z ; no Krabby
+	ret z ; reached the end of the list
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp KRABBY
-	jr nz, .loop_deck
+	jr nz, .loop_deck ; card isn't a Krabby
 	ret ; Krabby found

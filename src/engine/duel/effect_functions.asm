@@ -1075,7 +1075,7 @@ CreateEnergyCardListFromDiscardPile:
 	or a
 	jr z, .copy
 	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY_DOUBLE_COLORLESS
+	cp TYPE_ENERGY + NUM_COLORED_TYPES
 	jr nc, .next_card
 
 .copy
