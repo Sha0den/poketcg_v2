@@ -4242,7 +4242,7 @@ DisplayCardPage_PokemonOverview:
 	; print fixed text and draw the card symbol associated to its TYPE_*
 	ld hl, CardPageRetreatWRTextData
 	call PlaceTextItems
-	ld hl, CardPageLvHPNoTextTileData
+	ld hl, CardPageLvHPTextTileData
 	call WriteDataBlocksToBGMap0
 	lb de, 3, 2
 	call DrawCardSymbol
@@ -4270,8 +4270,6 @@ DisplayCardPage_PokemonOverview:
 	call LoadDuelCheckPokemonScreenTiles
 	ld hl, CardPageRetreatWRTextData
 	call PlaceTextItems
-	ld hl, CardPageNoTextTileData
-	call WriteDataBlocksToBGMap0
 	ld a, 1
 	ld [wCurPlayAreaY], a
 	; print set 2 icon and rarity symbol at fixed positions
@@ -4284,7 +4282,8 @@ DisplayCardPage_PokemonOverview:
 	; print Pokedex number in the bottom right corner (16,16)
 	lb bc, 16, 16
 	ld a, [wLoadedCard1PokedexNumber]
-	call WriteTwoByteNumberInTxSymbolFormat
+;	call WriteTwoByteNumberInTxSymbolFormat
+	call WriteEntireTwoByteNumberInTxSymbolFormat
 	; print the name, damage, and energy cost of each attack and/or Pokemon power that exists
 	; first attack at 5,10 and second at 5,12
 	lb bc, 5, 10
@@ -4503,15 +4502,12 @@ CardPageRetreatWRTextData:
 	textitem 1, 14, RetreatCostText
 	textitem 1, 15, WeaknessText
 	textitem 1, 16, ResistanceText
+	textitem 15, 16, NumberSymbolText
 	db $ff
 
-CardPageLvHPNoTextTileData:
+CardPageLvHPTextTileData:
 	db 11,  2, SYM_Lv, 0
 	db 15,  2, SYM_HP, 0
-;	continues to CardPageNoTextTileData
-
-CardPageNoTextTileData:
-	db 15, 16, SYM_No, 0
 	db $ff
 
 DisplayCardPage_PokemonAttack1Page1:
@@ -4675,11 +4671,6 @@ DrawCardPageSet2AndRarityIcons:
 CardPageLengthWeightTextData:
 	textitem 1, 11, LengthText
 	textitem 1, 12, WeightText
-	db $ff
-
-CardPageLvHPTextTileData:
-	db 11, 2, SYM_Lv, 0
-	db 15, 2, SYM_HP, 0
 	db $ff
 
 CardRarityTextIDs:
@@ -5837,6 +5828,7 @@ WriteTwoByteNumberInTxSymbolFormat:
 	ld l, a
 	ld h, $00
 	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1
+.after_call
 	pop bc
 	push bc
 	call BCCoordToBGMap0Address
@@ -5846,6 +5838,28 @@ WriteTwoByteNumberInTxSymbolFormat:
 	pop bc
 	pop de
 	ret
+
+; given a number between 0-255 in a, converts it to TX_SYMBOL format,
+; and writes it to wStringBuffer + 2 and to the BGMap0 address at bc.
+WriteEntireTwoByteNumberInTxSymbolFormat:
+	push de
+	push bc
+	ld l, a
+	ld h, $00
+	ld de, wStringBuffer
+	ld bc, -10000
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1.get_digit
+	ld bc, -1000
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1.get_digit
+	ld bc, -100
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1.get_digit
+	ld bc, -10
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1.get_digit
+	ld bc, -1
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1.get_digit
+	xor a ; TX_END
+	ld [de], a
+	jr WriteTwoByteNumberInTxSymbolFormat.after_call
 
 ; given a number between 0-99 in a, converts it to TX_SYMBOL format,
 ; and writes it to wStringBuffer + 3 and to the BGMap0 address at bc.

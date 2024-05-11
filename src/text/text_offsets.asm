@@ -51,7 +51,7 @@ TextOffsets::
 	textpointer YesOrNoText                                        ; 0x002f
 	textpointer DiscardName                                        ; 0x0030
 	textpointer IncompleteText                                     ; 0x0031
-	textpointer UnusedText0032                                     ; 0x0032
+	textpointer NumberSymbolText                                   ; 0x0032
 	textpointer UsedText                                           ; 0x0033
 	textpointer UnusedText0034                                     ; 0x0034
 	textpointer PokemonsAttackText                                 ; 0x0035

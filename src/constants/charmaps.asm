@@ -445,7 +445,7 @@ ENDM
 	txsymbol HP         ; $10
 	txsymbol Lv         ; $11
 	txsymbol E          ; $12
-	txsymbol No         ; $13
+	txsymbol UNUSED_SYM ; $13
 	txsymbol PLUSPOWER  ; $14
 	txsymbol DEFENDER   ; $15
 	txsymbol HP_OK      ; $16

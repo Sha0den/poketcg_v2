@@ -201,8 +201,8 @@ IncompleteText:
 	text "Incomplete"
 	done
 
-UnusedText0032: ; Unused
-	text "Damage"
+NumberSymbolText:
+	textfw "#"
 	done
 
 UsedText:

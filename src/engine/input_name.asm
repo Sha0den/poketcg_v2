@@ -839,7 +839,7 @@ KeyboardData_Player:
 	kbitem $06, $0e, $30, $00, TX_FULLWIDTH3,   "P"
 	kbitem $08, $0e, $31, $00, TX_FULLWIDTH3,   "Y"
 	kbitem $0a, $0e, $32, $00, TX_FULLWIDTH0,   "1"
-	kbitem $0c, $0e, $33, $00, TX_SYMBOL,       SYM_No
+	kbitem $0c, $0e, $33, $00, TX_FULLWIDTH3,   "#"
 	kbitem $10, $0f, $01, $09, $0000
 
 	kbitem $04, $10, $34, $00, TX_FULLWIDTH3,   "H"
