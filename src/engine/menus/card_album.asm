@@ -273,9 +273,8 @@ PrintCardSetListEntries:
 	ld e, [hl]
 	inc hl
 	ld d, [hl]
-	ld b, $13
+	ld b, 18
 	ld c, e
-	dec c
 	dec c
 
 ; draw up cursor on top right
@@ -285,7 +284,7 @@ PrintCardSetListEntries:
 	ld a, SYM_CURSOR_U
 	jr .got_up_cursor_tile
 .no_up_cursor
-	ld a, SYM_BOX_TOP_R
+	ld a, SYM_SPACE
 .got_up_cursor_tile
 	call WriteByteToBGMap0
 
@@ -367,10 +366,10 @@ PrintCardSetListEntries:
 	pop de
 	ld a, TRUE
 	ld [wUnableToScrollDown], a
-	ld a, SYM_BOX_BTM_R
+	ld a, SYM_SPACE
 .got_down_cursor_tile
-	ld b, 19
-	ld c, 17
+	ld b, 18
+	ld c, 16
 	call WriteByteToBGMap0
 	pop bc
 	ret
