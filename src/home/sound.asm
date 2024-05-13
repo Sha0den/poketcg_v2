@@ -20,7 +20,7 @@ AssertSFXFinished::
 
 ; formerly Func_3794
 PlaySFX_InvalidChoice::
-	ld a, SFX_04
+	ld a, SFX_DENIED
 PlaySFX::
 	farcall _PlaySFX
 	ret

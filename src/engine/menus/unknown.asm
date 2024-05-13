@@ -35,7 +35,7 @@ Func_18661:
 	xor $1
 	ld e, a
 .cursor_moved
-	ld a, SFX_01
+	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
 	push de
 	call .draw_blank_cursor
