@@ -116,7 +116,8 @@ InitSaveData:
 ; saved configuration options
 	ld a, 2
 	ld [sPrinterContrastLevel], a
-	ld a, $2
+;	ld a, TEXT_SPEED_3 ; default text speed at start of game
+	ld a, TEXT_SPEED_5 ; default text speed at start of game
 	ld [sTextSpeed], a
 	ld [wTextSpeed], a
 
