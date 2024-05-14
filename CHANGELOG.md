@@ -219,3 +219,14 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/e55f2176d099949e2baf95f4efba4b01121705ac):** 8 Files Changed
     - Fix some text display issues caused by the first commit
+
+
+
+<br/>
+<br/>
+
+
+
+## Potential Hacks
+- **May 14, 2024:** Only Need to Change 1 File
+    - Instructions for skipping the mandatory practice duel with Sam
