@@ -312,7 +312,7 @@ Script_DrMason:
 .ows_d750
 	print_text_quit_fully Text05e2
 
-; SKIP PRACTICE DUEL HACK: Uncomment the following 24 lines of code to skip the practice duel with Sam.
+; SKIP PRACTICE DUEL HACK: Uncomment the following 24 lines of code to automatically skip the practice duel with Sam.
 Script_EnterLabFirstTime:
 	start_script
 	move_player NORTH, 2
@@ -350,17 +350,26 @@ Script_EnterLabFirstTime:
 ;	save_game 0
 ;	quit_script_fully ; SKIP PRACTICE DUEL END
 
-	print_npc_text Text05e3
+	print_npc_text NewIntroText1
 	close_advanced_text_box
+	move_npc NPC_SAM, NPCMovement_d880
+	ask_question_jump NewIntroText2, .accepted_practice_game
+	
+	; declined practice game
+	print_npc_text NewIntroText3
+	close_advanced_text_box
+	move_npc NPC_SAM, NPCMovement_d882
+	script_jump Script_AfterPracticeDuel.building_the_starter_deck
+	end_script
+	ret
+
+.accepted_practice_game
 	set_next_npc_and_script NPC_SAM, .ows_d779
 	end_script
 	ret
 
 .ows_d779
 	start_script
-	move_active_npc NPCMovement_d880
-	print_npc_text Text05e4
-	set_dialog_npc NPC_DRMASON
 	print_npc_text Text05e5
 	close_text_box
 	move_active_npc NPCMovement_d882
@@ -467,6 +476,7 @@ Script_AfterPracticeDuel:
 	move_player EAST, 1
 	move_player EAST, 1
 	set_player_direction NORTH
+.building_the_starter_deck
 	print_npc_text Text05f0
 	close_text_box
 	print_text Text05f1

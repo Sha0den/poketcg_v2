@@ -2997,3 +2997,6 @@ TextOffsets::
 	textpointer EvolutionPokemonText                               ; 0x0bb1
 	textpointer ChooseEvolutionPokemonText                         ; 0x0bb2
 	textpointer ChooseEvolutionPokemonFromDeckText                 ; 0x0bb3
+	textpointer NewIntroText1                                      ; 0x0bb4
+	textpointer NewIntroText2                                      ; 0x0bb5
+	textpointer NewIntroText3                                      ; 0x0bb6

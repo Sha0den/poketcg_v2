@@ -176,6 +176,11 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## New Features
+- **May 14, 2024:** 3 Files Changed
+    - The practice game with Sam at the start of the game is now optional
+
+<br/>
+
 - **[May 10, 2024](https://github.com/Sha0den/improvedpoketcg/commit/13c38116fc85504d9e05b68de8133275213f6173):** 1 File Changed
     - Add a scroll arrow to a Trainer or Pokémon attack card page when the description is continued on another page
 
@@ -228,5 +233,5 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Potential Hacks
-- **May 14, 2024:** Only Need to Change 1 File
+- **[May 14, 2024](https://github.com/Sha0den/improvedpoketcg/commit/62a73e33e60c8e5b61d477bb1b9f0f675def074c):** Only Need to Change 1 File
     - Instructions for skipping the mandatory practice duel with Sam
