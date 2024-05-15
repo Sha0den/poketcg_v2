@@ -120,6 +120,11 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Miscellaneous Changes
+- **May 15, 2024:** 1 File Changed
+    - Decrease the wait time during the overworld section of the game's intro
+
+<br/>
+
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
 
@@ -217,7 +222,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Other Bug Fixes And Commit Reversions
-- **May 15, 2024:** 1 File Changed
+- **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698):** 1 File Changed
     - Removed Fullwidth4 instead of 1 & 2 to fix the wrong characters being displayed
 
 <br/>

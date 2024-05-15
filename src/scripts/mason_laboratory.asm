@@ -1,8 +1,8 @@
 Script_BeginGame:
 	start_script
-	do_frames 60
+	do_frames 20
 	walk_player_to_mason_lab
-	do_frames 120
+	do_frames 20
 	enter_map $02, MASON_LABORATORY, 14, 26, NORTH
 	quit_script_fully
 
