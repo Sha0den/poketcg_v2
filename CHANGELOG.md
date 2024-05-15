@@ -120,7 +120,12 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Miscellaneous Changes
-- **May 15, 2024:** 5 Files Changed
+- **May 15, 2024:** 2 Files Changed
+    - Give Text Offsets its own bank (instead of sharing one with Text 1)
+
+<br/>
+
+- **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f):** 5 Files Changed
     - Expand the halfwidth and fullwidth font graphics (at the cost of some kanji)
 
 <br/>

@@ -110,6 +110,8 @@ ROMX $19
 	"Text 13"
 ROMX $1a
 	"Text 14"
+ROMX $1b
+	"Text Offsets"
 ROMX $1c
 	"SGB"
 ROMX $1d
