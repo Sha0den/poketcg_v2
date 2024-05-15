@@ -1078,7 +1078,7 @@ PlayerStatusAlbumText:
 PlayerStatusPlayTimeText:
 	text "Play time         "
 	half2full
-	textfw ":"
+	textfw "꞉"
 	done
 
 PlayerDiaryTitleText:
@@ -1303,7 +1303,7 @@ ContinueFromDiarySummaryText:
 	text ""
 	line "      Play time         "
 	half2full
-	textfw ":"
+	textfw "꞉"
 	text ""
 	done
 

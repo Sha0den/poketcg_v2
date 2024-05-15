@@ -120,6 +120,11 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Miscellaneous Changes
+- **May 15, 2024:** 5 Files Changed
+    - Expand the halfwidth and fullwidth font graphics (at the cost of some kanji)
+
+<br/>
+
 - **[May 12, 2024](https://github.com/Sha0den/improvedpoketcg/commit/a22046c5fd4ddf967e4ea0793a79abbdf80cc7aa):** 4 Files Changed
     - Add text speed constants and increase the default text speed to the fastest setting
 
@@ -176,7 +181,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## New Features
-- **May 14, 2024:** 3 Files Changed
+- **[May 14, 2024](https://github.com/Sha0den/improvedpoketcg/commit/b37fdd04d9d228a46be2e27ecf64407bcf1a5302):** 3 Files Changed
     - The practice game with Sam at the start of the game is now optional
 
 <br/>

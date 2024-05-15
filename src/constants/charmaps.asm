@@ -101,6 +101,54 @@
 	charmap "}", $7d
 	charmap "|", $7e
 	charmap "‾", $7f
+	charmap "à", $80
+	charmap "á", $81
+	charmap "â", $82
+	charmap "ä", $83
+	charmap "ç", $84
+	charmap "è", $85
+	charmap "ê", $86
+	charmap "ë", $87
+	charmap "ì", $88
+	charmap "í", $89
+	charmap "î", $8a
+	charmap "ï", $8b
+	charmap "ò", $8c
+	charmap "ó", $8d
+	charmap "ô", $8e
+	charmap "ö", $8f
+	charmap "ù", $90
+	charmap "ú", $91
+	charmap "û", $92
+	charmap "ü", $93
+	charmap "ã", $94
+	charmap "ñ", $95
+	charmap "õ", $96
+	charmap "′", $97
+	charmap "À", $98
+	charmap "Á", $99
+	charmap "Â", $9a
+	charmap "Ä", $9b
+	charmap "Ç", $9c
+	charmap "È", $9d
+	charmap "Ê", $9e
+	charmap "Ë", $9f
+	charmap "Ì", $a0
+	charmap "Í", $a1
+	charmap "Î", $a2
+	charmap "Ï", $a3
+	charmap "Ò", $a4
+	charmap "Ó", $a5
+	charmap "Ô", $a6
+	charmap "Ö", $a7
+	charmap "Ù", $a8
+	charmap "Ú", $a9
+	charmap "Û", $aa
+	charmap "Ü", $ab
+	charmap "Ã", $ac
+	charmap "Ñ", $ad
+	charmap "Õ", $ae
+	charmap "¿", $af
 
 MACRO fwcharmap
 	charmap STRCAT("FW{x:\1}_", \2), \3
@@ -133,9 +181,9 @@ ENDM
 	fwcharmap TX_FULLWIDTH3, "X", $47
 	fwcharmap TX_FULLWIDTH3, "Y", $48
 	fwcharmap TX_FULLWIDTH3, "Z", $49
-	fwcharmap TX_FULLWIDTH3, "g", $4a
-	fwcharmap TX_FULLWIDTH3, "c", $4b
-	fwcharmap TX_FULLWIDTH3, "m", $4c
+	fwcharmap TX_FULLWIDTH3, "ṙ", $4a
+	fwcharmap TX_FULLWIDTH3, "ṥ", $4b
+	fwcharmap TX_FULLWIDTH3, "ṫ", $4c
 	fwcharmap TX_FULLWIDTH3, "r.", $4d
 	fwcharmap TX_FULLWIDTH3, "♀", $4e
 	fwcharmap TX_FULLWIDTH3, "♂", $4f
@@ -153,38 +201,63 @@ ENDM
 	fwcharmap TX_FULLWIDTH3, "゜", $5b
 	fwcharmap TX_FULLWIDTH3, "ˍ", $5c
 	fwcharmap TX_FULLWIDTH3, "&", $5d
-	fwcharmap TX_FULLWIDTH3, ":", $5e
+	fwcharmap TX_FULLWIDTH3, "꞉", $5e
 	fwcharmap TX_FULLWIDTH3, "○", $5f
 	fwcharmap TX_FULLWIDTH3, "※", $60
 	fwcharmap TX_FULLWIDTH3, "о", $61
 	fwcharmap TX_FULLWIDTH3, "^", $62
 	fwcharmap TX_FULLWIDTH3, "♪", $63
-	fwcharmap TX_FULLWIDTH3, "a", $64
-	fwcharmap TX_FULLWIDTH3, "b", $65
-	fwcharmap TX_FULLWIDTH3, "d", $66
-	fwcharmap TX_FULLWIDTH3, "e", $67
-	fwcharmap TX_FULLWIDTH3, "f", $68
-	fwcharmap TX_FULLWIDTH3, "h", $69
-	fwcharmap TX_FULLWIDTH3, "i", $6a
-	fwcharmap TX_FULLWIDTH3, "j", $6b
-	fwcharmap TX_FULLWIDTH3, "k", $6c
-	fwcharmap TX_FULLWIDTH3, "l", $6d
-	fwcharmap TX_FULLWIDTH3, "n", $6e
-	fwcharmap TX_FULLWIDTH3, "o", $6f
-	fwcharmap TX_FULLWIDTH3, "p", $70
-	fwcharmap TX_FULLWIDTH3, "q", $71
-	fwcharmap TX_FULLWIDTH3, "s", $72
-	fwcharmap TX_FULLWIDTH3, "t", $73
-	fwcharmap TX_FULLWIDTH3, "u", $74
-	fwcharmap TX_FULLWIDTH3, "v", $75
-	fwcharmap TX_FULLWIDTH3, "w", $76
-	fwcharmap TX_FULLWIDTH3, "x", $77
-	fwcharmap TX_FULLWIDTH3, "y", $78
-	fwcharmap TX_FULLWIDTH3, "z", $79
-	fwcharmap TX_FULLWIDTH3, "'", $7a
+	fwcharmap TX_FULLWIDTH3, "ß", $64
+;	fwcharmap TX_FULLWIDTH3, "", $65
+;	fwcharmap TX_FULLWIDTH3, "", $66
+;	fwcharmap TX_FULLWIDTH3, "", $67
+;	fwcharmap TX_FULLWIDTH3, "", $68
+;	fwcharmap TX_FULLWIDTH3, "", $69
+;	fwcharmap TX_FULLWIDTH3, "", $6a
+;	fwcharmap TX_FULLWIDTH3, "", $6b
+;	fwcharmap TX_FULLWIDTH3, "", $6c
+;	fwcharmap TX_FULLWIDTH3, "", $6d
+;	fwcharmap TX_FULLWIDTH3, "", $6e
+;	fwcharmap TX_FULLWIDTH3, "", $6f
+;	fwcharmap TX_FULLWIDTH3, "", $70
+;	fwcharmap TX_FULLWIDTH3, "", $71
+;	fwcharmap TX_FULLWIDTH3, "", $72
+;	fwcharmap TX_FULLWIDTH3, "", $73
+;	fwcharmap TX_FULLWIDTH3, "", $74
+;	fwcharmap TX_FULLWIDTH3, "", $75
+	fwcharmap TX_FULLWIDTH3, "¿", $76
+	fwcharmap TX_FULLWIDTH3, "“", $77
+	fwcharmap TX_FULLWIDTH3, "‘", $78
+	fwcharmap TX_FULLWIDTH3, "'", $79
+	fwcharmap TX_FULLWIDTH3, ".", $7a
 	fwcharmap TX_FULLWIDTH3, "”", $7b
 	fwcharmap TX_FULLWIDTH3, "■", $7c
+	fwcharmap TX_FULLWIDTH3, "a", $7d
+	fwcharmap TX_FULLWIDTH3, "b", $7e
+	fwcharmap TX_FULLWIDTH3, "c", $7f
+	fwcharmap TX_FULLWIDTH3, "d", $80
+	fwcharmap TX_FULLWIDTH3, "e", $81
+	fwcharmap TX_FULLWIDTH3, "f", $82
+	fwcharmap TX_FULLWIDTH3, "g", $83
+	fwcharmap TX_FULLWIDTH3, "h", $84
+	fwcharmap TX_FULLWIDTH3, "i", $85
+	fwcharmap TX_FULLWIDTH3, "j", $86
+	fwcharmap TX_FULLWIDTH3, "k", $87
+	fwcharmap TX_FULLWIDTH3, "l", $88
+	fwcharmap TX_FULLWIDTH3, "m", $89
+	fwcharmap TX_FULLWIDTH3, "n", $8a
+	fwcharmap TX_FULLWIDTH3, "o", $8b
+	fwcharmap TX_FULLWIDTH3, "p", $8c
+	fwcharmap TX_FULLWIDTH3, "q", $8d
 	fwcharmap TX_FULLWIDTH3, "r", $8e
+	fwcharmap TX_FULLWIDTH3, "s", $8f
+	fwcharmap TX_FULLWIDTH3, "t", $90
+	fwcharmap TX_FULLWIDTH3, "u", $91
+	fwcharmap TX_FULLWIDTH3, "v", $92
+	fwcharmap TX_FULLWIDTH3, "w", $93
+	fwcharmap TX_FULLWIDTH3, "x", $94
+	fwcharmap TX_FULLWIDTH3, "y", $95
+	fwcharmap TX_FULLWIDTH3, "z", $96
 	fwcharmap TX_FULLWIDTH3, "「", $97
 	fwcharmap TX_FULLWIDTH3, "＼", $98
 	fwcharmap TX_FULLWIDTH3, "」", $99
@@ -195,6 +268,8 @@ ENDM
 	fwcharmap TX_FULLWIDTH3, "#", $9f
 	fwcharmap TX_FULLWIDTH3, "$", $a0
 	fwcharmap TX_FULLWIDTH3, "%", $a1
+	fwcharmap TX_FULLWIDTH3, "Ƕ", $a2
+	fwcharmap TX_FULLWIDTH3, "Ľ", $a3
 	fwcharmap TX_FULLWIDTH3, "(", $a4
 	fwcharmap TX_FULLWIDTH3, ")", $a5
 	fwcharmap TX_FULLWIDTH3, "*", $a6
@@ -212,12 +287,39 @@ ENDM
 	fwcharmap TX_FULLWIDTH3, "7", $b3
 	fwcharmap TX_FULLWIDTH3, "8", $b4
 	fwcharmap TX_FULLWIDTH3, "9", $b5
+	fwcharmap TX_FULLWIDTH3, ":", $b6
 	fwcharmap TX_FULLWIDTH3, ";", $b7
 	fwcharmap TX_FULLWIDTH3, "<", $b8
 	fwcharmap TX_FULLWIDTH3, "=", $b9
 	fwcharmap TX_FULLWIDTH3, ">", $ba
 	fwcharmap TX_FULLWIDTH3, "?", $bb
 	fwcharmap TX_FULLWIDTH3, "@", $bc
+	fwcharmap TX_FULLWIDTH3, "æ", $bd
+	fwcharmap TX_FULLWIDTH3, "ç", $be
+	fwcharmap TX_FULLWIDTH3, "œ", $bf
+	fwcharmap TX_FULLWIDTH3, "à", $c0
+	fwcharmap TX_FULLWIDTH3, "á", $c1
+	fwcharmap TX_FULLWIDTH3, "â", $c2
+	fwcharmap TX_FULLWIDTH3, "ä", $c3
+	fwcharmap TX_FULLWIDTH3, "ç", $c4
+	fwcharmap TX_FULLWIDTH3, "è", $c5
+	fwcharmap TX_FULLWIDTH3, "ê", $c6
+	fwcharmap TX_FULLWIDTH3, "ë", $c7
+	fwcharmap TX_FULLWIDTH3, "ì", $c8
+	fwcharmap TX_FULLWIDTH3, "í", $c9
+	fwcharmap TX_FULLWIDTH3, "î", $ca
+	fwcharmap TX_FULLWIDTH3, "ï", $cb
+	fwcharmap TX_FULLWIDTH3, "ò", $cc
+	fwcharmap TX_FULLWIDTH3, "ó", $cd
+	fwcharmap TX_FULLWIDTH3, "ô", $ce
+	fwcharmap TX_FULLWIDTH3, "ö", $cf
+	fwcharmap TX_FULLWIDTH3, "ù", $d0
+	fwcharmap TX_FULLWIDTH3, "ú", $d1
+	fwcharmap TX_FULLWIDTH3, "û", $d2
+	fwcharmap TX_FULLWIDTH3, "ü", $d3
+	fwcharmap TX_FULLWIDTH3, "ã", $d4
+	fwcharmap TX_FULLWIDTH3, "ñ", $d5
+	fwcharmap TX_FULLWIDTH3, "õ", $d6
 	fwcharmap TX_FULLWIDTH3, "[", $d7
 	fwcharmap TX_FULLWIDTH3, "¥", $d8
 	fwcharmap TX_FULLWIDTH3, "]", $d9

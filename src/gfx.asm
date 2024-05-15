@@ -9,8 +9,8 @@ FullWidthFonts::
 INCBIN "gfx/fonts/full_width/0_0_katakana.1bpp"
 INCBIN "gfx/fonts/full_width/0_1_hiragana.1bpp"
 INCBIN "gfx/fonts/full_width/0_2_digits_kanji1.1bpp"
-INCBIN "gfx/fonts/full_width/1_kanji2.1bpp"
-INCBIN "gfx/fonts/full_width/2_kanji3.1bpp"
+;INCBIN "gfx/fonts/full_width/1_kanji2.1bpp"
+;INCBIN "gfx/fonts/full_width/2_kanji3.1bpp"
 INCBIN "gfx/fonts/full_width/3.1bpp"
 INCBIN "gfx/fonts/full_width/4.1bpp"
 
