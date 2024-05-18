@@ -8,19 +8,19 @@ EffectCommands::
 ;	db $00
 
 ; Commands are associated to a time or a scope (EFFECTCMDTYPE_*) that determines when their function is executed during the turn.
-; - EFFECTCMDTYPE_INITIAL_EFFECT_1: Executed right after attack or Trainer card is used. Bypasses Smokescreen and Sand Attack effects.
-; - EFFECTCMDTYPE_INITIAL_EFFECT_2: Executed right after attack, Pokemon Power, or Trainer card is used.
-; - EFFECTCMDTYPE_DISCARD_ENERGY: For attacks or Trainer cards that require putting one or more attached energy cards into the discard pile.
-; - EFFECTCMDTYPE_REQUIRE_SELECTION: For attacks, Pokemon Powers, or Trainer cards requiring the user to select a card (from e.g. play area screen or card list).
-; - EFFECTCMDTYPE_BEFORE_DAMAGE: Effect command of an attack executed prior to the damage step. For Trainer card or Pokemon Power, usually the main effect.
+; - EFFECTCMDTYPE_INITIAL_EFFECT_1: Executed right after an attack or Trainer card is used. Bypasses effects like Smokescreen.
+; - EFFECTCMDTYPE_INITIAL_EFFECT_2: Executed right after an attack, Pokemon Power, or Trainer card is used.
+; - EFFECTCMDTYPE_DISCARD_ENERGY: For attacks or Trainer cards that require putting one or more attached Energy cards into the discard pile.
+; - EFFECTCMDTYPE_REQUIRE_SELECTION: For attacks, Pokemon Powers, or Trainer cards requiring the user to select a card (e.g. from play area screen or card list).
+; - EFFECTCMDTYPE_BEFORE_DAMAGE: Effect command of an attack executed prior to the damage step. For Trainer cards and Pokemon Powers, this is usually the main effect.
 ; - EFFECTCMDTYPE_AFTER_DAMAGE: Effect command executed after the damage step.
-; - EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN: For attacks that may result in the defending Pokemon being switched out. Called only for AI-executed attacks.
+; - EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN: For attacks that may result in the Defending Pokemon being switched out. Called only for AI-executed attacks.
 ; - EFFECTCMDTYPE_PKMN_POWER_TRIGGER: Pokemon Power effects that trigger the moment the Pokemon card is played.
 ; - EFFECTCMDTYPE_AI: Used for AI scoring.
 ; - EFFECTCMDTYPE_AI_SELECTION: When AI is required to select a card
 
 ; Attacks that have an EFFECTCMDTYPE_REQUIRE_SELECTION also must have either an EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN or an
-; EFFECTCMDTYPE_AI_SELECTION (for anything not involving switching the defending Pokemon), to handle selections involving the AI.
+; EFFECTCMDTYPE_AI_SELECTION (for anything not involving switching the Defending Pokemon), to handle selections involving the AI.
 
 ; Effect Commands for attacks are listed first, sorted by the type of effect. The overall ordering is:
 ; 1) Effects related to taking cards out of the deck or discard pile 
@@ -75,10 +75,13 @@ EnergySpikeEffectCommands:
 	dbw EFFECTCMDTYPE_AI_SELECTION, AttachBasicEnergyFromDeck_AISelection
 	db  $00
 
+; this is an attack effect that searches for an Evolution card
+; and adds it to the player's hand (e.g. Fast Evolution in the TCG)
 EvolutionSearchEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AddCardFromDeckToHandEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AddCardFromDeckToHandEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EvolutionSearch_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, EvolutionSearch_AISelection
 	db  $00
 
 CallForFamilyEffectCommands:
@@ -192,18 +195,18 @@ DrainAllEffectCommands:
 
 WaterRecoverEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, WaterRecover_EnergyAndHPCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, WaterRecover_PlayerSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedWaterEnergy_PlayerSelection
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recover_HealEffect
 	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, WaterRecover_AISelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedWaterEnergy_AISelection
 	db  $00
 
 PsychicRecoverEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PsychicRecover_EnergyAndHPCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, PsychicRecover_PlayerSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedPsychicEnergy_PlayerSelection
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recover_HealEffect
 	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
-	dbw EFFECTCMDTYPE_AI_SELECTION, PsychicRecover_AISelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedPsychicEnergy_AISelection
 	db  $00
 
 MayInflictSleepEffectCommands:
@@ -805,7 +808,7 @@ MoltresFiregiverEffectCommands:
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Firegiver_AddToHandEffect
 	db  $00
 
-; actual effect handled in engine\duel\core.asm & substatus.asm
+; actual effect handled in engine\duel\core.asm
 BlastoiseRainDanceEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00

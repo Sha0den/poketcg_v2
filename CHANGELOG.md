@@ -40,6 +40,13 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Code Optimization
+- **May 17, 2024:** 3 Files Changed
+    - Review most of the code comments in the effect functions files
+    - Replace many jp's with jr's and fallthroughs, moving functions as necessary
+    - Refactor several effect functions
+
+<br/>
+
 - **[May 10, 2024](https://github.com/Sha0den/improvedpoketcg/commit/e910babd0c69b6d87ed1e20b4f7ef6fda3cc2b4e):** 2 Files Changed
     - Refactor some code in src/engine/duel/effect_functions2.asm
 
@@ -99,6 +106,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
     - Transfer some functions out of the home banks
     - Eliminate some same bank tail calls (replacing a call ret with a fallthrough/jr/jp)
     - Replace some mistaken farcalls/bank1calls with calls
+    - *This commit caused a game-breaking glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f))*
 
 <br/>
 
@@ -120,7 +128,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Miscellaneous Changes
-- **May 15, 2024:** 1 File Changed
+- **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/d2b3e7dd7191c401256f5bd9e3aabf8829871862):** 1 File Changed
     - Decrease the wait time during the overworld section of the game's intro
 
 <br/>
@@ -132,6 +140,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f):** 5 Files Changed
     - Expand the halfwidth and fullwidth font graphics (at the cost of some kanji)
+    - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
 
 <br/>
 
@@ -224,26 +233,31 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 ## Other Bug Fixes And Commit Reversions
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698):** 1 File Changed
     - Removed Fullwidth4 instead of 1 & 2 to fix the wrong characters being displayed
+    - *This is a major bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f)*
 
 <br/>
 
 - **[May 8, 2024](https://github.com/Sha0den/improvedpoketcg/commit/c3e01965877e98d425d696233ba56e8e43fa0a91):** 2 Files Changed
     - Put Func_3bb5 back in the home bank
+    - *This is a possible bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1)*
 
 <br/>
 
 - **[May 7, 2024](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f):** 4 Files Changed
     - Put AIDoAction functions back in the home bank
+    - *This is a major bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1)*
 
 <br/>
 
 - **[May 7, 2024](https://github.com/Sha0den/improvedpoketcg/commit/519e8348ae85be540ad4af4bb1b087ae72f02d13):** 4 Files Changed
     - Revert some set carry flag optimizations in the AI Logic 1 bank
+    - *This cancels out some of the changes from [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/8e5497cdb3950f1c19e8bc55a15afacb544bef7e)*
 
 <br/>
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/e55f2176d099949e2baf95f4efba4b01121705ac):** 8 Files Changed
     - Fix some text display issues caused by the first commit
+    - *This is a minor bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2)*
 
 
 

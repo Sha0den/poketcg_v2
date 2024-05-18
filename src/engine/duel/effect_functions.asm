@@ -3,7 +3,7 @@
 ; THESE ARE USED TO DETERMINE WHETHER OR NOT A CARD OR ATTACK CAN BE PLAYED.
 ;---------------------------------------------------------------------------------
 
-; returns carry if no cards left in deck
+; returns carry if there are no cards left in the Turn Duelist's deck
 DeckCheck:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
@@ -26,7 +26,8 @@ BothPlayers_DeckCheck:
 	scf
 	ret
 
-; return carry if not enough cards in hand for effect
+; returns carry if there aren't enough cards in the Turn Duelist's hand
+; used for Trainer cards that require you to discard 2 other cards from your hand
 OtherCardsInHandCheck:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	call GetTurnDuelistVariable
@@ -34,8 +35,7 @@ OtherCardsInHandCheck:
 	cp 3
 	ret
 
-; returns carry if no cards in the Discard Pile
-; move ldtx to after call if you need to swapturn to check opponent's discard pile
+; returns carry if there are no cards in the Turn Duelist's discard pile
 DiscardPileCheck:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	call GetTurnDuelistVariable
@@ -43,13 +43,13 @@ DiscardPileCheck:
 	cp 1
 	ret
 
-; returns carry if no Energy cards are in the Discard Pile.
+; returns carry if there are no Energy cards in the Turn Duelist's discard pile.
 DiscardedEnergyCheck:
 	call CreateEnergyCardListFromDiscardPile_AllEnergy
 	ldtx hl, NoEnergyCardsInDiscardPileText
 	ret
 
-; return carry if no Pokemon on the Bench.
+; returns carry if there are no Pokemon on the Turn Duelist's Bench
 BenchedPokemonCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -57,7 +57,7 @@ BenchedPokemonCheck:
 	cp 2
 	ret
 
-; return carry if opponent has no Benched Pokemon
+; returns carry if there are Pokemon on the opponent's Bench
 Opponent_BenchedPokemonCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
@@ -65,7 +65,7 @@ Opponent_BenchedPokemonCheck:
 	cp 2
 	ret
 
-; return carry if Bench is full.
+; returns carry if there are already 5 Pokemon on the Turn Duelist's Bench
 BenchSpaceCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -74,7 +74,7 @@ BenchSpaceCheck:
 	ccf
 	ret
 
-; return carry if neither Play Area has room for more Bench Pokemon.
+; returns carry if neither player has space for more Benched Pokemon.
 PlayArea_BenchCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -92,7 +92,8 @@ NoCarryEF:
 	or a
 	ret
 
-; returns carry if Play Area has no damage counters.
+; This shouldn't be used as an effect command since no text is being loaded.
+; returns carry if none of the Turn Duelist's Pokemon have any damage counters.
 PlayAreaDamageCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -109,13 +110,31 @@ PlayAreaDamageCheck:
 	scf
 	ret
 
-; returns carry if none of the player's pokemon have any damage counters
+; returns carry if none of the Turn Duelist's Pokemon have any damage counters
 YourPokemon_DamageCheck:
 	call PlayAreaDamageCheck
 	ldtx hl, NoPokemonWithDamageCountersText
 	ret
 
-; returns carry if player's active pokemon has no damage counters
+; returns carry if the player's Active Pokemon has no attached Water Energy
+; or if it doesn't have any damage counters.
+WaterRecover_EnergyAndHPCheck:
+	ld e, PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + WATER]
+	ldtx hl, NotEnoughWaterEnergyText
+	cp 1
+	ret c ; return if not enough energy
+	jr ActivePokemon_DamageCheck
+
+; returns carry if the player's Active Pokemon has no Psychic Energy attached
+; or if it doesn't have any damage counters
+PsychicRecover_EnergyAndHPCheck:
+	call ActivePokemon_PsychicEnergyCheck
+	ret c ; return if not enough energy
+;	fallthrough
+
+; returns carry if the Turn Duelist's Active Pokemon has no damage counters
 ActivePokemon_DamageCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -123,7 +142,7 @@ ActivePokemon_DamageCheck:
 	cp 10
 	ret
 
-; returns carry if the Active Pokemon has no special conditions
+; returns carry if the Turn Duelist's Active Pokemon has no special conditions
 ActivePokemon_StatusCheck:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetTurnDuelistVariable
@@ -133,31 +152,8 @@ ActivePokemon_StatusCheck:
 	scf
 	ret
 
-; return carry if Defending Pokemon has no attacks
-DefendingPokemon_AttackCheck:
-	call SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Atk1Category]
-	cp POKEMON_POWER
-	jr nz, .has_attack
-	ld hl, wLoadedCard2Atk2Name
-	ld a, [hli]
-	or [hl]
-	jr nz, .has_attack
-; has no attack
-	call SwapTurn
-	ldtx hl, NoAttackMayBeChosenText
-	scf
-	ret
-.has_attack
-	call SwapTurn
-	or a
-	ret
-
-; checks if there is at least one Energy card
-; attached to some card in the Turn Duelist's Play Area.
+; checks if any of the Turn Duelist's in-play Pokemon
+; have any Energy attached to them.
 ; returns carry set if none are found
 PlayAreaAttachedEnergyCheck:
 	ld a, DUELVARS_CARD_LOCATIONS
@@ -181,7 +177,8 @@ PlayAreaAttachedEnergyCheck:
 	scf
 	ret
 
-; return carry if Active Pokemon has less than 2 Energy cards
+; returns carry if the Turn Duelist's Active Pokemon
+; has fewer than 2 Energy cards attached to it
 ActivePokemon_2EnergyCardsCheck:
 	xor a ; PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
@@ -190,7 +187,8 @@ ActivePokemon_2EnergyCardsCheck:
 	cp 2
 	ret
 
-; return carry if no Fire Energy attached
+; returns carry if the Turn Duelist's Active Pokemon
+; has no Fire Energy attached to it
 ActivePokemon_FireEnergyCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
@@ -199,7 +197,8 @@ ActivePokemon_FireEnergyCheck:
 	cp 1
 	ret
 
-; return carry if Active Pokemon has less than 2 Fire Energy
+; returns carry if the Turn Duelist's Active Pokemon
+; has fewer than 2 Fire Energy cards attached to it
 ActivePokemon_DoubleFireEnergyCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
@@ -208,7 +207,8 @@ ActivePokemon_DoubleFireEnergyCheck:
 	cp 2
 	ret
 
-; return carry if no Psychic Energy attached
+; returns carry if the Turn Duelist's Active Pokemon
+; has no Psychic Energy attached to it
 ActivePokemon_PsychicEnergyCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
@@ -217,19 +217,41 @@ ActivePokemon_PsychicEnergyCheck:
 	cp 1
 	ret
 
-; return carry if Defending Pokemon is not asleep
+; returns carry if the Defending Pokemon has no attacks
+DefendingPokemon_AttackCheck:
+	call SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, [wLoadedCard2Atk1Category]
+	cp POKEMON_POWER
+	jr nz, .has_attack
+	ld hl, wLoadedCard2Atk2Name
+	ld a, [hli]
+	or [hl]
+	jr nz, .has_attack
+; has no attack
+	call SwapTurn
+	ldtx hl, NoAttackMayBeChosenText
+	scf
+	ret
+.has_attack
+	call SwapTurn
+	or a
+	ret
+
+; returns carry if the Defending Pokemon is not Asleep
 DefendingPokemon_SleepCheck:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
 	and CNF_SLP_PRZ
 	cp ASLEEP
-	ret z ; return if asleep
-; not asleep, set carry and load text
+	ret z ; return nc if Asleep
 	ldtx hl, OpponentIsNotAsleepText
 	scf
 	ret
 
-; returns carry if neither player has any evolved Pokemon.
+; returns carry if neither player has any Evolved Pokemon.
 EitherPlayArea_EvolvedPokemonCheck:
 	call SwapTurn
 	call YourPlayArea_EvolvedPokemonCheck
@@ -277,7 +299,9 @@ YourPlayArea_EvolvedPokemonCheck:
 ;	scf
 ;	ret
 
-; returns carry if Pokemon Power can't be used.
+; checks if the Pokemon Power was already used that turn
+; also checks for Muk's Toxic Gas or any relevant special conditions if active
+; returns carry if the Pokemon Power can't be used
 OncePerTurnPokePowerCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
@@ -300,7 +324,7 @@ SetCarryEF:
 ; (2) NEXT ARE SOME FUNCTIONS THAT ARE FREQUENTLY CALLED BY OTHER FUNCTIONS
 ;---------------------------------------------------------------------------------
 
-; returns carry if Player is the Turn Duelist
+; returns carry if the Player is the Turn Duelist
 IsPlayerTurn:
 	ld a, DUELVARS_DUELIST_TYPE
 	call GetTurnDuelistVariable
@@ -351,10 +375,9 @@ PlayTrainerEffectAnimation:
 	bank1call WaitAttackAnimation
 	ret
 
-; prompts the Player with a Yes/No question
-; whether to quit the screen, even though
-; they can select more cards from list.
-; [hCurSelectionItem] holds number of cards
+; prompts the Player with a Yes/No question whether to quit the screen,
+; even though they can select more cards from list.
+; [hCurSelectionItem] holds the number of cards
 ; that were already selected by the Player.
 ; input:
 ;	- a = total number of cards that can be selected
@@ -431,6 +454,7 @@ ReorderCardsOnTopOfDeck:
 	ld a, c
 	inc a
 	ld [wNumberOfCardsToOrder], a
+
 ; store in wDuelTempList the cards that are going to be reordered.
 	ld a, b
 	add DUELVARS_DECK_CARDS
@@ -452,9 +476,9 @@ ReorderCardsOnTopOfDeck:
 	call CountCardsInDuelTempList
 	ld b, a
 	ld a, 1 ; start at 1
-; fill order list with zeroes
+	; fill order list with zeroes
 	ldh [hCurSelectionItem], a
-; initialize buffer ahead in wDuelTempList.
+	; initialize buffer ahead in wDuelTempList.
 	ld hl, wDuelTempList + 10
 	xor a
 .loop_init_buffer
@@ -491,15 +515,17 @@ ReorderCardsOnTopOfDeck:
 	ld [hl], a
 	inc a
 	ldh [hCurSelectionItem], a
+
 ; refresh screen
 	push af
 	bank1call Func_5744
 	pop af
+
 ; check if we're done ordering
 	ldh a, [hCurSelectionItem]
 	ld hl, wNumberOfCardsToOrder
 	cp [hl]
-	jr c, .loop_selection ; if still more cards to select, loop back up
+	jr c, .loop_selection ; reset loop if there are more cards to select
 
 ; confirm that the ordering has been completed
 	call EraseCursor
@@ -519,6 +545,7 @@ ReorderCardsOnTopOfDeck:
 	ld a, [hl]
 	cp 1
 	jr z, .loop_selection ; already at first input, nothing to undo
+
 ; clear the order that was selected thus far.
 	dec a
 	ld [hl], a
@@ -533,6 +560,40 @@ ReorderCardsOnTopOfDeck:
 	ld [hl], $00 ; overwrite order number with 0
 	bank1call Func_5744
 	jr .loop_selection
+
+Prophecy_PlayerSelection:
+	ldtx hl, ProcedureForProphecyText
+	bank1call DrawWholeScreenTextBox
+.select_deck
+	bank1call DrawDuelMainScene
+	ldtx hl, PleaseSelectTheDeckText
+	call TwoItemHorizontalMenu
+	ldh a, [hKeysHeld]
+	and B_BUTTON
+	jr nz, Prophecy_PlayerSelection ; loop back to start
+
+	ldh a, [hCurMenuItem]
+	ldh [hTempList], a ; store selection in first position in list
+	or a
+	jr z, .turn_duelist
+
+; non-Turn Duelist
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	call GetNonTurnDuelistVariable
+	cp DECK_SIZE
+	jr nc, .select_deck ; no cards, go back to deck selection
+	call SwapTurn
+	call HandleProphecyScreen
+	call ProphecyLoopOrder
+	jp SwapTurn
+
+.turn_duelist
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	call GetTurnDuelistVariable
+	cp DECK_SIZE
+	jr nc, .select_deck ; no cards, go back to deck selection
+	call HandleProphecyScreen
+;	fallthrough
 
 ProphecyLoopOrder:
 	ld a, [hli]
@@ -551,9 +612,9 @@ ProphecyLoopOrder:
 	inc de
 	inc c
 	jr ProphecyLoopOrder
+
 ; now hTempList has the list of card deck indices
 ; in the order selected to be place on top of the deck.
-
 .done
 	ld b, $00
 	ld hl, hTempList + 1
@@ -562,6 +623,42 @@ ProphecyLoopOrder:
 	or a
 	ret
 
+; AI doesn't ever choose this attack so this does no sorting.
+Prophecy_AISelection:
+	ld a, $ff
+	ldh [hTemp_ffa0], a
+	ret
+
+Prophecy_ReorderEffect:
+	ld hl, hTempList
+	ld a, [hli]
+	or a
+	jr z, Reordering ; Turn Duelist's deck
+	cp $ff
+	ret z
+
+	; non-Turn Duelist's deck
+	call SwapTurn
+	call Reordering
+	jp SwapTurn
+
+Pokedex_PlayerSelection:
+; print text box
+	ldtx hl, RearrangeThe5CardsAtTopOfDeckText
+	call DrawWideTextBox_WaitForInput
+
+; cap the number of cards to reorder up to the number of cards in deck (maximum of 5)
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	call GetTurnDuelistVariable
+	ld b, a
+	ld a, DECK_SIZE
+	sub [hl]
+	ld c, 5
+	call ReorderCardsOnTopOfDeck
+;	fallthrough
+
+; almost identical to ProphecyLoop order
+; uses hTempCardIndex_ff9f/hTempList instead of hTempList/hTempList + 1
 PokedexLoopOrder:
 	ld a, [hli]
 	cp $ff
@@ -590,81 +687,13 @@ PokedexLoopOrder:
 	or a
 	ret
 
-Prophecy_PlayerSelection:
-	ldtx hl, ProcedureForProphecyText
-	bank1call DrawWholeScreenTextBox
-.select_deck
-	bank1call DrawDuelMainScene
-	ldtx hl, PleaseSelectTheDeckText
-	call TwoItemHorizontalMenu
-	ldh a, [hKeysHeld]
-	and B_BUTTON
-	jr nz, Prophecy_PlayerSelection ; loop back to start
-
-	ldh a, [hCurMenuItem]
-	ldh [hTempList], a ; store selection in first position in list
-	or a
-	jr z, .turn_duelist
-
-; non-turn duelist
-	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetNonTurnDuelistVariable
-	cp DECK_SIZE
-	jr nc, .select_deck ; no cards, go back to deck selection
-	call SwapTurn
-	call HandleProphecyScreen
-	call ProphecyLoopOrder
-	jp SwapTurn
-
-.turn_duelist
-	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
-	cp DECK_SIZE
-	jr nc, .select_deck ; no cards, go back to deck selection
-	call HandleProphecyScreen
-	jr ProphecyLoopOrder
-
-Prophecy_AISelection:
-; AI doesn't ever choose this attack so this does no sorting.
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-	ret
-
-Prophecy_ReorderEffect:
-	ld hl, hTempList
-	ld a, [hli]
-	or a
-	jr z, Reordering ; own deck
-	cp $ff
-	ret z
-
-	; opponent's deck
-	call SwapTurn
-	call Reordering
-	jp SwapTurn
-
-Pokedex_PlayerSelection:
-; print text box
-	ldtx hl, RearrangeThe5CardsAtTopOfDeckText
-	call DrawWideTextBox_WaitForInput
-
-; cap the number of cards to reorder up to the number of cards in deck (maximum of 5)
-	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
-	ld b, a
-	ld a, DECK_SIZE
-	sub [hl]
-	ld c, 5
-	call ReorderCardsOnTopOfDeck
-	call PokedexLoopOrder
-
 Pokedex_ReorderEffect:
-; place cards in order to the hand.
 	ld hl, hTempList
 ;	fallthrough
 
 Reordering:
 	ld c, 0
+
 ; add selected cards to hand in the specified order
 .loop_place_hand
 	ld a, [hli]
@@ -674,17 +703,21 @@ Reordering:
 	inc c
 	jr .loop_place_hand
 
+; go to the last card that was in the list
+; and iterate in decreasing order,
+; placing each card on top of the deck
 .place_top_deck
-; go to last card that was in the list
 	dec hl
 	dec hl
-.loop_place_deck
+
 ; return the cards to the top of the deck
+.loop_place_deck
 	ld a, [hld]
 	call ReturnCardToDeck
 	dec c
 	jr nz, .loop_place_deck
-; opponent notification from original Prophecy function
+	
+; opponent's notification from the original Prophecy function
 	call IsPlayerTurn
 	ret c
 	ldtx hl, RearrangedCardsInDuelistsDeckText
@@ -734,11 +767,13 @@ AddCardFromDeckToHandEffect:
 	ldh a, [hTemp_ffa0]
 	cp $ff
 	jr z, ShuffleCardsInDeck
+
 ; add to hand
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
 	call IsPlayerTurn
 	jr c, ShuffleCardsInDeck ; done if Player played card
+
 ; display card in screen
 	ldh a, [hTemp_ffa0]
 	ldtx hl, WasPlacedInTheHandText
@@ -767,7 +802,7 @@ AttachBasicEnergyFromDeck_AttachEffect:
 	cp $ff
 	jr z, ShuffleCardsInDeck
 
-; add card to hand and attach it to the selected Pokemon
+; add card to the hand and attach it to the selected Pokemon
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
 	ldh a, [hTempPlayAreaLocation_ffa1]
@@ -798,7 +833,11 @@ EvolutionSearch_PlayerSelection:
 	farcall FindEvolution
 	ret
 
-; returns carry if no card in Deck or if Bench if full
+EvolutionSearch_AISelection:
+	farcall AIFindEvolution
+	ret
+
+; returns carry if the deck is empty or if the Bench if full
 CallForF_CheckDeckAndPlayArea:
 	call DeckCheck
 	ret c ; return if no cards in deck
@@ -818,7 +857,8 @@ CallForF_PutInPlayAreaEffect:
 	call PutHandPokemonCardInPlayArea
 	call IsPlayerTurn
 	jp c, ShuffleCardsInDeck
-; display card on screen
+
+; display card on the screen
 	ldh a, [hTemp_ffa0]
 	ldtx hl, PlacedOnTheBenchText
 	bank1call DisplayCardDetailScreen
@@ -952,7 +992,7 @@ RandomlyFillBothBenchesEffect:
 	ld hl, wDuelTempList
 	call ShuffleCards
 
-; if no more space in the Bench, then return.
+; return if there's no more space on the Bench
 .check_bench
 	push hl
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -962,7 +1002,7 @@ RandomlyFillBothBenchesEffect:
 	jp nc, ShuffleCardsInDeck ; done because no space on bench
 
 ; there's still space, so look for the next
-; Basic Pokemon card to put in the Bench.
+; Basic Pokemon card to put on the Bench.
 .loop
 	ld a, [hli]
 	ldh [hTempCardIndex_ff98], a
@@ -970,7 +1010,7 @@ RandomlyFillBothBenchesEffect:
 	jp z, ShuffleCardsInDeck ; done with loop
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop ; skip if not a Basic Pokemon
-; place card in Bench
+; place card onto the Bench
 	push hl
 	ldh a, [hTempCardIndex_ff98]
 	call SearchCardInDeckAndAddToHand
@@ -985,13 +1025,12 @@ RandomlyFillBothBenchesEffect:
 ;---------------------------------------------------------------------------------
 
 ; makes a list in wDuelTempList with the deck indices
-; of cards found in Turn Duelist's Discard Pile.
-; returns carry set if no Trainer cards found,
-; also loads corresponding notification text
+; of cards found in the Turn Duelist's discard pile.
+; returns carry set if no Trainer cards were found,
+; also loads the corresponding notification text
 CreateTrainerCardListFromDiscardPile:
-; get number of cards in Discard Pile
-; and have hl point to the end of the
-; Discard Pile list in wOpponentDeckCards.
+; get number of cards in the discard pile and have hl point
+; to the end of the discard pile list in wOpponentDeckCards.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	call GetTurnDuelistVariable
 	ld b, a
@@ -1031,27 +1070,27 @@ CreateTrainerCardListFromDiscardPile:
 	ret
 
 ; makes a list in wDuelTempList with the deck indices
-; of all basic energy cards found in Turn Duelist's Discard Pile.
+; of all Basic Energy cards found in the Turn Duelist's discard pile.
 CreateEnergyCardListFromDiscardPile_OnlyBasic:
 	ld c, $01
 	jr CreateEnergyCardListFromDiscardPile
 
 ; makes a list in wDuelTempList with the deck indices
-; of all energy cards (including Double Colorless)
-; found in Turn Duelist's Discard Pile.
+; of all Energy cards (including Special Energy cards)
+; found in the Turn Duelist's discard pile.
 CreateEnergyCardListFromDiscardPile_AllEnergy:
 	ld c, $00
 ;	fallthrough
 
 ; makes a list in wDuelTempList with the deck indices
-; of energy cards found in Turn Duelist's Discard Pile.
-; if (c == 0), all energy cards are allowed;
-; if (c != 0), double colorless energy cards are not included.
+; of Energy cards found in the Turn Duelist's discard pile.
+; if (c == 0), all Energy cards are allowed;
+; if (c != 0), Special Energy cards are not included.
 ; returns carry if no energy cards were found.
 CreateEnergyCardListFromDiscardPile:
-; get number of cards in Discard Pile
+; get number of cards in the discard pile
 ; and have hl point to the end of the
-; Discard Pile list in wOpponentDeckCards.
+; discard pile list in wOpponentDeckCards.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	call GetTurnDuelistVariable
 	ld b, a
@@ -1069,8 +1108,7 @@ CreateEnergyCardListFromDiscardPile:
 	and TYPE_ENERGY
 	jr z, .next_card
 
-; if (c != $00), then we dismiss Double Colorless
-; energy cards found.
+; if (c != $00), then we dismiss any Special Energy cards
 	ld a, c
 	or a
 	jr z, .copy
@@ -1083,7 +1121,7 @@ CreateEnergyCardListFromDiscardPile:
 	ld [de], a
 	inc de
 
-; goes through Discard Pile list in wOpponentDeckCards in descending order.
+; goes through the discard pile list in wOpponentDeckCards in descending order.
 .next_card
 	dec l
 	dec b
@@ -1095,24 +1133,23 @@ CreateEnergyCardListFromDiscardPile:
 
 ; check if any energy card was found by checking
 ; whether the first byte in wDuelTempList is $ff.
-; if none were found, return carry.
+; returns carry if none were found
 	ld a, [wDuelTempList]
 	cp $ff
 	jp z, SetCarryEF
 	or a
 	ret
 
-; returns carry if no Trainer cards are in the Discard Pile.
+; returns carry if no Trainer cards are in the discard pile.
 Scavenge_DiscardPileAndEnergyCheck:
 	call ActivePokemon_PsychicEnergyCheck
 	ret c ; return if no Psychic energy attached
 	call CreateTrainerCardListFromDiscardPile
 	ret
 
+; AI picks the first available Energy/Trainer in the location
 Scavenge_AISelection:
-; AI picks first Energy card in list
 	call DiscardAttachedPsychicEnergy_AISelection
-; AI picks first Trainer card in list
 	call CreateTrainerCardListFromDiscardPile
 	ld a, [wDuelTempList]
 	ldh [hTempPlayAreaLocation_ffa1], a
@@ -1142,10 +1179,9 @@ Scavenge_MoveToHandEffect:
 	bank1call DisplayCardDetailScreen
 	ret
 
-; draws list of Energy Cards in Discard Pile for Player to select from.
+; draws a list of Energy cards in the discard pile
 ; the Player can select up to 2 cards from the list.
-; these cards are given in $ff-terminated list
-; in hTempList.
+; these cards are given in $ff-terminated list in hTempList.
 Choose2EnergyFromDiscardPile_PlayerSelection:
 	ldtx hl, Choose2EnergyCardsFromDiscardPileText
 	push hl
@@ -1157,7 +1193,7 @@ Choose2EnergyFromDiscardPile_PlayerSelection:
 
 	call DrawWideTextBox_WaitForInput
 .loop
-; draws Discard Pile screen and textbox,
+; draws the discard pile screen and textbox,
 ; and handles Player input
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, ChooseAnEnergyCardText
@@ -1174,8 +1210,8 @@ Choose2EnergyFromDiscardPile_PlayerSelection:
 	jr c, .loop
 	jr .finish
 
+; a card was selected, so add it to the list
 .selected
-; a card was selected, so add it to list
 	call GetNextPositionInTempList
 	ldh a, [hTempCardIndex_ff98]
 	ld [hl], a
@@ -1186,20 +1222,19 @@ Choose2EnergyFromDiscardPile_PlayerSelection:
 	cp 2
 	jr c, .loop ; already selected 2 cards?
 
-.finish
 ; place terminating byte on list
+.finish
 	call GetNextPositionInTempList
 	ld [hl], $ff
 	or a
 	ret
 
+; AI picks the first 2 Energy cards in the discard pile
 Choose2EnergyFromDiscardPile_AISelection:
-; AI picks first 2 Energy cards
 	call CreateEnergyCardListFromDiscardPile_AllEnergy
 	ld hl, wDuelTempList
 	ld de, hTempList
-	ld c, 2
-; pick first two Energy cards found
+	ld c, 2 ; need 2 Energy
 .loop
 	ld a, [hli]
 	cp $ff
@@ -1218,8 +1253,7 @@ EnergyConversion_RecoilAndMoveCardsToHand:
 	ld a, 10
 	call DealRecoilDamageToSelf
 
-; loop cards that were chosen
-; until $ff is reached,
+; loop cards that were chosen until $ff is reached,
 ; and move them to the hand.
 	ld hl, hTempList
 	ld de, wDuelTempList
@@ -1291,12 +1325,12 @@ GaleAnimationEffect:
 	ret
 
 RandomlySwitchBothActivePokemon:
-; if Defending card is unaffected by attack,
-; jump directly to switching this card only.
+; if the Defending Pokemon is unaffected by the attack,
+; then jump directly to switching this card.
 	call HandleNoDamageOrEffect
 	jr c, .SwitchWithRandomBenchPokemon
 
-; handle switching Defending card
+; handle switching the Defending Pokemon
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	or a
@@ -1306,22 +1340,22 @@ RandomlySwitchBothActivePokemon:
 	call SwapTurn
 	call .SwitchWithRandomBenchPokemon
 	jr c, .skip_clear_damage
-; clear dealt damage because Pokemon was switched
+; clear dealt damage because the Pokemon was switched
 	xor a
 	ld hl, wDealtDamage
 	ld [hli], a
 	ld [hl], a
 .skip_clear_damage
 	call SwapTurn
-	; fallthrough for attacking card switch
+	; fallthrough for switching the attacking Pokemon
 
 .SwitchWithRandomBenchPokemon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	cp 2
-	ret c ; return if no Bench Pokemon
+	ret c ; return if there are no Benched Pokemon
 
-; get random Bench location and swap
+; get a random Bench location and swap
 	dec a
 	call Random
 	inc a
@@ -1348,7 +1382,7 @@ Healing50Percent_Heal10Effect:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	or a
-	ret z ; no damage counters
+	ret z ; no damage counters to remove
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	add 10
@@ -1359,7 +1393,7 @@ Drain10Effect:
 	ld hl, wDealtDamage
 	ld a, [hli]
 	or a
-	ret z ; return if no damage dealt
+	ret z ; return if no damage was dealt
 ;	fallthrough
 
 Heal10_HealEffect:
@@ -1370,7 +1404,7 @@ DrainHalfEffect:
 	ld hl, wDealtDamage
 	ld a, [hli]  ; wDamageEffectiveness
 	or a
-	ret z  ; no damage
+	ret z  ; return if no damage was dealt
 	call HalfARoundedUp
 	ld e, a
 	ld d, [hl]
@@ -1419,7 +1453,7 @@ ApplyAndAnimateHPRecovery:
 	or a
 	ret z ; return if no damage
 
-; load correct animation
+; load the correct animation
 	push de
 	ld a, ATK_ANIM_HEAL
 	ld [wLoadedAttackAnimation], a
@@ -1453,68 +1487,12 @@ ApplyAndAnimateHPRecovery:
 	bank1call WaitAttackAnimation
 	ret
 
-; returns carry if the player's Active Pokemon has no attached Water Energy
-; or if it doesn't have any damage counters.
-WaterRecover_EnergyAndHPCheck:
-	ld e, PLAY_AREA_ARENA
-	call GetPlayAreaCardAttachedEnergies
-	ld a, [wAttachedEnergies + WATER]
-	ldtx hl, NotEnoughWaterEnergyText
-	cp 1
-	ret c ; return if not enough energy
-	call ActivePokemon_DamageCheck
-	ret
-
-WaterRecover_PlayerSelection:
-	ld a, TYPE_ENERGY_WATER
-	call CreateListOfEnergyAttachedToActive
-	xor a ; PLAY_AREA_ARENA
-	bank1call DisplayEnergyDiscardScreen
-	bank1call HandleEnergyDiscardMenuInput
-	ret c
-	ldh a, [hTempCardIndex_ff98]
-	ldh [hTemp_ffa0], a ; store card chosen
-	ret
-
-WaterRecover_AISelection:
-	ld a, TYPE_ENERGY_WATER
-	call CreateListOfEnergyAttachedToActive
-	ld a, [wDuelTempList] ; pick first card
-	ldh [hTemp_ffa0], a
-	ret
-
 Recover_HealEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	ld e, a ; all damage for recovery
 	ld d, 0
 	jr ApplyAndAnimateHPRecovery
-
-; returns carry if the player's Active Pokemon has no Psychic Energy attached
-; or if it doesn't have any damage counters
-PsychicRecover_EnergyAndHPCheck:
-	call ActivePokemon_PsychicEnergyCheck
-	ret c ; return if not enough energy
-	call ActivePokemon_DamageCheck
-	ret
-
-PsychicRecover_PlayerSelection:
-	ld a, TYPE_ENERGY_PSYCHIC
-	call CreateListOfEnergyAttachedToActive
-	xor a ; PLAY_AREA_ARENA
-	bank1call DisplayEnergyDiscardScreen
-	bank1call HandleEnergyDiscardMenuInput
-	ret c
-	ldh a, [hTempCardIndex_ff98]
-	ldh [hTemp_ffa0], a ; store card chosen
-	ret
-
-PsychicRecover_AISelection:
-	ld a, TYPE_ENERGY_PSYCHIC
-	call CreateListOfEnergyAttachedToActive
-	ld a, [wDuelTempList] ; pick first card
-	ldh [hTemp_ffa0], a
-	ret
 
 RemoveSpecialConditionsEffect:
 	ld a, ATK_ANIM_FULL_HEAL
@@ -1557,7 +1535,8 @@ ParalysisEffect:
 	lb bc, PSN_DBLPSN, PARALYZED
 	jr QueueStatusCondition
 
-; Defending Pokémon becomes double poisoned (takes 20 damage per turn rather than 10)
+; the Defending Pokémon becomes double poisoned
+; it takes 20 damage per turn rather than 10
 DoublePoisonEffect:
 	lb bc, CNF_SLP_PRZ, DOUBLE_POISONED
 	jr QueueStatusCondition
@@ -1620,20 +1599,20 @@ QueueStatusCondition:
 	scf
 	ret
 
-; Defending Pokemon and user become confused
-ConfuseBothActivePokemonEffect:
-	call ConfusionEffect
-	call SwapTurn
-	call ConfusionEffect
-	jp SwapTurn
+; If heads, Defending Pokemon is Poisoned. If tails, it's Confused.
+PoisonOrConfusionEffect:
+	ldtx de, PoisonedIfHeadsConfusedIfTailsText
+	call TossCoin_BankB
+	jr c, PoisonEffect
+	jr ConfusionEffect
 
 AllOrNothingParalysisEffect:
 	ld a, ATK_ANIM_HIT_EFFECT
 	ld [wLoadedAttackAnimation], a
 	ldtx de, AttackSuccessCheckText
 	call TossCoin_BankB
-	jp c, ParalysisEffect
-; unsuccessful
+	jr c, ParalysisEffect
+	; unsuccessful
 	xor a ; ATK_ANIM_NONE
 	ld [wLoadedAttackAnimation], a
 	call SetDefiniteDamage
@@ -1647,7 +1626,7 @@ SetWasUnsuccessful:
 SpitPoison_Poison50PercentEffect:
 	ldtx de, PoisonCheckText
 	call TossCoin_BankB
-	jp c, PoisonEffect
+	jr c, PoisonEffect
 	ld a, ATK_ANIM_SPIT_POISON_SUCCESS
 	ld [wLoadedAttackAnimation], a
 ;	fallthrough
@@ -1710,25 +1689,24 @@ UpdateExpectedAIDamage:
 	ld [hl], a
 	ret
 
-; If heads, Defending Pokemon is Poisoned. If tails, it's Confused.
-PoisonOrConfusionEffect:
-	ldtx de, PoisonedIfHeadsConfusedIfTailsText
-	call TossCoin_BankB
-	jp c, PoisonEffect
-	jp ConfusionEffect
-
 PoisonConfusion50PercentEffect:
 	ldtx de, VenomPowderCheckText
 	call TossCoin_BankB
 	ret nc ; return if tails
-
-; heads
+	; heads
 	call PoisonEffect
 	call ConfusionEffect
 	ret c
 	ld a, CONFUSED | POISONED
 	ld [wNoEffectFromWhichStatus], a
 	ret
+
+; the Defending Pokemon and the user both become Confused
+ConfuseBothActivePokemonEffect:
+	call ConfusionEffect
+	call SwapTurn
+	call ConfusionEffect
+	jp SwapTurn
 
 
 ;---------------------------------------------------------------------------------
@@ -1827,17 +1805,17 @@ DestinyBondEffect:
 ; (THE LAST FUNCTION IS ACTUALLY SUBSTATUS3)
 ;---------------------------------------------------------------------------------
 
-; Prevent 10 damage done to user by Defending Pokémon next turn
+; Prevent 10 damage done to user by the Defending Pokémon next turn
 ReduceBy10Effect:
 	ld a, SUBSTATUS2_REDUCE_BY_10
 	jr ApplySubstatus2ToDefendingCard
 
-; Prevent 20 damage done to user by Defending Pokémon next turn
+; Prevent 20 damage done to user by the Defending Pokémon next turn
 ReduceBy20Effect:
 	ld a, SUBSTATUS2_REDUCE_BY_20
 	jr ApplySubstatus2ToDefendingCard
 
-; If heads, defending Pokemon can't retreat next turn
+; If heads, the Defending Pokemon can't retreat next turn
 NoRetreat50PercentEffect:
 	ldtx de, AcidCheckText
 	call TossCoin_BankB
@@ -1926,28 +1904,27 @@ AIPickAttackForAmnesia:
 	call GetTurnDuelistVariable
 	ld d, a
 	call LoadCardDataToBuffer2_FromDeckIndex
-; if has no attack 1 name, return
 	ld hl, wLoadedCard2Atk1Name
 	ld a, [hli]
 	or [hl]
-	jr z, .chosen
+	jr z, .chosen ; done if card doesn't have an attack 1 name
 
-; if Defending Pokemon has enough energy for second attack, choose it
+; if the Defending Pokemon has enough energy for its second attack, choose it
 	ld e, SECOND_ATTACK
 	bank1call _CheckIfEnoughEnergiesToAttack
 	jr nc, .chosen
-; otherwise if first attack isn't a Pkmn Power, choose it instead.
+; otherwise choose the first attack, unless its a Pokemon Power
 	ld e, FIRST_ATTACK_OR_PKMN_POWER
 	ld a, [wLoadedCard2Atk1Category]
 	cp POKEMON_POWER
 	jr nz, .chosen
-; if it is a Pkmn Power, choose second attack.
+; if it's a Pokemon Power, choose the second attack.
 	ld e, SECOND_ATTACK
 .chosen
 	ld a, e
 	jp SwapTurn
 
-; applies Amnesia effect on Defending Pokemon for attack index in hTemp_ffa0
+; applies Amnesia effect on the Defending Pokemon for attack index in hTemp_ffa0
 AttackDisableEffect:
 	ld a, SUBSTATUS2_AMNESIA
 	call ApplySubstatus2ToDefendingCard
@@ -1967,7 +1944,7 @@ AttackDisableEffect:
 	call IsPlayerTurn
 	ret c ; return if Player
 
-; the rest of the routine for opponent to announce which attack was disabled
+; the rest of the routine is for the opponent to announce which attack was disabled
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -1980,7 +1957,7 @@ AttackDisableEffect:
 	call DrawWideTextBox_WaitForInput
 	jp SwapTurn
 
-; handles the Player selection of attack to use Amnesia or Metronome on.
+; handles the Player selection of the attack to use Amnesia or Metronome on.
 ; returns carry if none selected.
 ; outputs:
 ;	d = card index of defending card
@@ -2070,7 +2047,7 @@ GetAttackName:
 	ld l, a
 	ret
 
-; return carry if Defending card has no weakness
+; returns carry if the Defending Pokemon has no weakness
 Conversion1_WeaknessCheck:
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
@@ -2090,9 +2067,6 @@ Conversion1_PlayerSelection:
 	call HandleColorChangeScreen
 	ldh [hTemp_ffa0], a
 	ret
-
-Conversion1_AISelection:
-	jp AISelectConversionColor
 
 Conversion1_ChangeWeaknessEffect:
 	call HandleNoDamageOrEffect
@@ -2117,7 +2091,7 @@ Conversion1_ChangeWeaknessEffect:
 	ld a, SUBSTATUS2_CONVERSION2
 	jp ApplySubstatus2ToDefendingCard
 
-; returns carry if Active Pokemon has no Resistance.
+; returns carry if the Active Pokemon has no Resistance.
 Conversion2_ResistanceCheck:
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -2136,9 +2110,8 @@ Conversion2_PlayerSelection:
 	ldh [hTemp_ffa0], a
 	ret
 
+; AI will choose the Defending Pokemon's color, unless it's Colorless
 Conversion2_AISelection:
-; AI will choose Defending Pokemon's color
-; unless it is colorless.
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -2155,8 +2128,8 @@ Conversion2_AISelection:
 	call AISelectConversionColor
 	jp SwapTurn
 
+; apply the change to the Pokemon's resistance
 Conversion2_ChangeResistanceEffect:
-; apply changed resistance
 	ld a, DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
 	call GetTurnDuelistVariable
 	ldh a, [hTemp_ffa0]
@@ -2394,6 +2367,9 @@ ColorToTextSymbol:
 	tx FightingSymbolText
 	tx PsychicSymbolText
 
+Conversion1_AISelection:
+;	fallthrough
+
 ; handles AI logic for selecting a new color for weakness/resistance.
 ; Conversion1 looks in own Bench for a non-colorless card that can attack.
 ; Conversion2 looks in opponent's Bench for a non-colorless card that can attack.
@@ -2404,7 +2380,7 @@ AISelectConversionColor:
 	ld e, PLAY_AREA_ARENA
 	jr .next_pkmn_atk
 
-; look for a non-colorless Bench Pokemon
+; look for a non-colorless Benched Pokemon
 ; that has enough energy to use an attack.
 .loop_atk
 	push de
@@ -2430,8 +2406,8 @@ AISelectConversionColor:
 	dec d
 	jr nz, .loop_atk
 
-; none found in Bench.
-; next, look for a non-colorless Bench Pokemon
+; none found on the Bench.
+; next, look for a non-colorless Benched Pokemon
 ; that has any Energy cards attached.
 	ld d, e ; number of Play Area Pokemon
 	ld e, PLAY_AREA_ARENA
@@ -2548,14 +2524,14 @@ DiscardEnergyDefendingPokemon_AISelection:
 
 DefendingPokemonEnergy_DiscardEffect:
 	call HandleNoDamageOrEffect
-	ret c ; return if attack had no effect
+	ret c ; return if the attack had no effect
 	
-	; check if energy card was chosen to discard
+	; check if an Energy card was chosen to discard
 	ldh a, [hTemp_ffa0]
 	cp $ff
 	ret z ; return if none selected
 
-	; discard Energy from Defending Pokemon
+	; discard an Energy from the Defending Pokemon
 	; this doesn't update DUELVARS_ARENA_CARD_LAST_TURN_EFFECT
 	call SwapTurn
 	call PutCardInDiscardPile
@@ -2565,7 +2541,7 @@ DefendingPokemonEnergy_DiscardEffect:
 	jp SwapTurn
 
 ; handles the selection of a forced switch by link/AI opponent or by the player.
-; outputs the Play Area location of the chosen bench card in hTempPlayAreaLocation_ff9d.
+; outputs the Play Area location of the chosen Benched Pokemon in hTempPlayAreaLocation_ff9d.
 DuelistSelectForcedSwitch:
 	ld a, DUELVARS_DUELIST_TYPE
 	call GetNonTurnDuelistVariable
@@ -2600,8 +2576,8 @@ DuelistSelectForcedSwitch:
 	jr c, .asm_2c4c0
 	jp SwapTurn
 
-.link_opp
 ; get selection from link opponent
+.link_opp
 	ld a, OPPACTION_FORCE_SWITCH_ACTIVE
 	call SetOppAction_SerialSendDuelData
 .loop
@@ -2614,6 +2590,7 @@ DuelistSelectForcedSwitch:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ret
 
+; returns carry if the opponent doesn't have any Benched Pokemon
 OpponentSwitchesActive_BenchCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
@@ -2631,12 +2608,12 @@ OpponentSwitchesActive_BenchCheck:
 
 ; outputs in hTemp_ffa0 the result of the coin toss (0 = tails, 1 = heads).
 ; in case it was heads, stores in hTempPlayAreaLocation_ffa1
-; the PLAY_AREA_* location of the Bench Pokemon that was selected for switch.
+; the PLAY_AREA_* location of the Benched Pokemon that was selected for the switch.
 OpponentSwitchesActive50Percent_SelectEffect:
 	xor a
 	ldh [hTemp_ffa0], a
 
-; return failure if no Pokemon to switch to
+; returns carry if no there isn't a Benched Pokemon to switch with
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	cp 2
@@ -2671,7 +2648,7 @@ HandleSwitchDefendingPokemonEffect:
 	cp $ff
 	ret z
 
-; check Defending Pokemon's HP
+; check the Defending Pokemon's HP
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	or a
@@ -2704,7 +2681,7 @@ Recoil20OpponentSwitchesActiveEffect:
 	ldh a, [hTemp_ffa0]
 	jr HandleSwitchDefendingPokemonEffect
 
-; return in hTempPlayAreaLocation_ffa1 the PLAY_AREA_* location of the Bench Pokemon that was selected
+; return in hTempPlayAreaLocation_ffa1 the PLAY_AREA_* location of the Benched Pokemon that was selected
 SwitchDefendingPokemon_PlayerSelection:
 	ldtx hl, SelectNewDefendingPokemonText
 	call DrawWideTextBox_WaitForInput
@@ -2727,14 +2704,14 @@ SwitchDefendingPokemon_PlayerSelection:
 ;	ldh [hTemp_ffa0], a
 ;	jp SwapTurn
 
-; Return in hTemp_ffa0 the PLAY_AREA_* of the non-turn holder's Pokemon card in bench with the lowest (remaining) HP.
+; Return in hTemp_ffa0 the PLAY_AREA_* of the non-turn holder's Benched Pokemon with the lowest (remaining) HP.
 ; if multiple cards are tied for the lowest HP, the one with the highest PLAY_AREA_* is returned.
 SwitchDefendingPokemon_AISelection:
 	call GetBenchPokemonWithLowestHP
 	ldh [hTemp_ffa0], a
 	ret
 
-; Return in a the PLAY_AREA_* of the non-turn holder's Pokemon card in bench with the lowest (remaining) HP.
+; Return in a the PLAY_AREA_* of the non-turn holder's Benched Pokemon with the lowest (remaining) HP.
 ; if multiple cards are tied for the lowest HP, the one with the highest PLAY_AREA_* is returned.
 GetBenchPokemonWithLowestHP:
 	call SwapTurn
@@ -2746,6 +2723,7 @@ GetBenchPokemonWithLowestHP:
 	ld a, DUELVARS_BENCH1_CARD_HP
 	call GetTurnDuelistVariable
 	jr .start
+
 ; find Play Area location with least amount of HP
 .loop_bench
 	ld a, e
@@ -2764,7 +2742,7 @@ GetBenchPokemonWithLowestHP:
 	ld a, d
 	jp SwapTurn
 
-; Defending Pokemon is swapped out for the one with the PLAY_AREA_* at hTemp_ffa0
+; Defending Pokemon is swapped out for the one with the PLAY_AREA_* at hTemp_ffa0,
 ; unless Mew's Neutralizing Shield or Haunter's Transparency prevents it.
 SwitchDefendingPokemon_SwitchEffect:
 	call SwapTurn
@@ -2814,7 +2792,7 @@ DevolutionBeam_PlayerSelection:
 	or a
 	jr nz, .opp_chosen
 
-; player chosen
+; player was chosen
 	call HandleEvolvedCardSelection
 	jr c, .start
 
@@ -2914,7 +2892,7 @@ DevolutionBeam_DevolveEffect:
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
 
-; check if car is affected
+; check if card is affected
 	ld a, [wLoadedCard1ID]
 	ld [wTempNonTurnDuelistCardID], a
 	ld de, $0
@@ -2946,7 +2924,7 @@ DevolutionBeam_DevolveEffect:
 	ld a, e
 	call AddCardToHand
 
-; check if this devolution KO's card
+; check if this devolution KO's the Pokemon
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	call PrintPlayAreaCardKnockedOutIfNoHP
 
@@ -2965,13 +2943,13 @@ HandleEvolvedCardSelection:
 	add DUELVARS_ARENA_CARD_STAGE
 	call GetTurnDuelistVariable
 	or a
-	jr z, .loop ; if Basic, loop
+	jr z, .loop ; if Basic, reset loop
 	ret
 
 ; overwrites HP and Stage data of the card that was
 ; devolved in the Play Area to the values of new card.
-; if the damage exceeds HP of pre-evolution,
-; then HP is set to zero.
+; if the damage exceeds the HP of the previous stage,
+; then its HP is set to zero.
 ; input:
 ;	a = card index of pre-evolved card
 UpdateDevolvedCardHPAndStage:
@@ -2993,7 +2971,7 @@ UpdateDevolvedCardHPAndStage:
 	add DUELVARS_ARENA_CARD_HP
 	ld l, a
 	ld a, [wLoadedCard2HP]
-	sub b ; subtract damage from new HP
+	sub b ; subtract damage from the new HP value
 	jr nc, .got_hp
 	; damage exceeds HP
 	xor a ; 0 HP
@@ -3192,7 +3170,7 @@ CompoundingDamageCounters_AIEffect:
 	call CompoundingDamageCounters_DamageBoostEffect
 	jr SetDefiniteAIDamage
 
-; add damage counters of Defending card to damage
+; add the damage already on the Defending Pokemon to the attack's damage
 CompoundingDamageCounters_DamageBoostEffect:
 	call SwapTurn
 	ld e, PLAY_AREA_ARENA
@@ -3215,8 +3193,8 @@ DefendingPokemonEnergy_10MoreDamageEffect:
 	ld [hl], a
 	ret
 
-; output in de the number of energy cards attached to the Defending Pokemon times 10.
-; used for attacks that deal 10x number of energy cards attached to the Defending card.
+; output in de the number of Energy cards attached to the Defending Pokemon times 10.
+; used for attacks that deal 10x number of Energy cards attached to the Defending card.
 DefendingPokemonEnergyDamageMultiplier:
 	call SwapTurn
 	ld a, DUELVARS_CARD_LOCATIONS
@@ -3263,7 +3241,7 @@ DefendingPokemonEnergyTimes10_DamageEffect:
 
 WWaterGunEffect:
 	lb bc, 1, 0
-	jp ApplyExtraWaterEnergyDamageBonus
+	jr ApplyExtraWaterEnergyDamageBonus
 
 WCWaterGunEffect:
 	lb bc, 1, 1
@@ -3271,7 +3249,7 @@ WCWaterGunEffect:
 
 WWCWaterGunEffect:
 	lb bc, 2, 1
-	jp ApplyExtraWaterEnergyDamageBonus
+	jr ApplyExtraWaterEnergyDamageBonus
 
 WWWHydroPumpEffect:
 	lb bc, 3, 0
@@ -3303,13 +3281,13 @@ ApplyExtraWaterEnergyDamageBonus:
 	jr z, .check_bonus ; is Energy cost all water energy?
 
 	; it's not, so we need to remove the
-	; Water energy cards from calculations
+	; Water Energy cards from calculations
 	; if they pay for colorless instead.
 	ld a, [wTotalAttachedEnergies]
 	cp [hl]
-	jr nz, .check_bonus ; skip if at least 1 non-Water energy attached
+	jr nz, .check_bonus ; skip if at least 1 non-Water Energy attached
 
-	; Water is the only energy color attached
+	; Water is the only type of Energy attached
 	ld a, c
 	add b
 	ld b, a
@@ -3318,10 +3296,10 @@ ApplyExtraWaterEnergyDamageBonus:
 .check_bonus
 	ld a, [hl]
 	sub b
-	jp c, SetDefiniteAIDamage ; is water energy <  b?
-	jp z, SetDefiniteAIDamage ; is water energy == b?
+	jp c, SetDefiniteAIDamage ; is Water Energy <  b?
+	jp z, SetDefiniteAIDamage ; is Water Energy == b?
 
-; a holds number of water energy not payed for energy cost
+; a holds the number of Water Energy not used to pay for the cost of the attack
 	cp 3
 	jr c, .less_than_3
 	ld a, 2 ; cap this to 2 for bonus effect
@@ -3349,23 +3327,23 @@ EachNidoking20MoreDamageEffect:
 	ld a, e
 	cp NIDOKING
 	jr nz, .next
-	ld a, d
-	cp $00 ; why check d? Card IDs are only 1 byte long
-	jr nz, .next
+;	ld a, d
+;	cp $00 ; why check d? Card IDs are only 1 byte long
+;	jr nz, .next
 	inc c
 .next
 	inc hl
 	jr .loop
 .done
-; c holds number of Nidoking found in Play Area
+; c holds the number of Nidoking found in the Play Area
 	ld a, c
 	add a
 	call ATimes10
 	jp AddToDamage ; adds 2 * 10 * c
 
-; return carry if already used attack in this duel
+; can only use the attack if it was not used previously in the duel
+; returns carry if Leek Slap was already used
 LeekSlap_OncePerDuelCheck:
-; can only use attack if it was never used before this duel
 	ld a, DUELVARS_ARENA_CARD_FLAGS
 	call GetTurnDuelistVariable
 	and USED_LEEK_SLAP_THIS_DUEL
@@ -3385,7 +3363,7 @@ NoDamage50PercentEffect:
 	call TossCoin_BankB
 	ret c
 	xor a ; 0 damage
-	jp SetDefiniteDamage
+	jr SetDefiniteDamage
 ;
 ;Alt_NoDamage50PercentEffect:
 ;	ldtx de, AttackSuccessCheckText
@@ -3545,17 +3523,17 @@ Plus20DamagePerHeads_TossCoins:
 Flip2For20_MultiplierEffect:
 	ld a, 2
 	call Plus20DamagePerHeads_TossCoins
-	jp SetDefiniteDamage
+	jr SetDefiniteDamage
 
 Flip3For20_MultiplierEffect:
 	ld a, 3
 	call Plus20DamagePerHeads_TossCoins
-	jp SetDefiniteDamage
+	jr SetDefiniteDamage
 
 Flip4For20_MultiplierEffect:
 	ld a, 4
 	call Plus20DamagePerHeads_TossCoins
-	jp SetDefiniteDamage
+	jr SetDefiniteDamage
 
 FlipEachEnergyFor20_AIEffect:
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -3575,7 +3553,7 @@ FlipEachEnergyFor20_AIEffect:
 	ld [wAIMinDamage], a
 	ret
 
-; Flip coins equal to attached energies; deal 20x number of heads
+; Flip coins equal to the amount of attached Energy; deal 20x number of heads
 FlipEachEnergyFor20_MultiplierEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
@@ -3702,7 +3680,8 @@ Plus10OrRecoil_AIEffect:
 	lb de, 30, 40
 	jp SetExpectedAIDamage
 
-; If heads 10 more damage; if tails, 10 damage to itself
+; if heads, 10 more damage
+; if tails, 10 damage to itself
 Plus10OrRecoil_ModifierEffect:
 	ldtx de, IfHeadPlus10IfTails10ToYourselfText
 	call TossCoin_BankB
@@ -3773,15 +3752,15 @@ SelfConfusion_50PercentEffect:
 	ldtx de, IfTailsYourPokemonBecomesConfusedText
 	call TossCoin_BankB
 	ret c ; return if heads
-; confuse Pokemon
+	; make the attacking Pokemon Confused
 	ld a, ATK_ANIM_MULTIPLE_SLASH
 	ld [wLoadedAttackAnimation], a
 	call SwapTurn
 	call ConfusionEffect
 	jp SwapTurn
 
-; creates in wDuelTempList list of attached Fire Energy cards
-; that are attached to the the player's Active Pokemon card.
+; creates in wDuelTempList a list of Fire Energy cards
+; that are attached to the player's Active Pokemon.
 CreateListOfFireEnergyAttachedToActive:
 	ld a, TYPE_ENERGY_FIRE
 ;	fallthrough
@@ -3836,10 +3815,11 @@ DiscardAttachedFireEnergy_PlayerSelection:
 	ldh [hTempList], a
 	ret
 
+; AI picks the first Fire Energy card in the list
 DiscardAttachedFireEnergy_AISelection:
 	call CreateListOfFireEnergyAttachedToActive
 	ld a, [wDuelTempList]
-	ldh [hTempList], a ; pick first in list
+	ldh [hTempList], a
 	ret
 
 ; AI always chooses 0 cards to discard
@@ -3875,7 +3855,7 @@ DiscardXAttachedFireEnergy_PlayerSelection:
 	jr .loop
 
 .done
-; return carry if no cards were discarded
+; returns carry if no cards were discarded
 ; output the result in hTemp_ffa0
 	ldh a, [hCurSelectionItem]
 	ldh [hTemp_ffa0], a
@@ -3913,7 +3893,7 @@ OpponentDeck_DiscardXCardsEffect:
 	sub [hl]
 	cp c
 	jr nc, .start_discard
-	; only discard number of cards that are left in deck
+	; only discard the number of cards that are left in the deck
 	ld c, a
 
 .start_discard
@@ -3922,7 +3902,7 @@ OpponentDeck_DiscardXCardsEffect:
 	jr .check_remaining
 
 .loop
-	; discard top card from deck
+	; discard the top card from the deck
 	call DrawCardFromDeck
 	call nc, PutCardInDiscardPile
 .check_remaining
@@ -3968,24 +3948,42 @@ Discard2AttachedFireEnergy_DiscardEffect:
 	ldh a, [hTempList + 1]
 	jp PutCardInDiscardPile
 
-; handle input and display of Energy card list
+DiscardAttachedWaterEnergy_PlayerSelection:
+	ld a, TYPE_ENERGY_WATER
+	jr DiscardAnAttachedEnergyOfSpecifiedType
+
 DiscardAttachedPsychicEnergy_PlayerSelection:
 	ld a, TYPE_ENERGY_PSYCHIC
+;	fallthrough
+
+; handle the display and input of the attached Energy card list
+; input:
+;	a = TYPE_ENERGY_* constant
+DiscardAnAttachedEnergyOfSpecifiedType:
 	call CreateListOfEnergyAttachedToActive
 	xor a ; PLAY_AREA_ARENA
 	bank1call DisplayEnergyDiscardScreen
 	bank1call HandleEnergyDiscardMenuInput
 	ret c
 	ldh a, [hTempCardIndex_ff98]
-	ldh [hTemp_ffa0], a
-;	or a ; this was used in Scavenge
+	ldh [hTemp_ffa0], a ; store card chosen
+	or a ; only present in the original Scavenge function
 	ret
 
+DiscardAttachedWaterEnergy_AISelection:
+	ld a, TYPE_ENERGY_WATER
+	jr DiscardFirstAttachedEnergyOfSpecifiedType
+
 DiscardAttachedPsychicEnergy_AISelection:
-; AI picks the first energy in list
 	ld a, TYPE_ENERGY_PSYCHIC
+;	fallthrough
+
+; AI picks the first suitable Energy in the list
+; input:
+;	a = TYPE_ENERGY_* constant
+DiscardFirstAttachedEnergyOfSpecifiedType:
 	call CreateListOfEnergyAttachedToActive
-	ld a, [wDuelTempList]
+	ld a, [wDuelTempList] ; pick first card
 	ldh [hTemp_ffa0], a
 	ret
 
@@ -4040,7 +4038,7 @@ DiscardAllAttachedEnergyEffect:
 	xor a
 	call CreateArenaOrBenchEnergyCardList
 	ld hl, wDuelTempList
-; put all energy cards in Discard Pile
+; put all Energy cards in the discard pile
 .loop
 	ld a, [hli]
 	cp $ff
@@ -4054,7 +4052,7 @@ OwnBench_10DamageEffect:
 	ld de, 10
 ;	fallthrough
 
-; deal damage to all the turn holder's Benched Pokemon
+; deal damage to all of the turn holder's Benched Pokemon
 ; input: de = amount of damage to deal to each Pokemon
 DealDamageToAllBenchedPokemon:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -4145,7 +4143,7 @@ AlsoDamageTo1Benched_PlayerSelection:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	cp 2
-	ret c ; has no Bench Pokemon
+	ret c ; has no Benched Pokemon
 	jp DamageTo1Benched_PlayerSelection
 ;
 ;Alt_AlsoDamageTo1Benched_PlayerSelection:
@@ -4153,13 +4151,13 @@ AlsoDamageTo1Benched_PlayerSelection:
 ;	call GetNonTurnDuelistVariable
 ;	cp 2
 ;	jr nc, .has_bench
-;; no bench Pokemon to damage.
+;	; no Benched Pokemon to damage.
 ;	ld a, $ff
 ;	ldh [hTemp_ffa0], a
 ;	ret
 ;
+;; opens the Play Area screen to select a Benched Pokemon to damage and store it before returning
 ;.has_bench
-;; opens Play Area screen to select Benched Pokemon to damage and store it before returning
 ;	ldtx hl, ChoosePkmnInTheBenchToGiveDamageText
 ;	call DrawWideTextBox_WaitForInput
 ;	call SwapTurn
@@ -4171,14 +4169,14 @@ AlsoDamageTo1Benched_PlayerSelection:
 ;	ldh [hTemp_ffa0], a
 ;	jp SwapTurn
 
+; AI always picks the Benched Pokemon with the lowest remaining HP
 AlsoDamageTo1Benched_AISelection:
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	cp 2
-	ret c ; return if no Bench Pokemon
-; AI always picks Pokemon with lowest HP remaining
+	ret c ; return if no Benched Pokemon
 	call GetBenchPokemonWithLowestHP
 	ldh [hTemp_ffa0], a
 	ret
@@ -4221,7 +4219,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	call InitializeMenuParameters
 	pop af
 
-; exclude Active Pokemon from number of items
+; exclude the Active Pokemon from the number of items
 	dec a
 	ld [wNumMenuItems], a
 
@@ -4245,7 +4243,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	inc a
 	ld b, SYM_LIGHTNING
 	call DrawSymbolOnPlayAreaCursor
-; store it in the list of chosen Bench Pokemon
+; store it in the list of chosen Benched Pokemon
 	call GetNextPositionInTempList
 	ldh a, [hCurMenuItem]
 	inc a
@@ -4255,13 +4253,13 @@ AlsoDamageTo3Benched_PlayerSelection:
 	ldh a, [hCurSelectionItem]
 	ld c, a
 	cp 3
-	jr nc, .chosen ; check if already chose 3
+	jr nc, .chosen
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	dec a
 	cp c
-	jr nz, .start ; if sill more options available, loop back
+	jr nz, .start ; if more options are available, loop back
 	; fallthrough if no other options available to choose
 
 .chosen
@@ -4300,7 +4298,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	ld [wCurGigashockItem], a
 	jr .start
 
-; returns carry if Bench Pokemon in register a was already chosen.
+; returns carry if a Benched Pokemon in register a was already chosen.
 .CheckIfChosenAlready
 	inc a
 	ld c, a
@@ -4361,15 +4359,16 @@ AlsoDamageTo3Benched_AISelection:
 	ld [hl], $ff ; terminating byte
 	ret
 
+; there are more than 3 Benched Pokemon,
+; so sort them from lowest remaining HP to highest,
+; and pick the first 3 in the list.
 .start_selection
-; has more than 3 Bench cards, proceed to sort them
-; by lowest remaining HP to highest, and pick first 3.
 	call SwapTurn
 	dec a
 	ld c, a
 	ld b, PLAY_AREA_BENCH_1
 
-; first select all of the Bench Pokemon and write to list
+; first, select all of the Benched Pokemon and add them to the list
 	ld hl, hTempList
 .loop_all
 	ld [hl], b
@@ -4379,8 +4378,8 @@ AlsoDamageTo3Benched_AISelection:
 	jr nz, .loop_all
 	ld [hl], $00 ; end list with $00
 
-; then check each of the Bench Pokemon HP
-; sort them from lowest remaining HP to highest.
+; then check every Benched Pokemon's current HP,
+; and sort them from lowest to highest.
 	ld de, hTempList
 .loop_outer
 	ld a, [de]
@@ -4402,7 +4401,7 @@ AlsoDamageTo3Benched_AISelection:
 	pop hl
 	cp c
 	jr c, .loop_inner
-	; a Bench Pokemon was found with less HP
+	; a Benched Pokemon was found with less HP
 	ld c, a ; store its HP
 
 ; switch the two
@@ -4472,7 +4471,7 @@ Also10DamageToSameColorOnBenchEffect:
 	ld c, a
 	ldh a, [hCurSelectionItem]
 	cp c
-	jr nz, .next_bench ; skip if not same color
+	jr nz, .next_bench ; skip if not the same color
 ; apply damage to this Bench card
 	push de
 	ld b, d
@@ -4553,7 +4552,8 @@ ThunderstormEffect:
 	inc b
 	jr .loop_bench
 
-; displays text for current Benched Pokemon, printing its Bench number and name.
+; displays text for the current Benched Pokemon,
+; printing its Bench number and name.
 .DisplayText
 	ld b, e
 	ldtx hl, BenchText
@@ -4581,7 +4581,8 @@ ThunderstormEffect:
 	ld [wDuelDisplayedScreen], a
 	ret
 
-; opens Play Area screen to select Benched Pokemon to damage and store it before returning
+; opens the Play Area screen to select a Benched Pokemon to damage
+; and store its location before returning
 DamageTo1Benched_PlayerSelection:
 	ldtx hl, ChoosePkmnInTheBenchToGiveDamageText
 	call DrawWideTextBox_WaitForInput
@@ -4594,8 +4595,8 @@ DamageTo1Benched_PlayerSelection:
 	ldh [hTemp_ffa0], a
 	jp SwapTurn
 
+; chooses the Benched Pokemon with the least amount of remaining HP
 DamageTo1Benched_AISelection:
-; chooses Bench Pokemon with least amount of remaining HP
 	call GetBenchPokemonWithLowestHP
 	ldh [hTemp_ffa0], a
 	ret
@@ -4614,7 +4615,8 @@ DamageTo1Benched_20DamageEffect:
 ; (METRONOME AND MIRROR MOVE ARE ALSO INCLUDED)
 ;---------------------------------------------------------------------------------
 
-; randomly finds an occupied zone in turn player's Play Area and stores the location in a.
+; randomly finds an occupied zone in the Turn Player's Play Area
+; and stores the location in a.
 PickRandomPlayAreaCard:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -4622,7 +4624,7 @@ PickRandomPlayAreaCard:
 	or a
 	ret
 
-; also uses cat punch animation
+; also loads the Cat Punch animation
 RandomEnemy20DamageEffect:
 	call SwapTurn
 	call PickRandomPlayAreaCard
@@ -4659,7 +4661,8 @@ Random70DamageEffect:
 	ld de, 70 ; damage to inflict
 ;	fallthrough
 
-; randomly damages a Pokemon in play, except card that is in [hTempPlayAreaLocation_ff9d].
+; randomly damages another in-play Pokemon
+; ignores the card that is in [hTempPlayAreaLocation_ff9d]
 ; plays thunder animation when Play Area is shown.
 ; input:
 ;	de = amount of damage to deal
@@ -4716,7 +4719,7 @@ MysteryAttack_RandomEffect:
 	dw PoisonEffect
 	dw SleepEffect
 	dw ConfusionEffect
-	dw .no_effect ; this will actually activate recovery effect afterwards
+	dw .no_effect ; this will actually activate the recovery effect afterwards
 	dw .no_effect
 	dw .more_damage
 	dw .no_damage
@@ -4734,9 +4737,9 @@ MysteryAttack_RandomEffect:
 .no_effect
 	ret
 
+; in case the 5th option was chosen for the random effect,
+; trigger the recovery effect for 10 HP.
 MysteryAttack_RecoverEffect:
-; in case the 5th option was chosen for random effect,
-; trigger recovery effect for 10 HP.
 	ldh a, [hTemp_ffa0]
 	cp 4
 	ret nz
@@ -4748,7 +4751,7 @@ OpponentHand_ReplacePokemonInEffect:
 	call CreateHandCardList
 	call SortCardsInDuelTempListByID
 
-; first go through Hand and place all Pokemon cards in the Deck.
+; first go through the hand and place all Pokemon cards back into the deck.
 	ld hl, wDuelTempList
 	ld c, 0
 .loop_hand
@@ -4757,7 +4760,7 @@ OpponentHand_ReplacePokemonInEffect:
 	jr z, .done_hand
 	call .CheckIfCardIsPkmnCard
 	jr nc, .next_hand
-	; found Pkmn card, place in deck
+; found a Pokemon card to place in the deck
 	inc c
 	ld a, [hl]
 	call RemoveCardFromHand
@@ -4778,10 +4781,10 @@ OpponentHand_ReplacePokemonInEffect:
 	pop bc
 	ldh a, [hCurSelectionItem]
 	or a
-	jp z, SwapTurn ; return if no cards were removed from Hand
+	jp z, SwapTurn ; return if no cards were removed from the hand
 
-; c holds the number of cards that were placed in the Deck.
-; now pick Pokemon from the Deck to place in Hand.
+; c holds the number of cards that were placed in the deck.
+; now pick Pokemon from the deck to place in the hand.
 	ld hl, wDuelTempList
 .loop_deck
 	ld a, [hl]
@@ -4818,7 +4821,7 @@ ShuffleAttachedEnergyEffect:
 	and CARD_LOCATION_PLAY_AREA
 	jr z, .next_card_location
 
-; is a card that is in the Play Area
+; is a card that is in the Turn Duelist's Play Area
 	push hl
 	push de
 	push bc
@@ -4830,7 +4833,7 @@ ShuffleAttachedEnergyEffect:
 	pop hl
 	and TYPE_ENERGY
 	jr z, .next_card_location
-; is an Energy card attached to Pokemon in Play Area
+; is an Energy card attached to a Pokemon in the Turn Duelist's Play Area
 	ld a, l
 	ld [de], a
 	inc de
@@ -4843,7 +4846,7 @@ ShuffleAttachedEnergyEffect:
 	ld a, $ff ; terminating byte
 	ld [de], a
 
-; divide number of Energy cards by number of Pokemon in Play Area
+; divide the number of Energy cards by the number of in-play Pokemon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	ld b, a
@@ -4879,7 +4882,7 @@ ShuffleAttachedEnergyEffect:
 .check_done
 	dec c
 	jr nz, .attach_energy
-; go to next Pokemon in Play Area
+; go to next Pokemon in the Turn Duelist's Play Area
 	inc e ; next in Play Area
 	dec b
 	jr nz, .start_attach
@@ -5002,7 +5005,7 @@ MorphEffect:
 	ld [wDuelDisplayedScreen], a
 	ret
 
-; picks a random Pokemon in the Deck to morph.
+; picks a random Pokemon from the deck to morph into.
 ; needs to be a Basic Pokemon that doesn't have
 ; the same ID as the Active Pokemon.
 ; returns carry if no Pokemon were found.
@@ -5046,15 +5049,16 @@ HandlePlayerMetronomeEffect:
 	call DrawWideTextBox_WaitForInput
 
 	call HandleDefendingPokemonAttackSelection
-	ret c ; return if operation cancelled
+	ret c ; return if operation was cancelled
 
-; store this attack as selected attack to use
+; store this attack as the selected attack to use
 	ld hl, wMetronomeSelectedAttack
 	ld [hl], d
 	inc hl
 	ld [hl], e
 
-; compare selected attack's name to current attack to rule out Metronome (and avoid infinite loop).
+; compare the selected attack's name to the current attack
+; in order to rule out another Metronome (to avoid an infinite loop).
 	ld hl, wLoadedAttackName
 	ld a, [hli]
 	ld h, [hl]
@@ -5119,6 +5123,7 @@ MirrorMove_AIEffect:
 	ld [wAIMaxDamage], a
 	ret
 
+; returns carry if the Pokemon wasn't attacked in the previous turn
 MirrorMove_AttackedCheck:
 	ld a, DUELVARS_ARENA_CARD_LAST_TURN_DAMAGE
 	call GetTurnDuelistVariable
@@ -5180,11 +5185,11 @@ MirrorMove_AISelection:
 	ret
 
 MirrorMove_BeforeDamage:
-; if was attacked with Amnesia, apply it to the selected attack
+; if user was attacked with Amnesia, apply it to the selected attack
 	ld a, DUELVARS_ARENA_CARD_LAST_TURN_EFFECT
 	call GetTurnDuelistVariable
 	cp LAST_TURN_EFFECT_AMNESIA
-	jr z, .apply_amnesia
+	jp z, AttackDisableEffect ; Amnesia
 
 ; otherwise, check if there was last turn damage,
 ; and write it to wDamage.
@@ -5203,8 +5208,7 @@ MirrorMove_BeforeDamage:
 .no_damage
 	inc hl
 	inc hl ; DUELVARS_ARENA_CARD_LAST_TURN_STATUS
-; check if there was a status applied to Defending Pokemon
-; from the attack it used.
+; check if there was a status applied to the Defending Pokemon from the attack
 	push hl
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
@@ -5226,9 +5230,6 @@ MirrorMove_BeforeDamage:
 	ld a, [hli]
 	ld [de], a
 	ret
-
-.apply_amnesia
-	jp AttackDisableEffect
 
 .ExecuteStatusEffect
 	ld c, a
@@ -5265,7 +5266,7 @@ MirrorMove_AfterDamage:
 	cp LAST_TURN_EFFECT_DISCARD_ENERGY
 	jr nz, .change_weakness
 
-; execute Energy discard effect for card chosen
+; execute Energy discard effect for the chosen card
 	call SwapTurn
 	ldh a, [hTemp_ffa0]
 	call PutCardInDiscardPile
@@ -5291,7 +5292,7 @@ MirrorMove_AfterDamage:
 
 	ld a, [wLoadedCard2Weakness]
 	or a
-	ret z ; defending Pokemon has no weakness to change
+	ret z ; the Defending Pokemon has no weakness to change
 
 ; apply same color weakness to Defending Pokemon
 	ld a, [hl]
@@ -5408,7 +5409,7 @@ EnergyTrans_TransferEffect:
 	ldh [hAIPkmnPowerEffectParam], a
 	ldh [hCurSelectionItem], a
 	call CheckIfCardHasGrassEnergyAttached
-	jr c, .play_sfx ; no Grass attached
+	jr c, .play_sfx ; no attached Grass Energy
 
 	ldh [hAIEnergyTransEnergyCard], a
 	; temporarily take card away to draw Play Area
@@ -5499,9 +5500,10 @@ EnergyTrans_AIEffect:
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
+; returns carry if Solar Power cannot be used
 SolarPowerCheck:
 	call OncePerTurnPokePowerCheck
-	ret c ; can't use power due to status or Toxic Gas
+	ret c ; already used power or can't use due to status or Toxic Gas
 
 ; returns carry if no Active Pokemon are affected by special conditions
 	ld a, DUELVARS_ARENA_CARD_STATUS
@@ -5545,6 +5547,9 @@ SolarPower_RemoveStatusEffect:
 	bank1call DrawDuelHUDs
 	ret
 
+; returns carry if the power was already used,
+; or if the power can't be used due to a special condition or Muk's Toxic Gas
+; or if there are no damage counters to remove
 HealCheck:
 	call OncePerTurnPokePowerCheck
 	ret c
@@ -5588,7 +5593,7 @@ Heal_RemoveDamageEffect:
 	; fallthrough
 
 .done
-; flag Pkmn Power as being used regardless of coin outcome
+; flag the Pokemon Power as being used regardless of coin outcome
 	ldh a, [hTemp_ffa0]
 	add DUELVARS_ARENA_CARD_FLAGS
 	call GetTurnDuelistVariable
@@ -5615,20 +5620,21 @@ Shift_PlayerSelection:
 	ret c ; cancelled
 
 ; check whether the selected color is valid
-	; look in Turn Duelist's Play Area
+; look in the Turn Duelist's Play Area
 	call .CheckColorInPlayArea
 	ret nc
-	; look in NonTurn Duelist's Play Area
+	; look in non-Turn Duelist's Play Area
 	call SwapTurn
 	call .CheckColorInPlayArea
 	call SwapTurn
 	ret nc
-	; not found in either Duelist's Play Area
+	; not found in either Play Area
 	ldtx hl, UnableToSelectText
 	call DrawWideTextBox_WaitForInput
 	jr Shift_PlayerSelection ; loop back to start
 
-; checks if input color in a exists in Turn Duelist's Play Area, no returns carry.
+; checks if input color in a exists in the Turn Duelist's Play Area
+; returns carry if the input color isn't present
 .CheckColorInPlayArea:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -5741,8 +5747,7 @@ Firegiver_AddToHandEffect:
 
 .ok
 	ldh [hCurSelectionItem], a
-; load correct attack animation depending
-; on what side the effect is from.
+; load the correct attack animation, depending on who the Turn Duelist is
 	ld d, ATK_ANIM_FIREGIVER_PLAYER
 	ld a, [wDuelistType]
 	cp DUELIST_TYPE_PLAYER
@@ -5777,12 +5782,12 @@ Firegiver_AddToHandEffect:
 	ld e, 10 ; y for deck number
 
 .player_2
-; update and print number of cards in hand
+; update and print the number of cards in the hand
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	call GetTurnDuelistVariable
 	inc a
 	bank1call WriteTwoDigitNumberInTxSymbolFormat
-; update and print number of cards in deck
+; update and print the number of cards in the deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
 	ld a, DECK_SIZE - 1
@@ -5808,18 +5813,18 @@ Firegiver_AddToHandEffect:
 	call DrawWideTextBox_WaitForInput
 	jp ShuffleCardsInDeck
 
-; returns carry if can't use Cowardice
+; returns carry if Cowardice can't be used 
 CowardiceCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	ret c ; return if cannot use
+	ret c ; return if there's a special condition or Muk
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	ldtx hl, YouNoBenchedPokemonText
 	cp 2
-	ret c ; return if no bench
+	ret c ; return if there are no Benched Pokemon
 
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_FLAGS
@@ -5827,7 +5832,7 @@ CowardiceCheck:
 	ldtx hl, CannotBeUsedInTurnWhichWasPlayedText
 	and CAN_EVOLVE_THIS_TURN
 	scf
-	ret z ; return if was played this turn
+	ret z ; return if card was played this turn
 
 	or a
 	ret
@@ -5835,7 +5840,7 @@ CowardiceCheck:
 Cowardice_PlayerSelection:
 	ldh a, [hTemp_ffa0]
 	or a
-	ret nz ; return if not Arena card
+	ret nz ; return if not the Active Pokemon
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	bank1call HasAlivePokemonInBench
@@ -5849,8 +5854,8 @@ Cowardice_RemoveFromPlayAreaEffect:
 	add DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
 
-; put card in Discard Pile temporarily, so that
-; all cards attached are discarded as well.
+; temporarily put card in the discard pile,
+; so that all attached cards are discarded as well.
 	push af
 	ldh a, [hTemp_ffa0]
 	ld e, a
@@ -5866,7 +5871,7 @@ Cowardice_RemoveFromPlayAreaEffect:
 	call SwapArenaWithBenchPokemon
 
 .skip_switch
-; add card to hand and adjust Play Area
+; return card to the hand and adjust the Play Area
 	pop af
 	call MoveDiscardPileCardToHand
 	call AddCardToHand
@@ -5949,7 +5954,7 @@ Peek_SelectEffect:
 	jr .prize_or_deck
 
 .hand
-; AI chose to look at random card in hand,
+; AI chose to look at a random card in the hand,
 ; so display it to the Player on screen.
 	call SwapTurn
 	ldtx hl, PeekWasUsedToLookInYourHandText
@@ -5957,8 +5962,8 @@ Peek_SelectEffect:
 	jp SwapTurn
 
 .prize_or_deck
-; AI chose either a prize card or Player's top deck card,
-; so show Play Area and draw cursor appropriately.
+; AI chose either a prize card or the top card of the Player's deck,
+; so show the Play Area and draw the cursor in the right location.
 	call FinishQueuedAnimations
 	call SwapTurn
 	ldh a, [hAIPkmnPowerEffectParam]
@@ -5986,7 +5991,7 @@ DamageSwap_SelectAndSwapEffect:
 	call GetTurnDuelistVariable
 	cp DUELIST_TYPE_PLAYER
 	jr z, .player
-; non-player
+; not the Player
 	bank1call Func_61a1
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
@@ -6018,7 +6023,7 @@ DamageSwap_SelectAndSwapEffect:
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ldh [hCurSelectionItem], a
 
-; if card has no damage, play sfx and return to start
+; if a card has no damage, play sfx and return to start
 	call GetCardDamageAndMaxHP
 	or a
 	jr z, .no_damage
@@ -6051,8 +6056,8 @@ DamageSwap_SelectAndSwapEffect:
 	cp $ff
 	jr z, .update_ui
 
-; try to give the card selected the damage counter
-; if it would KO, ignore it.
+; try to give the selected Pokemon the damage counter
+; if it would KO the Pokemon, then ignore it.
 	ldh [hPlayAreaEffectTarget], a
 	ldh [hCurSelectionItem], a
 	ldh a, [hPlayAreaEffectTarget]
@@ -6073,7 +6078,7 @@ DamageSwap_SelectAndSwapEffect:
 	call PlaySFX_InvalidChoice
 	jr .loop_input_first
 
-; tries to give damage counter to hPlayAreaEffectTarget,
+; tries to give the damage counter to hPlayAreaEffectTarget,
 ; and if successful updates UI screen.
 DamageSwap_SwapEffect:
 	ldh a, [hPlayAreaEffectTarget]
@@ -6127,7 +6132,7 @@ StrangeBehavior_SelectAndSwapEffect:
 	cp DUELIST_TYPE_PLAYER
 	jr z, .player
 
-; not player
+; not the Player
 	bank1call Func_61a1
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
@@ -6163,7 +6168,7 @@ StrangeBehavior_SelectAndSwapEffect:
 
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .play_sfx ; can't select card without damage
+	jr z, .play_sfx ; can't select a Pokemon without damage
 
 	ldh a, [hTemp_ffa0]
 	call TryGiveDamageCounter
@@ -6189,13 +6194,13 @@ StrangeBehavior_SwapEffect:
 CurseCheck:
 	call OncePerTurnPokePowerCheck
 	ret c
-	; returns carry if opponent only has 1 Pokemon
+	; returns carry if the opponent only has 1 Pokemon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	ldtx hl, CannotUseSinceTheresOnly1PkmnText
 	cp 2
 	ret c
-	; returns carry if opponent's Pokemon have no damage counters
+	; returns carry if none of the opponent's Pokemon have any damage counters
 	call SwapTurn
 	call PlayAreaDamageCheck
 	call SwapTurn
@@ -6235,7 +6240,7 @@ Curse_PlayerSelection:
 	jr .loop_input_first
 
 .picked_first
-; give 10 HP to card selected, draw the scene,
+; give 10 HP to the selected Pokemon, draw the scene,
 ; then immediately revert this.
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	add DUELVARS_ARENA_CARD_HP
@@ -6263,7 +6268,7 @@ Curse_PlayerSelection:
 	cp $ff
 	jr nz, .a_press ; was a pressed?
 
-; b press erases the damage counter symbol
+; pressing the B button erases the damage counter symbol
 ; and loops back to the beginning.
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ld b, SYM_SPACE
@@ -6286,8 +6291,8 @@ Curse_PlayerSelection:
 	or a
 	ret
 
+; returns carry if the operation was cancelled
 .cancel
-; return carry if operation was cancelled.
 	call SwapTurn
 	scf
 	ret
@@ -6417,17 +6422,17 @@ HealingWind_PlayAreaHealEffect:
 ; (Bill/Energy Search/Gust of Wind/Pokedex are sorted with attacks effects)
 ;---------------------------------------------------------------------------------
 
-; handles screen for Player to select 2 cards from the hand to discard.
-; first prints text informing Player to choose cards to discard
-; then runs HandlePlayerSelection2HandCards routine.
+; handles screen for the Player to select 2 cards from the hand to discard.
+; first prints text informing the Player to choose cards to discard
+; then runs the HandlePlayerSelection2HandCards routine.
 Discard2Cards_PlayerSelection:
 	ldtx hl, Choose2CardsFromHandToDiscardText
 	ldtx de, ChooseTheCardToDiscardText
 ;	fallthrough
 
-; handles screen for Player to select 2 cards from the hand
-; to activate some Trainer card effect.
-; assumes Trainer card index being used is in [hTempCardIndex_ff9f].
+; handles the screen for the Player to select 2 cards from the hand
+; this is an activation cost for several Trainer card effects.
+; assumes the Trainer card index being used is in [hTempCardIndex_ff9f].
 ; stores selection of cards in hTempList.
 ; returns carry if Player cancels operation.
 ; input:
@@ -6437,7 +6442,7 @@ HandlePlayerSelection2HandCards:
 	push de
 	call DrawWideTextBox_WaitForInput
 
-; remove the Trainer card being used from list of cards to select from hand.
+; remove the card being used from the list of cards to select from hand.
 	call CreateHandCardList
 	ldh a, [hTempCardIndex_ff9f]
 	call RemoveCardFromDuelTempList
@@ -6470,7 +6475,7 @@ PlayThisAsBasicPokemonEffect:
 	ldh a, [hTempCardIndex_ff9f]
 	jp PutHandPokemonCardInPlayArea
 
-; returns carry if no Benched Pokemon
+; returns carry if there are no Benched Pokemon
 TrainerCardAsPokemon_BenchCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
@@ -6501,7 +6506,7 @@ TrainerCardAsPokemon_DiscardEffect:
 	call SwapArenaWithBenchPokemon
 	jp ShiftAllPokemonToFirstPlayAreaSlots
 
-; returns carry if not enough cards in hand to discard
+; returns carry if there aren't enough cards in the hand to discard
 ; or if there are no cards left in the deck.
 ComputerSearchCheck:
 	call OtherCardsInHandCheck
@@ -6521,7 +6526,7 @@ ComputerSearch_PlayerDeckSelection:
 	ret
 
 ComputerSearch_DiscardAddToHandEffect:
-; discard cards from hand
+; discard 2 cards from the hand
 	ld hl, hTempList
 	ld a, [hli]
 	call RemoveCardFromHand
@@ -6530,7 +6535,7 @@ ComputerSearch_DiscardAddToHandEffect:
 	call RemoveCardFromHand
 	call PutCardInDiscardPile
 
-; add card from deck to hand
+; add a card from the deck to the hand
 	ld a, [hl]
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
@@ -6546,7 +6551,7 @@ Defender_PlayerSelection:
 	ret
 
 Defender_AttachDefenderEffect:
-; attach Trainer card to Play Area Pokemon
+; attach the Trainer card to the in-play Pokemon
 	ldh a, [hTemp_ffa0]
 	ld e, a
 	ldh a, [hTempCardIndex_ff9f]
@@ -6568,7 +6573,7 @@ DevolutionSpray_PlayerSelection:
 	ldtx hl, ChooseEvolutionCardAndPressAButtonToDevolveText
 	call DrawWideTextBox_WaitForInput
 
-; have Player select an Evolution card in Play Area
+; have Player select an an Evolved Pokemon in the Play Area
 	ld a, 1
 	ldh [hCurSelectionItem], a
 	bank1call HasAlivePokemonInPlayArea
@@ -6599,16 +6604,16 @@ DevolutionSpray_PlayerSelection:
 	jr .update_data
 
 .repeat_devolution
-; show Play Area screen with static cursor
+; show the Play Area screen with a static cursor
 ; so that the Player either presses A to do one more devolution
-; or presses B to finish selection.
+; or presses B to finish selecting.
 	bank1call Func_6194
-	jr c, .done_selection ; if B pressed, end selection instead
+	jr c, .done_selection ; end selection if B button was pressed
 	; do one more devolution
 	bank1call GetCardOneStageBelow
 
 .update_data
-; overwrite the card data to new devolved stats
+; overwrite the card data to the newly devolved stats
 	ld a, d
 	call UpdateDevolvedCardHPAndStage
 	call GetNextPositionInTempList
@@ -6623,11 +6628,11 @@ DevolutionSpray_PlayerSelection:
 	call GetNextPositionInTempList
 	ld [hl], $ff ; terminating byte
 
-; store this Play Area location in first item of temp list
+; store this Play Area location in the first item of temp list
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempList], a
 
-; update Play Area location display of this Pokemon
+; update the Play Area location display of this Pokemon
 	call EmptyScreen
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld hl, wHUDEnergyAndHPBarsX
@@ -6639,7 +6644,7 @@ DevolutionSpray_PlayerSelection:
 	pop hl
 
 ; rewrite all duelvars from before the selection was done
-; this is so that if "No" is selected in confirmation menu,
+; this is so that if "No" is selected in the confirmation menu,
 ; then the Pokemon isn't devolved and remains unchanged.
 	ld [hl], b
 	ldtx hl, IsThisOKText
@@ -6655,7 +6660,7 @@ DevolutionSpray_PlayerSelection:
 	ret
 
 DevolutionSpray_DevolutionEffect:
-; first byte in list is Play Area location chosen
+; first byte in list is the chosen Play Area location
 	ld hl, hTempList
 	ld a, [hli]
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -6670,7 +6675,7 @@ DevolutionSpray_DevolutionEffect:
 	ld a, [hl]
 	cp $ff
 	jr z, .check_ko ; list is over
-	; devolve card to its stage below
+	; devolve card to its previous stage
 	push hl
 	bank1call GetCardOneStageBelow
 	ld a, d
@@ -6692,7 +6697,8 @@ DevolutionSpray_DevolutionEffect:
 	bank1call Func_6e49
 	ret
 
-; returns carry if opponent has no energy cards attached
+; returns carry if the opponent has no Energy cards
+; attached to any of their in-play Pokemon
 EnergyRemovalCheck:
 	call SwapTurn
 	call PlayAreaAttachedEnergyCheck
@@ -6706,8 +6712,8 @@ EnergyRemoval_PlayerSelection:
 	call HandlePokemonAndEnergySelectionScreen
 	jp SwapTurn
 
-; returns in a the card index of the Energy card attached to Defending Pokemon
-; that is to be discarded by the AI for an effect.
+; returns in a the card index of the Energy card
+; that is to be discarded by the AI (only looks at the Defending Pokemon)
 ; outputs $ff is none was found.
 ; output:
 ;	a = deck index of attached energy card chosen
@@ -6719,7 +6725,7 @@ EnergyRemoval_AISelection:
 	xor a
 	call CreateArenaOrBenchEnergyCardList
 	jr nc, .has_energy
-	; no energy, return
+	; no energy, so return
 	ld a, $ff
 	jp SwapTurn ; done
 
@@ -6730,18 +6736,17 @@ EnergyRemoval_AISelection:
 	ld e, COLORLESS
 	ld a, [wAttachedEnergies + COLORLESS]
 	or a
-	jr nz, .pick_color ; has colorless attached?
+	jr nz, .pick_color ; choose a Double Colorless Energy
 
-	; no colorless energy attached.
-	; if it's colorless Pokemon, just
-	; pick any energy card at random...
+	; no Colorless Energy are attached to the Defending Pokemon.
+	; if the Defending Pokemon is Colorless, just pick a random Energy card.
 	ld a, [wLoadedCard1Type]
 	cp COLORLESS
 	jr nc, .choose_random
 
-	; ...if not, check if it has its
-	; own color energy attached.
-	; if it doesn't, pick at random.
+	; check if there's an attached Energy card
+	; that is the same color as the Defending Pokemon
+	; if not, just pick a random Energy card.
 	ld e, a
 	ld d, $00
 	ld hl, wAttachedEnergies
@@ -6750,7 +6755,7 @@ EnergyRemoval_AISelection:
 	or a
 	jr z, .choose_random
 
-; pick attached card with same color as e
+; choose an attached Energy card with the same color as e
 .pick_color
 	ld hl, wDuelTempList
 .loop_energy
@@ -6788,7 +6793,7 @@ EnergyRemoval_DiscardEffect:
 	call Func_2c10b
 	jp SwapTurn
 
-; returns carry if neither duelist has any attached Energy cards
+; returns carry if either player doesn't have any attached Energy cards
 SuperEnergyRemoval_EnergyCheck:
 	call PlayAreaAttachedEnergyCheck
 	ldtx hl, NoEnergyCardsAttachedToPokemonInYourPlayAreaText
@@ -6815,7 +6820,7 @@ SuperEnergyRemoval_PlayerSelection:
 	bank1call HasAlivePokemonInPlayArea
 	bank1call OpenPlayAreaScreenForSelection
 	jr nc, .opp_pkmn_selected
-	; B was pressed
+	; B button was pressed
 	jp SwapTurn ; return if operation was cancelled
 .opp_pkmn_selected
 	ld e, a
@@ -6842,7 +6847,7 @@ SuperEnergyRemoval_PlayerSelection:
 .loop_discard_energy_selection
 	bank1call HandleEnergyDiscardMenuInput
 	jr nc, .energy_selected
-	; B pressed
+	; B button was pressed
 	ld a, 5
 	call AskWhetherToQuitSelectingCards
 	jr nc, .done ; finish operation
@@ -6858,7 +6863,7 @@ SuperEnergyRemoval_PlayerSelection:
 	jr .loop_discard_energy_selection
 
 .energy_selected
-; store energy cards to discard from opponent
+; store Energy cards to discard from the opponent's Pokemon
 	call GetNextPositionInTempList
 	ldh a, [hTempCardIndex_ff98]
 	ld [hl], a
@@ -6867,10 +6872,10 @@ SuperEnergyRemoval_PlayerSelection:
 	inc [hl]
 	ldh a, [hCurSelectionItem]
 	cp 5
-	jr nc, .done ; no more energy cards to select
+	jr nc, .done ; no more Energy cards to select
 	ld a, [wDuelTempList]
 	cp $ff
-	jr z, .done ; no more energy cards to select
+	jr z, .done ; no more Energy cards to select
 	bank1call DisplayEnergyDiscardMenu
 	jr .loop_discard_energy_selection
 
@@ -6884,11 +6889,11 @@ SuperEnergyRemoval_PlayerSelection:
 SuperEnergyRemoval_DiscardEffect:
 	ld hl, hTempList + 1
 
-; discard energy card of own Play Area
+; discard an Energy card from one of the Turn Duelist's Pokemon
 	ld a, [hli]
 	call PutCardInDiscardPile
 
-; iterate and discard opponent's energy cards
+; iterate and discard Energy cards from the opponent's Pokemon
 	inc hl
 	call SwapTurn
 .loop
@@ -6899,15 +6904,13 @@ SuperEnergyRemoval_DiscardEffect:
 	jr .loop
 
 .done_discard
-; if it's Player's turn, return...
 	call SwapTurn
 	call IsPlayerTurn
-	ret c
-; ...otherwise show Play Area of affected Pokemon
-; in opponent's Play Area
+	ret c ; return if it's the Player's turn
+
+; otherwise show the affected Pokemon in the opponent's Play Area
 	ldh a, [hTemp_ffa0]
 	call Func_2c10b
-; in player's Play Area
 	xor a
 	ld [wDuelDisplayedScreen], a
 	call SwapTurn
@@ -6915,14 +6918,14 @@ SuperEnergyRemoval_DiscardEffect:
 	call Func_2c10b
 	jp SwapTurn
 
-; returns carry if no other card in hand to discard
-; or if there are no Basic Energy cards in Discard Pile.
+; returns carry if there isn't another card in the hand to discard
+; or if there are no Basic Energy cards in the discard pile.
 EnergyRetrievalCheck:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	call GetTurnDuelistVariable
 	cp 2
 	ldtx hl, NotEnoughCardsInHandText
-	ret c ; return if doesn't have another card to discard
+	ret c ; return if this is the only card in the hand
 	call CreateEnergyCardListFromDiscardPile_OnlyBasic
 	ldtx hl, NoBasicEnergyCardsInDiscardPileText
 	ret
@@ -6940,7 +6943,7 @@ EnergyRetrieval_PlayerHandSelection:
 	ret
 
 EnergyRetrieval_PlayerDiscardPileSelection:
-	ld a, 1 ; start at 1 due to card selected from hand
+	ld a, 1 ; start at 1 to ignore the card being discarded from the hand
 	ldh [hCurSelectionItem], a
 	ldtx hl, Choose2BasicEnergyCardsFromDiscardPileText
 	call DrawWideTextBox_WaitForInput
@@ -6953,8 +6956,8 @@ EnergyRetrieval_PlayerDiscardPileSelection:
 	bank1call SetCardListHeaderText
 	bank1call DisplayCardList
 	jr nc, .selected
-	; B was pressed
-	ld a, 2 + 1 ; includes the card selected from hand
+	; B button was pressed
+	ld a, 2 + 1 ; includes the card selected from the hand
 	call AskWhetherToQuitSelectingCards
 	jr c, .select_card ; player selected No
 	jr .done
@@ -6966,7 +6969,7 @@ EnergyRetrieval_PlayerDiscardPileSelection:
 	call RemoveCardFromDuelTempList
 	jr c, .done
 	ldh a, [hCurSelectionItem]
-	cp 2 + 1 ; includes the card selected from hand
+	cp 2 + 1 ; includes the card selected from the hand
 	jr c, .select_card
 
 .done
@@ -6996,8 +6999,8 @@ EnergyRetrieval_DiscardAndAddToHandEffect:
 	bank1call DisplayCardListDetails
 	ret
 
-; returns carry if not enough cards in hand to discard
-; or if the Discard Pile has no basic Energy cards
+; returns carry if there aren't enough cards in the hand to discard
+; or if the discard pile has no Basic Energy cards
 SuperEnergyRetrieval_HandEnergyCheck:
 	call OtherCardsInHandCheck
 	ret c
@@ -7017,7 +7020,7 @@ SuperEnergyRetrieval_PlayerDiscardPileSelection:
 	bank1call SetCardListHeaderText
 	bank1call DisplayCardList
 	jr nc, .store_selected_card
-	; B pressed
+	; B button was pressed
 	ld a, 6
 	call AskWhetherToQuitSelectingCards
 	jr c, .loop_discard_pile_selection ; player selected to continue
@@ -7028,7 +7031,7 @@ SuperEnergyRetrieval_PlayerDiscardPileSelection:
 	call GetTurnDuelistVariable
 	call GetNextPositionInTempList
 	ldh a, [hTempCardIndex_ff98]
-	ld [hl], a ; store selected energy card
+	ld [hl], a ; store selected Energy card
 	call RemoveCardFromDuelTempList
 	jr c, .done
 	; this shouldn't happen
@@ -7053,7 +7056,7 @@ SuperEnergyRetrieval_DiscardAndAddToHandEffect:
 	call RemoveCardFromHand
 	call PutCardInDiscardPile
 
-; put selected cards in hand
+; put selected cards from the discard pile into the hand
 	ld de, wDuelTempList
 .loop
 	ld a, [hli]
@@ -7069,7 +7072,7 @@ SuperEnergyRetrieval_DiscardAndAddToHandEffect:
 ; if Player played the card, exit
 	call IsPlayerTurn
 	ret c
-; if not, show card list selected by Opponent
+; if not, show the list of selected cards to the opponent
 	bank1call DisplayCardListDetails
 	ret
 
@@ -7077,12 +7080,12 @@ GamblerEffect:
 	ldtx de, CardCheckIfHeads8CardsIfTails1CardText
 	call TossCoin_BankB
 	ldh [hTemp_ffa0], a
-; discard Gambler card from hand
+; discard the card being used from the hand
 	ldh a, [hTempCardIndex_ff9f]
 	call RemoveCardFromHand
 	call PutCardInDiscardPile
 
-; shuffle cards into deck
+; shuffle the hand cards into the deck
 	call CreateHandCardList
 	call SortCardsInDuelTempListByID
 	ld hl, wDuelTempList
@@ -7115,8 +7118,8 @@ GamblerEffect:
 	jr nz, .draw_loop
 	ret
 
-; returns carry if not enough cards in hand to discard
-; or if there are no cards in the Discard Pile
+; returns carry if there aren't enough cards in the hand to discard
+; or if there are no Trainer cards in the discard pile
 ItemFinderCheck:
 	call OtherCardsInHandCheck
 	ret c
@@ -7126,8 +7129,8 @@ ItemFinder_PlayerSelection:
 	call Discard2Cards_PlayerSelection
 	ret c ; was operation cancelled?
 
-; cards were selected to discard from hand.
-; now to choose a Trainer card from Discard Pile.
+; cards were selected to discard from the hand.
+; now to choose a Trainer card from the discard pile.
 	call CreateTrainerCardListFromDiscardPile
 	bank1call Func_5591
 	ldtx hl, ChooseCardToPlaceInHandText
@@ -7138,7 +7141,7 @@ ItemFinder_PlayerSelection:
 	ret
 
 ItemFinder_DiscardAddToHandEffect:
-; discard cards from hand
+; discard cards from the hand
 	ld hl, hTempList
 	ld a, [hli]
 	call RemoveCardFromHand
@@ -7147,13 +7150,13 @@ ItemFinder_DiscardAddToHandEffect:
 	call RemoveCardFromHand
 	call PutCardInDiscardPile
 
-; place card from Discard Pile to hand
+; place the card from the discard pile into the hand
 	ld a, [hl]
 	call MoveDiscardPileCardToHand
 	call AddCardToHand
 	call IsPlayerTurn
 	ret c
-; display card in screen
+; display card on screen
 	ldh a, [hTempList + 2]
 	ldtx hl, WasPlacedInTheHandText
 	bank1call DisplayCardDetailScreen
@@ -7165,7 +7168,7 @@ ImakuniEffect:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1ID]
 
-; cannot confuse Clefairy Doll and Mysterious Fossil
+; cannot confuse Clefairy Doll or Mysterious Fossil
 	cp CLEFAIRY_DOLL
 	jr z, .failed
 	cp MYSTERIOUS_FOSSIL
@@ -7203,7 +7206,7 @@ ImposterProfessorOakEffect:
 	call CreateHandCardList
 	call SortCardsInDuelTempListByID
 
-; first return all cards in hand to the deck.
+; first return all cards in the hand to the deck.
 	ld hl, wDuelTempList
 .loop_return_deck
 	ld a, [hli]
@@ -7228,7 +7231,7 @@ ImposterProfessorOakEffect:
 	jp SwapTurn
 
 LassEffect:
-; first discard Lass card that was used
+; first discard the card that was just used
 	ldh a, [hTempCardIndex_ff9f]
 	call RemoveCardFromHand
 	call PutCardInDiscardPile
@@ -7250,7 +7253,7 @@ LassEffect:
 	ldh [hCurSelectionItem], a
 	ld hl, wDuelTempList
 
-; go through all cards in hand and any Trainer card is returned to deck.
+; go through every card in the hand and any Trainer card is returned to the deck.
 .loop_hand
 	ld a, [hli]
 	ldh [hTempCardIndex_ff98], a
@@ -7376,7 +7379,7 @@ MrFuji_ReturnToDeckEffect:
 	cp DECK_SIZE
 	jr c, .loop_cards
 
-; clear Play Area location of card
+; clear the Play Area location of the card
 	ldh a, [hTemp_ffa0]
 	ld e, a
 	call EmptyPlayAreaSlot
@@ -7384,8 +7387,8 @@ MrFuji_ReturnToDeckEffect:
 	dec [hl]
 	call ShiftAllPokemonToFirstPlayAreaSlots
 
-; if Trainer card wasn't played by the Player,
-; print the selected Pokemon's name and show card on screen.
+; if the Trainer card wasn't played by the Player,
+; print the selected Pokemon's name and show the card on screen.
 	call IsPlayerTurn
 	jp c, ShuffleCardsInDeck
 	ldh a, [hTempCardIndex_ff98]
@@ -7429,7 +7432,7 @@ PokeBall_AddToHandEffect:
 	cp $ff
 	jp z, ShuffleCardsInDeck ; skip if no Pokemon was chosen
 
-; add Pokemon card to hand and show in screen if
+; add the Pokemon card to the hand and show on screen if
 ; it wasn't the Player who played the Trainer card.
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
@@ -7440,6 +7443,7 @@ PokeBall_AddToHandEffect:
 	bank1call DisplayCardDetailScreen
 	jp ShuffleCardsInDeck
 
+; returns carry if Pokemon Breeder cannot be used
 PokemonBreederCheck:
 	call CreatePlayableStage2PokemonCardListFromHand
 	jr c, .cannot_evolve
@@ -7450,34 +7454,34 @@ PokemonBreederCheck:
 	ret
 
 PokemonBreeder_PlayerSelection:
-; create hand list of playable Stage2 cards
+; create a list of playable Stage2 cards in the hand
 	call CreatePlayableStage2PokemonCardListFromHand
 	bank1call Func_5591
 
-; handle Player selection of Stage2 card
+; handle the Player's selection of a Stage2 card
 	ldtx hl, PleaseSelectCardText
 	ldtx de, DuelistHandText
 	bank1call SetCardListHeaderText
 	bank1call DisplayCardList
-	ret c ; exit if B was pressed
+	ret c ; exit if the B button was pressed
 
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	ldtx hl, ChooseBasicPokemonToEvolveText
 	call DrawWideTextBox_WaitForInput
 
-; handle Player selection of Basic card to evolve
+; handle the Player selection's of a Basic Pokemon to evolve
 	bank1call HasAlivePokemonInPlayArea
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit if B was pressed
+	ret c ; exit if the B button was pressed
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld e, a
 	ldh a, [hTemp_ffa0]
 	ld d, a
 	call CheckIfCanEvolveInto_BasicToStage2
-	jr c, .read_input ; loop back if cannot evolve this card
+	jr c, .read_input ; loop back if this card is not able to evolve
 	or a
 	ret
 
@@ -7490,7 +7494,7 @@ PokemonBreeder_EvolveEffect:
 	ld a, [hl] ; hTempPlayAreaLocation_ffa1
 	ldh [hTempPlayAreaLocation_ff9d], a
 
-; load the Basic Pokemon card name to RAM
+; load the card name of the Basic Pokemon to RAM
 	add DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -7500,12 +7504,12 @@ PokemonBreeder_EvolveEffect:
 	ld l, a
 	call LoadTxRam2
 
-; evolve card and overwrite its stage as STAGE2_WITHOUT_STAGE1
+; evolve the Basic Pokemon and overwrite its stage as STAGE2_WITHOUT_STAGE1
 	ldh a, [hTempCardIndex_ff98]
 	call EvolvePokemonCard
 	ld [hl], STAGE2_WITHOUT_STAGE1
 
-; load Stage2 Pokemon card name to RAM
+; load the card name of the Stage2 Pokemon to RAM
 	ldh a, [hTempCardIndex_ff98]
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 18
@@ -7516,7 +7520,8 @@ PokemonBreeder_EvolveEffect:
 	ld [hli], a
 	ld [hl], a
 
-; display Pokemon picture and play sfx and print the corresponding card names.
+; display the card image, play the evolution sound effect,
+; and print the corresponding card names.
 	bank1call DrawLargePictureOfCard
 	ld a, SFX_POKEMON_EVOLUTION
 	call PlaySFX
@@ -7527,16 +7532,16 @@ PokemonBreeder_EvolveEffect:
 	ldh [hTempCardIndex_ff9f], a
 	ret
 
-; creates list in wDuelTempList of all Stage2 Pokemon cards
-; in the hand that can evolve a Basic Pokemon card in Play Area.
+; create a list in wDuelTempList of every Stage2 Pokemon card in the hand
+; in that is a future evolution of a Basic Pokemon in the Play Area.
 ; returns carry if that list is empty.
 CreatePlayableStage2PokemonCardListFromHand:
 	call CreateHandCardList
 	ret c ; return if no hand cards
 
-; check if hand Stage2 Pokemon cards can be made
-; to evolve a Basic Pokemon in the Play Area and,
-; if so, add it to the wDuelTempList.
+; check if the Stage2 card in the hand can be used
+; to evolve a Basic Pokemon in the Play Area,
+; and if so, add it to the wDuelTempList.
 	ld hl, wDuelTempList
 	ld e, l
 	ld d, h
@@ -7559,20 +7564,20 @@ CreatePlayableStage2PokemonCardListFromHand:
 	ld a, [wDuelTempList]
 	cp $ff
 	scf
-	ret z ; return carry if empty
+	ret z ; returns carry if empty
 	; not empty
 	or a
 	ret
 
 ; returns carry if Stage2 card in a cannot evolve any
-; of the Basic Pokemon in Play Area through Pokemon Breeder.
+; of the Basic Pokemon in the Play Area using Pokemon Breeder.
 .CheckIfCanEvolveAnyPlayAreaBasicCard
 	push de
 	ld d, a
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr nc, .set_carry ; skip if not Pokemon card
+	jr nc, .set_carry ; skip if not a Pokemon
 	ld a, [wLoadedCard2Stage]
 	cp STAGE2
 	jr nz, .set_carry ; skip if not Stage2
@@ -7606,11 +7611,12 @@ CreatePlayableStage2PokemonCardListFromHand:
 	scf
 	ret
 
-; check if the player's Pokemon card at e can evolve this turn, and is a Basic
-; Pokemon card whose Stage2 evolution is in the player's hand.
+; check if the player's Pokemon card at e can evolve this turn and
+; that is a Basic Pokemon card whose Stage2 evolution is in the player's hand.
 ; e is the play area location offset (PLAY_AREA_*) of the Pokemon trying to evolve.
 ; d is the deck index (0-59) of the Pokemon that was selected to be the evolution target.
-; returns carry if not a Basic with a matching Stage2, or if evolution isn't possible this turn.
+; returns carry if it isn't a Basic with a matching Stage2,
+; or if evolution isn't possible this turn.
 CheckIfCanEvolveInto_BasicToStage2:
 	ld a, e
 	add DUELVARS_ARENA_CARD_FLAGS
@@ -7661,15 +7667,15 @@ PokemonCenter_HealDiscardEnergyEffect:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .next_pkmn ; if no damage, skip Pokemon
+	jr z, .next_pkmn ; skip the Pokemon if it doesn't have any damage
 
-; heal all its damage
+; heal all of its damage
 	push de
 	ld e, a
 	ld d, $00
 	call HealPlayAreaCardHP
 
-; loop all cards in deck and discard all Energy cards
+; loop all cards in the deck and discard all Energy cards
 ; that are attached to this Play Area location's Pokemon.
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or CARD_LOCATION_PLAY_AREA
@@ -7679,12 +7685,12 @@ PokemonCenter_HealDiscardEnergyEffect:
 .loop_deck
 	ld a, [hl]
 	cp e
-	jr nz, .next_card_deck ; not attached to card, skip
+	jr nz, .next_card_deck ; skip if not attached to any card
 	ld a, l
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	and TYPE_ENERGY
-	jr z, .next_card_deck ; not Energy, skip
+	jr z, .next_card_deck ; skip if not an Energy
 	ld a, l
 	call PutCardInDiscardPile
 .next_card_deck
@@ -7700,27 +7706,27 @@ PokemonCenter_HealDiscardEnergyEffect:
 	jr nz, .loop_play_area
 	ret
 
-; returns carry if opponent's Bench is full or if there are
-; no Basic Pokemon cards in opponent's Discard Pile.
+; returns carry if the opponent's Bench is full
+; or if there are no Basic Pokemon cards in the opponent's discard pile.
 PokemonFluteCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	ldtx hl, NoSpaceOnTheBenchText
 	cp MAX_PLAY_AREA_POKEMON
 	ccf
-	ret c ; not enough space in Bench
-	; check Discard Pile
+	ret c ; not enough space on the Bench
+	; check the discard pile
 	call SwapTurn
 	call CreateBasicPokemonCardListFromDiscardPile
 	ldtx hl, CannotUsePokemonFluteText
 	jp SwapTurn
 
 PokemonFlute_PlayerSelection:
-; create Discard Pile list
+; create a list of relevant cards in the opponent's discard pile
 	call SwapTurn
 	call CreateBasicPokemonCardListFromDiscardPile
 
-; display selection screen and store Player's selection
+; display selection screen and store the Player's selection
 	bank1call Func_5591
 	ldtx hl, ChoosePokemonToPlaceInPlayText
 	ldtx de, OpponentsDiscardPileText
@@ -7732,7 +7738,7 @@ PokemonFlute_PlayerSelection:
 	ret
 
 PokemonFlute_PlaceInPlayAreaText:
-; place selected card on opponent's Bench
+; place the selected card on the opponent's Bench
 	call SwapTurn
 	ldh a, [hTemp_ffa0]
 	call MoveDiscardPileCardToHand
@@ -7740,8 +7746,7 @@ PokemonFlute_PlaceInPlayAreaText:
 	call PutHandPokemonCardInPlayArea
 	call SwapTurn
 
-; unless it was the Player who played the card,
-; display the Pokemon card on screen.
+; display the Pokemon on screen if it wasn't the Player who used Pokemon Flute.
 	call IsPlayerTurn
 	ret c
 	call SwapTurn
@@ -7750,7 +7755,7 @@ PokemonFlute_PlaceInPlayAreaText:
 	bank1call DisplayCardDetailScreen
 	jp SwapTurn
 
-; return carry if no other cards in hand,
+; returns carry if there are no other cards in hand,
 ; or if there are no Pokemon cards in hand.
 PokemonTraderCheck:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
@@ -7764,15 +7769,15 @@ PokemonTraderCheck:
 
 PokemonTrader_PlayerHandSelection:
 ; print text box
-	ldtx hl, ChoosePokemonToPutInDeckText
+	ldtx hl, ChoosePokemonToReturnToTheDeckText
 	call DrawWideTextBox_WaitForInput
 
-; create list with all Pokemon cards in hand
+; create list with all Pokemon cards in the hand
 	call CreatePokemonCardListFromHand
 	bank1call Func_5591
 
 ; handle Player selection
-	ldtx hl, ChoosePokemonToPutInDeckText
+	ldtx hl, ChoosePokemonToReturnToTheDeckText
 	ldtx de, DuelistHandText
 	bank1call SetCardListHeaderText
 	bank1call DisplayCardList
@@ -7780,13 +7785,13 @@ PokemonTrader_PlayerHandSelection:
 	ret
 
 PokemonTrader_PlayerDeckSelection:
-; temporarily place chosen hand card in deck
-; so it can be potentially chosen to be traded.
+; temporarily place the chosen card from the hand into the deck
+; because it is a potential search target
 	ldh a, [hTemp_ffa0]
 	call RemoveCardFromHand
 	call ReturnCardToDeck
 
-; display deck card list screen
+; display the list of cards from the deck
 	ldtx hl, ChoosePokemonFromDeckText
 	call DrawWideTextBox_WaitForInput
 	call CreateDeckCardList
@@ -7805,7 +7810,7 @@ PokemonTrader_PlayerDeckSelection:
 	jr nc, .read_input ; can't select non-Pokemon cards
 
 ; a valid card was selected, store its card index and
-; place the selected hand card back to the hand.
+; place the selected card from the hand back into the hand.
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ldh a, [hTemp_ffa0]
@@ -7815,17 +7820,17 @@ PokemonTrader_PlayerDeckSelection:
 	ret
 
 PokemonTrader_TradeCardsEffect:
-; place hand card in deck
+; place the card from the hand into the deck
 	ldh a, [hTemp_ffa0]
 	call RemoveCardFromHand
 	call ReturnCardToDeck
 
-; place deck card in hand
+; place the card from the deck into the hand
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	call SearchCardInDeckAndAddToHand
 	call AddCardToHand
 
-; display cards if Pokemon Trader wasn't played by the turn player
+; display cards if Pokemon Trader wasn't played by the Turn Player
 	call IsPlayerTurn
 	jp c, ShuffleCardsInDeck ; done
 	ldh a, [hTemp_ffa0]
@@ -7836,8 +7841,8 @@ PokemonTrader_TradeCardsEffect:
 	bank1call DisplayCardDetailScreen
 	jp ShuffleCardsInDeck
 
-; makes list in wDuelTempList with all Pokemon in Turn Duelist's hand.
-; returns carry if list is empty.
+; makes a list in wDuelTempList with all Pokemon in the Turn Duelist's hand.
+; returns carry if the list is empty
 CreatePokemonCardListFromHand:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	call GetTurnDuelistVariable
@@ -7869,7 +7874,7 @@ Potion_PlayerSelection:
 	bank1call HasAlivePokemonInPlayArea
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit is B was pressed
+	ret c ; exit if the B button was pressed
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
 	ld e, a
@@ -7893,17 +7898,17 @@ HealEffect:
 	ldh a, [hTempPlayAreaLocation_ffa1]
 ;	fallthrough
 
-; heals amount of damage in register e for card in
-; Play Area location in [hTempPlayAreaLocation_ff9d].
-; plays healing animation and prints text with card's name.
+; heals the amount of damage in register e for the card
+; in the Play Area location stored in [hTempPlayAreaLocation_ff9d].
+; plays the healing animation and prints text with the card's name.
 ; input:
 ;	e = amount of HP to heal
-;	[hTempPlayAreaLocation_ff9d] = Play Area location of card to heal
+;	[hTempPlayAreaLocation_ff9d] = Play Area location of the card to heal
 HealPlayAreaCardHP:
 	ld e, a
 	ld d, $00
 
-; play heal animation
+; play the heal animation
 	push de
 	bank1call Func_7415
 	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
@@ -7917,7 +7922,7 @@ HealPlayAreaCardHP:
 	bank1call WaitAttackAnimation
 	pop hl
 
-; print Pokemon card name and damage healed
+; print the Pokemon's card name and damage that was healed
 	push hl
 	call LoadTxRam3
 	ld hl, $0000
@@ -7942,7 +7947,7 @@ HealPlayAreaCardHP:
 	ret
 
 ProfessorOakEffect:
-; discard hand
+; discard every card in the hand
 	call CreateHandCardList
 	call SortCardsInDuelTempListByID
 	ld hl, wDuelTempList
@@ -7978,9 +7983,9 @@ Recycle_PlayerSelection:
 	bank1call SetCardListHeaderText
 .read_input
 	bank1call DisplayCardList
-	jr c, .read_input ; can't cancel with B button
+	jr c, .read_input ; can't cancel with the B button
 
-; Discard Pile card was chosen
+; a card was chosen from the discard pile
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempList], a
 	ret
@@ -7996,8 +8001,8 @@ Recycle_AddToHandEffect:
 	cp $ff
 	ret z ; return if no card was selected
 
-; add card to hand and show in screen if
-; it wasn't the Player who played the Trainer card.
+; add a card to the hand and show on screen
+; if it wasn't the Player who used Recycle.
 	call MoveDiscardPileCardToHand
 	call ReturnCardToDeck
 	call IsPlayerTurn
@@ -8007,11 +8012,11 @@ Recycle_AddToHandEffect:
 	bank1call DisplayCardDetailScreen
 	ret
 
-; makes list in wDuelTempList with all Basic Pokemon cards
-; that are in Turn Duelist's Discard Pile.
+; makes a list in wDuelTempList with all of the Basic Pokemon cards
+; that are in the Turn Duelist's discard pile.
 ; returns carry if none are found.
 CreateBasicPokemonCardListFromDiscardPile:
-; gets hl to point at end of Discard Pile cards
+; gets hl to point to the last card in the discard pile
 ; and iterates the cards in reverse order.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	call GetTurnDuelistVariable
@@ -8045,7 +8050,8 @@ CreateBasicPokemonCardListFromDiscardPile:
 	or a
 	ret
 
-; returns carry if Bench is full or there are no Basic Pokemon in the Discard Pile.
+; returns carry if the Bench is full
+; or if there are no Basic Pokemon in the discard pile.
 ReviveCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -8058,7 +8064,7 @@ ReviveCheck:
 	ret
 
 Revive_PlayerSelection:
-; create Basic Pokemon card list from Discard Pile
+; create a list of Basic Pokemon from the discard pile
 	ldtx hl, ChooseBasicPokemonToPlaceOnBenchText
 	call DrawWideTextBox_WaitForInput
 	call CreateBasicPokemonCardListFromDiscardPile
@@ -8076,7 +8082,7 @@ Revive_PlayerSelection:
 	ret
 
 Revive_PlaceInPlayAreaEffect:
-; place selected Pokemon in the Bench
+; place selected Pokemon onto the Bench
 	ldh a, [hTemp_ffa0]
 	call MoveDiscardPileCardToHand
 	call AddCardToHand
@@ -8088,13 +8094,13 @@ Revive_PlaceInPlayAreaEffect:
 	srl a
 	bit 0, a
 	jr z, .rounded
-	add 5 ; round up HP to nearest 10
+	add 5 ; round up HP to the nearest 10
 .rounded
 	ld [hl], a
 	call IsPlayerTurn
-	ret c ; done if Player played Revive
+	ret c ; done if it was the Player who used Revive
 
-; display card
+; display card on screen
 	ldh a, [hTemp_ffa0]
 	ldtx hl, PlacedOnTheBenchText
 	bank1call DisplayCardDetailScreen
@@ -8108,13 +8114,13 @@ ScoopUp_PlayerSelection:
 ; handle Player selection
 	bank1call HasAlivePokemonInPlayArea
 	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit if B was pressed
+	ret c ; exit if the B button was pressed
 
 	ldh [hTemp_ffa0], a
 	or a
-	ret nz ; if it wasn't the Active Pokemon, we are done
+	ret nz ; return if it wasn't the Active Pokemon
 
-; handle switching to a Pokemon in Bench and store location selected.
+; handle switching to a Pokemon on the Bench and store the selected location
 	call EmptyScreen
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
@@ -8124,19 +8130,19 @@ ScoopUp_PlayerSelection:
 	ret
 
 ScoopUp_ReturnToHandEffect:
-; store chosen card location to Scoop Up
+; store chosen card location for Scoop Up
 	ldh a, [hTemp_ffa0]
 	or CARD_LOCATION_PLAY_AREA
 	ld e, a
 
 ; find Basic Pokemon card that is in the selected Play Area location
-; and add it to the hand, discarding all cards attached.
+; and add it to the hand, discarding all attached cards.
 	ld a, DUELVARS_CARD_LOCATIONS
 	call GetTurnDuelistVariable
 .loop
 	ld a, [hl]
 	cp e
-	jr nz, .next_card ; skip if not in selected location
+	jr nz, .next_card ; skip if not in the selected location
 	ld a, l
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .next_card  ; skip if not a Basic Pokemon
@@ -8153,21 +8159,21 @@ ScoopUp_ReturnToHandEffect:
 	cp DECK_SIZE
 	jr c, .loop
 
-; since the card has been moved to hand, MovePlayAreaCardToDiscardPile will
-; take care of discarding every higher stage cards and other cards attached.
+; since the card has been moved to the hand, MovePlayAreaCardToDiscardPile will
+; take care of discarding every higher stage card and any other attached cards.
 	ldh a, [hTemp_ffa0]
 	ld e, a
 	call MovePlayAreaCardToDiscardPile
 
-; if Active Pokemon, remove any special conditions
+; remove any special conditions if it was the Active Pokemon
 	ldh a, [hTemp_ffa0]
 	or a
 	jr nz, .skip_clear_status
 	call ClearAllStatusConditions
 .skip_clear_status
 
-; if card was not played by Player, show detail screen
-; and print corresponding text.
+; show the card details screen and print the corresponding text
+; if it wasn't the Player who used the card
 	call IsPlayerTurn
 	jr c, .shift_or_switch
 	ldtx hl, ActivePokemonWasReturnedToHandText
@@ -8180,14 +8186,14 @@ ScoopUp_ReturnToHandEffect:
 	bank1call DisplayCardDetailScreen
 
 .shift_or_switch
-; if card was in Bench, simply shift Pokemon slots...
+; if the target was a Benched Pokemon, simply shift the Pokemon slots...
 	ldh a, [hTemp_ffa0]
 	or a
 	jr z, .switch
 	jp ShiftAllPokemonToFirstPlayAreaSlots
 
 .switch
-; ...if Active Pokemon, switch with selected Pokemon on the Bench
+; if the target was the Active Pokemon, switch it with a Benched Pokemon
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ld d, a
 	ld e, PLAY_AREA_ARENA
@@ -8211,11 +8217,11 @@ SuperPotion_PlayerSelection:
 	bank1call HasAlivePokemonInPlayArea
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit if B is pressed
+	ret c ; exit if the B button was pressed
 	ld e, a
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .read_input ; Pokemon has no damage?
+	jr z, .read_input ; loop back if Pokemon has no damage
 	ldh a, [hCurMenuItem]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
@@ -8228,14 +8234,14 @@ SuperPotion_PlayerSelection:
 	jr .start
 
 .got_pkmn
-; Pokemon has damage and Energy cards attached,
-; prompt the Player for Energy selection to discard.
+; Pokemon has damage and Energy cards attached to it,
+; prompt the Player for select an Energy to discard.
 	ldh a, [hCurMenuItem]
 	call CreateArenaOrBenchEnergyCardList
 	ldh a, [hCurMenuItem]
 	bank1call DisplayEnergyDiscardScreen
 	bank1call HandleEnergyDiscardMenuInput
-	ret c ; exit if B was pressed
+	ret c ; exit if the B button was pressed
 
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
@@ -8243,7 +8249,7 @@ SuperPotion_PlayerSelection:
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld e, a
 
-; cap the healing damage if it would make it exceed max HP.
+; cap the healing if it would exceed the Pokemon's max HP.
 	call GetCardDamageAndMaxHP
 	ld c, 40
 	cp 40
@@ -8263,9 +8269,9 @@ SuperPotion_HealEffect:
 	ldh a, [hPlayAreaEffectTarget]
 	jp HealPlayAreaCardHP
 
-; handles Player selection for Pokemon in Play Area,
-; then opens screen to choose one of the energy cards
-; attached to that selected Pokemon.
+; handles Player selection for Pokemon in the Play Area,
+; then opens a screen to choose one of the Energy cards
+; attached to the selected Pokemon.
 ; outputs the selection in:
 ;	[hTemp_ffa0] = play area location
 ;	[hTempPlayAreaLocation_ffa1] = index of energy card
