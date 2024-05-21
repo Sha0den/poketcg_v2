@@ -1,5 +1,15 @@
-Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
-======================================================
+# Pokémon Trading Card Game, Version 2
+
+### Types of Changes:
+- [**Bug Fixes For Base Game**](##bug-fixes-for-base-game)
+- [**Code Optimization**](##code-optimization)
+- [**Miscellaneous Changes**](##miscellaneous-changes)
+- [**New Features**](##new-features)
+- [**Other Bug Fixes And Commit Reversions**](##other-bug-fixes-and-commit-reversions)
+- [**Potential Hacks**](##potential-hacks)
+
+<br/>
+<br/>
 
 ## Bug Fixes For Base Game
 
@@ -128,7 +138,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Miscellaneous Changes
-- May 21, 2024: 22 Files Changed
+- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/4ac1004d0f7b04743060b5fb916a9fb7640f7cea):** 22 Files Changed
     - Fix minor typos and remove end of line spaces in the text files
     - Adjust texts to better fit the 2 line display used by the text boxes
     - Rewrite some of the larger texts, like glossary pages and tutorial messages
@@ -277,3 +287,4 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 ## Potential Hacks
 - **[May 14, 2024](https://github.com/Sha0den/improvedpoketcg/commit/62a73e33e60c8e5b61d477bb1b9f0f675def074c):** Only Need to Change 1 File
     - Instructions for skipping the mandatory practice duel with Sam
+    - This is less relevant now that the practice duel is optional
