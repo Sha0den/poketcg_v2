@@ -1,12 +1,12 @@
 # Pokémon Trading Card Game, Version 2
 
 ### Types of Changes:
-- [**Bug Fixes For Base Game**](##bug-fixes-for-base-game)
-- [**Code Optimization**](##code-optimization)
+- [**Bug Fixes For Base Game**](#bug-fixes-for-base-game)
+- [**Code Optimization**](#code-optimization)
 - [**Miscellaneous Changes**](##miscellaneous-changes)
-- [**New Features**](##new-features)
-- [**Other Bug Fixes And Commit Reversions**](##other-bug-fixes-and-commit-reversions)
-- [**Potential Hacks**](##potential-hacks)
+- [**New Features**](#new-features)
+- [**Other Bug Fixes And Commit Reversions**](#other-bug-fixes-and-commit-reversions)
+- [**Potential Hacks**](#potential-hacks)
 
 <br/>
 <br/>

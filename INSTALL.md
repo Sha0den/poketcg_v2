@@ -58,7 +58,7 @@ cd /cygdrive/c/Users/<user>/Desktop
 
 (The Windows `C:\` drive is called `/cygdrive/c/` in Cygwin. Replace *\<user>* in the example path with your username.)
 
-Now you're ready to build [build **poketcg_v2.gbc**](#build-poketcg_v2.gbc).
+Now you're ready to [build **poketcg_v2**](#build-poketcg_v2).
 
 
 ## macOS
@@ -69,7 +69,7 @@ Open **Terminal** and prepare to enter commands.
 
 Then follow the [**rgbds** instructions](https://rgbds.gbdev.io/install#pre-built) for macOS to install **rgbds 0.7.0**.
 
-Now you're ready to build [build **poketcg_v2.gbc**](#build-poketcg_v2.gbc).
+Now you're ready to [build **poketcg_v2**](#build-poketcg_v2).
 
 
 ## Linux
@@ -133,10 +133,10 @@ If your distro is not listed here, try to find the required software in its repo
 
 If `rgbds` is not available, you'll need to follow the [**rgbds** instructions](https://rgbds.gbdev.io/install#building-from-source) to build **rgbds 0.7.0** from source.
 
-Now you're ready to build [build **poketcg_v2.gbc**](#build-poketcg_v2.gbc).
+Now you're ready to [build **poketcg_v2**](#build-poketcg_v2).
 
 
-## Build poketcg_v2.gbc
+## Build poketcg_v2
 
 To download the **poketcg_v2** source files:
 
