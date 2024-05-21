@@ -67,13 +67,13 @@ OpponentDeckNameLabel:
 OpponentTitlesAndDeckNames:
 	table_width 4, OpponentTitlesAndDeckNames
 
-	tx TechText
+	tx TechNPCName
 	tx SamsPracticeDeckName
 
 	tx EmptyText
 	dw NULL
 
-	tx TechText
+	tx TechNPCName
 	tx SamsPracticeDeckName
 
 	tx EmptyText
@@ -94,13 +94,13 @@ OpponentTitlesAndDeckNames:
 	tx EmptyText
 	dw NULL
 
-	tx TechText
+	tx TechNPCName
 	tx LightningAndFireDeckName
 
-	tx TechText
+	tx TechNPCName
 	tx WaterAndFightingDeckName
 
-	tx TechText
+	tx TechNPCName
 	tx GrassAndPsychicDeckName
 
 	tx GrandMasterText

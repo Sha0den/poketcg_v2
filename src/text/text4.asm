@@ -2,15 +2,15 @@ Mail3Part1Text:
 	text "<RAMNAME>,"
 	line "It's me, Doctor Mason."
 	line "I have some information about"
-	line "Gene's deck - he's the Master "
+	line "Gene's deck - he's the Master"
 	line "of the Rock Club."
 	line "His Rock Crusher Deck is extremely"
 	line "strong against Lightning Pokémon,"
 	line "but it's weak against Grass Pokémon!"
-	line "I suggest you study the Deck from"
-	line "the Grass Medal Deck Machine."
+	line "I suggest you study the decks from"
+	line "the Grass Medal's Deck Machine."
 	line "Oh! Before I forget..."
-	line "Here's a Booster Pack for you!"
+	line "Here's a booster pack for you!"
 	done
 
 Mail3Part2Text:
@@ -24,20 +24,17 @@ Mail4Part1Text:
 	text "<RAMNAME>,"
 	line "It's me, Doctor Mason."
 	line "I have some information for you"
-	line "about Amy's deck - she's the "
-	line "Master of the Water Club."
-	line "Her deck uses Rain Dance -"
-	line "Blastoise's Pokémon Power."
-	line "This deck allows her to "
-	line "keep attaching Water Energy "
-	line "to her Water Pokémon to "
-	line "power them up."
-	line "Her deck's weakness is"
-	line "Lightning Pokémon!"
-	line "I suggest you duel her using"
-	line "the deck from the Psychic Medal"
+	line "about Amy's deck - she's the"
+	line "Master of the Water Club. Her deck"
+	line "uses Blastoise's Rain Dance power."
+	line "This allows her to keep attaching"
+	line "Energy to her Water Pokémon to"
+	line "power them up. Her deck's weakness"
+	line "is Lightning Pokémon!"
+	line "I suggest you duel her using a deck"
+	line "from the Lightning Medal's"
 	line "Deck Machine."
-	line "Here's a Booster Pack for you."
+	line "Here's a booster pack for you."
 	done
 
 Mail4Part2Text:
@@ -53,25 +50,24 @@ Mail5Part1Text:
 	line "I have some information for you"
 	line "about Isaac's deck - he's"
 	line "the Master of the Lightning Club."
-	line "His deck is a Selfdestruct "
-	line "deck! He uses Selfdestruct for "
-	line "maximum damage!"
-	line "Watch the number of Energy cards"
-	line "on his Pokémon and look out for"
-	line "Selfdestruct."
+	line "His deck is a Selfdestruct deck!"
+	line "He uses Selfdestruct for maximum"
+	line "damage! Pay attention to the amount"
+	line "of Energy on his Pokémon, and"
+	line "watch out for Selfdestruct."
 	line "I would suggest using Fighting"
 	line "Pokémon such as Cubone and Rhyhorn"
 	line "to counter Isaac's deck."
-	line "The Cubone & Marowak Deck from"
-	line "the Rock Medal Deck Machine is"
-	line "probably your best bet."
+	line "The Cubone & Marowak deck from"
+	line "the Rock Medal's Deck Machine"
+	line "is probably your best bet."
 	line "I hope you find many Fighting"
-	line "Pokémon in this Booster Pack!"
+	line "Pokémon in this booster pack!"
 	done
 
 Mail5Part2Text:
 	text "Did you find the Pokémon you were"
-	line "looking for in the Booster Pack?"
+	line "looking for in the booster pack?"
 	line "Mason Laboratory"
 	line "      Doctor Mason  ;)"
 	done
@@ -79,18 +75,18 @@ Mail5Part2Text:
 Mail6Part1Text:
 	text "It's me, Doctor Mason."
 	line "Have you won many Master Medals?"
-	line "I have some information for you "
-	line "about Nikki's deck - she's "
+	line "I have some information for you"
+	line "about Nikki's deck - she's"
 	line "the Master of the Grass Club."
 	line "You must be wary of Exeggutor's"
 	line "Big Eggsplosion with Nikki's deck."
-	line "Use your Fire Pokémon to knock out"
+	line "Use your Fire Pokémon to Knock Out"
 	line "Exeggute and Exeggutor at an"
 	line "early stage!"
-	line "I suggest you study the Deck from"
-	line "the Fire Medal Deck Machine."
-	line "I'll give you a Booster Pack"
-	line "that should contain a lot of "
+	line "I suggest you study the decks from"
+	line "the Fire Medal's Deck Machine."
+	line "I'll give you a booster pack"
+	line "that should contain a lot of"
 	line "Fire Pokémon."
 	done
 
@@ -103,16 +99,15 @@ Mail6Part2Text:
 
 Mail7Part1Text:
 	text "Are you getting any closer to"
-	line "inheriting the Legendary Pokémon "
+	line "inheriting the Legendary Pokémon"
 	line "Cards? Murray of the Psychic Club -"
 	line "I have some information on his deck!"
 	line "It seems to be a deck that uses"
 	line "Alakazam's Damage Swap!"
 	line "It will be difficult to defeat"
 	line "his deck of Psychic Pokémon."
-	line "Psychic Pokémon are tricky"
-	line "since their weakness is"
-	line "Psychic Pokémon!"
+	line "Psychic Pokémon can be tricky since"
+	line "they're weak to other Psychic types!"
 	line "Try to defeat him before his"
 	line "Pokémon evolves into Alakazam."
 	line "Murray is a tough opponent..."
@@ -120,8 +115,7 @@ Mail7Part1Text:
 	done
 
 Mail7Part2Text:
-	text "Fight to the end, "
-	text "<RAMNAME>,"
+	text "Fight to the end, <RAMNAME>,"
 	line "and don't give up!"
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
@@ -131,25 +125,24 @@ Mail8Part1Text:
 	text "It's me, Dr. Mason."
 	line "How are you doing, <RAMNAME>?"
 	line "I have some information for you"
-	line "about Rick's deck - he's "
+	line "about Rick's deck - he's"
 	line "the Master of the Science Club."
 	line "His deck uses Muk's Toxic Gas to"
-	line "prevent your Pokémon from using "
-	line "Pokémon Power! Avoid using a deck "
-	line "that relies on Pokémon Power to "
-	line "attack. His deck's weakness is "
-	line "Psychic Pokémon! Collect Psychic "
-	line "Pokémon to duel his deck!"
-	line "I suggest you study the deck from"
-	line "the Psychic Medal Deck Machine."
+	line "prevent your Pokémon from using"
+	line "Pokémon Powers! Avoid using a deck"
+	line "that relies on Pokémon Powers to"
+	line "attack. His deck's weakness is"
+	line "Psychic Pokémon! Collect plenty of"
+	line "Psychic Pokémon before facing Rick!"
+	line "I suggest you study the decks from"
+	line "the Psychic Medal's Deck Machine."
 	line "Hopefully, it will be of some"
 	line "assistance..."
 	done
 
 Mail8Part2Text:
-	text "Win all 8 Master Medals, "
-	line ""
-	text "<RAMNAME>!"
+	text "Win all 8 Master Medals,"
+	line "<RAMNAME>!"
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
 	done
@@ -158,10 +151,9 @@ Mail9Part1Text:
 	text "It's me, Dr. Mason."
 	line "Have you collected many cards?"
 	line "I have some information about"
-	line "Ken's deck - he's the "
-	line "Master of the Fire Club."
-	line "His deck consists of Fire Pokémon"
-	line "and Colorless Pokémon!"
+	line "Ken's deck - he's the Master of"
+	line "the Fire Club. His deck consists of"
+	line "Fire Pokémon and Colorless Pokémon!"
 	line "Pit a Water Pokémon against"
 	line "the Fire Pokémon and"
 	line "a Fighting Pokémon against"
@@ -169,12 +161,11 @@ Mail9Part1Text:
 	line "Study the decks from the Water and"
 	line "Fighting Medal Deck Machines!"
 	line "Here's a gift for you!"
-	line "It's a MYSTERY"
-	line "Booster Pack!"
+	line "It's a Mystery booster pack!"
 	done
 
 Mail9Part2Text:
-	text "Look closely at the cards "
+	text "Look closely at the cards"
 	line "you just received."
 	line "You should be able to come up"
 	line "with a winning strategy!"
@@ -183,22 +174,20 @@ Mail9Part2Text:
 	done
 
 Mail10Part1Text:
-	text "It's me, Dr. Mason."
-	line "It looks like you've won"
-	line "quite a few medals."
-	line "Want to try building your own "
-	line "deck? Start by changing some of"
-	line "the cards in your present deck."
-	line "Keep changing a few cards at a "
-	line "time, and eventually you'll have"
+	text "It's me, Dr. Mason. It looks like"
+	line "you've won quite a few medals."
+	line "Want to try building your own deck?"
+	line "Start by changing some of the cards"
+	line "in your present deck. Keep"
+	line "changing a few cards at a time,"
+	line "and eventually, you'll have"
 	line "your own unique deck!"
 	line "It's not that difficult."
 	line "Give it a try!"
 	line "Mason Laboratory"
 	line "      Dr. Mason ;)"
-	line "p.s."
-	line "Here's a deal -  this time,"
-	line "you get 2 Booster Packs!"
+	line "p.s. Here's a deal - this time,"
+	line "     you get 2 booster packs!"
 	done
 
 Mail11Part1Text:
@@ -207,23 +196,21 @@ Mail11Part1Text:
 	line "the types and number of cards you"
 	line "should include in your deck."
 	line "If you have 3 of a Basic Pokémon"
-	line "card, you'll want 2 of its Stage"
-	line "1 and 1 of its Stage 2 Pokémon."
+	line "card, you'll want 2 of its Stage 1"
+	line "and 1 of its Stage 2 Pokémon."
 	line "If you follow this rule, your"
 	line "deck will be well balanced."
 	line "You should have about 14 Basic"
 	line "Pokémon and anywhere between 20"
-	line "and 26 Energy Cards in your deck."
-	line "The type of Energy Cards will "
-	line "depend on the type of Pokémon you "
-	line "have in your deck."
+	line "and 26 Energy cards in your deck."
+	line "Which Energy cards you use depends"
+	line "on the type of Pokémon in the deck."
 	line "You might want to look at the decks"
 	line "in the Deck Machine for hints."
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
 	line "p.s."
-	line "This time, I'm sending 2 Booster "
-	line "Packs again!"
+	line "I'm sending 2 booster packs again!"
 	done
 
 Mail12Part1Text:
@@ -231,41 +218,37 @@ Mail12Part1Text:
 	line "It's me, Dr. Mason."
 	line "You're finally going to be dueling"
 	line "a Grand Master..."
-	line "Grand Master COURTNEY uses the"
-	line "Legendary Moltres, so her deck "
+	line "Grand Master Courtney uses the"
+	line "Legendary Moltres, so her deck"
 	line "should be made up of Fire Pokémon."
-	line "Be sure to use Water Pokémon,"
-	line "since Water Pokémon are the "
-	line "weakness of Fire Pokémon."
-	line "Other than that, just watch how"
-	line "your opponent plays, and choose"
-	line "your strategy accordingly."
+	line "Be sure to add some Water Pokémon"
+	line "to your deck. Other than that,"
+	line "just watch how your opponent plays,"
+	line "and choose your strategy"
+	line "accordingly."
 	line "Mason Laboratory"
 	line "      Dr. Mason ;)"
-	line "p.s."
-	line "You're almost there."
-	line "Keep up the good work!"
+	line "p.s. You're almost there."
+	line "     Keep up the good work!"
 	done
 
 Mail13Part1Text:
 	text "<RAMNAME>,"
 	line "It's me, Dr. Mason!"
 	line "Grand Master Steve uses"
-	line "the Legendary ZAPDOS."
-	line "The Legendary ZAPDOS's"
-	line "Peal of Thunder and Big Thunder"
-	line "randomly choose a target, so"
-	line "you never know which Pokémon"
+	line "the Legendary Zapdos."
+	line "Its Peal of Thunder and Big Thunder"
+	line "randomly choose a target,"
+	line "so you never know which Pokémon"
 	line "will receive damage."
-	line "Be sure to look after, not only"
+	line "Be sure to look after not only"
 	line "your Active Pokémon, but also"
 	line "the Pokémon on your Bench."
 	line "His deck should be made up mostly"
 	line "of Lightning Pokémon, so duel him"
 	line "using your Fighting Pokémon."
 	line "Defeat the Grand Masters,"
-	line ""
-	text "<RAMNAME>!!!"
+	line "<RAMNAME>!!!"
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
 	line "p.s."
@@ -277,14 +260,14 @@ Mail14Part1Text:
 	line "2 more Grand Masters to go!"
 	line "Grand Master Jack uses"
 	line "the Legendary Articuno."
-	line "He will use the Legendary"
-	line "Articuno's QuickFreeze to"
-	line "paralyze your Pokémon."
-	line "Also, be wary of his other"
-	line "Articuno's Freeze Dry."
-	line "His deck should be mostly"
-	line "Water Pokémon, so it will be"
-	line "weak against Lightning Pokémon!"
+	line "He will use its QuickFreeze to"
+	line "paralyze your Active Pokémon."
+	line "You should also be wary of his"
+	line "other Articuno's Freeze Dry."
+	line "His deck should contain mostly"
+	line "Water Pokémon, so it might be"
+	line "a good idea to include some"
+	line "Lightning Pokémon in your deck."
 	line "Go get 'em, <RAMNAME>!"
 	line "You're almost there!"
 	line "Mason Laboratory"
@@ -297,31 +280,30 @@ Mail15Part1Text:
 	line "I have some information on Rod,"
 	line "the leader of the Grand Masters."
 	line "Rod uses the Legendary Dragonite."
-	line "The longer the duel takes, the "
-	line "greater the advantages for his "
+	line "The longer the duel takes, the"
+	line "greater the advantages for his"
 	line "deck. His workhorse will be his"
 	line "Evolution Pokémon, so defeat them"
-	line "while they are still in their Basic"
-	line "stage! Follow the simple strategy "
-	line "of striking early. This is the "
-	line "final test in inheriting "
+	line "while they are still in their"
+	line "Basic stage! Follow the simple"
+	line "strategy of striking early."
+	line "This is the final test in inheriting"
 	line "the Legendary Pokémon Cards!"
 	line "Go, <RAMNAME>!"
 	line "Be a part of the legend!"
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
 	line "p.s."
-	line "This is my final gift"
-	line "for you."
+	line "This is my final gift for you."
 	done
 
 MailBoosterPackAlreadyOpenedText:
 	text "You have already received the"
-	line "attached Booster Pack."
+	line "attached booster pack."
 	done
 
 PokemonTradingCards101Text:
-	text "”Pokémon Trading Cards 101”"
+	text "”Pokémon TCG 101”"
 	done
 
 PlaceholderMessageText:
@@ -362,7 +344,7 @@ Gal1DeclinedTradeText:
 	line "trade with me?"
 	line "Well, that's too bad..."
 	line "But if you change your mind,"
-	line "come look for me."
+	line "come and find me."
 	done
 
 Gal1DontOwnCardText:
@@ -377,8 +359,7 @@ Gal1CardInDeckText:
 	line "Oh! I see your Lapras"
 	line "is included in your deck."
 	line "I'd feel guilty taking a card"
-	line "from your deck."
-	line "Maybe next time."
+	line "from your deck. Maybe next time."
 	line ""
 	done
 
@@ -481,8 +462,8 @@ SaraPlayerWon2Text:
 
 SaraPlayerLostText:
 	text "It might look like all I can"
-	line "do is swim, but I play a pretty"
-	line "mean game of Pokémon Trading Cards!"
+	line "do is swim, but I play a"
+	line "pretty mean game of Pokémon!"
 	line "Do you want to join the Water Club?"
 	done
 
@@ -571,6 +552,7 @@ JoshuaDeclinedDuelInitialText:
 
 JoshuaDeclinedDuelRepeatText:
 	text "You don't want to duel?"
+	line ""
 	line "Are you afraid you won't be able"
 	line "to defeat me?"
 	line "That's understandable since I'm"
@@ -584,14 +566,14 @@ JoshuaDuelStartText:
 
 JoshuaPlayerLostInitialText:
 	text "How's that! I win!"
-	line "I'm sorry, but unless you defeat "
-	line "me, I can't let you meet Amy."
+	line "I'm sorry, but unless you defeat me,"
+	line "I can't let you meet Amy."
 	done
 
 JoshuaPlayerLostRepeatText:
 	text "How's that! I win!"
-	line "Too bad for you, but I'm"
-	line "the second best player"
+	line "Too bad for you, but"
+	line "I'm the second best player"
 	line "after Amy!"
 	done
 
@@ -646,14 +628,13 @@ AmyMeetsPlayer2Text:
 AmyMeetsPlayer3Text:
 	text "Was it <RAMNAME>?"
 	line "I will be your next opponent."
-	line "I, Amy, the Master of the "
+	line "I'm Amy, the Master of the"
 	line "Water Club!"
 	done
 
 AmyWantsToDuelInitialText:
 	text "Aren't you <RAMNAME>?"
-	line "So you decided you want to"
-	line "duel me?"
+	line "So you decided you want to duel me?"
 	done
 
 AmyWouldYouLikeToDuelText:
@@ -661,9 +642,8 @@ AmyWouldYouLikeToDuelText:
 	done
 
 AmyDeclinedDuelInitialText:
-	text "No? How boring!"
-	line "I was looking forward to"
-	line "a game of Pokémon Trading Cards."
+	text "No? How boring! I was looking"
+	line "forward to a game of Pokémon."
 	line "Well, come see me again!"
 	done
 
@@ -695,7 +675,7 @@ AmyPlayerWon2Text:
 
 AmyPlayerLostText:
 	text "Hah! I'm the best!"
-	line "Come see me again sometime! "
+	line "Come see me again sometime!"
 	line "I'd like another duel!"
 	done
 
@@ -735,8 +715,8 @@ Man1FirstRequestCardText:
 Man1WaitingForCardText:
 	text "Hi! It's you!"
 	line "What's up?"
-	line "Did you decide to give me"
-	line "your <RAMTEXT>?"
+	line "Did you decide to give me your"
+	line "<RAMTEXT>?"
 	done
 
 Man1NewRequestCardText:
@@ -749,20 +729,20 @@ Man1NewRequestCardText:
 	done
 
 Man1GiveAwayCardText:
-	text "Give away your <RAMTEXT>?"
+	text "Give him your <RAMTEXT>?"
 	done
 
 Man1DeclineText:
 	text "OK. I understand."
-	line "But if you should change your "
+	line "But if you should change your"
 	line "mind, please come see me."
 	done
 
 Man1DontHaveText:
 	text "But you don't have <RAMTEXT>!"
-	line "I appreciate your generosity, but "
-	line "you can't give me what you don't "
-	line "have. Come see me again after "
+	line "I appreciate your generosity, but"
+	line "you can't give me what you don't"
+	line "have. Come see me again after"
 	line "you get <RAMTEXT>."
 	done
 
@@ -770,7 +750,7 @@ Man1CardInDeckText:
 	text "You're going to give it to me?"
 	line "Thank you!"
 	line "But your <RAMTEXT>"
-	line "is in your Deck."
+	line "is in your deck."
 	line "I can't take a card that you're"
 	line "playing with!"
 	done
@@ -778,9 +758,8 @@ Man1CardInDeckText:
 Man1GiveCardText:
 	text "You're going to give it to me?"
 	line "I'll put it in my collection"
-	line "right away."
-	line "I'll take good care of this card."
-	line "Thank you! Thank you!!!"
+	line "right away. I'll take good care of"
+	line "this card. Thank you! Thank you!!!"
 	done
 
 Man1PlayerReceivePikachuAltLv16Text:
@@ -805,8 +784,7 @@ Man1GaveCardText:
 	done
 
 Man1GaveAllCardsText:
-	text "Hi!"
-	line "Is the card I gave you"
+	text "Hi! Is the card I gave you"
 	line "coming in handy?"
 	line "Thanks again for being so kind!"
 	done
@@ -852,7 +830,7 @@ ImakuniDuelStartText:
 
 ImakuniPlayerWonNormalText:
 	text "Hey! You're pretty good!"
-	line "I'll give you this Booster Pack,"
+	line "I'll give you this booster pack,"
 	line "so don't tell anyone I lost, OK?"
 	done
 
@@ -867,12 +845,12 @@ ImakuniPlayerWonSixWinsText:
 	done
 
 ImakuniGivesImakuniText:
-	text "I don't really want to give you "
+	text "I don't really want to give you"
 	line "this, but here. Take care of it."
 	done
 
 ImakuniPlayerWonEndText:
-	text "In both Cards and Dance,"
+	text "In both cards and dance,"
 	line "soul and rhythm are the secret."
 	line "Hey, that sounds pretty cool!"
 	line "Maybe I'll become a poet!"
@@ -880,7 +858,7 @@ ImakuniPlayerWonEndText:
 
 ImakuniPlayerLostText:
 	text "Hmm...I win."
-	line "You weren't too bad, but since "
+	line "You weren't too bad, but since"
 	line "I won...Let's see you shake it!"
 	line "Come on, shake it!!!"
 	line ""
@@ -892,7 +870,7 @@ ImakuniPlayerLostText:
 	done
 
 Specs1NormalText:
-	text "I was just saying which "
+	text "I was just saying which"
 	line "Grand Master is the best."
 	line "I think Steve is the best player."
 	done
@@ -928,14 +906,14 @@ MitchFirstInteractionText:
 	line "be unable to defeat me!"
 	line "If you wish to duel with me,"
 	line "you must defeat my pupils first!"
-	line "My pupils are training at "
+	line "My pupils are training at"
 	line "other Clubs!"
 	line "Go see if you can defeat all"
 	line "3 of my pupils!"
 	done
 
 Mitch3PupilsRemainingText:
-	text "If you wish to duel me, you "
+	text "If you wish to duel me, you"
 	line "must defeat my pupils first!"
 	line "My pupils are training at the"
 	line "other Clubs!"
@@ -947,8 +925,9 @@ Mitch2PupilsRemainingText:
 	text "So, you've defeated 1 of my pupils."
 	line "You must be a pretty good player."
 	line "But you're not good enough!"
-	line "If you wish to duel me, you"
-	line "must defeat my 2 remaining pupils!"
+	line "If you wish to duel me,"
+	line "you must defeat my"
+	line "2 remaining pupils!"
 	done
 
 Mitch1PupilRemainingText:
@@ -961,14 +940,14 @@ Mitch1PupilRemainingText:
 MitchWouldLikeToDuelInitialText:
 	text "So, you have defeated"
 	line "all of my pupils!"
-	line "Let's see if you have "
+	line "Let's see if you have"
 	line "what it takes to inherit"
 	line "the Legendary Pokémon Cards!"
 	line "OK! Are you ready?"
 	done
 
 MitchWouldYouLikeToDuelText:
-	text "Would you like to Duel Mitch?"
+	text "Would you like to duel Mitch?"
 	done
 
 MitchDeclinedInitialText:
@@ -988,17 +967,17 @@ MitchPlayerWonInitial1Text:
 	line "You're very good."
 	line "Here, take this."
 	line "It's the Fighting Medal!"
-	line "You'll find the secret to the Decks"
+	line "You'll find the secret to the decks"
 	line "of this Club encrypted in it."
 	done
 
 MitchPlayerWonInitial2Text:
 	text "Here, take this, too. It's a"
-	line "LABORATORY Booster Pack."
+	line "Laboratory booster pack."
 	done
 
 MitchPlayerWonInitial3Text:
-	text "I hope to duel someone "
+	text "I hope to duel someone"
 	line "like you again someday!"
 	done
 
@@ -1030,7 +1009,7 @@ MitchPlayerWonRepeat1Text:
 	done
 
 MitchPlayerWonRepeat2Text:
-	text "I'd like to duel someone "
+	text "I'd like to duel someone"
 	line "like you again!"
 	done
 
@@ -1040,8 +1019,8 @@ MitchPlayerLostRepeatText:
 	done
 
 ChrisFightingClubWantsToDuelInitialText:
-	text "I lost to you before at the Rock"
-	line "Club, but not this time!"
+	text "I lost to you before at the"
+	line "Rock Club, but not this time!"
 	line "I'm going to train to become"
 	line "an even better player!"
 	line "But before I can start my training"

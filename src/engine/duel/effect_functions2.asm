@@ -1,3 +1,22 @@
+;----------------------------------------------------------------------------------------------------
+; DISCLAIMER:
+;
+; The functions found within this file cannot be used as effect commands.
+; An effect command can only reference a function found within effect_functions.asm.
+; However, it is possible for a function from effect_functions.asm
+;	to "farcall" a function from effect_functions2.asm.
+; Since effect_functions.asm and effect_functions2.asm are stored in separate memory banks,
+;	neither "call" nor "jp" can be used to move from one to the other.
+;	"Farcall" is the only option available for switching between functions in the two files.
+;
+; Most importantly, there is now a lot of free space in the main effect functions bank,
+; 	so I would only recommend using this file to store larger, mostly self-contained functions,
+;	like the search functions that have already been relocated.
+; Depending on your knowledge of assembly programming and the scope of your project,
+;	you might not need to use this file at all.
+;----------------------------------------------------------------------------------------------------
+
+
 ; searches through the deck in wDuelTempList looking for certain cards,
 ; and prints text depending on whether at least one was found.
 ; if none were found, asks the Player whether to look in the deck anyway,
@@ -534,7 +553,7 @@ FindBasicFightingPokemon:
 
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicFightingPokemonFromDeckText
-	ldtx bc, FightingPokemonText
+	ldtx bc, BasicFightingPokemonText
 	lb de, SEARCHEFFECT_BASIC_FIGHTING, $00
 	call LookForCardsInDeck
 	ret c

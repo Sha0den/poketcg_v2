@@ -1,8 +1,47 @@
+SwitchName:
+	text "Switch"
+	done
+
+SwitchDescription:
+	text "  Switch 1 of your Benched Pokémon"
+	line ""
+	line "  with your Active Pokémon."
+	done
+
+PokemonCenterName:
+	text "Pokémon Center"
+	done
+
+PokemonCenterDescription:
+	text "   Remove all damage counters from"
+	line "   all of your own Pokémon with"
+	line "   any damage counters on them,"
+	line "   then discard all Energy cards"
+	line "   attached to those Pokémon."
+	done
+
+PokeBallName:
+	text "Poké Ball"
+	done
+
+PokeBallDescription:
+	text "  Flip a coin. If heads, you may"
+	line "  search your deck for any Basic"
+	line "  Pokémon or Evolution card."
+	line "  Show that card to your opponent,"
+	line "  then put it into your hand."
+	line "  Shuffle your deck afterward."
+	done
+
+ScoopUpName:
+	text "Scoop Up"
+	done
+
 ScoopUpDescription:
-	text "Choose 1 of your Pokémon in play"
-	line "and return its Basic Pokémon card to"
-	line "your hand. (Discard all cards"
-	line "attached to that card.)"
+	text " Choose 1 of your Pokémon in play"
+	line " and return its Basic Pokémon card"
+	line " to your hand. (Discard all cards"
+	line " attached to that card.)"
 	done
 
 ComputerSearchName:
@@ -10,11 +49,11 @@ ComputerSearchName:
 	done
 
 ComputerSearchDescription:
-	text "Discard 2 of the other cards from"
-	line "your hand in order to search your"
-	line "deck for any card and put it into"
-	line "your hand. Shuffle your deck"
-	line "afterward."
+	text " Discard 2 of the other cards from"
+	line " your hand in order to search your"
+	line " deck for any card and put it into"
+	line " your hand. Shuffle your deck"
+	line " afterward."
 	done
 
 PokedexName:
@@ -22,9 +61,11 @@ PokedexName:
 	done
 
 PokedexDescription:
-	text "Look at up to 5 cards from the top"
-	line "of your deck and rearrange them as"
-	line "you like."
+	text "   Look at up to 5 cards from the"
+	line ""
+	line "   top of your deck and rearrange"
+	line ""
+	line "   them as you like."
 	done
 
 PlusPowerName:
@@ -46,13 +87,13 @@ DefenderName:
 	done
 
 DefenderDescription:
-	text "Attach Defender to 1 of your"
-	line "Pokémon. At the end of your"
-	line "opponent's next turn, discard"
-	line "Defender. Damage done to that"
-	line "Pokémon by attacks is reduced by 20"
-	line "(after applying Weakness and"
-	line "Resistance)."
+	text "   Attach Defender to 1 of your"
+	line "   Pokémon. At the end of your"
+	line "   opponent's next turn, discard"
+	line "   Defender. Damage done to that"
+	line "   Pokémon by attacks is reduced"
+	line "   by 20 (after applying Weakness"
+	line "   and Resistance)."
 	done
 
 ItemFinderName:
@@ -60,10 +101,10 @@ ItemFinderName:
 	done
 
 ItemFinderDescription:
-	text "Discard 2 of the other cards from"
-	line "your hand in order to put a Trainer"
-	line "card from your discard pile into"
-	line "your hand."
+	text "    Discard 2 of the other cards"
+	line "    from your hand in order to"
+	line "    put a Trainer card from your"
+	line "    discard pile into your hand."
 	done
 
 GustOfWindName:
@@ -71,9 +112,11 @@ GustOfWindName:
 	done
 
 GustOfWindDescription:
-	text "Choose 1 of your opponent's Benched"
-	line "Pokémon and switch it with his or"
-	line "her Active Pokémon."
+	text "   Choose 1 of your opponent's"
+	line ""
+	line "   Benched Pokémon and switch it"
+	line ""
+	line "   with his or her Active Pokémon."
 	done
 
 DevolutionSprayName:
@@ -81,18 +124,18 @@ DevolutionSprayName:
 	done
 
 DevolutionSprayDescription:
-	text "Choose 1 of your own Pokémon in play"
-	line "and a Stage of Evolution. Discard"
-	line "all Evolution cards of that Stage or"
-	line "higher attached to that Pokémon."
+	text " Choose 1 of your in-play Pokémon"
+	line " and a Stage of Evolution. Discard"
+	line " all Evolution cards of that Stage"
+	line " or higher attached to that Pokémon."
 	done
 
 DevolutionSprayDescriptionCont:
-	text "That Pokémon is no longer Asleep,"
-	line "Confused, Paralyzed, Poisoned, or"
-	line "anything else that might be the"
-	line "result of an attack (just as if you"
-	line "had evolved it)."
+	text " That Pokémon is no longer Asleep,"
+	line " Confused, Paralyzed, Poisoned, or"
+	line " anything else that might be the"
+	line " result of an attack (just as if"
+	line " you had evolved it)."
 	done
 
 PotionName:
@@ -100,10 +143,10 @@ PotionName:
 	done
 
 PotionDescription:
-	text "Remove 2 damage counters from 1 of"
-	line "your Pokémon. If that Pokémon has"
-	line "fewer damage counters than that,"
-	line "remove all of them."
+	text " Remove 2 damage counters from 1 of"
+	line " your Pokémon. If that Pokémon has"
+	line " fewer damage counters than that,"
+	line " remove all of them."
 	done
 
 SuperPotionName:
@@ -111,12 +154,12 @@ SuperPotionName:
 	done
 
 SuperPotionDescription:
-	text "Discard 1 Energy card attached to 1"
-	line "of your own Pokémon in order to"
-	line "remove 4 damage counters from that"
-	line "Pokémon. If the Pokémon has fewer"
-	line "damage counters than that, remove"
-	line "all of them."
+	text " Discard 1 Energy card attached to"
+	line " 1 of your own Pokémon in order to"
+	line " remove 4 damage counters from that"
+	line " Pokémon. If the Pokémon has fewer"
+	line " damage counters than that, remove"
+	line " all of them."
 	done
 
 FullHealName:
@@ -124,9 +167,11 @@ FullHealName:
 	done
 
 FullHealDescription:
-	text "Your Active Pokémon is no longer"
-	line "Asleep, Confused, Paralyzed, or"
-	line "Poisoned."
+	text "  Your Active Pokémon is no longer"
+	line ""
+	line "  Asleep, Confused, Paralyzed, or"
+	line ""
+	line "  Poisoned."
 	done
 
 ReviveName:
@@ -147,9 +192,11 @@ MaintenanceName:
 	done
 
 MaintenanceDescription:
-	text "Shuffle 2 of the other cards from"
-	line "your hand into your deck in order"
-	line "to draw a card."
+	text " Shuffle 2 of the other cards from"
+	line ""
+	line " your hand into your deck in order"
+	line ""
+	line " to draw a card."
 	done
 
 PokemonFluteName:
@@ -157,11 +204,11 @@ PokemonFluteName:
 	done
 
 PokemonFluteDescription:
-	text "Choose 1 Basic Pokémon card from"
-	line "your opponent's discard pile and put"
-	line "it onto his or her Bench. (You can't"
-	line "play Pokémon Flute if your"
-	line "opponent's Bench is full.)"
+	text " Choose 1 Basic Pokémon card"
+	line " from your opponent's discard pile"
+	line " and put it onto his or her Bench."
+	line " (You can't play Pokémon Flute"
+	line " if your opponent's Bench is full.)"
 	done
 
 GamblerName:
@@ -169,9 +216,11 @@ GamblerName:
 	done
 
 GamblerDescription:
-	text "Shuffle your hand into your deck."
-	line "Flip a coin. If heads, draw 8 cards."
-	line "If tails, draw 1 card."
+	text "  Shuffle your hand into your deck."
+	line ""
+	line "  Flip a coin. If heads, draw 8"
+	line ""
+	line "  cards. If tails, draw 1 card."
 	done
 
 RecycleName:
@@ -179,7 +228,9 @@ RecycleName:
 	done
 
 RecycleDescription:
-	text "Flip a coin. If heads, put a card"
-	line "in your discard pile on top of your"
-	line "deck."
+	text " Flip a coin. If heads, put a card"
+	line ""
+	line " in your discard pile on top of"
+	line ""
+	line " your deck."
 	done

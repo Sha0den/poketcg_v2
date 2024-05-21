@@ -40,7 +40,7 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Code Optimization
-- **May 17, 2024:** 3 Files Changed
+- **[May 17, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ebd54a7d1dff4084a149f63f822959c088e70e8f):** 3 Files Changed
     - Review most of the code comments in the effect functions files
     - Replace many jp's with jr's and fallthroughs, moving functions as necessary
     - Refactor several effect functions
@@ -128,6 +128,14 @@ Improved Pokémon Trading Card Game (a.k.a. poketcg_v2)
 
 
 ## Miscellaneous Changes
+- May 21, 2024: 22 Files Changed
+    - Fix minor typos and remove end of line spaces in the text files
+    - Adjust texts to better fit the 2 line display used by the text boxes
+    - Rewrite some of the larger texts, like glossary pages and tutorial messages
+    - Use spaces to center most of the Trainer and Energy card descriptions
+
+<br/>
+
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/d2b3e7dd7191c401256f5bd9e3aabf8829871862):** 1 File Changed
     - Decrease the wait time during the overworld section of the game's intro
 

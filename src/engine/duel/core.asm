@@ -7704,8 +7704,9 @@ PrintThereWasNoEffectFromStatusText::
 	ldtx hl, ThereWasNoEffectFromPoisonConfusionText
 	cp POISONED | CONFUSED
 	ret z
+	ldtx hl, ThereWasNoEffectFromPoisonText
 	and PSN_DBLPSN
-	jr nz, .poison
+	ret nz
 	ld a, c
 	and CNF_SLP_PRZ
 	ldtx hl, ThereWasNoEffectFromParalysisText
@@ -7715,12 +7716,6 @@ PrintThereWasNoEffectFromStatusText::
 	cp ASLEEP
 	ret z
 	ldtx hl, ThereWasNoEffectFromConfusionText
-	ret
-.poison
-	ldtx hl, ThereWasNoEffectFromPoisonText
-	cp POISONED
-	ret z
-	ldtx hl, ThereWasNoEffectFromToxicText
 	ret
 
 ; returns carry if card at hTempPlayAreaLocation_ff9d

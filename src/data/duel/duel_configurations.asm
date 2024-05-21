@@ -21,7 +21,7 @@ DeckIDDuelConfigurations:
 	tx AaronNPCName ; name text ID
 	db PRIZES_4 ; number of prize cards
 	db MUSIC_DUEL_THEME_1 ; theme
-	tx TechText ; rank
+	tx TechNPCName ; rank
 	dw NULL ; element
 
 	db WATER_AND_FIGHTING_DECK_ID ; deck ID
@@ -29,7 +29,7 @@ DeckIDDuelConfigurations:
 	tx AaronNPCName ; name text ID
 	db PRIZES_4 ; number of prize cards
 	db MUSIC_DUEL_THEME_1 ; theme
-	tx TechText ; rank
+	tx TechNPCName ; rank
 	dw NULL ; element
 
 	db GRASS_AND_PSYCHIC_DECK_ID ; deck ID
@@ -37,7 +37,7 @@ DeckIDDuelConfigurations:
 	tx AaronNPCName ; name text ID
 	db PRIZES_4 ; number of prize cards
 	db MUSIC_DUEL_THEME_1 ; theme
-	tx TechText ; rank
+	tx TechNPCName ; rank
 	dw NULL ; element
 
 	db LEGENDARY_MOLTRES_DECK_ID ; deck ID

@@ -1,44 +1,5 @@
-AcidCheckText:
-	text "Acid check! If Heads,"
-	line "unable to Retreat during next turn."
-	done
-
-TransparencyCheckText:
-	text "Transparency check! If Heads,"
-	line "do not receive opponent's Attack!"
-	done
-
-ConfusionCheckDamageText:
-	text "Confusion check,"
-	line "If Tails, damage to yourself!"
-	done
-
-ConfusionCheckRetreatText:
-	text "Confusion check!"
-	line "If Tails, unable to Retreat."
-	done
-
-PokemonsSleepCheckText:
-	text "<RAMTEXT>'s Sleep check."
-	done
-
-PoisonedIfHeadsConfusedIfTailsText:
-	text "Heads: Defending Pokémon is Poisoned"
-	line "Tails: Defending Pokémon is Confused"
-	done
-
-IfHeadsDoNotReceiveDamageOrEffectText:
-	text "If heads, prevent all damage and"
-	line "effects of attacks next turn."
-	done
-
-IfHeadsOpponentCannotAttackText:
-	text "If heads, the Defending Pokémon"
-	line "can't attack next turn!"
-	done
-
 AttackUnsuccessfulText:
-	text "Attack unsuccessful."
+	text "The attack was not successful."
 	done
 
 UnableToRetreatDueToAcidText:
@@ -65,7 +26,7 @@ UnableToAttackText:
 	done
 
 UnableToUseAttackDueToAmnesiaText:
-	text "Unable to use this Attack"
+	text "Unable to use this attack"
 	line "due to the effects of Amnesia."
 	done
 
@@ -84,12 +45,12 @@ UnableToEvolveDueToPrehistoricPowerText:
 	line "effects of Prehistoric Power."
 	done
 
-EmptyText0107:
-	text " "
+UnusedText0107: ; Unused
+	text "????"
 	done
 
-EmptyText0108:
-	text " "
+UnusedText0108: ; Unused
+	text "????"
 	done
 
 NoDamageOrEffectDueToAttackText:
@@ -113,8 +74,8 @@ NoDamageOrEffectDueToTransparencyText:
 	done
 
 MetamorphsToText:
-	text "<RAMTEXT>"
-	line "metamorphs to <RAMTEXT>."
+	text "<RAMTEXT> transformed into"
+	line "<RAMTEXT>."
 	done
 
 SelectNewDefendingPokemonText:
@@ -175,21 +136,21 @@ DrawCardsFromTheDeckText:
 
 CannotDrawCardBecauseNoCardsInDeckText:
 	text "Cannot draw a card because"
-	line "there are no cards in the Deck."
+	line "there are no cards in the deck."
 	done
 
 ChoosePkmnInTheBenchToGiveDamageText:
-	text "Choose a Pokémon on the Bench"
-	line "to give damage to."
+	text "Which 1 of your opponent's Benched"
+	line "Pokémon will receive the damage?"
 	done
 
 ChooseUpTo3PkmnOnBenchToGiveDamageText:
-	text "Choose up to 3 Pokémon on the"
-	line "Bench to give damage to."
+	text "Choose up to 3 of your opponent's"
+	line "Benched Pokémon to give damage to."
 	done
 
 Choose1BasicEnergyCardFromDeckText:
-	text "Choose a basic Energy card"
+	text "Choose a Basic Energy card"
 	line "from your deck."
 	done
 
@@ -212,33 +173,33 @@ DiscardOppDeckAsManyFireEnergyCardsText:
 	done
 
 ChooseAndDiscard2EnergyCardsText:
-	text "Choose and Discard"
+	text "Choose and discard"
 	line "2 Energy cards."
 	done
 
 ChooseAKrabbyFromDeckText:
 	text "Choose a Krabby"
-	line "from the Deck."
+	line "from your deck."
 	done
 
 ChooseDiscardEnergyCardFromOpponentText:
-	text "Choose and Discard an Energy card"
+	text "Choose and discard an Energy card"
 	line "from the opponent's Active Pokémon."
 	done
 
 ChooseAttackOpponentWillNotBeAbleToUseText:
-	text "Choose the Attack the opponent will"
+	text "Choose the attack the opponent will"
 	line "not be able to use on the next turn."
 	done
 
 ChooseBasicFightingPokemonFromDeckText:
 	text "Choose a Basic <FIGHTING> Pokémon"
-	line "from the Deck."
+	line "from your deck."
 	done
 
 ChooseAnOddishFromDeckText:
 	text "Choose an Oddish"
-	line "from the Deck."
+	line "from your deck."
 	done
 
 ChooseAnOddishText:
@@ -251,7 +212,7 @@ ChooseAKrabbyText:
 
 ChooseBasicEnergyCardText:
 	text "Choose a"
-	line "basic Energy card."
+	line "Basic Energy card."
 	done
 
 ChooseNidoranFromDeckText:
@@ -265,14 +226,14 @@ ChooseNidoranText:
 	done
 
 ChooseBasicFightingPokemonText:
-	text "Choose a"
-	line "Basic <FIGHTING> Pokémon."
+	text "Choose a Basic"
+	line "<FIGHTING> Pokémon."
 	done
 
 ProcedureForEnergyTransferText:
 	text "Procedure for Energy Transfer:"
 	line ""
-	line "1. Choose the Pokémon to move <GRASS>"
+	line "1. Choose the Pokémon to take the <GRASS>"
 	line "   Energy from.  Press the A Button."
 	line ""
 	line "2. Choose the Pokémon to move the"
@@ -285,7 +246,7 @@ ProcedureForEnergyTransferText:
 
 ChooseABellsproutFromDeckText:
 	text "Choose a Bellsprout"
-	line "from the Deck."
+	line "from the deck."
 	done
 
 ChooseABellsproutText:
@@ -294,25 +255,25 @@ ChooseABellsproutText:
 
 ChoosePkmnToRemoveDamageCounterText:
 	text "Choose a Pokémon to remove"
-	line "a Damage counter from."
+	line "a damage counter from."
 	done
 
 ProcedureForCurseText:
 	text "Procedure for Curse:"
 	line ""
-	line "1. Choose a Pokémon to move the"
-	line "   Damage counter from and press"
-	line "   the A Button."
+	line "1. Choose the Pokémon to take"
+	line "   a damage counter from and"
+	line "   press the A Button."
 	line ""
-	line "2. Choose a Pokémon to move the"
-	line "   Damage counter to and press"
-	line "   the A Button."
+	line "2. Choose a Pokémon to receive"
+	line "   the damage counter and"
+	line "   press the A Button."
 	line ""
 	line "3. Press the B Button to cancel."
 	done
 
-EmptyText0132:
-	text " "
+UnusedText0132: ; Unused
+	text "????"
 	done
 
 Choose2EnergyCardsFromDiscardPileText:
@@ -328,14 +289,14 @@ ChooseAnEnergyCardText:
 ProcedureForProphecyText:
 	text "Procedure for Prophecy:"
 	line ""
-	line "1. Choose either your Deck"
-	line "   or your opponent's Deck"
+	line "1. Choose either your deck"
+	line "   or your opponent's deck"
 	line ""
 	line "2. Choose the cards you wish to"
 	line "   place on top and press the"
 	line "   A Button."
 	line ""
-	line "3. Select Yes after you choose"
+	line "3. Select ”Yes” after you choose"
 	line "   the 3 cards and their order."
 	line ""
 	line "4. Press the B Button to cancel."
@@ -349,30 +310,31 @@ ChooseTheOrderOfTheCardsText:
 ProcedureForDamageSwapText:
 	text "Procedure for Damage Swap:"
 	line ""
-	line "1. Choose a Pokémon to move a"
-	line "   Damage counter from and press"
-	line "   the A Button."
+	line "1. Choose a Pokémon to take"
+	line "   a damage counter from and"
+	line "   press the A Button."
 	line ""
-	line "2. Choose a Pokémon to move the"
-	line "   Damage counter to and press"
-	line "   the A Button."
+	line "2. Choose a Pokémon to receive"
+	line "   the damage counter and"
+	line "   press the A Button."
+	line "   (You cannot give a Pokémon"
+	line "   a damage counter if it would"
+	line "   Knock Out that Pokémon.)"
 	line ""
 	line "3. Repeat steps 1 and 2."
 	line ""
 	line "4. Press the B Button to end."
-	line ""
-	line "5. You cannot move the counter if"
-	line "   it will Knock Out the Pokémon."
 	done
 
 ProcedureForDevolutionBeamText:
 	text "Procedure for Devolution Beam."
 	line ""
-	line "1. Choose either a Pokémon in your"
-	line "   Play Area or your opponent's"
-	line "   Play Area and press the A Button."
+	line "1. Choose whether you want to"
+	line "   devolve one of your Pokémon or"
+	line "   one of your opponent's Pokémon."
+	line "   Then, press the A Button."
 	line ""
-	line "2. Choose the Pokémon to Devolve"
+	line "2. Choose the Pokémon to devolve"
 	line "   and press the A Button."
 	line ""
 	line "3. Press the B Button to cancel."
@@ -381,35 +343,34 @@ ProcedureForDevolutionBeamText:
 ProcedureForStrangeBehaviorText:
 	text "Procedure for Strange Behavior:"
 	line ""
-	line "1. Choose the Pokémon with the"
-	line "   Damage counters to move to"
-	line "   Slowbro and press the A Button."
+	line "1. Choose the Pokémon to take"
+	line "   a damage counter from and"
+	line "   press the A Button."
 	line ""
-	line "2. Repeat step 1 as many times as"
-	line "   you wish to move the counters."
+	line "2. Repeat step 1 until you're"
+	line "   satisfied. (You cannot move"
+	line "   a damage counter if it would"
+	line "   cause Slowbro to be Knocked Out.)"
 	line ""
 	line "3. Press the B Button to end."
-	line ""
-	line "4. You cannot move the damage if"
-	line "   Slowbro will be Knocked Out."
 	done
 
 ChooseOppAttackToBeUsedWithMetronomeText:
-	text "Choose the opponent's Attack"
-	line "to be used with Metronome."
+	text "Choose the opponent's attack to"
+	line "copy with Metronome."
 	done
 
 ThereIsNoInTheDeckText:
 	text "There is no <RAMTEXT>"
-	line "in the Deck."
+	line "in the deck."
 	done
 
 WouldYouLikeToCheckTheDeckText:
-	text "Would you like to check the Deck?"
+	text "Would you like to check the deck?"
 	done
 
 PleaseSelectTheDeckText:
-	text "Please select the Deck:"
+	text "Please select the deck:"
 	line "            Yours   Opponent's"
 	done
 
@@ -422,20 +383,20 @@ NidoranMNidoranFText:
 	text "Nidoran♂ or Nidoran♀"
 	done
 
-EmptyText0140:
-	text "Oddish"
+UnusedText0140: ; Unused
+	text "????"
 	done
 
-EmptyText0141:
-	text "Bellsprout"
+UnusedText0141: ; Unused
+	text "????"
 	done
 
-EmptyText0142:
-	text " "
+UnusedText0142: ; Unused
+	text "????"
 	done
 
-FightingPokemonDeckText:
-	text "<FIGHTING> Pokémon"
+BasicFightingPokemonText:
+	text "Basic <FIGHTING> Pokémon"
 	done
 
 BasicEnergyText:
@@ -444,21 +405,21 @@ BasicEnergyText:
 
 PeekWasUsedToLookInYourHandText:
 	text "Peek was used to look at the"
-	line "<RAMTEXT> in your Hand."
+	line "<RAMTEXT> in your hand."
 	done
 
 CardPeekWasUsedOnText:
-	text "Card Peek was used on"
+	text "The card that Peek was used on"
 	done
 
 PokemonAndAllAttachedCardsReturnedToHandText:
 	text "<RAMTEXT> and all attached"
-	line "cards were returned to the Hand."
+	line "cards were returned to the hand."
 	done
 
 WasChosenForTheEffectOfAmnesiaText:
 	text "<RAMTEXT> was chosen"
-	line "for the effect of Amnesia."
+	line "with the effect of Amnesia."
 	done
 
 BasicPokemonWasPlacedOnEachBenchText:
@@ -492,18 +453,17 @@ ThePkmnCardsInHandAndDeckWereShuffledText:
 	done
 
 UnusedText014f: ; Unused
-	text "Remove Damage counter each time the"
-	line "A Button is pressed. B Button quits."
+	text "????"
 	done
 
 ChoosePokemonToHealText:
-	text "Choose a Pokémon to remove"
-	line "the Damage counter from."
+	text "Choose the Pokémon from which"
+	line "to remove the damage counter."
 	done
 
 ChooseCardToDiscardFromHandText:
-	text "Choose the card to Discard"
-	line "from the Hand."
+	text "Choose the card to discard"
+	line "from the hand."
 	done
 
 ChoosePokemonToRemoveEnergyFromText:
@@ -513,27 +473,26 @@ ChoosePokemonToRemoveEnergyFromText:
 
 Choose2BasicEnergyCardsFromDiscardPileText:
 	text "Choose 2 Basic Energy cards"
-	line "from the Discard Pile."
+	line "from the discard pile."
 	done
 
 UnusedText0154: ; Unused
-	text "Choose a Pokémon and press the A"
-	line "Button to remove Damage counters."
+	text "????"
 	done
 
 Choose2CardsFromHandToDiscardText:
-	text "Choose 2 cards from the Hand"
-	line "to Discard."
+	text "Choose 2 cards from your hand"
+	line "to discard."
 	done
 
 Choose2HandCardsFromHandToReturnToDeckText:
-	text "Choose 2 cards from the Hand"
-	line "to return to the Deck."
+	text "Choose 2 cards from your hand"
+	line "to return to your deck."
 	done
 
 ChooseCardToPlaceInHandText:
 	text "Choose a card to"
-	line "place in the Hand."
+	line "put into your hand."
 	done
 
 ChoosePokemonToAttachDefenderToText:
@@ -548,17 +507,17 @@ UnusedText0159: ; Unused
 
 ChoosePokemonToReturnToTheDeckText:
 	text "Choose a Pokémon to"
-	line "return to the Deck."
+	line "return to the deck."
 	done
 
 ChoosePokemonToPlaceInPlayText:
 	text "Choose a Pokémon to"
-	line "place in play."
+	line "put into play."
 	done
 
 ChooseBasicPokemonToEvolveText:
 	text "Choose a Basic Pokémon"
-	line "to Evolve."
+	line "to evolve."
 	done
 
 ChoosePokemonToScoopUpText:
@@ -568,12 +527,11 @@ ChoosePokemonToScoopUpText:
 
 ChooseCardFromYourHandToSwitchText:
 	text "Choose a card from your"
-	line "Hand to Switch."
+	line "hand to Switch."
 	done
 
-ChoosePokemonToPutInDeckText:
-	text "Choose a Pokémon"
-	line "to put in the deck."
+UnusedText015f: ; Unused
+	text "????"
 	done
 
 ChoosePokemonFromDeckText:
@@ -585,8 +543,8 @@ ChoosePokemonCardText:
 	done
 
 RearrangeThe5CardsAtTopOfDeckText:
-	text "Rearrange the 5 cards at"
-	line "the top of the Deck."
+	text "Rearrange 5 cards from"
+	line "the top of the deck."
 	done
 
 PleaseCheckTheOpponentsHandText:
@@ -617,17 +575,17 @@ ChoosePokemonInYourAreaThenPokemonInYourOppText:
 	done
 
 ChooseUpTo4FromDiscardPileText:
-	text "Choose up to 4"
-	line "from the Discard Pile."
+	text "Choose up to 4 Basic Energy cards"
+	line "from your discard pile."
 	done
 
-EmptyText016a:
-	text " "
+UnusedText016a: ; Unused
+	text "????"
 	done
 
 PokemonAndAllAttachedCardsWereReturnedToDeckText:
 	text "<RAMTEXT> and all attached"
-	line "cards were returned to the Deck."
+	line "cards were returned to the deck."
 	done
 
 ActivePokemonWasReturnedToHandText:
@@ -642,12 +600,12 @@ BenchedPokemonWasReturnedToHandText:
 
 PokemonWasReturnedToDeckText:
 	text "<RAMTEXT> was returned"
-	line "to the Deck."
+	line "to the deck."
 	done
 
 WasPlacedInTheHandText:
 	text "<RAMTEXT> was placed"
-	line "in the Hand."
+	line "in the hand."
 	done
 
 TheCardYouReceivedText:
@@ -665,7 +623,7 @@ ChooseTheCardToPutBackText:
 
 ChooseTheCardToDiscardText:
 	text "Choose the card"
-	line "to Discard."
+	line "to discard."
 	done
 
 DiscardedCardsFromDeckText:
@@ -678,17 +636,17 @@ UnusedText0175: ; Unused
 	line "from the Hand."
 	done
 
-EmptyText0176:
-	text " "
+UnusedText0176: ; Unused
+	text "????"
 	done
 
-EmptyText0177:
-	text " "
+UnusedText0177: ; Unused
+	text "????"
 	done
 
 DuelistHasNoCardsInHandText:
 	text "<RAMNAME> has"
-	line "no cards in Hand!"
+	line "no cards in hand!"
 	done
 
 PokemonHealedDamageText:
@@ -714,34 +672,29 @@ ThereWasNoEffectText:
 	text "There was no effect!"
 	done
 
-ThereWasNoEffectFromToxicText:
-	text "There was no effect"
-	line "from Toxic"
+UnusedText017e: ; Unused
+	text "????"
 	done
 
 ThereWasNoEffectFromPoisonText:
-	text "There was no effect"
-	line "from Poison."
+	text "The Pokémon could not be Poisoned."
 	done
 
 ThereWasNoEffectFromSleepText:
-	text "There was no effect"
-	line "from Sleep."
+	text "The Pokémon could be put to Sleep."
 	done
 
 ThereWasNoEffectFromParalysisText:
-	text "There was no effect"
-	line "from Paralysis."
+	text "The Pokémon could not be Paralyzed."
 	done
 
 ThereWasNoEffectFromConfusionText:
-	text "There was no effect"
-	line "from Confusion."
+	text "The Pokémon could not be Confused."
 	done
 
 ThereWasNoEffectFromPoisonConfusionText:
-	text "There was no effet"
-	line "from Poison or Confusion."
+	text "The Pokémon could not be"
+	line "Poisoned or Confused."
 	done
 
 RearrangedCardsInDuelistsDeckText:
@@ -823,17 +776,16 @@ ReceivedPromotionalSurfingPikachuText:
 	done
 
 UnusedText0194: ; Unused
-	text "Received a Flareon!!!"
-	line "Looked at the card list!"
+	text "????"
+	done
+
+UnusedText0195: ; Unused
+	text "????"
 	done
 
 NowPrintingPleaseWaitText:
 	text "Now printing."
 	line "Please wait..."
-	done
-
-BoosterPackText:
-	text "Booster Pack"
 	done
 
 WouldYouLikeToTryAgainText:
@@ -868,22 +820,21 @@ ReceivingDeckConfigurationText:
 	line "Position the Game Boys and press A."
 	done
 
-CardTransferWasntSuccessful1Text:
+CardTransferWasntSuccessfulText:
 	text "Card transfer wasn't successful."
 	done
 
-CardTransferWasntSuccessful2Text:
-	text "Card transfer wasn't successful"
-	done
-
-DeckConfigurationTransferWasntSuccessful1Text:
+DeckConfigurationTransferWasntSuccessfulText:
 	text "Deck configuration transfer"
 	line "wasn't successful"
 	done
 
-DeckConfigurationTransferWasntSuccessful2Text:
-	text "Deck configuration transfer"
-	line "wasn't successful."
+UnusedText01a0: ; Unused
+	text "????"
+	done
+
+UnusedText01a1: ; Unused
+	text "????"
 	done
 
 NowPrintingText:
@@ -913,14 +864,14 @@ ChooseGoldeenPracticeDuelText:
 	done
 
 PutPokemonOnBenchPracticeDuelText:
-	text "Next, put your Pokémon on your"
-	line "Bench."
+	text "Next, put the other Basic Pokémon"
+	line "in your hand onto your Bench."
 	line "You can switch Benched Pokémon"
 	line "with your Active Pokémon."
 	line "Again, only Basic Pokémon can be"
 	line "placed on your Bench."
 	line "Choose Staryu from your hand and"
-	line "put it there."
+	line "put it into play."
 	done
 
 ChooseStaryuPracticeDuelText:
@@ -929,9 +880,9 @@ ChooseStaryuPracticeDuelText:
 	done
 
 PressBToFinishPracticeDuelText:
-	text "When you have no Pokémon to put on"
-	line "your Bench, press the B Button to"
-	line "finish."
+	text "When you no longer have any Basic"
+	line "Pokémon to put on your Bench,"
+	line "press the B Button to finish."
 	done
 
 Turn1Instr1PracticeDuelText:
@@ -945,13 +896,13 @@ Turn1Instr2PracticeDuelText:
 	done
 
 Turn1Instr3PracticeDuelText:
-	text "3. Choose Attack from the Menu"
+	text "3. Choose ”Attack” from the menu"
 	line "   and select Horn Attack."
 	done
 
 Turn2Instr1PracticeDuelText:
-	text "1. Evolve Goldeen by"
-	line "   attaching Seaking to it."
+	text "1. Evolve Goldeen by playing"
+	line "   the Seaking from your hand."
 	done
 
 Turn2Instr2PracticeDuelText:
@@ -960,9 +911,8 @@ Turn2Instr2PracticeDuelText:
 	done
 
 Turn2Instr3PracticeDuelText:
-	text "3. Choose Attack and select"
-	line "   Waterfall to attack your"
-	line "   opponent."
+	text "3. Attack the Defending Pokémon"
+	line "   with Seaking's Waterfall."
 	done
 
 Turn3Instr1PracticeDuelText:
@@ -971,16 +921,16 @@ Turn3Instr1PracticeDuelText:
 	done
 
 Turn3Instr2PracticeDuelText:
-	text "2. Choose Attack and attack your"
-	line "   opponent with Horn Attack."
+	text "2. Attack the Defending Pokémon"
+	line "   with Seaking's Horn Attack."
 	done
 
 Turn3Instr3PracticeDuelText:
 	done
 
 Turn4Instr1PracticeDuelText:
-	text "1. Take Drowzee from your hand"
-	line "   and put it on your Bench."
+	text "1. Play Drowzee from your hand"
+	line "   and put it onto your Bench."
 	done
 
 Turn4Instr2PracticeDuelText:
@@ -989,23 +939,22 @@ Turn4Instr2PracticeDuelText:
 	done
 
 Turn4Instr3PracticeDuelText:
-	text "3. Choose Seaking and attack your"
-	line "   opponent with Waterfall."
+	text "3. Attack the Defending Pokémon"
+	line "   with Seaking's Waterfall."
 	done
 
 Turn5Instr1PracticeDuelText:
-	text "1. Choose a Water Energy card from"
-	line "   your hand and attach it to"
-	line "   Staryu."
+	text "1. Attach a Water Energy card to"
+	line "   your Active Pokémon, Staryu."
 	done
 
 Turn5Instr2PracticeDuelText:
-	text "2. Choose Staryu and attack your"
-	line "   opponent with Slap."
+	text "2. Attack the Defending Pokémon"
+	line "   with Staryu's Slap."
 	done
 
 Turn6Instr1PracticeDuelText:
-	text "1. Choose the Potion card in your"
+	text "1. Play the Potion card in your"
 	line "   hand to recover Staryu's HP."
 	done
 
@@ -1015,29 +964,27 @@ Turn6Instr2PracticeDuelText:
 	done
 
 Turn6Instr3PracticeDuelText:
-	text "3. Choose Staryu and attack your"
-	line "   opponent with Slap."
+	text "3. Attack the Defending Pokémon"
+	line "   with Staryu's Slap."
 	done
 
 Turn7Instr1PracticeDuelText:
-	text "1. Evolve Staryu by"
-	line "   attaching Starmie to it."
+	text "1. Evolve Staryu by playing"
+	line "   Starmie from your hand."
 	done
 
 Turn7Instr2PracticeDuelText:
-	text "2. Select the evolved Starmie and"
-	line "   attack your opponent with Star "
-	line "   Freeze."
+	text "2. Attack the Defending Pokémon"
+	line "   with Starmie's Star Freeze."
 	done
 
 Turn8Instr1PracticeDuelText:
-	text "1. Select Starmie and attack your"
-	line "   opponent with Star Freeze."
+	text "1. Attack the Defending Pokémon"
+	line "   with Starmie's Star Freeze."
 	done
 
 Turn8Instr2PracticeDuelText:
-	text "2. You Knocked Machop Out."
-	line "   Now you can draw a Prize."
+	text "2. Draw your last Prize card."
 	done
 
 SamTurn4Instr1PracticeDuelText:
@@ -1048,55 +995,54 @@ SamTurn4Instr1PracticeDuelText:
 	done
 
 SamTurn4Instr2PracticeDuelText:
-	text "2. You can check Pokémon data by"
+	text "2. You can check the cards in your"
+	line "   hand or view the play area by"
 	line "   pressing SELECT."
 	done
 
 Turn1DrMason1PracticeDuelText:
-	text "To use the attack command, you need"
-	line "to attach Energy cards to your"
-	line "Pokémon."
+	text "Before you can use the ”Attack”"
+	line "command, you need to attach"
+	line "Energy cards to your Pokémon."
 	line ""
-	line "Choose Cards from the Menu, and"
-	line "select a Water Energy card."
+	line "Look through the cards in your hand,"
+	line "and select a Water Energy card."
 	done
 
 Turn1DrMason2PracticeDuelText:
 	text "Next, choose your Active Pokémon,"
 	line "Goldeen, and press the A Button."
-	line "Then the Water Energy card will"
-	line "be attached to Goldeen."
+	line "That will attach the Energy card"
+	line "to Goldeen."
 	done
 
 Turn1DrMason3PracticeDuelText:
 	text "Finally, attack your opponent by"
-	line "selecting an attack command."
-	line "Choose Attack from the Menu, and"
-	line "select Horn Attack."
+	line "selecting the ”Attack” command."
+	line "Choose Attack from the Menu,"
+	line "and select Horn Attack."
 	done
 
 Turn2DrMason1PracticeDuelText:
-	text "Your Goldeen's gonna get Knocked"
-	line "Out. Let's evolve it!"
-	line "Choose Seaking from your hand and"
-	line "attach it to Goldeen to"
-	line "Evolve it."
-	line "Its HP increases from 40 to 70."
+	text "Your Goldeen's about to be"
+	line "Knocked Out. Let's evolve it!"
+	line "Play Seaking from your hand and"
+	line "put it into play on top of Goldeen."
+	line "That will increase its maximum HP"
+	line "from 40 to 70."
 	done
 
 Turn2DrMason2PracticeDuelText:
 	text "Your Seaking doesn't have enough"
 	line "Energy to use Waterfall."
-	line "You need to attach a Psychic Energy"
-	line "card to Seaking."
-	line "<COLORLESS> means any Energy card."
-	line "Now you can use Waterfall."
-	line "Keep the Water Energy card for"
-	line "other Pokémon."
+	line "You should attach a Psychic Energy"
+	line "card to Seaking.  <COLORLESS> means any type"
+	line "of Energy. Save your Water Energy"
+	line "cards for your other Pokémon."
 	done
 
 Turn2DrMason3PracticeDuelText:
-	text "Now let's attack your opponent with"
+	text "Next, attack your opponent with"
 	line "Seaking's Waterfall!"
 	done
 
@@ -1104,126 +1050,114 @@ Turn3DrMason1PracticeDuelText:
 	text "Seaking's got enough Energy, so"
 	line "you don't need to attach any more."
 	line "Attach Energy cards to your Benched"
-	line "Pokémon to get them ready for"
-	line "battle."
-	line ""
+	line "Pokémon to get them ready for battle"
 	line "Attach a Water Energy card to your"
 	line "Benched Staryu."
 	done
 
 Turn3DrMason2PracticeDuelText:
-	text "Next, select the attack command."
-	line "Machop has 10 HP left."
+	text "Next, select the ”Attack” command."
+	line "Machop only has 10 HP left."
 	line "Seaking's Horn Attack will be"
-	line "enough to Knock out Machop."
-	line "Now, choose Seaking's"
-	line "Horn Attack."
+	line "enough to Knock Out Machop."
 	done
 
 Turn3DrMason3PracticeDuelText:
-	text "Now Machop's HP is 0 and it is"
-	line "Knocked Out."
-	line "When you Knock Out the Defending"
-	line "Pokémon, you can pick up a"
-	line "Prize."
+	text "When a Pokémon's HP becomes 0,"
+	line "it is Knocked Out. When you"
+	line "KO 1 of your opponent's Pokémon,"
+	line "you can draw 1 of your Prizes."
 	done
 
 Turn4DrMason1PracticeDuelText:
-	text "When all your Pokémon are Knocked"
-	line "Out and there are no Pokémon on your"
-	line "Bench, you lose the game."
-	line ""
+	text "When all of your Pokémon are"
+	line "Knocked Out, and there"
+	line "aren't any Pokémon on your Bench,"
+	line "you lose the game."
 	line "Put Drowzee, the Basic Pokémon"
-	line "you just drew, on your Bench."
+	line "you just drew, onto your Bench."
 	done
 
 Turn4DrMason2PracticeDuelText:
 	text "Attach a Water Energy card to"
-	line "Drowzee to get it ready to"
-	line "attack."
+	line "Drowzee to get it ready to attack."
 	done
 
 Turn4DrMason3PracticeDuelText:
-	text "Choose your Active Seaking and"
-	line "attack your opponent with"
-	line "Waterfall."
+	text "Then, attack the Defending Pokémon"
+	line "with Seaking's Waterfall."
 	done
 
 Turn5DrMason1PracticeDuelText:
 	text "Staryu evolves into Starmie!"
-	line ""
 	line "Let's get Staryu ready to use"
-	line "Starmie's attack command when it"
-	line "evolves to Starmie."
-	line ""
+	line "Starmie's attacks when it"
+	line "comes time for it to evolve."
 	line "Choose the Water Energy card from"
 	line "your hand and attach it to Staryu."
 	done
 
 Turn5DrMason2PracticeDuelText:
-	text "Attack your opponent with Staryu's"
-	line "Slap."
+	text "Then, attack the Defending Pokémon"
+	line "with Staryu's Slap."
 	done
 
 Turn6DrMason1PracticeDuelText:
-	text "Now, recover Staryu with a Trainer"
-	line "card."
-	line "Choose Potion from your hand."
+	text "You should recover some of Staryu's"
+	line "HP with a Trainer card."
+	line "Play the Potion from your hand."
 	done
 
 Turn6DrMason2PracticeDuelText:
 	text "Now let's get ready to evolve"
 	line "it to Starmie."
-	line "Also, attach a Water Energy card to"
-	line "Staryu."
+	line "Attach another Water Energy card"
+	line "to your Staryu."
 	done
 
 Turn6DrMason3PracticeDuelText:
-	text "Attack your opponent with Staryu's"
-	line "Slap to end your turn."
+	text "Then, attack the Defending Pokémon"
+	line "with Staryu's Slap to end your turn."
 	done
 
 Turn7DrMason1PracticeDuelText:
-	text "Now you have finally drawn a"
-	line "Starmie card!"
-	line "Choose Starmie from your hand and"
-	line "use it to evolve Staryu."
+	text "You have finally drawn a Starmie!"
+	line ""
+	line "Choose Starmie from your hand,"
+	line "and use it to evolve Staryu."
 	done
 
 Turn7DrMason2PracticeDuelText:
 	text "You've already attached enough"
-	line "Energy to use Star Freeze."
-	line "Attack your opponent with"
-	line "Starmie's Star Freeze."
+	line "Energy to use Starmie's attacks,"
+	line "so attack the Defending Pokémon"
+	line "with Starmie's Star Freeze."
 	done
 
 Turn8DrMason1PracticeDuelText:
-	text "Now Machop has only 10 HP left."
+	text "Machop has just 10 HP remaining."
 	line "Let's finish the battle!"
-	line "Attack with Starmie's Star Freeze."
+	line "Attack using Starmie's Star Freeze."
 	line ""
 	done
 
 Turn8DrMason2PracticeDuelText:
-	text "You've Knocked Out your opponent!"
-	line ""
-	line "Pick up the last Prize."
-	line ""
-	text "<RAMNAME> is the winner!"
+	text "After Knocking Out Machop, you can"
+	line "draw your last Prize & win the game!"
 	done
 
 SamTurn4DrMason1PracticeDuelText:
 	text "Choose a Benched Pokémon to replace"
 	line "your Knocked Out Pokémon."
-	line "You now have Drowzee and Staryu"
-	line "on your Bench."
-	line "Choose Staryu as the Active Pokémon"
-	line "for this practice duel."
+	line "Both Drowzee and Staryu are on"
+	line "your Bench."
+	line "Choose Staryu for this"
+	line "practice duel."
 	done
 
 SamTurn4DrMason2PracticeDuelText:
-	text "Here, press SELECT to"
-	line "check Pokémon data."
+	text "Here, you can press SELECT to view"
+	line "your other cards."
 	line "It is important to know your cards"
 	line "and the status of your Pokémon."
 	done
@@ -1252,11 +1186,11 @@ PlayersTurnPracticeDuelText:
 	done
 
 ReplaceDueToKnockoutPracticeDuelText:
-	text " Replace due to Knockout "
+	text "  Replace due to Knock Out "
 	done
 
 UnusedText01dd: ; Unused
-	text "Dummy"
+	text "????"
 	done
 
 PracticePlayerDeckName:
@@ -1472,11 +1406,11 @@ RetreatCostText:
 	done
 
 UnusedText0213: ; Unused
-	textfw "SWITCH TO UPPER"
+	text "????"
 	done
 
 UnusedText0214: ; Unused
-	textfw "SWITCH TO LOWER"
+	text "????"
 	done
 
 FeetText:
@@ -1520,22 +1454,30 @@ WhatIsYourNameText:
 	done
 
 UnusedText021f: ; Unused
-	textfw "あ か さ た な は ま や ら"
-	linefw "い き し ち に ひ み ゆ り"
-	linefw "う く す つ ぬ ふ む よ る"
-	linefw "え け せ て ね へ め わ れ"
-	linefw "お こ そ と の ほ も ん ろ"
-	linefw "ゃ ゅ ょ っ を ゛ ゜ ー"
+	text "????"
 	done
 
 UnusedText0220: ; Unused
-	textfw "ア カ サ タ ナ ハ マ ヤ ラ"
-	linefw "イ キ シ チ ニ ヒ ミ ユ リ"
-	linefw "ウ ク ス ツ ヌ フ ム ヨ ル"
-	linefw "エ ケ セ テ ネ ヘ メ ワ レ"
-	linefw "オ コ ソ ト ノ ホ モ ン ロ"
-	linefw "ャ ュ ョ ッ ヲ ゛ ゜ ー"
+	text "????"
 	done
+
+;HiraganaKeyboardText:
+;	textfw "あ か さ た な は ま や ら"
+;	linefw "い き し ち に ひ み ゆ り"
+;	linefw "う く す つ ぬ ふ む よ る"
+;	linefw "え け せ て ね へ め わ れ"
+;	linefw "お こ そ と の ほ も ん ろ"
+;	linefw "ゃ ゅ ょ っ を ゛ ゜ ー"
+;	done
+;
+;KatakanaKeyboardText:
+;	textfw "ア カ サ タ ナ ハ マ ヤ ラ"
+;	linefw "イ キ シ チ ニ ヒ ミ ユ リ"
+;	linefw "ウ ク ス ツ ヌ フ ム ヨ ル"
+;	linefw "エ ケ セ テ ネ ヘ メ ワ レ"
+;	linefw "オ コ ソ ト ノ ホ モ ン ロ"
+;	linefw "ャ ュ ョ ッ ヲ ゛ ゜ ー"
+;	done
 
 PlayerNameKeyboardText:
 	textfw "A B C D E F G H I"
@@ -1580,12 +1522,12 @@ CancelText:
 	done
 
 UnusedText0229: ; Unused
-	text "as"
+	text "????"
 	done
 
 ChosenAsDuelingDeckText:
-	text "<RAMTEXT> was"
-	line "chosen as the dueling deck!"
+	text "<RAMTEXT> is now"
+	line "your active deck!"
 	done
 
 Deck1Text:
@@ -1605,7 +1547,7 @@ Deck4Text:
 	done
 
 ThereIsNoDeckHereText:
-	text "There is no Deck here!"
+	text "There is no deck here!"
 	done
 
 ConfirmText:
@@ -1629,18 +1571,18 @@ NameText:
 	done
 
 ThereIsOnly1DeckSoCannotBeDismantledText:
-	text "There is only 1 Deck, so this"
-	line "Deck cannot be dismantled."
+	text "There is only 1 deck, so this"
+	line "deck cannot be dismantled."
 	done
 
 ThereAreNoBasicPokemonInThisDeckText:
 	text "There are no Basic Pokémon"
-	line "in this Deck!"
+	line "in this deck!"
 	done
 
 YouMustIncludeABasicPokemonInTheDeckText:
 	text "You must include a Basic Pokémon"
-	line "in the Deck!"
+	line "in every deck!"
 	done
 
 ThisIsntA60CardDeckText:
@@ -1648,7 +1590,7 @@ ThisIsntA60CardDeckText:
 	done
 
 TheDeckMustInclude60CardsText:
-	text "The Deck must include 60 cards!"
+	text "A deck must contain 60 cards!"
 	done
 
 ReturnToOriginalConfigurationText:
@@ -1656,15 +1598,15 @@ ReturnToOriginalConfigurationText:
 	done
 
 SaveThisDeckText:
-	text "Save this Deck?"
+	text "Save this deck?"
 	done
 
 QuitModifyingTheDeckText:
-	text "Quit modifying the Deck?"
+	text "Quit modifying the deck?"
 	done
 
 DismantleThisDeckText:
-	text "Dismantle this Deck?"
+	text "Dismantle this deck?"
 	done
 
 NoCardsChosenText:
@@ -1675,8 +1617,8 @@ YourPokemonText:
 	text "Your Pokémon"
 	done
 
-EmptyText0240:
-	text " "
+UnusedText0240: ; Unused
+	text "????"
 	done
 
 YourHandText:
@@ -1691,8 +1633,8 @@ OpponentsPokemonText:
 	text "Opponent's Pokémon"
 	done
 
-EmptyText0244:
-	text " "
+UnusedText0244: ; Unused
+	text "????"
 	done
 
 OpponentsHandText:
@@ -1731,12 +1673,12 @@ PleaseChooseAPrizeText:
 	text "Please choose a Prize."
 	done
 
-EmptyText024e:
-	text " "
+UnusedText024e: ; Unused
+	text "????"
 	done
 
-EmptyText024f:
-	text " "
+UnusedText024f: ; Unused
+	text "????"
 	done
 
 DuelistDiscardPileText:
@@ -1747,7 +1689,7 @@ EmptyLineText:
 	textfw "                  "
 	done
 
-BoosterPackTitleText:
+BoosterPackText:
 	text "Booster Pack"
 	done
 
@@ -1768,7 +1710,7 @@ Item4LaboratoryText:
 	done
 
 Item5PromotionalCardText:
-	text "5. Promotional Card"
+	text "5. Promotional Cards"
 	done
 
 ViewWhichCardFileText:
@@ -1808,26 +1750,26 @@ ChooseADeckToSaveText:
 	done
 
 UnusedText0261: ; Unused
-	text "You may only Save 60 Decks."
-	line "Please Delete a Deck first."
+	text "You may only save 60 decks."
+	line "Please delete a deck first."
 	done
 
 UnusedText0262: ; Unused
-	text "for"
+	text "????"
 	done
 
 SavedTheConfigurationForText:
 	text "Saved the configuration for"
 	line ""
-	text "<RAMTEXT>! "
+	text "<RAMTEXT>!"
 	done
 
 NoDeckIsSavedText:
-	text "No Deck is saved."
+	text "No deck is saved."
 	done
 
 UnusedText0265: ; Unused
-	text "Please choose a Deck "
+	text "Please choose a deck"
 	line "configuration to delete."
 	done
 
@@ -1842,7 +1784,7 @@ DeletedTheConfigurationForText:
 	done
 
 YouMayOnlyCarry4DecksText:
-	text "You may only carry 4 Decks!"
+	text "You may only carry 4 decks!"
 	done
 
 ChooseADeckToDismantleText:
@@ -1856,13 +1798,144 @@ DismantledDeckText:
 	done
 
 UnusedText026b: ; Unused
-	text "Please choose the Deck"
-	line "you wish to Build."
+	text "Please choose the deck"
+	line "you wish to build."
 	done
 
 ThisDeckCanOnlyBeBuiltIfYouDismantleText:
-	text "This Deck can only be built if"
-	line "you dismantle another Deck."
+	text "This deck can only be built if"
+	line "you dismantle another deck."
+	done
+
+YouDoNotOwnAllCardsNeededToBuildThisDeckText:
+	text "You do not own all of the cards"
+	line "needed to build this deck."
+	done
+
+BuiltDeckText:
+	text "Built"
+	line "<RAMTEXT>"
+	done
+
+TheseCardsAreNeededToBuildThisDeckText:
+	text "These cards are needed"
+	line "to build this deck:"
+	done
+
+DismantleTheseDecksText:
+	text "Dismantle these decks?"
+	done
+
+DismantledTheDeckText:
+	text "Dismantled the deck."
+	done
+
+OKIfFileDeletedText:
+	text "OK if this file is deleted?"
+	done
+
+ReadTheInstructionsText:
+	text "Read the Instructions"
+	done
+
+PrintThisCardYesNoText:
+	text "Print this card?"
+	line "      Yes     No"
+	done
+
+PleaseChooseDeckConfigurationToPrintText:
+	text "Please choose a deck configuration"
+	line "to print."
+	done
+
+PrintThisDeckText:
+	text "Print this deck?"
+	done
+
+PrintTheCardListText:
+	text "Print the card list?"
+	line "      Yes     No"
+	done
+
+PrintMenuItemsText:
+	text "Pokémon Cards"
+	line "Deck Configuration"
+	line "Card List"
+	line "Print Quality"
+	line "Quit Print"
+	done
+
+WhatWouldYouLikeToPrintText:
+	text "What would you like to print?"
+	done
+
+PleaseSetTheContrastText:
+	text "Please set the contrast:"
+	line "  Light   1   2   3   4   5   Dark"
+	done
+
+PleaseMakeSureToTurnGameBoyPrinterOffText:
+	text "Please make sure to turn"
+	line "the Game Boy Printer off."
+	done
+
+ProceduresForSendingCardsText:
+	text "Procedures for sending cards:"
+	done
+
+CardSendingProceduresText:
+	text "1. Choose the card you wish to send."
+	line "   Press left/right to choose more."
+	line ""
+	line "2. Choose all the cards. Then press"
+	line "   the B Button to open the menu."
+	line ""
+	line "3. Choose Send to finish"
+	line "   the process."
+	done
+
+PleaseReadTheProceduresForSendingCardsText:
+	text "Please read the procedures"
+	line "for sending cards."
+	done
+
+SendText:
+	text "Send"
+	done
+
+CardReceivedText:
+	text "Card received"
+	done
+
+CardToSendText:
+	text "Card to send"
+	done
+
+SendTheseCardsText:
+	text "Send these cards?"
+	done
+
+ReceivedTheseCardsFromText:
+	text "Received these cards"
+	line "from  <RAMTEXT>!"
+	done
+
+PleaseChooseADeckConfigurationToSendText:
+	text "Please choose a deck "
+	line "configuration to send."
+	done
+
+PleaseChooseASaveSlotText:
+	text "Please choose a Save Slot."
+	done
+
+UnusedText0286: ; Unused
+	text "Receive configuration."
+	done
+
+ReceivedADeckConfigurationFromText:
+	text "Received a deck configuration"
+	line "from  <RAMTEXT>!"
 	done
 
 ;	ds $26

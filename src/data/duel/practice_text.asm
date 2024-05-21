@@ -40,7 +40,7 @@ PracticeDuelText_Turn4:
 
 PracticeDuelText_Turn5:
 	practicetext 2, Turn5DrMason1PracticeDuelText, Turn5Instr1PracticeDuelText
-	practicetext 6, Turn5DrMason2PracticeDuelText, Turn5Instr2PracticeDuelText
+	practicetext 5, Turn5DrMason2PracticeDuelText, Turn5Instr2PracticeDuelText
 	db $00
 
 PracticeDuelText_Turn6:
@@ -59,7 +59,7 @@ PracticeDuelText_Turn8:
 	practicetext 5, Turn8DrMason2PracticeDuelText, Turn8Instr2PracticeDuelText
 	db $00
 
-; on player's Seaking knocked out
+; after the Player's Seaking is Knocked out
 PracticeDuelText_SamTurn4:
 	practicetext 2, SamTurn4DrMason1PracticeDuelText, SamTurn4Instr1PracticeDuelText
 	practicetext 7, SamTurn4DrMason2PracticeDuelText, SamTurn4Instr2PracticeDuelText

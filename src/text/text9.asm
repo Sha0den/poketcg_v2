@@ -2,49 +2,46 @@ Text073f:
 	text "Who?"
 	line "Oh! It's you, <RAMNAME>..."
 	line "I couldn't believe that I could"
-	line "lose, but now..."
-	line "Now I understand."
-	line "The fun thing about the "
+	line "lose, but now... Now I understand."
+	line "The fun thing about the"
 	line "Pokémon Trading Card Game"
 	line "is not who wins or loses..."
-	line "I couldn't inherit the Legendary "
-	line "Pokémon Cards because all that "
+	line "I couldn't inherit the Legendary"
+	line "Pokémon Cards because all that"
 	line "was important to me was winning."
 	line "But now I understand!"
 	line "What's important..."
-	line "Is to love each card, to use all "
-	line "the different cards to build "
-	line "different types of Decks, and"
+	line "Is to love each card, to use all"
+	line "the different cards to build"
+	line "different types of decks, and"
 	line "to play against different people!"
 	line "So...<RAMNAME>..."
 	line "Will you play with me again?"
-	line "With all sorts of different Decks?"
-	line "And this time, I not gonna lose!"
+	line "With all sorts of different decks?"
+	line "And this time, I'm not gonna lose!"
 	done
 
 Text0740:
 	text "Oh, hi <RAMNAME>..."
-	line "Do you want to Duel?"
+	line "Do you want to duel?"
 	done
 
 Text0741:
-	text "Would you like to Duel Ronald?"
+	text "Would you like to duel Ronald?"
 	done
 
 Text0742:
 	text "OK... That suits me fine!"
-	line "I'm building a new Deck!"
-	line "I'm busy building a better Deck"
-	line "than yours!!!"
-	line "We'll Duel another time!"
+	line "I'm building a new deck!"
+	line "I'm busy building a better deck than"
+	line "yours!!! We'll duel another time!"
 	done
 
 Text0743:
 	text "I can't..."
-	line "I'm building a new Deck!"
-	line "I'm busy building a better Deck"
-	line "than yours!!!"
-	line "We'll Duel another time!"
+	line "I'm building a new deck!"
+	line "I'm busy building a better deck than"
+	line "yours!!! We'll duel another time!"
 	done
 
 Text0744:
@@ -52,52 +49,48 @@ Text0744:
 	line "Welcome to the Science Club!"
 	line "This Club is for technicians"
 	line "who love the sciences."
-	line "The Pokémon cards used here are "
+	line "The Pokémon cards used here are"
 	line "those with the powers of science!"
 	done
 
 Text0745:
 	text "Umm... Umm..."
-	line "Do you know ISHIHARA?"
+	line "Do you know Ishihara?"
 	line "He lives in the house on the cape"
 	line "to the northwest."
-	line "He's a very famous Card Collector!"
+	line "He's a very famous card collector!"
 	line "I hope to be like him someday."
 	done
 
 Text0746:
-	text "Umm... Umm..."
-	line "ISHIHARA wants to trade"
-	line "a very rare card."
+	text "Umm... Umm... Ishihara wants to"
+	line "trade a very rare card."
 	line "If I had a card, I'd go and trade"
 	line "with him myself."
 	done
 
 Text0747:
-	text "Umm... Umm..."
-	line "ISHIHARA wants to trade"
-	line "another very rare card."
+	text "Umm... Umm... Ishihara wants to"
+	line "trade another very rare card."
 	line "I wish I could trade cards"
-	line "like ISHIHARA."
+	line "like Ishihara."
 	done
 
 Text0748:
-	text "Umm... Umm..."
-	line "ISHIHARA wants to trade a"
-	line "very, very, very rare card!"
+	text "Umm... Umm... Ishihara wants to "
+	line "trade a very, very, very rare card!"
 	line "I wish I could trade, so I could"
-	line "meet ISHIHARA."
+	line "meet Ishihara."
 	done
 
 Text0749:
-	text "Umm... Umm..."
-	line "Did you meet ISHIHARA?"
+	text "Umm... Umm... Did you meet Ishihara?"
 	line "I wish I could be like him."
 	done
 
 Text074a:
 	text "Umm... Umm..."
-	line "ISHIHARA left on a trip"
+	line "Ishihara left on a trip"
 	line "in search of a really rare card."
 	line "I wish I could have gone with him..."
 	done
@@ -110,6 +103,7 @@ Text074b:
 
 Text074c:
 	text "Please don't disturb me!"
+	line ""
 	line "I'm in the middle of"
 	line "a very important experiment!"
 	done
@@ -120,8 +114,8 @@ Text074d:
 	done
 
 Text074e:
-	text "I get so involved in the Pokémon "
-	line "Trading Card Game, I lose track "
+	text "I get so involved in the Pokémon"
+	line "Trading Card Game, I lose track"
 	line "of time. Isn't the Pokémon Trading"
 	line "Card Game really fun?"
 	done
@@ -129,11 +123,11 @@ Text074e:
 Text074f:
 	text "Hmmm... The machine..."
 	line "It's not quite working right."
-	line "Huh? Oh, this? This is a machine "
-	line "that makes Decks."
+	line "Huh? Oh, this? This is a machine"
+	line "that makes decks."
 	line "It's much better than Dr. Mason's."
 	line "Hmmm... Let's see here..."
-	line "Do you want to Duel against me?"
+	line "Do you want to duel against me?"
 	done
 
 Text0750:
@@ -142,21 +136,21 @@ Text0750:
 	line "Unlike Dr. Mason's machine,"
 	line "this machine is very complicated."
 	line "Hmmm... Let's see here..."
-	line "Do you want to Duel against me?"
+	line "Do you want to duel against me?"
 	done
 
 Text0751:
-	text "Would you like to Duel David?"
+	text "Would you like to duel David?"
 	done
 
 Text0752:
-	text "OK, Then I guess I'll "
-	line "fix the machine."
+	text "OK, then I guess I'll fix"
+	line "the machine."
 	done
 
 Text0753:
-	text "Shall we begin the Match? It will"
-	line "be a single Match for 4 Prizes."
+	text "Shall we begin the match? It will"
+	line "be a single match for 4 Prizes."
 	done
 
 Text0754:
@@ -169,25 +163,25 @@ Text0755:
 	done
 
 Text0756:
-	text "See! Isn't the Deck built"
+	text "See! Isn't the deck built"
 	line "by this machine great?"
 	done
 
 Text0757:
 	text "We research Pokémon cards here"
 	line "at the Science Club, especially"
-	line "Science Pokémon Cards! Science"
+	line "Science Pokémon cards! Science"
 	line "Pokémon are exceedingly strong."
-	line "Would you like to Duel against"
-	line "my Science Pokémon Deck?"
+	line "Would you like to duel against"
+	line "my Science Pokémon deck?"
 	done
 
 Text0758:
-	text "Would you like to Duel Erik?"
+	text "Would you like to duel Erik?"
 	done
 
 Text0759:
-	text "That's too bad. I hoped to show "
+	text "That's too bad. I hoped to show"
 	line "you the results of my research."
 	done
 
@@ -198,7 +192,7 @@ Text075a:
 
 Text075b:
 	text "I can't believe my Science Pokémon"
-	line "Deck could lose..."
+	line "deck could lose..."
 	done
 
 Text075c:
@@ -220,23 +214,23 @@ Text075e:
 	done
 
 Text075f:
-	text "Would you like to Duel Rick?"
+	text "Would you like to duel Rick?"
 	done
 
 Text0760:
-	text "It is regrettable that you do not "
+	text "It is regrettable that you do not"
 	line "understand the wonders of science."
 	done
 
 Text0761:
-	text "Alright, 6 Prizes!"
+	text "All right, 6 Prizes!"
 	line "Let us begin!"
 	done
 
 Text0762:
 	text "There are, at times, problems even"
 	line "science cannot answer."
-	line "Here, take this Medal."
+	line "Here, take this medal."
 	line "It is the result of our research."
 	done
 
@@ -246,7 +240,7 @@ Text0763:
 	done
 
 Text0764:
-	text "Legendary Cards are but a Legend!"
+	text "Legendary Cards are but a legend!"
 	line "Science is the only truth!"
 	line "I must continue my research"
 	line "of Science Pokémon!"
@@ -255,14 +249,13 @@ Text0764:
 Text0765:
 	text "Ha ha ha! As expected!"
 	line "Science is overpowering!"
-	line "The outcome will be the same!"
-	line "But I will Duel you again,"
-	line "if you wish."
+	line "The outcome will be the same! But"
+	line "I will duel you again, if you wish."
 	done
 
 Text0766:
 	text "Hello! It's you again!"
-	line "Do you wish to Duel me!"
+	line "Do you wish to duel me!"
 	done
 
 Text0767:
@@ -275,14 +268,12 @@ Text0768:
 	done
 
 Text0769:
-	text "It seems my research was "
-	line "incomplete."
-	line "Let me give you this. Please add "
-	line "these to your collection."
+	text "It seems my research was incomplete."
+	line "Please add these to your collection."
 	done
 
 Text076a:
-	text "I will keep researching the "
+	text "I will keep researching the"
 	line "Science Pokémon."
 	done
 
@@ -296,12 +287,12 @@ Text076c:
 	line "Rick, the Club Master, is in the"
 	line "middle of an important experiment!"
 	line "He has no time to see someone like"
-	line "you! If you really want to see "
-	line "him, you must defeat me first!"
+	line "you! If you really want to see him,"
+	line "you must defeat me first!"
 	done
 
 Text076d:
-	text "Would you like to Duel Joseph?"
+	text "Would you like to duel Joseph?"
 	done
 
 Text076e:
@@ -309,16 +300,15 @@ Text076e:
 	done
 
 Text076f:
-	text "Not too smart, but you've got "
+	text "Not too smart, but you've got"
 	line "nerves. We'll play for 4 Prizes!"
-	line "If you win 1 Match,"
+	line "If you win a match,"
 	line "I'll let you through!"
 	done
 
 Text0770:
-	text "Hey, I lost..."
-	line "Since I promised, I have to"
-	line "let you through."
+	text "Hey, I lost... Since I promised,"
+	line "I have to let you through."
 	done
 
 Text0771:
@@ -327,24 +317,23 @@ Text0771:
 	done
 
 Text0772:
-	text "Rick's in the middle of"
-	line "an experiment, so don't"
-	line "bother him too much."
+	text "Rick's in the midst of an experiment"
+	line "so don't bother him too much."
 	done
 
 Text0773:
-	text "Since you lost the Duel,"
+	text "Since you lost the duel,"
 	line "I can't let you through!"
 	line "Now get out of here!"
 	done
 
 Text0774:
 	text "What? You're here again?"
-	line "You want to Duel me?"
+	line "You want to duel me?"
 	done
 
 Text0775:
-	text "A single Match for 4 Prizes!"
+	text "A single match for 4 Prizes!"
 	line "Let's begin!"
 	done
 
@@ -374,12 +363,13 @@ Text0779:
 
 Text077a:
 	text "I'm training here at the Rock Club!"
-	line "But Mitch told me to defeat you "
-	line "before you Duel the members here!"
+	line "But Mitch told me to defeat you"
+	line "before you duel any of the members"
+	line "here!"
 	done
 
 Text077b:
-	text "Would you like to Duel Chris?"
+	text "Would you like to duel Chris?"
 	done
 
 Text077c:
@@ -388,7 +378,7 @@ Text077c:
 	done
 
 Text077d:
-	text "OK! A single Match with 4 Prizes!"
+	text "OK! A single match with 4 Prizes!"
 	line "I'm going to defeat you!"
 	done
 
@@ -404,14 +394,14 @@ Text077f:
 
 Text0780:
 	text "That was good for my training!"
-	line "Come any time you like!"
+	line "Come back whenever you want!"
 	line "I'll defeat you any time you like!"
 	done
 
 Text0781:
 	text "Hi, I'm Matthew, a member"
 	line "of the Rock Club."
-	line "I just finished a Duel!"
+	line "I just finished a duel!"
 	line "I won, of course!"
 	line "The Legendary Cards"
 	line "will belong to me!"
@@ -441,13 +431,13 @@ Text0785:
 	text "What?"
 	line "Are you afraid of me?"
 	line "Well, come back any time"
-	line "you want to Duel with me."
+	line "you want to duel with me."
 	done
 
 Text0786:
 	text "OK, same as last time!"
 	line "We'll play with 4 Prizes."
-	line "Is that alright?"
+	line "Is that all right?"
 	line "OK then, let's begin!"
 	done
 
@@ -462,14 +452,15 @@ Text0788:
 	done
 
 Text0789:
-	text "I'm going to win the next "
+	text "I'm going to win the next"
 	line "time we duel."
 	done
 
 Text078a:
-	text "I won again! I guess the Legendary "
-	line "Pokémon Cards will eventually "
-	line "belong to me!"
+	text "I won again!"
+	line ""
+	line "I guess the Legendary Pokémon Cards"
+	line "will eventually belong to me!"
 	done
 
 Text078b:
@@ -479,7 +470,7 @@ Text078b:
 Text078c:
 	text "Oh! Excuse me!"
 	line "Did you hear?"
-	line "ISHIHARA who lives on the cape"
+	line "Ishihara who lives on the cape"
 	line "to the northwest..."
 	line "He owns 10,000 cards!"
 	line "He probably even has rare cards!"
@@ -489,7 +480,7 @@ Text078d:
 	text "Oh! Excuse me!"
 	line "Did you hear?"
 	line "It's the talk of the town"
-	line "that ISHIHARA wishes to trade"
+	line "that Ishihara wishes to trade"
 	line "a very rare card."
 	line "Maybe I'll visit him myself!"
 	done
@@ -497,7 +488,7 @@ Text078d:
 Text078e:
 	text "Oh! Excuse me!"
 	line "Did you hear?"
-	line "Everyone's saying that ISHIHARA"
+	line "Everyone's saying that Ishihara"
 	line "wishes to trade a very rare card!"
 	line "Maybe you should go visit him."
 	done
@@ -505,7 +496,7 @@ Text078e:
 Text078f:
 	text "Oh! Excuse me!"
 	line "Did you hear?"
-	line "ISHIHARA wishes to trade"
+	line "Ishihara wishes to trade"
 	line "a very rare card again!"
 	line "Maybe you should go visit him."
 	done
@@ -520,7 +511,7 @@ Text0790:
 Text0791:
 	text "Oh! Excuse me!"
 	line "Did you hear?"
-	line "It seems ISHIHARA left on a "
+	line "It seems Ishihara left on a"
 	line "trip in search of a rare card!"
 	line "They say he's not coming back"
 	line "for a while!"
@@ -535,20 +526,20 @@ Text0792:
 
 Text0793:
 	text "I lost to Matthew again!"
-	line "I can't win, no matter how many "
+	line ""
+	line "I can't win, no matter how many"
 	line "times I duel against him!"
 	line "He's probably going to inherit"
 	line "the Legendary Pokémon Cards!"
 	line "What? You already inherited"
 	line "the Legendary Pokémon Cards???"
-	line "Then you must be better"
-	line "than Matthew!"
+	line "Then you must be better than"
+	line "Matthew!"
 	done
 
 Text0794:
-	text "I'm going to be moving soon"
-	line "to a faraway place."
-	line "But I'm not sad."
+	text "I'm going to be moving soon to a"
+	line "faraway place. But I'm not sad."
 	line "I'll make new friends dueling"
 	line "with Pokémon cards..."
 	done
@@ -556,23 +547,22 @@ Text0794:
 Text0795:
 	text "I'm carving a statue of a Pokémon"
 	line "out of this Rock!"
-	line "What? You want to Duel?"
-	line "Alright. You want to duel now?"
+	line "What? You want to duel?"
+	line "All right. You want to duel now?"
 	done
 
 Text0796:
-	text "Would you like to Duel Ryan?"
+	text "Would you like to duel Ryan?"
 	done
 
 Text0797:
-	text "Get outta here if you aren't "
+	text "Get outta here if you aren't"
 	line "serious - I'm really busy!"
 	done
 
 Text0798:
-	text "Let's make it a quick single Match"
-	line "with 3 Prizes."
-	line "OK, let's start!"
+	text "Let's make it a quick single match"
+	line "with 3 Prizes. OK, let's start!"
 	done
 
 Text0799:
@@ -589,7 +579,7 @@ Text079b:
 	text "Yeah!"
 	line "Must be my lucky day!"
 	line "Come see me any time you want!"
-	line "I'll Duel with you again!"
+	line "I'll duel with you again!"
 	done
 
 Text079c:
@@ -597,12 +587,12 @@ Text079c:
 	line "a Hard Rocker!"
 	line "Rock Pokémon..."
 	line "Doesn't the name Rock?"
-	line "Won't you Duel against my"
-	line "Rock Pokémon Deck?"
+	line "Won't you duel against my"
+	line "Rock Pokémon deck?"
 	done
 
 Text079d:
-	text "Would you like to Duel Andrew?"
+	text "Would you like to duel Andrew?"
 	done
 
 Text079e:
@@ -637,45 +627,45 @@ Text07a3:
 	line "Isn't Rock good, <RAMNAME>...?"
 	line "Rock is hard and strong!"
 	line "Doesn't crumble under pressure!"
-	line "After you Duel me, you'll know "
+	line "After you duel me, you'll know"
 	line "I'm right! Come!"
 	line "Show me what you're made of!"
 	done
 
 Text07a4:
-	text "Would you like to Duel Gene?"
+	text "Would you like to duel Gene?"
 	done
 
 Text07a5:
-	text "I have no time for a softie "
+	text "I have no time for a softie"
 	line "like you!"
 	line "Come back after you've hardened"
 	line "your nerve!"
 	done
 
 Text07a6:
-	text "Our Duel will be played"
+	text "Our duel will be played"
 	line "with 6 Prizes!"
 	line "You won't get the Rock Medal"
 	line "unless you defeat me!"
 	done
 
 Text07a7:
-	text "Wonderful... Your persistence - "
-	line "persistence that can even "
-	line "break Rock - has led you to "
+	text "Wonderful... Your persistence -"
+	line "persistence that can even"
+	line "break Rock - has led you to"
 	line "defeat me!"
 	line "You are worthy of receiving this"
 	line "Rock Medal!"
 	done
 
 Text07a8:
-	text "And take this Booster Pack, too."
+	text "And take this booster pack, too."
 	done
 
 Text07a9:
 	text "I look forward to the day"
-	line "We Duel again!"
+	line "we duel again!"
 	done
 
 Text07aa:
@@ -698,13 +688,13 @@ Text07ac:
 	done
 
 Text07ad:
-	text "This will be a single match with "
+	text "This will be a single match with"
 	line "6 Prizes! Come! Let us begin!"
 	done
 
 Text07ae:
 	text "Yes! You are an worthy opponent!"
-	line "Here, take this Booster Pack."
+	line "Here, take this booster pack."
 	done
 
 Text07af:
@@ -716,12 +706,12 @@ Text07b0:
 	text "It was a wonderful duel!"
 	line "But better luck next time!"
 	line "I look forward to the day"
-	line "when we Duel again!"
+	line "when we duel again!"
 	done
 
 PokemonTradingCardGameStaffText:
 	text ""
-	line "        Pokémon Trading Card Game "
+	line "        Pokémon Trading Card Game"
 	line "                  Staff"
 	done
 
@@ -1042,20 +1032,20 @@ NthOpponentIsText:
 	done
 
 WouldYouLikeToBeginTheDuelText:
-	text "Would you like to begin the Duel?"
+	text "Would you like to begin the duel?"
 	done
 
 IfYouQuitTheDuelText:
-	text "If you quit the Duel,"
+	text "If you quit the duel,"
 	line "Your Consecutive Wins will end."
 	done
 
 WouldYouLikeToQuitTheDuelText:
-	text "Would you like to quit the Duel?"
+	text "Would you like to quit the duel?"
 	done
 
 PlayTheChallengeMachineText:
-	text "Play the Challenge Machine?"
+	text "Play against the Challenge Machine?"
 	done
 
 LetUsChooseYourOpponentText:
@@ -1092,8 +1082,8 @@ Defeated5OpponentsText:
 	done
 
 SuccessfullyDefeated5OpponentsText:
-	text "<RAMNAME> successfully defeated "
-	line "5 opponents "
+	text "<RAMNAME> successfully defeated"
+	line "5 opponents"
 	text "<RAMNUM> time(s)!!!"
 	done
 
@@ -1110,8 +1100,8 @@ ClubMasterText:
 	text "Club Master"
 	done
 
-TechText:
-	text "TECH"
+UnusedText07eb: ; Unused
+	text "????"
 	done
 
 StrangeLifeformText:
@@ -1183,7 +1173,8 @@ GrassEnergyName:
 	done
 
 GrassEnergyDescription:
-	text "Provides 1 <GRASS> Energy."
+	text ""
+	line "       Provides 1 <GRASS> Energy."
 	done
 
 FireEnergyName:
@@ -1191,7 +1182,8 @@ FireEnergyName:
 	done
 
 FireEnergyDescription:
-	text "Provides 1 <FIRE> Energy."
+	text ""
+	line "       Provides 1 <FIRE> Energy."
 	done
 
 WaterEnergyName:
@@ -1199,7 +1191,8 @@ WaterEnergyName:
 	done
 
 WaterEnergyDescription:
-	text "Provides 1 <WATER> Energy."
+	text ""
+	line "       Provides 1 <WATER> Energy."
 	done
 
 LightningEnergyName:
@@ -1207,7 +1200,8 @@ LightningEnergyName:
 	done
 
 LightningEnergyDescription:
-	text "Provides 1 <LIGHTNING> Energy."
+	text ""
+	line "       Provides 1 <LIGHTNING> Energy."
 	done
 
 FightingEnergyName:
@@ -1215,7 +1209,8 @@ FightingEnergyName:
 	done
 
 FightingEnergyDescription:
-	text "Provides 1 <FIGHTING> Energy."
+	text ""
+	line "       Provides 1 <FIGHTING> Energy."
 	done
 
 PsychicEnergyName:
@@ -1223,7 +1218,8 @@ PsychicEnergyName:
 	done
 
 PsychicEnergyDescription:
-	text "Provides 1 <PSYCHIC> Energy."
+	text ""
+	line "       Provides 1 <PSYCHIC> Energy."
 	done
 
 DoubleColorlessEnergyName:
@@ -1231,12 +1227,12 @@ DoubleColorlessEnergyName:
 	done
 
 DoubleColorlessEnergyDescription:
-	text "Provides <COLORLESS><COLORLESS> Energy. (Doesn't"
-	line "count as a basic Energy card.) "
-	line "Colorless Energy can't be used to"
-	line "pay colored Energy costs. (Any type"
-	line "of Energy can be used to pay"
-	line "Colorless Energy costs.)"
+	text "   Provides <COLORLESS><COLORLESS> Energy. (Doesn't"
+	line "   count as a Basic Energy card.)"
+	line "   Colorless Energy can't be used"
+	line "   to pay colored Energy costs."
+	line "   (Any type of Energy can be used"
+	line "   to pay Colorless Energy costs.)"
 	done
 
 BulbasaurName:
@@ -1342,9 +1338,9 @@ EnergyTransName:
 EnergyTransDescription:
 	text "As often as you like during your"
 	line "turn (before your attack), you may"
-	line "take 1 <GRASS> Energy card attached to 1"
-	line "of your Pokémon and attach it to a"
-	line "different one. This power can't be"
+	line "take 1 <GRASS> Energy card attached to"
+	line "1 of your Pokémon and attach it to"
+	line "a different one. This power can't be"
 	line "used if Venusaur is Asleep,"
 	line "Confused, or Paralyzed."
 	done
@@ -1368,8 +1364,8 @@ StringShotName:
 	done
 
 MayInflictParalysisDescription:
-	text "Flip a coin. If heads, the Defending"
-	line "Pokémon is now Paralyzed."
+	text "Flip a coin. If heads, the"
+	line "Defending Pokémon is now Paralyzed."
 	done
 
 WormName:
@@ -1461,8 +1457,8 @@ PoisonStingName:
 	done
 
 MayInflictPoisonDescription:
-	text "Flip a coin. If heads, the Defending"
-	line "Pokémon is now Poisoned."
+	text "Flip a coin. If heads, the"
+	line "Defending Pokémon is now Poisoned."
 	done
 
 HairyBugName:
@@ -1473,17 +1469,6 @@ WeedleDescription:
 	text "Often found in forests, eating"
 	line "leaves. It has a sharp, venomous"
 	line "stinger on its head."
-	done
-
-KakunaName:
-	text "Kakuna"
-	done
-
-KakunasStiffenDescription:
-	text "Flip a coin. If heads, prevent all"
-	line "damage done to Kakuna during your"
-	line "opponent's next turn. (Any other"
-	line "effects of attacks still happen.)"
 	done
 
 ;	ds $20

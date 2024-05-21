@@ -297,7 +297,7 @@ Clerk1NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk1
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -310,7 +310,7 @@ Clerk2NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk2
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -323,7 +323,7 @@ Clerk3NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk3
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -336,7 +336,7 @@ Clerk4NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk4
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -349,7 +349,7 @@ Clerk5NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk5
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -362,7 +362,7 @@ Clerk6NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk6
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -375,7 +375,7 @@ Clerk7NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk7
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -388,7 +388,7 @@ Clerk8NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk8
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -401,7 +401,7 @@ Clerk9NPCHeader:
 	db SPRITE_ANIM_CGB_CLERK_NPC_UP
 	db $00
 	dw Script_Clerk9
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -1064,7 +1064,7 @@ Clerk12NPCHeader:
 	db SPRITE_ANIM_YELLOW_NPC_UP
 	db $00
 	dw Script_Clerk12
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00
@@ -1077,7 +1077,7 @@ Clerk13NPCHeader:
 	db SPRITE_ANIM_YELLOW_NPC_UP
 	db $00
 	dw Script_Clerk13
-	tx ClerkNPCName2
+	tx ClerkNPCName
 	db $00
 	db $00
 	db $00

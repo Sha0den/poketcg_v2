@@ -1,5 +1,5 @@
 ChrisFightingClubDeclinedDuelText:
-	text "You're just going to turn "
+	text "You're just going to turn"
 	line "and run!?! You chicken!"
 	done
 
@@ -10,11 +10,11 @@ ChrisFightingClubDuelStartText:
 
 ChrisFightingClubPlayerWon1Text:
 	text "No! I lost again!"
-	line "I can't start training, yet!"
+	line "I can't start training yet!"
 	done
 
 ChrisFightingClubPlayerWon2Text:
-	text "Shoot! I'm going to "
+	text "Shoot! I'm going to"
 	line "become a better player!"
 	done
 
@@ -35,7 +35,7 @@ MichaelFightingClubWouldYouLikeToDuelText:
 	done
 
 MichaelFightingClubDeclinedDuelText:
-	text "OK. But do duel me "
+	text "OK. But do duel me"
 	line "again sometime."
 	done
 
@@ -90,8 +90,8 @@ JessicaFightingClubPlayerWon2Text:
 
 JessicaFightingClubPlayerLostText:
 	text "Hey, I won!"
-	line "Could this also be due to my "
-	line "natural ability? "
+	line "Could this also be due to my"
+	line "natural ability?"
 	line "Well, I hope I see you around!"
 	done
 
@@ -104,7 +104,7 @@ WhatIsADeckBookText:
 	line "used in duels."
 	line "A deck consists of 60 cards."
 	line "Only 4 of the same card are"
-	line "allowed in a deck. Create your "
+	line "allowed in a deck. Create your"
 	line "own deck to play the game."
 	line "These are the basic rules of the"
 	line "Pokémon Trading Card Game."
@@ -115,14 +115,14 @@ CardsVol1BookName:
 	done
 
 CardsVol1BookText:
-	text "There are 2 types of Pokémon cards "
+	text "There are 2 types of Pokémon cards"
 	line "in the Pokémon Trading Card Game:"
-	line "Basic Pokémon and Evolution "
-	line "Pokémon. Only Basic Pokémon may be "
+	line "Basic Pokémon and Evolution"
+	line "Pokémon. Only Basic Pokémon may be"
 	line "placed directly on the Bench."
 	line "There are 2 types of Evolution"
-	line "Pokémon cards: Stage 1 and "
-	line "Stage 2. Play Stage 1 Pokémon on "
+	line "Pokémon cards: Stage 1 and"
+	line "Stage 2. Play Stage 1 Pokémon on"
 	line "top of Basic Pokémon, and Stage 2"
 	line "Pokémon on top of Stage 1 Pokémon."
 	done
@@ -134,9 +134,9 @@ CardsVol2BookName:
 CardsVol2BookText:
 	text "Attach Energy cards to your Pokémon"
 	line "to give them the energy they need to"
-	line "attack. Choose an Energy card from "
+	line "attack. Choose an Energy card from"
 	line "your hand and attach it to a"
-	line "Pokémon. You may attach only "
+	line "Pokémon. You may attach only"
 	line "one Energy card per turn."
 	done
 
@@ -146,9 +146,9 @@ CardsVol3BookName:
 
 CardsVol3BookText:
 	text "Trainer cards are one-shot cards"
-	line "that can be used once and are "
-	line "then discarded. You can play as "
-	line "many Trainer cards as you like "
+	line "that can be used once and are"
+	line "then discarded. You can play as"
+	line "many Trainer cards as you like"
 	line "during your turn."
 	done
 
@@ -157,16 +157,16 @@ WinOrLossOfAMatchVol1BookName:
 	done
 
 WinOrLossOfAMatchVol1BookText:
-	text "When a Pokémon loses all of "
-	line "its HP, the Pokémon is knocked out. "
-	line "Place it and all attached Energy "
-	line "cards in the discard pile."
-	line "Each time you knock out 1 "
-	line "of your opponent's Pokémon, "
-	line "you draw 1 of your prize cards "
-	line "and place it in your hand. "
-	line "When you've taken all "
-	line "of your prizes, you win the game."
+	text "When a Pokémon loses all of its"
+	line "HP, that Pokémon is Knocked Out."
+	line "Place it and all cards attached"
+	line "to it in the discard pile."
+	line "Each time you Knock Out 1 of"
+	line "your opponent's Pokémon,"
+	line "you draw 1 of your Prize cards"
+	line "and place it into your hand."
+	line "When you've taken all of your"
+	line "Prizes, you win the game."
 	done
 
 WinOrLossOfAMatchVol2BookName:
@@ -176,7 +176,7 @@ WinOrLossOfAMatchVol2BookName:
 WinOrLossOfAMatchVol2BookText:
 	text "You also win if your opponent's"
 	line "deck is out of cards at the start"
-	line "of your opponent's turn. Be "
+	line "of your opponent's turn. Be"
 	line "careful not to run out of cards!"
 	done
 
@@ -185,11 +185,12 @@ WinOrLossOfAMatchVol3BookName:
 	done
 
 WinOrLossOfAMatchVol3BookText:
-	text "You also win if your opponent has"
-	line "no Pokémon left on the bench"
-	line "after you have knocked out his or"
-	line "her active Pokémon. Be sure to "
-	line "keep enough Pokémon on your bench."
+	text "You will also win if your opponent"
+	line "does not have any remaining"
+	line "Pokémon on the Bench after their"
+	line "Active Pokémon is Knocked Out."
+	line "Be sure to include enough Pokémon"
+	line "in your deck."
 	done
 
 CombosBookName:
@@ -199,8 +200,8 @@ CombosBookName:
 CombosBookText:
 	text "You can create powerful combos by"
 	line "combining the abilities of 2 cards."
-	line "Pokémon Powers and Trainer Cards "
-	line "are useful in creating combos! "
+	line "Pokémon Powers and Trainer cards"
+	line "are useful in creating combos!"
 	line "Find card combinations that will"
 	line "create your own powerful combos."
 	done
@@ -211,7 +212,7 @@ EnergyTransBookName:
 
 EnergyTransBookText:
 	text "What if you place Exeggutor in the"
-	line "arena, but you don't have any Energy"
+	line "Arena, but you don't have any Energy"
 	line "cards? In this case, use Venusaur's"
 	line "Energy Trans to transfer Grass"
 	line "Energy and use Big Eggsplosion! If"
@@ -227,7 +228,7 @@ ToxicGasBookText:
 	text "Muk's Toxic Gas is very powerful!"
 	line "It can block all Pokémon Powers!"
 	line "But be careful because it also"
-	line "blocks your own Pokémon's Powers!"
+	line "blocks your own Pokémon Powers!"
 	done
 
 RainDanceBookName:
@@ -235,11 +236,11 @@ RainDanceBookName:
 	done
 
 RainDanceBookText:
-	text "Blastoise's Pokémon Power, Rain "
+	text "Blastoise's Pokémon Power, Rain"
 	line "Dance, is a great boon for your"
-	line "Water Pokémon! You can attach "
-	line "as many Water Energy cards as "
-	line "you have to your Water Pokémon."
+	line "Water Pokémon! You can attach"
+	line "as many Water Energy cards as"
+	line "you like to your Water Pokémon."
 	line "Power up your Pokémon and attack!"
 	done
 
@@ -251,9 +252,9 @@ SelfdestructBookText:
 	text "It's a good idea to use Defender"
 	line "when attacking with Selfdestruct."
 	line "That way, you'll be able to give"
-	line "major damage to your opponent's "
-	line "Active and Benched Pokémon without "
-	line "your Pokémon getting knocked out."
+	line "major damage to your opponent's"
+	line "Active and Benched Pokémon without"
+	line "your Pokémon getting Knocked Out."
 	done
 
 DamageSwapBookName:
@@ -263,14 +264,14 @@ DamageSwapBookName:
 DamageSwapBookText:
 	text "You can use Alakazam's Damage Swap"
 	line "to move damage counters off of a"
-	line "Pokémon that is almost knocked out,"
+	line "Pokémon that is almost Knocked Out,"
 	line "or you can create a combo by"
 	line "combining it with Chansey and"
-	line "Scoop Up. Keep moving damage "
-	line "counters to Chansey and use Scoop "
-	line "Up to return Chansey to your hand."
-	line "Then put Chansey back in play. You"
-	line "will have lost all damage counters!"
+	line "Scoop Up. Keep moving damage"
+	line "counters to Chansey and use Scoop Up"
+	line "to return Chansey to your hand."
+	line "Then put the Chansey back into play."
+	line "You'll have lost all of the damage!"
 	done
 
 HyperBeamBookName:
@@ -279,10 +280,11 @@ HyperBeamBookName:
 
 HyperBeamBookText:
 	text "Hyper Beam is extremely powerful!"
-	line "You can remove the Energy cards "
-	line "attached to your opponent's"
-	line "Pokémon! Without Energy, they won't"
-	line "be able to Attack or Retreat!"
+	line "You can remove the Energy cards"
+	line "that are attached to the Defending"
+	line "Pokémon, and without any Energy,"
+	line "your opponent's Pokémon won't"
+	line "be able to attack or retreat!"
 	done
 
 PrehistoricPowerBookName:
@@ -292,11 +294,11 @@ PrehistoricPowerBookName:
 PrehistoricPowerBookText:
 	text "Use Aerodactyl's Prehistoric Power"
 	line "to block your opponent's Pokémon"
-	line "from evolving. Your own Pokémon "
+	line "from evolving. Your own Pokémon"
 	line "can't evolve? In that case, use"
-	line "Devolution Spray on Aerodactyl "
-	line "and turn it back into a "
-	line "Mysterious Fossil. Then you'll "
+	line "Devolution Spray on Aerodactyl"
+	line "and turn it back into a"
+	line "Mysterious Fossil. Then you'll"
 	line "be able to evolve your Pokémon!"
 	done
 
@@ -306,14 +308,13 @@ PhantomCardsBookName:
 
 PhantomCardsBookText:
 	text "It is rumored that there is a"
-	line "Phantom Card that can only be "
-	line "gotten by using Card Pop!"
-	line "It is believed there are 2 such"
-	line "cards, but no one knows what"
-	line "kind of cards they are."
-	line "I'm off to search for someone "
-	line "who will give me these cards!"
-	line "                        ISHIHARA"
+	line "Phantom Card that can only be"
+	line "gotten by using Card Pop! It is"
+	line "believed there are 2 such cards,"
+	line "but no one knows what kind of cards"
+	line "they are. I'm off to search for"
+	line "someone who can give me these cards!"
+	line "                        Ishihara"
 	done
 
 WeaknessAndResistanceBookName:
@@ -323,16 +324,17 @@ WeaknessAndResistanceBookName:
 WeaknessAndResistanceBookText:
 	text "If a Pokémon has a Weakness,"
 	line "it takes double damage when attacked"
-	line "by Pokémon of a certain type!"
-	line "If a Water Pokémon attacks"
-	line "a Fire Pokémon, the Fire Pokémon"
-	line "will receive double damage!"
-	line "If a Pokémon has a Resistance,"
-	line "it takes 30 less damage when"
-	line "attacked by Pokémon of a certain"
-	line "type. If an Attack gives a damage "
-	line "of 30, the Pokémon will not receive "
-	line "damage! Beware of the Weaknesses"
+	line "by Pokémon of a certain type."
+	line "If a Water Pokémon deals 30 damage"
+	line "to a Fire Pokémon, then that Pokémon"
+	line "will receive 60 damage!"
+	line "If a Pokémon has a Resistance, it"
+	line "takes 30 less damage when attacked"
+	line "by Pokémon of a certain type. If a"
+	line "Fighting Pokémon deals 30 damage to"
+	line "a Pokémon with Fighting Resistance,"
+	line "that Pokémon will receive 0 damage!"
+	line "Pay attention to the Weaknesses"
 	line "and Resistances of your Pokémon!"
 	done
 
@@ -354,12 +356,12 @@ RetreatingBookName:
 RetreatingBookText:
 	text "Retreating your Active Pokémon to"
 	line "the Bench is a good strategy in"
-	line "certain situations! Retreating a "
+	line "certain situations! Retreating a"
 	line "Pokémon requires Energy cards."
-	line "Dodrio's Retreat Aid decreases the "
-	line "number of Energy cards required to"
+	line "Dodrio's Retreat Aid decreases the"
+	line "amount of Energy that's required to"
 	line "retreat. If you retreat right away,"
-	line "your Pokémon won't get knocked out!"
+	line "your Pokémon won't get Knocked Out!"
 	done
 
 FightingPokemonBookName:
@@ -368,10 +370,11 @@ FightingPokemonBookName:
 
 FightingPokemonBookText:
 	text "Fighting Pokémon Characteristics:"
-	line "Strong against Lightning Pokémon."
-	line "Weak against Psychic Pokémon."
-	line "Require Fighting Energy cards "
-	line "to Attack."
+	line " - Need <FIGHTING> Energy to attack"
+	line " - Strong against <LIGHTNING> or <COLORLESS> Pokémon"
+	line " - Weak against <PSYCHIC> Pokémon"
+	line " - Many Pokémon have a Resistance"
+	line "   to Fighting Pokémon"
 	done
 
 FightingPokemonAndCombosBookName:
@@ -381,8 +384,8 @@ FightingPokemonAndCombosBookName:
 FightingPokemonAndCombosBookText:
 	text "It is difficult to create combos"
 	line "with a Fighting Pokémon, since"
-	line "not many Fighting Pokémon have "
-	line "Pokémon Power. However, their "
+	line "not many Fighting Pokémon have"
+	line "Pokémon Powers. However, their"
 	line "strong attacks make up for this."
 	done
 
@@ -392,11 +395,11 @@ DoubleColorlessEnergyBookName:
 
 DoubleColorlessEnergyBookText:
 	text "Double Colorless Energy is a"
-	line "very useful card. By using this "
+	line "very useful card. By using this"
 	line "single card, you are able to"
 	line "attach 2 Energies at once."
-	line "But be careful because the "
-	line "energy is colorless."
+	line "But be careful because the"
+	line "energy is <COLORLESS>."
 	done
 
 RockPokemonBookName:
@@ -405,10 +408,11 @@ RockPokemonBookName:
 
 RockPokemonBookText:
 	text "Rock Pokémon Characteristics:"
-	line "Strong against Lightning Pokémon."
-	line "Weak against Grass Pokémon."
-	line "Require Fighting Energy cards"
-	line "to Attack."
+	line " - Need <FIGHTING> Energy to attack"
+	line " - Strong against <LIGHTNING> or <COLORLESS> Pokémon"
+	line " - Weak against <GRASS> Pokémon"
+	line " - Many Pokémon have a Resistance"
+	line "   to Rock Pokémon"
 	done
 
 WinningWithFightingPokemonBookName:
@@ -418,9 +422,9 @@ WinningWithFightingPokemonBookName:
 WinningWithFightingPokemonBookText:
 	text "Fighting Pokémon will have a hard"
 	line "time against Stage 2 Pokémon,"
-	line "as many Stage 2 Pokémon are"
-	line "resistant to Fighting Pokémon."
-	line "Try to knock out your opponent's"
+	line "as many Stage 2 Pokémon have a"
+	line "Resistance to Fighting Pokémon."
+	line "Try to Knock Out your opponent's"
 	line "Pokémon before they evolve."
 	done
 
@@ -432,10 +436,11 @@ BasicPokemonBookText:
 	text "Basic Pokémon are a must in the"
 	line "Pokémon Trading Card Game!"
 	line "Basic Pokémon are the only Pokémon"
-	line "you can put directly from your"
-	line "hand into the play area. Stage 1"
-	line "and Stage 2 Evolution cards can"
-	line "only be used on Basic Pokémon."
+	line "you can put directly into play"
+	line "from your hand. Stage 1 and Stage 2"
+	line "Evolution cards cannot be used"
+	line "without having first put a"
+	line "Basic Pokémon into play."
 	line "Make sure you have enough"
 	line "Basic Pokémon in your deck!"
 	done
@@ -446,11 +451,9 @@ WaterPokemonBookName:
 
 WaterPokemonBookText:
 	text "Water Pokémon Characteristics:"
-	line "Strong against Fire Pokémon."
-	line "Weak against Lightning Pokémon."
-	line "Some cards are weak against "
-	line "Grass Pokémon. Require Water "
-	line "Energy cards to attack."
+	line " - Need <WATER> Energy to attack"
+	line " - Strong against <FIRE> Pokémon"
+	line " - Weak against <LIGHTNING> or <GRASS> Pokémon"
 	done
 
 WaterPokemonAttacksBookName:
@@ -461,25 +464,24 @@ WaterPokemonAttacksBookText:
 	text "Water Gun and Hydro Pump are"
 	line "attacks which have variable damage."
 	line "The more Water Energy you attach,"
-	line "the more powerful the attack is!"
-	line "The attack can do up to 20 more "
+	line "the more powerful the attack will be"
+	line "The attack can do up to 20 more"
 	line "damage in this way."
 	done
 
 ParalyzeBookName:
-	text "Paralyze"
+	text "Paralyzed"
 	done
 
 ParalyzeBookText:
-	text "When a Pokémon is paralyzed, it"
-	line "is unable to do anything."
-	line "It cannot retreat, attack or use"
-	line "Pokémon Power, but the player may"
-	line "use any cards in his or her hand."
-	line "Paralysis lasts until the end of "
-	line "the paralyzed player's turn. "
-	line "Paralysis can be healed with"
-	line "Full Heal and Evolution cards."
+	text "If a Pokémon's Paralyzed (<PARALYZED>),"
+	line "it cannot attack, retreat, or use"
+	line "its Pokémon Power; the player may"
+	line "still play cards from their hand."
+	line "This condition lasts until the end"
+	line "of the Paralyzed player's turn."
+	line "Paralyzed Pokemon will also recover"
+	line "with evolution or a Full Heal card."
 	done
 
 LightningPokemonBookName:
@@ -488,10 +490,9 @@ LightningPokemonBookName:
 
 LightningPokemonBookText:
 	text "Lightning Pokémon Characteristics:"
-	line "Strong against Water Pokémon."
-	line "Weak against Fighting Pokémon."
-	line "Require Lightning Energy cards"
-	line "to attack."
+	line " - Need <LIGHTNING> Energy to attack"
+	line " - Strong against <WATER> or <COLORLESS> Pokémon"
+	line " - Weak against <FIGHTING> Pokémon"
 	done
 
 EnergyCardsBookName:
@@ -501,10 +502,9 @@ EnergyCardsBookName:
 EnergyCardsBookText:
 	text "There are 6 Basic Energy cards:"
 	line "Grass, Fire, Water, Lightning,"
-	line "Fighting and Psychic!"
-	line "There is also the Double Colorless"
-	line "Energy card."
-	line "You may include as many Energy "
+	line "Fighting and Psychic! There is also"
+	line "the Double Colorless Energy card."
+	line "You may include as many Energy"
 	line "cards as you like in your deck,"
 	line "but you may only include 4"
 	line "Double Colorless Energy cards."
@@ -517,7 +517,7 @@ CardPopBookName:
 CardPopBookText:
 	text "When you and a friend Card Pop!,"
 	line "you will each receive a new card."
-	line "After you Pop! with a friend, you "
+	line "After you Pop! with a friend, you"
 	line "won't be able to Pop! with the same"
 	line "friend for a while. You always get"
 	line "the same card when you Pop! with"
@@ -531,27 +531,24 @@ GrassPokemonBookName:
 
 GrassPokemonBookText:
 	text "Grass Pokémon Characteristics:"
-	line "Strong against Rock Pokémon."
-	line "Weak against Fire Pokémon."
-	line "Some Water Pokémon are weak"
-	line "against Grass Pokémon. Require "
-	line "Grass Energy cards to attack."
+	line " - Need <GRASS> Energy to attack"
+	line " - Strong against <FIGHTING> or <WATER> Pokémon"
+	line " - Weak against <FIRE> Pokémon"
 	done
 
 PoisonBookName:
-	text "Poison"
+	text "Poisoned"
 	done
 
 PoisonBookText:
-	text "When your Pokémon is poisoned, it"
-	line "will continue to lose HP."
-	line "The poisoned Pokémon will lose"
-	line "10 HP at the end of each player's "
-	line "turn. To heal a Poisoned Pokémon,"
-	line "you may retreat it to the Bench"
-	line "or use the Trainer Card, Full Heal."
-	line "Evolving or Devolving the Pokémon "
-	line "are other ways of healing it."
+	text "If a Pokémon is Poisoned (<POISONED>),"
+	line "it will continue to lose HP."
+	line "The Poisoned Pokémon will lose"
+	line "10 HP at the end of each turn."
+	line "A Pokémon is no longer Poisoned if"
+	line "it evolves or retreats to the Bench."
+	line "Using a Full Heal card can also"
+	line "remove the condition."
 	done
 
 GrassPokemonPokemonBreederBookName:
@@ -560,11 +557,11 @@ GrassPokemonPokemonBreederBookName:
 
 GrassPokemonPokemonBreederBookText:
 	text "Many Grass Pokémon are capable of"
-	line "evolving to Stage 2 Pokémon."
-	line "Use the Trainer Card, Pokémon"
+	line "evolving to a Stage 2 Pokémon."
+	line "Use the Trainer card, Pokémon"
 	line "Breeder, to evolve Pokémon quickly."
 	line "You'll be able to use powerful"
-	line "attacks early in the game."
+	line "attacks earlier in the game."
 	done
 
 PsychicPokemonBookName:
@@ -573,41 +570,39 @@ PsychicPokemonBookName:
 
 PsychicPokemonBookText:
 	text "Psychic Pokémon Characteristics:"
-	line "Weak against Psychic Pokémon."
-	line "Some Colorless Pokémon are strong "
-	line "against Psychic Pokémon. Require"
-	line "Psychic Energy cards to attack."
+	line " - Need <PSYCHIC> Energy to attack"
+	line " - Strong against <GRASS>, <PSYCHIC>, and <FIGHTING>"
+	line " - Weak against <PSYCHIC> Pokémon"
+	line " - Many Colorless Pokémon have a"
+	line "   Resistance to Psychic Pokémon"
 	done
 
 SleepBookName:
-	text "Sleep"
+	text "Asleep"
 	done
 
 SleepBookText:
-	text "When a Pokémon is asleep,"
-	line "it is unable to do anything."
-	line "It cannot attack, retreat or use"
-	line "Pokémon Power. A coin will be "
-	line "flipped at the end of each player's "
-	line "turn. If the coin comes up heads, "
-	line "the Pokémon will wake up. If it's"
-	line "tails, the Pokémon remains asleep."
-	line "Use Full Heal to wake it up!"
+	text "If a Pokémon is Asleep (<ASLEEP>),"
+	line "it cannot attack, retreat, or use"
+	line "its Pokémon Power. Flip a coin for"
+	line "that Pokémon after every turn."
+	line "If heads, the Pokémon will wake up."
+	line "If tails, the Pokémon stays Asleep."
+	line "You can also evolve the Pokémon or"
+	line "use a Full Heal card to wake it up!"
 	done
 
 PokemonPowerBookName:
-	text "Pokémon Power"
+	text "Pokémon Powers"
 	done
 
 PokemonPowerBookText:
-	text "Some Pokémon have special "
-	line "abilities called Pokémon Power."
-	line "They are very powerful abilities!"
-	line "They can be used before attacking, "
-	line "even if the Pokémon with the "
-	line "Pokémon Power is still on the Bench."
-	line "There are many different Pokémon "
-	line "Powers, so check your cards!"
+	text "Some Pokémon have special abilities"
+	line "called Pokémon Powers. They can be"
+	line "used before attacking, even when the"
+	line "Pokémon is on the Bench. There are"
+	line "many different Pokémon Powers,"
+	line "so read your cards carefully!"
 	done
 
 ScienceClubPokemonBookName:
@@ -617,43 +612,42 @@ ScienceClubPokemonBookName:
 ScienceClubPokemonBookText:
 	text "Characteristics of Pokémon used"
 	line "in the Science Club:"
-	line "Strong against Rock Pokémon."
-	line "Weak against Psychic Pokémon."
-	line "Many cards have attacks with "
-	line "poison and sleep effects."
-	line "Require Grass Energy cards"
-	line "to attack."
+	line " - Need <GRASS> Energy to attack"
+	line " - Make the Defending Pokémon <POISONED>"
+	line " - Strong against <FIGHTING> or <WATER> Pokémon"
+	line " - Weak against <PSYCHIC> Pokémon"
 	done
 
 ConfusionBookName:
-	text "Confusion"
+	text "Confused"
 	done
 
 ConfusionBookText:
 	text "It's big trouble if your Pokémon"
-	line "gets Confused!"
-	line "When a Confused Pokémon tries to"
-	line "attack, you must flip a coin!"
-	line "If it's heads, the attack is "
-	line "successful, but if it's tails,"
-	line "the Pokémon will attack itself"
-	line "for 20 damage!"
+	line "becomes Confused (<CONFUSED>). If that"
+	line "Pokémon tries to attack, you must"
+	line "flip a coin! If it's heads, then"
+	line "the attack is successful, but if"
+	line "it's tails, then the attack fails,"
+	line "and the Pokémon will deal 20 damage"
+	line "to itself instead!"
 	done
 
 UsefulButtonsBookName:
-	text "Useful Buttons"
+	text "Duel Shortcuts"
 	done
 
 UsefulButtonsBookText:
 	text "While pressing the B Button,"
 	line "use the + Control Pad to view"
-	line "your own or your opponent's "
+	line "your own or your opponent's"
 	line "Play Area or Discard Pile!"
 	line "B + Down = Your Play Area"
 	line "B + Left = Your Discard Pile"
 	line "B + Up = Opponent's Play Area"
 	line "B + Right = Opponent's Discard Pile"
-	line "Remember these handy functions!"
+	line "Try to remember all of these"
+	line "handy shortcuts!"
 	done
 
 FirePokemonBookName:
@@ -662,12 +656,9 @@ FirePokemonBookName:
 
 FirePokemonBookText:
 	text "Fire Pokémon Characteristics:"
-	line "Strong against Grass Pokémon."
-	line "Weak against Water Pokémon."
-	line "Some Grass Pokémon are not weak"
-	line "against Fire Pokémon."
-	line "Require Fire Energy cards"
-	line "to attack."
+	line " - Need <FIRE> Energy to attack"
+	line " - Strong against <GRASS> Pokémon"
+	line " - Weak against <WATER> Pokémon"
 	done
 
 FirePokemonAttacksBookName:
@@ -688,13 +679,12 @@ OriginalGameBoyCardsBookName:
 	done
 
 OriginalGameBoyCardsBookText:
-	text "The Pokémon Trading Card Game"
-	line "for Game Boy includes many "
-	line "original cards, like the "
-	line ""
-	text "<Lv>14 Meowth with the Cat Punch "
-	line "attack. There are many new cards,"
-	line "so go search them out!"
+	text "The Pokémon Trading Card Game for"
+	line "the Game Boy includes many original"
+	line "cards, like the <Lv>14 Meowth card"
+	line "that uses the Cat Punch attack."
+	line "There are many new cards to"
+	line "discover, so go search them out!"
 	done
 
 ColorlessPokemonBookName:
@@ -703,10 +693,10 @@ ColorlessPokemonBookName:
 
 ColorlessPokemonBookText:
 	text "Colorless Pokémon are very easy"
-	line "to use. They can attack with "
+	line "to use. They can attack with"
 	line "any type of Energy card, so"
 	line "you can include them in any type"
-	line "of deck. There are many Colorless "
+	line "of deck. There are many Colorless"
 	line "Pokémon, so check them all out!"
 	done
 
@@ -715,12 +705,12 @@ DragonPokemonBookName:
 	done
 
 DragonPokemonBookText:
-	text "Colorless Dragon Pokémon cards"
-	line "have resistance to Psychic"
-	line "Pokémon and have no weaknesses."
-	line "They can attack with any type"
-	line "of Energy card - they are truly"
-	line "worthy of the name ”dragon!”"
+	text "Colorless Dragon Pokémon do not"
+	line "typically have a Weakness, but they"
+	line "do have a Resistance. They can also"
+	line "attack with any type of Energy card."
+	line "All of these characteristics make"
+	line "them worthy of the name ”dragon!”"
 	done
 
 BirdPokemonBookName:
@@ -728,13 +718,12 @@ BirdPokemonBookName:
 	done
 
 BirdPokemonBookText:
-	text "Colorless Bird Pokémon cards"
-	line "have resistance to Fighting"
-	line "Pokémon but are weak against"
-	line "Lightning Pokémon. They can attack"
-	line "with any type of Energy card."
-	line "They can retreat easily, since"
-	line "they are flying."
+	text "Colorless Bird Pokémon often have a"
+	line "Weakness to <LIGHTNING>, but they"
+	line "also have a Resistance to <FIGHTING>."
+	line "They can attack using any type of"
+	line "Energy. Since Bird Pokémon can fly,"
+	line "they have little to no retreat cost."
 	done
 
 LegendaryPokemonCardsVol1BookName:
@@ -743,12 +732,13 @@ LegendaryPokemonCardsVol1BookName:
 
 LegendaryPokemonCardsVol1BookText:
 	text "The first of the Legendary Pokémon"
-	line "Cards is <Lv>37 Moltres. With"
-	line "Firegiver, you can place Fire"
-	line "Energy cards in your hand! Also,"
-	line "Dive Bomb is a powerful attack!"
-	line "Grand Master Courtney, the Fire"
-	line "Queen, owns this card!"
+	line "Cards is the <Lv>37 Moltres."
+	line "When played, Firegiver will add Fire"
+	line "Energy cards to the player's hand!"
+	line "It can also attack with Dive Bomb,"
+	line "a powerful, if risky, attack!"
+	line "Grand Master Courtney,"
+	line "the Fire Queen, owns this card!"
 	done
 
 LegendaryPokemonCardsVol2BookName:
@@ -757,12 +747,13 @@ LegendaryPokemonCardsVol2BookName:
 
 LegendaryPokemonCardsVol2BookText:
 	text "The second Legendary Pokémon Card"
-	line "is <Lv>68 Zapdos. With Peal of"
-	line "Thunder, just putting this card on"
-	line "the bench causes damage!"
-	line "Also, Big Thunder is a powerful"
-	line "attack! The Thunder Grand Master,"
-	line "Steve, owns this card!"
+	line "is the <Lv>68 Zapdos."
+	line "With Peal of Thunder, simply putting"
+	line "this card on the Bench will deal"
+	line "damage to another Pokémon, and its"
+	line "Big Thunder attack is even stronger." 
+	line "The Grand Master of Lightning,"
+	line "Thunder Steve, owns this card!"
 	done
 
 LegendaryPokemonCardsVol3BookName:
@@ -771,12 +762,13 @@ LegendaryPokemonCardsVol3BookName:
 
 LegendaryPokemonCardsVol3BookText:
 	text "The third Legendary Pokémon Card"
-	line "is <Lv>37 Articuno. Its Quickfreeze"
-	line "will paralyze opponents' Pokémon"
-	line "when the card is put in play!"
-	line "Also, Ice Breath is a powerful"
-	line "Attack! Grand Master Jack,"
-	line "the Ice-man, owns this card!"
+	line "is the <Lv>37 Articuno."
+	line "Its Quickfreeze can disable the"
+	line "opponent's Pokémon for one turn"
+	line "after the card is put into play!"
+	line "It can also attack with Ice Breath!"
+	line "Grand Master Jack, the Ice Man,"
+	line "owns this card!"
 	done
 
 LegendaryPokemonCardsVol4BookName:
@@ -785,10 +777,11 @@ LegendaryPokemonCardsVol4BookName:
 
 LegendaryPokemonCardsVol4BookText:
 	text "The fourth Legendary Pokémon Card"
-	line "is <Lv>41 Dragonite. Its Healing"
-	line "Wind will heal damage done to "
-	line "Pokémon when this card is played!"
-	line "Also, Slam is a powerful attack!"
+	line "is the <Lv>41 Dragonite."
+	line "When played, its Healing Wind power"
+	line "will remove 2 damage counters from"
+	line "each of the player's Pokémon!"
+	line "It can also attack with Slam!"
 	line "Rod, Leader of the Grand Masters,"
 	line "owns this card!"
 	done
@@ -798,10 +791,11 @@ TheGrandMastersBookName:
 	done
 
 TheGrandMastersBookText:
-	text "Courtney, Steve, Jack and Rod -"
+	text "Courtney, Steve, Jack, and Rod -"
+	line ""
 	line "the 4 Grand Masters who defend"
-	line "the Legendary Pokémon Cards - "
-	line "are all master players of the "
+	line "the Legendary Pokémon Cards -"
+	line "are all master players of the"
 	line "Pokémon Trading Card Game!"
 	done
 
@@ -811,10 +805,10 @@ MasterMedalsBookName:
 
 MasterMedalsBookText:
 	text "There are a total of 8 Master Medals"
-	line "owned by the Club Masters. It is "
+	line "owned by the Club Masters. It is"
 	line "said that the secret of their Club's"
-	line "deck is encrypted in the Master "
-	line "Medals. Some say the medals were "
+	line "decks are encrypted in the Master"
+	line "Medals. Some say the medals were"
 	line "a gift from the Grand Masters."
 	done
 
@@ -826,7 +820,7 @@ PlateOfLegendsText:
 	text "”Those in search of the Legendary"
 	line " Pokémon Cards..."
 	line " Defeat the Masters of the 8 Clubs"
-	line " and attain the 8 Medals."
+	line " and attain the 8 Master Medals."
 	line " Once attained, defeat the Grand"
 	line " Master here at Pokémon Dome..."
 	line " Then you shall inherit"
@@ -838,55 +832,54 @@ MysteriousVoiceDoorName:
 	done
 
 Clerk9DefaultText:
-	text "Greetings! Welcome to the "
-	line "Challenge Hall! The Challenge Cup "
-	line "will begin soon. If you win the "
-	line "Challenge Cup, you will receive "
-	line "a Promotional Card! Please join "
+	text "Greetings! Welcome to the"
+	line "Challenge Hall! The Challenge Cup"
+	line "will begin soon. If you win the"
+	line "Challenge Cup, you will receive"
+	line "a Promotional card! Please join"
 	line "us for this competition."
 	done
 
 Clerk9ChallengeCupOverText:
-	text "Greetings! Welcome to the "
-	line "Challenge Hall! This is where the"
-	line "the Challenge Cup is held. The "
-	line "Challenge Cup may start at any"
-	line "time, so please visit the "
+	text "Greetings! Welcome to the"
+	line "Challenge Hall! This is where"
+	line "the Challenge Cup is held."
+	line "The Challenge Cup may start at"
+	line "any time, so please visit the"
 	line "Challenge Hall often."
 	done
 
 Clerk9ChallengeCupReadyText:
-	text "Greetings! Welcome to the "
-	line "Challenge Hall! Defeat 3 "
-	line "opponents here, and you shall be "
-	line "presented with a wonderful gift!"
+	text "Greetings! Welcome to the Challenge"
+	line "Hall! Defeat 3 opponents, and you'll"
+	line "be presented with a wonderful gift!"
 	line "Please join in the competition!"
 	done
 
 Clerk9ChallengeCupLostText:
 	text "Most unfortunate, <RAMNAME>."
 	line "Once you enter, you won't be able"
-	line "to re-enter for some time. "
+	line "to re-enter for some time."
 	line "Please try again another day."
 	done
 
 Clerk9ChallengeCupWonText:
 	text "Congratulations, <RAMNAME>!"
 	line "You received a card!"
-	line "Please join us for the next "
+	line "Please join us for the next"
 	line "Challenge Cup, too."
 	done
 
 Pappy3Text:
 	text "I won't lose to any"
 	line "whipper-snapper!"
-	line "I'm going to win this "
+	line "I'm going to win this"
 	line "Challenge Cup!"
 	done
 
 Gal4Text:
 	text "I work at the Challenge Cup"
-	line "as the HOST."
+	line "as the host."
 	line "I can't wait to get up on stage!"
 	done
 
@@ -912,7 +905,7 @@ Lass5Text:
 	done
 
 Chap5Text:
-	text "What's that? Oh! The Challenge "
+	text "What's that? Oh! The Challenge"
 	line "Cup isn't being held right now."
 	line "Me? I'm waiting for the Challenge"
 	line "Cup to begin."
@@ -925,11 +918,11 @@ RonaldChallengeCup1NotStarted1Text:
 
 RonaldChallengeCup1NotStarted2Text:
 	text "I'm the one who's going to"
-	line "defeat 3 opponents! The prize, "
-	line ""
-	text "<Lv>60 Mewtwo, belongs to me!"
-	line "You just sit tight and watch me win!"
-	line "See Ya! Ha ha ha ha ha ha!"
+	line "defeat all 3 opponents!"
+	line "The prized <Lv>60 Mewtwo card"
+	line "belongs to me! You just sit tight"
+	line "and watch me win! See Ya!"
+	line "Ha ha ha ha ha ha!"
 	done
 
 RonaldChallengeCup1LostActive1Text:
@@ -940,21 +933,21 @@ RonaldChallengeCup1LostActive1Text:
 RonaldChallengeCup1LostActive2Text:
 	text "What? You're asking if I won?"
 	line "I lost to the third opponent!"
-	line "I just lost my concentration."
-	line "But I'll win the next Challenge "
-	line "Cup! Of course I'll puverize you!"
+	line "I just lost my concentration. But"
+	line "I'll win the next Challenge Cup!"
+	line "Of course I'll puverize you!"
 	line "See ya! Ha ha ha ha ha ha!"
 	done
 
 RonaldChallengeCup1LostInactive1Text:
-	text "Hey <RAMNAME>, too bad "
+	text "Hey <RAMNAME>, too bad"
 	line "you're too late!"
 	done
 
 RonaldChallengeCup1LostInactive2Text:
-	text "The Challenge Cup is over! I"
-	line "defeated 3 opponents and won"
-	line "the prize - <Lv>60 Mewtwo!"
+	text "The Challenge Cup is over!"
+	line "I defeated 3 opponents and won"
+	line "the prize - a <Lv>60 Mewtwo!"
 	line "See ya! Ha ha ha ha ha ha!"
 	done
 
@@ -964,12 +957,12 @@ RonaldChallengeCup1Missed1Text:
 	done
 
 RonaldChallengeCup1Missed2Text:
-	text "The Challenge Cup is over! I"
-	line "defeated 3 opponents and won"
-	line "the prize - <Lv>60 Mewtwo!"
+	text "The Challenge Cup is over!"
+	line "I defeated 3 opponents and won"
+	line "the prize - a <Lv>60 Mewtwo!"
 	line "I guess you could try entering"
-	line "the next Challenge Cup, but "
-	line "you won't have a chance since "
+	line "the next Challenge Cup, but"
+	line "you won't have a chance since"
 	line "I'll win that one, too!"
 	line "See ya! Ha ha ha ha ha ha!"
 	done
@@ -981,11 +974,10 @@ RonaldChallengeCup2NotStarted1Text:
 
 RonaldChallengeCup2NotStarted2Text:
 	text "No matter who enters the Challenge"
-	line "Cup, I'll be the winner! "
-	line ""
-	text "<Lv>8 Mew, this Cup's prize, will "
-	line "belong to me! Why don't you just"
-	line "give up and go home!"
+	line "Cup, I'll be the winner!"
+	line "This Cup's prize, the <Lv>8 Mew,"
+	line "will belong to me! Why don't you"
+	line "just give up and go home!"
 	line "See ya! Ha ha ha ha ha ha!"
 	done
 
@@ -997,9 +989,9 @@ RonaldChallengeCup2LostActive1Text:
 RonaldChallengeCup2LostActive2Text:
 	text "That was a close one for me!"
 	line "I lost to the third opponent!"
-	line "But I'll win the next Challenge "
-	line "Cup! And of course, I'll pulverize "
-	line "you! See ya! Ha ha ha ha ha!"
+	line "But I'll win the next Challenge Cup!"
+	line "And of course, I'll pulverize you!"
+	line "See ya! Ha ha ha ha ha!"
 	done
 
 RonaldChallengeCup2LostInactive1Text:
@@ -1010,7 +1002,7 @@ RonaldChallengeCup2LostInactive1Text:
 RonaldChallengeCup2LostInactive2Text:
 	text "The Challenge Cup is already"
 	line "over! What? Who won?"
-	line "Who do you expect!?! Me, of "
+	line "Who do you expect!?! Me, of"
 	line "course! The prize belongs to"
 	line "me! <Lv>8 Mew! See ya!"
 	line "Ha ha ha ha ha ha!"

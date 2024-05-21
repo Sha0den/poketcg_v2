@@ -1,3 +1,14 @@
+KakunaName:
+	text "Kakuna"
+	done
+
+KakunasStiffenDescription:
+	text "Flip a coin. If heads, prevent all"
+	line "damage done to Kakuna during your"
+	line "opponent's next turn. (Any other"
+	line "effects of attacks still happen.)"
+	done
+
 KakunaDescription:
 	text "Almost incapable of moving, this"
 	line "Pokémon can only harden its shell to"
@@ -13,8 +24,8 @@ TwineedleName:
 	done
 
 DoubleAttackX30Description:
-	text "Flip 2 coins. This attack does 30"
-	line "damage times the number of heads."
+	text "Flip 2 coins. This attack does"
+	line "30 damage times the number of heads."
 	done
 
 PoisonBeeName:
@@ -44,9 +55,9 @@ SnakeName:
 	done
 
 EkansDescription:
-	text "Moves silently and stealthily. Eats"
-	line "the eggs of birds, such as Pidgey"
-	line "and Spearow, whole."
+	text "Moves silently and stealthily."
+	line "Eats the eggs of birds, such as"
+	line "Pidgey and Spearow, whole."
 	done
 
 ArbokName:
@@ -62,9 +73,8 @@ TerrorStrikeDescription:
 	line "opponent has any Benched Pokémon,"
 	line "he or she chooses 1 of them and"
 	line "switches it with the Defending"
-	line "Pokémon."
-	line "(Do the damage before switching"
-	line "the Pokémon.)"
+	line "Pokémon. (Do the damage before"
+	line "switching the Pokémon.)"
 	done
 
 PoisonFangName:
@@ -90,8 +100,8 @@ FurySwipesName:
 	done
 
 TripleAttackX10Description:
-	text "Flip 3 coins. This attack does 10"
-	line "damage times the number of heads."
+	text "Flip 3 coins. This attack does"
+	line "10 damage times the number of heads."
 	done
 
 CallForFamilyName:
@@ -125,8 +135,8 @@ SupersonicName:
 	done
 
 MayInflictConfusionDescription:
-	text "Flip a coin. If heads, the Defending"
-	line "Pokémon is now Confused."
+	text "Flip a coin. If heads, the"
+	line "Defending Pokémon is now Confused."
 	done
 
 DoubleKickName:
@@ -279,8 +289,8 @@ GolbatsLeechLifeDescription:
 
 GolbatDescription:
 	text "Once it strikes, it will not stop"
-	line "draining energy from the victim even"
-	line "if it gets too heavy to fly."
+	line "draining energy from the victim"
+	line "even if it gets too heavy to fly."
 	done
 
 OddishName:
@@ -305,8 +315,8 @@ WeedName:
 
 OddishDescription:
 	text "During the day, it keeps its face"
-	line "buried in the ground. At night, it"
-	line "wanders around sowing its seeds."
+	line "buried in the ground. At night,"
+	line "it wanders around sowing its seeds."
 	done
 
 GloomName:
@@ -351,8 +361,8 @@ PetalDanceName:
 	done
 
 PetalDanceDescription:
-	text "Flip 3 coins. This attack does 40"
-	line "damage times the number of heads."
+	text "Flip 3 coins. This attack does"
+	line "40 damage times the number of heads."
 	line "Vileplume is now Confused (after"
 	line "doing damage)."
 	done
@@ -442,8 +452,7 @@ ShiftDescription:
 	text "Once during your turn (before your"
 	line "attack), you may change the type of"
 	line "Venomoth to the type of any other"
-	line "Pokémon in play other than"
-	line "Colorless."
+	line "Pokémon in play other than <COLORLESS>."
 	line "This power can't be used if Venomoth"
 	line "is Asleep, Confused, or Paralyzed."
 	done
@@ -453,9 +462,9 @@ VenomPowderName:
 	done
 
 VenomPowderDescription:
-	text "Flip a coin. If heads, the Defending"
-	line "Pokémon is now Confused and"
-	line "Poisoned."
+	text "Flip a coin. If heads, the"
+	line "Defending Pokémon is now Confused"
+	line "and Poisoned."
 	done
 
 PoisonmothName:
@@ -464,7 +473,7 @@ PoisonmothName:
 
 VenomothDescription:
 	text "The dust-like scales covering its"
-	line "wings are color coded to indicate"
+	line "wings are color-coded to indicate"
 	line "the kinds of poison it has."
 	done
 
@@ -524,9 +533,9 @@ AcidName:
 	done
 
 VictreebelsAcidDescription:
-	text "Flip a coin. If heads, the Defending"
-	line "Pokémon can't retreat during your"
-	line "opponent's next turn."
+	text "Flip a coin. If heads, the"
+	line "Defending Pokémon can't retreat"
+	line "during your opponent's next turn."
 	done
 
 VictreebelDescription:
@@ -629,8 +638,8 @@ BigEggsplosionName:
 BigEggsplosionDescription:
 	text "Flip a number of coins equal to the"
 	line "number of Energy attached to"
-	line "Exeggutor. This attack does 20"
-	line "damage times the number of heads."
+	line "Exeggutor. This attack does"
+	line "20 damage times the number of heads."
 	done
 
 CoconutName:
@@ -653,9 +662,9 @@ FoulGasName:
 	done
 
 FoulGasDescription:
-	text "Flip a coin. If heads, the Defending"
-	line "Pokémon is now Poisoned; if tails,"
-	line "it is now Confused."
+	text "Flip a coin. If heads, the"
+	line "Defending Pokémon is now Poisoned;"
+	line "if tails, it is now Confused."
 	done
 
 PoisonGasName:
@@ -683,9 +692,9 @@ SelfdestructName:
 WeezingsSelfdestructDescription:
 	text "Does 10 damage to each Pokémon on"
 	line "each player's Bench. (Don't apply"
-	line "Weakness and Resistance for Benched"
-	line "Pokémon.) Weezing does 60 damage to"
-	line "itself."
+	line "Weakness and Resistance for"
+	line "Benched Pokémon.) Weezing does"
+	line "60 damage to itself."
 	done
 
 WeezingDescription:
@@ -777,8 +786,8 @@ EmberName:
 	done
 
 EmberDescription:
-	text "Discard 1 <FIRE> Energy card attached to"
-	line "Charmander in order to use this"
+	text "Discard 1 <FIRE> Energy card attached"
+	line "to Charmander in order to use this"
 	line "attack."
 	done
 
@@ -802,8 +811,8 @@ FlamethrowerName:
 	done
 
 CharmeleonsFlamethrowerDescription:
-	text "Discard 1 <FIRE> Energy card attached to"
-	line "Charmeleon in order to use this"
+	text "Discard 1 <FIRE> Energy card attached"
+	line "to Charmeleon in order to use this"
 	line "attack."
 	done
 
@@ -920,8 +929,8 @@ DancingEmbersName:
 	done
 
 DancingEmbersDescription:
-	text "Flip 8 coins. This attack does 10"
-	line "damage times the number of heads."
+	text "Flip 8 coins. This attack does"
+	line "10 damage times the number of heads."
 	done
 
 NinetalesLv35Description:
@@ -958,9 +967,7 @@ QuickAttackName:
 
 QuickAttackDescription:
 	text "Flip a coin. If heads, this attack"
-	line "does 10 damage plus 20 more damage;"
-	line "if tails, this attack does 10"
-	line "damage."
+	line "does 10 damage plus 20 more damage."
 	done
 
 FlamesOfRageName:
@@ -971,8 +978,8 @@ FlamesOfRageDescription:
 	text "Discard 2 <FIRE> Energy cards attached"
 	line "to Arcanine in order to use this"
 	line "attack. This attack does 40 damage"
-	line "plus 10 more damage for each damage"
-	line "counter on Arcanine."
+	line "plus 10 more damage for each"
+	line "damage counter on Arcanine."
 	done
 
 LegendaryName:
@@ -986,8 +993,8 @@ ArcanineLv34Description:
 	done
 
 ArcaninesFlamethrowerDescription:
-	text "Discard 1 <FIRE> Energy card attached to"
-	line "Arcanine in order to use this"
+	text "Discard 1 <FIRE> Energy card attached"
+	line "to Arcanine in order to use this"
 	line "attack."
 	done
 
@@ -1037,9 +1044,7 @@ StompName:
 
 StompDescription:
 	text "Flip a coin. If heads, this attack"
-	line "does 20 damage plus 10 more damage;"
-	line "if tails, this attack does 20"
-	line "damage."
+	line "does 20 damage plus 10 more damage."
 	done
 
 AgilityName:
@@ -1077,9 +1082,9 @@ SpitfireName:
 	done
 
 MagmarLv24Description:
-	text "Its body always burns with an orange"
-	line "glow that enables it to hide"
-	line "perfectly among flames."
+	text "Its body always burns with an"
+	line "orange glow that enables it to"
+	line "hide perfectly among flames."
 	done
 
 SmokescreenName:
@@ -1315,8 +1320,8 @@ HyperBeamName:
 
 Discard1EnergyFromTargetDescription:
 	text "If the Defending Pokémon has any"
-	line "Energy cards attached to it, choose"
-	line "1 of them and discard it."
+	line "Energy cards attached to it,"
+	line "choose 1 of them and discard it."
 	done
 
 GolduckDescription:
@@ -1361,9 +1366,9 @@ AmnesiaName:
 
 PoliwhirlsAmnesiaDescription:
 	text "Choose 1 of the Defending Pokémon's"
-	line "attacks. That Pokémon can't use that"
-	line "attack during your opponent's next"
-	line "turn."
+	line "attacks. That Pokémon can't use"
+	line "that attack during your opponent's"
+	line "next turn."
 	done
 
 DoubleslapName:
@@ -1575,21 +1580,6 @@ KinglerDescription:
 	line "horsepower of crushing power."
 	line "However, its huge size makes it"
 	line "unwieldy to use."
-	done
-
-HorseaName:
-	text "Horsea"
-	done
-
-OpponentAttackMayDoNothingDescription:
-	text "If the Defending Pokémon tries to"
-	line "attack during your opponent's next"
-	line "turn, your opponent flips a coin."
-	line "If tails, that attack does nothing."
-	done
-
-DragonName:
-	text "Dragon"
 	done
 
 ;	ds $21
