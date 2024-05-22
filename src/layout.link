@@ -141,15 +141,17 @@ ROMX $29
 	"Gfx 11"
 ROMX $2a
 	"Gfx 12"
-	"Anims 1"
 ROMX $2b
-	"Anims 2"
+	"Anims 1"
 ROMX $2c
-	"Anims 3"
+	"Anims 2"
 ROMX $2d
-	"Anims 4"
-	"Palettes1"
+	"Anims 3"
 ROMX $2e
+	"Anims 4"
+ROMX $2f
+	"Palettes1"
+ROMX $30
 	"Palettes2"
 ROMX $31
 	"Card Gfx 1"

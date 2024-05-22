@@ -12,8 +12,10 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **May 21, 2024:** 3 Files Changed
+    - Finish fixing the "Big Lightning" and "Dive Bomb" animations
 
-- **May 21, 2024:** 17 Files Changed (bugs_and_glitches.md was also removed)
+- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/3e7fab86d81231648bee2b0256eef81262d78f24):** 17 Files Changed (bugs_and_glitches.md was also removed)
     - Fix the lower left tiles of the pool area in the Water Club using the wrong color
     - Fix the emblems in the Club entrances using some incorrect tiles
     - Fix a problem with the frame data being used for NPCs with a green palette
