@@ -481,8 +481,12 @@ AnimFrameTable32::
 	db 16, -24, 17, $0
 	db 16, -32, 16, $0
 
+; This animation is still being cut off.
+; To fix, delete the "db 19" line and remove the semicolon from the 2 commented lines.
+; However, that will cause a byte overflow, which will also need to be fixed.
 .data_ac685
 	db 19 ; size
+;	db 20 ; size
 	db -8, -24, 0, $0
 	db -8, -16, 1, $0
 	db 0, -32, 2, $0
@@ -495,16 +499,21 @@ AnimFrameTable32::
 	db 16, -24, 9, $0
 	db -8, 8, 11, (1 << OAM_X_FLIP)
 	db -8, 16, 10, (1 << OAM_X_FLIP)
-	db 0, 24, 10, (1 << OAM_X_FLIP)
+	db 0, 24, 12, (1 << OAM_X_FLIP)
 	db 0, 16, 13, (1 << OAM_X_FLIP)
 	db 0, 8, 14, (1 << OAM_X_FLIP)
 	db 8, 8, 17, (1 << OAM_X_FLIP)
 	db 8, 16, 16, (1 << OAM_X_FLIP)
 	db 8, 24, 15, (1 << OAM_X_FLIP)
+;	db 16, 16, 19, (1 << OAM_X_FLIP)
 	db 16, 24, 18, (1 << OAM_X_FLIP)
 
+; This animation is still being cut off.
+; To fix, delete the "db 19" line and remove the semicolon from the 2 commented lines.
+; However, that will cause a byte overflow, which will also need to be fixed.
 .data_ac6d2
 	db 19 ; size
+;	db 20 ; size
 	db -8, 16, 0, (1 << OAM_X_FLIP)
 	db -8, 8, 1, (1 << OAM_X_FLIP)
 	db 0, 24, 2, (1 << OAM_X_FLIP)
@@ -517,12 +526,13 @@ AnimFrameTable32::
 	db 16, 16, 9, (1 << OAM_X_FLIP)
 	db -8, -16, 11, $0
 	db -8, -24, 10, $0
-	db 0, -32, 10, $0
+	db 0, -32, 12, $0
 	db 0, -24, 13, $0
 	db 0, -16, 14, $0
 	db 8, -16, 17, $0
 	db 8, -24, 16, $0
 	db 8, -32, 15, $0
+;	db 16, -24, 19, $0
 	db 16, -32, 18, $0
 
 .data_ac71f
@@ -539,7 +549,7 @@ AnimFrameTable32::
 	db 16, -24, 9, $0
 	db -8, 8, 11, (1 << OAM_X_FLIP)
 	db -8, 16, 10, (1 << OAM_X_FLIP)
-	db 0, 24, 10, (1 << OAM_X_FLIP)
+	db 0, 24, 12, (1 << OAM_X_FLIP)
 	db 0, 16, 13, (1 << OAM_X_FLIP)
 	db 0, 8, 14, (1 << OAM_X_FLIP)
 	db 8, 8, 17, (1 << OAM_X_FLIP)

@@ -3,7 +3,7 @@
 ### Types of Changes:
 - [**Bug Fixes For Base Game**](#bug-fixes-for-base-game)
 - [**Code Optimization**](#code-optimization)
-- [**Miscellaneous Changes**](##miscellaneous-changes)
+- [**Miscellaneous Changes**](#miscellaneous-changes)
 - [**New Features**](#new-features)
 - [**Other Bug Fixes And Commit Reversions**](#other-bug-fixes-and-commit-reversions)
 - [**Potential Hacks**](#potential-hacks)
@@ -12,6 +12,15 @@
 <br/>
 
 ## Bug Fixes For Base Game
+
+- **May 21, 2024:** 17 Files Changed (bugs_and_glitches.md was also removed)
+    - Fix the lower left tiles of the pool area in the Water Club using the wrong color
+    - Fix the emblems in the Club entrances using some incorrect tiles
+    - Fix a problem with the frame data being used for NPCs with a green palette
+    - (Partially) Fix a problem with the "Big Lightning" duel animation
+    - (Partially) Fix a problem with the "Dive Bomb" duel animation
+
+<br/>
 
 - **[May 6, 2024](https://github.com/Sha0den/improvedpoketcg/commit/4da8cb3a494cfec17fbe2de9a57e4c2e3c6924c6):** 9 Files Changed (8 are Code Optimization)
     - Fix "Ninetails" typo
@@ -156,12 +165,6 @@
 
 <br/>
 
-- **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f):** 5 Files Changed
-    - Expand the halfwidth and fullwidth font graphics (at the cost of some kanji)
-    - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
-
-<br/>
-
 - **[May 12, 2024](https://github.com/Sha0den/improvedpoketcg/commit/a22046c5fd4ddf967e4ea0793a79abbdf80cc7aa):** 4 Files Changed
     - Add text speed constants and increase the default text speed to the fastest setting
 
@@ -202,8 +205,8 @@
 
 <br/>
 
-- **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49)** 1 File Changed
-    - Replace damage counter display with "current HP/max HP", allowing HP values to be as high as 250HP
+- **[April 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/180ea5c9b6e0965a32b3cdc37b474b8b8a97c8ef):** 1 File Changed
+    - Replace the word "Hand" with the hand icon from the duel graphics in the play area screens
 
 <br/>
 
@@ -218,6 +221,13 @@
 
 
 ## New Features
+- **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f):** 5 Files Changed
+    - Add support for common accented characters (halfwidth and fullwidth)
+    - Expand the halfwidth font graphics (at the cost of some kanji)
+    - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
+
+<br/>
+
 - **[May 14, 2024](https://github.com/Sha0den/improvedpoketcg/commit/b37fdd04d9d228a46be2e27ecf64407bcf1a5302):** 3 Files Changed
     - The practice game with Sam at the start of the game is now optional
 
@@ -233,8 +243,9 @@
 
 <br/>
 
-- **[April 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/180ea5c9b6e0965a32b3cdc37b474b8b8a97c8ef):** 1 File Changed
-    - Replace the word "Hand" with the hand icon from the duel graphics in the play area screens
+- **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49)** 1 File Changed
+    - Replace damage counter display with "current HP/max HP"
+    - The maximum HP value of a Pokémon is now 250 (was 120)
 
 <br/>
 

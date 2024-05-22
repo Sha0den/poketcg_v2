@@ -648,14 +648,14 @@ AnimFrameTable7::
 
 .data_a9459
 	db 4 ; size
-	db 0, 0, 6, %011 | (1 << OAM_OBP_NUM)
+	db 0, 0, 12, %011 | (1 << OAM_OBP_NUM)
 	db 0, 8, 13, %011 | (1 << OAM_OBP_NUM)
 	db 8, 0, 14, %011 | (1 << OAM_OBP_NUM)
 	db 8, 8, 15, %011 | (1 << OAM_OBP_NUM)
 
 .data_a946a
 	db 4 ; size
-	db 0, 0, 8, %011 | (1 << OAM_OBP_NUM)
+	db 0, 0, 16, %011 | (1 << OAM_OBP_NUM)
 	db 0, 8, 17, %011 | (1 << OAM_OBP_NUM)
 	db 8, 0, 18, %011 | (1 << OAM_OBP_NUM)
 	db 8, 8, 19, %011 | (1 << OAM_OBP_NUM)
@@ -685,14 +685,14 @@ AnimFrameTable7::
 	db 4 ; size
 	db 0, 0, 13, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
 	db 8, 0, 15, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
-	db 0, 8, 6, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
+	db 0, 8, 12, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
 	db 8, 8, 14, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
 
 .data_a94bf
 	db 4 ; size
 	db 0, 0, 17, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
 	db 8, 0, 19, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
-	db 0, 8, 8, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
+	db 0, 8, 16, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
 	db 8, 8, 18, %011 | (1 << OAM_OBP_NUM) | (1 << OAM_X_FLIP)
 
 AnimData27::
@@ -3615,9 +3615,14 @@ AnimFrameTable29::
 	db -28, -49, 40, $0
 	db -28, -41, 41, $0
 
+; This animation is still being cut off.
+; To fix, delete the "db 28" line and remove the semicolon from the 2 commented lines.
+; However, that will cause a byte overflow, which will also need to be fixed.
 .data_ab5fd
 	db 28 ; size
-	db -72, -8, 0, (1 << OAM_X_FLIP)
+;	db 29 ; size
+	db -72, 0, 0, (1 << OAM_X_FLIP)
+;	db -72, -8, 1, (1 << OAM_X_FLIP)
 	db -16, 32, 27, $0
 	db -16, 40, 28, $0
 	db -8, 32, 29, $0
