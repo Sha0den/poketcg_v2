@@ -42,6 +42,45 @@ Palette100::
 	rgb 31, 13,  0
 	rgb 31, 31,  0
 
+Palette101::
+	db 0
+	db 7
+
+	rgb 28, 28, 28
+	rgb 28, 28,  0
+	rgb 28, 16,  0
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb  0,  0, 28
+	rgb  0,  0,  4
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb 24,  4,  0
+	rgb 28, 16,  0
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb 28, 28,  0
+	rgb 24,  4,  0
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb  4, 12,  0
+	rgb 28, 16,  0
+	rgb  4,  0,  0
+
+	rgb  0,  0,  0
+	rgb 28,  0,  0
+	rgb 28, 12,  0
+	rgb 28, 28,  0
+
+	rgb  0,  0,  0
+	rgb 28,  0,  0
+	rgb 28, 12,  0
+	rgb 28, 28,  0
+
 Palette102::
 	db 0
 	db 7
@@ -276,6 +315,17 @@ Palette107::
 	rgb 31, 13,  0
 	rgb 31, 31,  0
 
+Palette108::
+	db 1, %11100100
+	db 0
+
+Palette109::
+	db 1, %11100100
+	db 0
+
+Palette110::
+	db $00, $00
+
 Palette111::
 	db 1, %11100100
 	db 8
@@ -480,6 +530,15 @@ Palette116::
 	rgb 31, 13,  0
 	rgb 31, 31,  0
 
+Palette117::
+	db 0
+	db 1
+
+	rgb 27, 27, 24
+	rgb 31, 31,  0
+	rgb 31,  0,  0
+	rgb  0,  8, 19
+
 Palette118::
 	db 0
 	db 6
@@ -513,6 +572,15 @@ Palette118::
 	rgb 29, 11, 30
 	rgb 19,  0, 25
 	rgb  0,  0,  0
+
+Palette119::
+	db 0
+	db 1
+
+	rgb 28, 28, 24
+	rgb 28, 16, 12
+	rgb 28,  4,  8
+	rgb  0,  0,  8
 
 Palette120::
 	db 0

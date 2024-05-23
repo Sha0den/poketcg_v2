@@ -12,8 +12,12 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **May 21, 2024:** 3 Files Changed
+- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/637b2675313f43498707565d050d9fcf825319db):** 3 Files Changed
     - Finish fixing the "Big Lightning" and "Dive Bomb" animations
+    - Split "Gfx 12" and "Anims 1" into 2 banks
+    - Split "Anims 4" and "Palettes1" into 2 banks
+
+<br/>
 
 - **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/3e7fab86d81231648bee2b0256eef81262d78f24):** 17 Files Changed (bugs_and_glitches.md was also removed)
     - Fix the lower left tiles of the pool area in the Water Club using the wrong color
@@ -61,6 +65,11 @@
 
 
 ## Code Optimization
+- **May 22, 2024]:** 8 Files Changed
+    - Sort all animation and palette data in the 
+
+<br/>
+
 - **[May 17, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ebd54a7d1dff4084a149f63f822959c088e70e8f):** 3 Files Changed
     - Review most of the code comments in the effect functions files
     - Replace many jp's with jr's and fallthroughs, moving functions as necessary
@@ -213,7 +222,11 @@
 <br/>
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2):** 19 Files Changed (Half are Code Optimization)
-    - Remove rom matching comparison, move card data to its own bank, add an extra bank for Text and Effect Functions, and update a wide variety of duel texts
+    - Remove rom matching comparison
+    - Split "Decks" and "Cards" into 2 banks
+    - Add another Text bank, which uses the newly created text14.asm
+    - Add another Effect Functions bank, which uses the newly created effect_functions2.asm
+    - Update a wide variety of duel texts
  
 
 

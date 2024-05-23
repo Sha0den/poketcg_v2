@@ -497,11 +497,6 @@ DuelPowderGfx::
 	dw $1
 	INCBIN "gfx/duel/anims/powder.2bpp"
 
-AnimData12::
-	frame_table AnimFrameTable3
-	frame_data 2, 8, 0, 0
-	frame_data 0, 0, 0, 0
-
 SECTION "Gfx 4", ROMX
 
 OverworldMapTiles::
@@ -543,18 +538,6 @@ OWPlayerGfx::
 DuelPetalGfx::
 	dw $1
 	INCBIN "gfx/duel/anims/petal.2bpp"
-
-AnimData2::
-	frame_table AnimFrameTable0
-	frame_data 5, 16, 0, 0
-	frame_data 6, 16, 0, 0
-	frame_data 7, 16, 0, 0
-	frame_data 6, 16, 0, 0
-	frame_data 0, 0, 0, 0
-
-Palette109::
-	db 1, %11100100
-	db 0
 
 SECTION "Gfx 5", ROMX
 
@@ -618,17 +601,6 @@ NintendoGfx::
 DuelPoisonGfx::
 	dw $4
 	INCBIN "gfx/duel/anims/poison.2bpp"
-
-AnimData3::
-	frame_table AnimFrameTable0
-	frame_data 8, 16, 0, 0
-	frame_data 9, 16, 0, 0
-	frame_data 0, 0, 0, 0
-
-AnimData11::
-	frame_table AnimFrameTable3
-	frame_data 1, 8, 0, 0
-	frame_data 0, 0, 0, 0
 
 SECTION "Gfx 6", ROMX
 
@@ -737,12 +709,6 @@ CompaniesGfx::
 OWRonaldGfx::
 	dw $14
 	INCBIN "gfx/overworld_sprites/ronald.2bpp"
-
-AnimData5::
-	frame_table AnimFrameTable1
-	frame_data 3, 16, 0, 0
-	frame_data 4, 16, 0, 0
-	frame_data 0, 0, 0, 0
 
 SECTION "Gfx 8", ROMX
 
@@ -1074,15 +1040,6 @@ DuelSmallStarGfx::
 	dw $4
 	INCBIN "gfx/duel/anims/small_star.2bpp"
 
-Palette117::
-	db 0
-	db 1
-
-	rgb 27, 27, 24
-	rgb 31, 31,  0
-	rgb 31,  0,  0
-	rgb  0,  8, 19
-
 SECTION "Gfx 11", ROMX
 
 OWGalGfx::
@@ -1281,14 +1238,6 @@ DuelSmallGlowGfx::
 	dw $03
 	INCBIN "gfx/duel/anims/small_glow.2bpp"
 
-AnimData6::
-	frame_table AnimFrameTable1
-	frame_data 5, 16, 0, 0
-	frame_data 6, 16, 0, 0
-	frame_data 7, 16, 0, 0
-	frame_data 6, 16, 0, 0
-	frame_data 0, 0, 0, 0
-
 SECTION "Gfx 12", ROMX
 
 DuelBallGfx::
@@ -1371,24 +1320,6 @@ SECTION "Anims 2", ROMX
 
 SECTION "Anims 3", ROMX
 	INCLUDE "data/duel/animations/anims3.asm"
-
-Palette31::
-	db 1, %11010010
-	db 1
-
-	rgb  0,  0,  0
-	rgb 31, 31,  7
-	rgb 31, 24,  6
-	rgb 11,  3,  0
-
-Palette119::
-	db 0
-	db 1
-
-	rgb 28, 28, 24
-	rgb 28, 16, 12
-	rgb 28,  4,  8
-	rgb  0,  0,  8
 
 SECTION "Anims 4", ROMX
 	INCLUDE "data/duel/animations/anims4.asm"
