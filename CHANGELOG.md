@@ -65,11 +65,6 @@
 
 
 ## Code Optimization
-- **[May 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/35903e93b9fb412009cec5f03ae57e90fa101c00):** 8 Files Changed
-    - Sort all animation and palette data in the proper banks
-
-<br/>
-
 - **[May 17, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ebd54a7d1dff4084a149f63f822959c088e70e8f):** 3 Files Changed
     - Review most of the code comments in the effect functions files
     - Replace many jp's with jr's and fallthroughs, moving functions as necessary
@@ -275,7 +270,13 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **May 22, 2024:** 2 Files Changed
+- **[May 23, 2024]:** 8 Files Changed
+    - Put all of the animation and palette data back in their original locations
+    - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/35903e93b9fb412009cec5f03ae57e90fa101c00) that sorted all of the animation and palette data in the proper banks*
+
+<br/>
+
+- **[May 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/7d81aabc704174c6b6447946c7cd6871f52660ae):** 2 Files Changed
     - Revert some text changes relating to duel texts
     - *This cancels out some of the changes from [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2)*
 

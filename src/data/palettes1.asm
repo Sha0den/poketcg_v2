@@ -1371,15 +1371,6 @@ Palette30::
 	rgb 31, 13,  0
 	rgb 31, 31,  0
 
-Palette31::
-	db 1, %11010010
-	db 1
-
-	rgb  0,  0,  0
-	rgb 31, 31,  7
-	rgb 31, 24,  6
-	rgb 11,  3,  0
-
 Palette32::
 	db 1, %11010010
 	db 1
@@ -2201,3 +2192,46 @@ Palette99::
 	rgb  1,  1,  1
 	rgb  0,  0,  0
 	rgb  0, 31,  0
+
+Palette101::
+	db 0
+	db 7
+
+	rgb 28, 28, 28
+	rgb 28, 28,  0
+	rgb 28, 16,  0
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb  0,  0, 28
+	rgb  0,  0,  4
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb 24,  4,  0
+	rgb 28, 16,  0
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb 28, 28,  0
+	rgb 24,  4,  0
+	rgb  4,  0,  0
+
+	rgb 28, 28, 28
+	rgb  4, 12,  0
+	rgb 28, 16,  0
+	rgb  4,  0,  0
+
+	rgb  0,  0,  0
+	rgb 28,  0,  0
+	rgb 28, 12,  0
+	rgb 28, 28,  0
+
+	rgb  0,  0,  0
+	rgb 28,  0,  0
+	rgb 28, 12,  0
+	rgb 28, 28,  0
+
+Palette108::
+	db 1, %11100100
+	db 0

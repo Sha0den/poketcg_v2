@@ -319,3 +319,12 @@ GrassMedalTilemap::
 	dw NULL
 	db TRUE ; cgb mode
 	INCBIN "data/maps/tiles/cgb/grass_medal.bgmap.lz"
+
+AnimData1::
+	frame_table AnimFrameTable0
+	frame_data 3, 16, 0, 0
+	frame_data 4, 16, 0, 0
+	frame_data 0, 0, 0, 0
+
+Palette110::
+	db $00, $00
