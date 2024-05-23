@@ -216,8 +216,8 @@ ChooseBasicEnergyCardText:
 	done
 
 ChooseNidoranFromDeckText:
-	text "Choose a Nidoran♀"
-	line "or a Nidoran♂."
+	text "Choose a Nidoran♀ or a Nidoran♂"
+	line "from the deck."
 	done
 
 ChooseNidoranText:
@@ -552,7 +552,7 @@ PleaseCheckTheOpponentsHandText:
 	done
 
 EvolutionCardText:
-	text "Evolution"
+	text "Evolution card"
 	done
 
 CardWasChosenText:

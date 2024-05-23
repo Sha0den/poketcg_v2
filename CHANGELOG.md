@@ -65,8 +65,8 @@
 
 
 ## Code Optimization
-- **May 22, 2024]:** 8 Files Changed
-    - Sort all animation and palette data in the 
+- **[May 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/35903e93b9fb412009cec5f03ae57e90fa101c00):** 8 Files Changed
+    - Sort all animation and palette data in the proper banks
 
 <br/>
 
@@ -275,6 +275,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **May 22, 2024:** 2 Files Changed
+    - Revert some text changes relating to duel texts
+    - *This cancels out some of the changes from [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2)*
+
+<br/>
+
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698):** 1 File Changed
     - Removed Fullwidth4 instead of 1 & 2 to fix the wrong characters being displayed
     - *This is a major bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f)*

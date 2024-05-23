@@ -91,31 +91,31 @@ TypesOfCardsText:
 	done
 
 GrassPokemonText:
-	text "<GRASS> Pokémon"
+	text "Grass Pokémon"
 	done
 
 FirePokemonText:
-	text "<FIRE> Pokémon"
+	text "Fire Pokémon"
 	done
 
 WaterPokemonText:
-	text "<WATER> Pokémon"
+	text "Water Pokémon"
 	done
 
 LightningPokemonText:
-	text "<LIGHTNING> Pokémon"
+	text "Lightning Pokémon"
 	done
 
 FightingPokemonText:
-	text "<FIGHTING> Pokémon"
+	text "Fighting Pokémon"
 	done
 
 PsychicPokemonText:
-	text "<PSYCHIC> Pokémon"
+	text "Psychic Pokémon"
 	done
 
 ColorlessPokemonText:
-	text "<COLORLESS> Pokémon"
+	text "Colorless Pokémon"
 	done
 
 TrainerCardText:
@@ -430,7 +430,7 @@ PlacedInTheArenaText:
 	done
 
 ShufflesTheDeckText:
-	text "<RAMNAME> shuffles their deck."
+	text "<RAMNAME> shuffles the deck."
 	done
 
 ThisIsJustPracticeDoNotShuffleText:
@@ -566,7 +566,7 @@ TookAllThePrizesText:
 
 ThereAreNoPokemonInPlayAreaText:
 	text "<RAMNAME> doesn't have"
-	line "any more Pokémon In Play!"
+	line "any more Pokémon in play!"
 	done
 
 WasKnockedOutText:
@@ -1131,11 +1131,13 @@ UnusedText00f2: ; Unused
 	done
 
 DamageCheckIfHeadsPlusDamageText:
-	text "<RAMNUM> more damage if heads!"
+	text "Damage check! If heads,"
+	line "the attack does <RAMNUM> more damage!!"
 	done
 
 DamageCheckIfHeadsXDamageText:
-	text "<RAMNUM> damage for each heads!"
+	text "Damage check! The attack does"
+	line "<RAMNUM> damage for each heads!!"
 	done
 
 AcidCheckText:
