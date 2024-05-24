@@ -1,3 +1,6 @@
+; All of these functions can only be used from the home bank.
+; If moved to another bank, the game will crash.
+
 AIDoAction_Turn::
 	ld a, AIACTION_DO_TURN
 	jr AIDoAction

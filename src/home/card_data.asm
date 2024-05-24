@@ -113,6 +113,31 @@ GetCardName::
 	pop hl
 	ret
 
+; This function can only be used from the home bank. If moved, the game will crash.
+; from the card id in a, returns type into a, rarity into b, and set into c
+GetCardTypeRarityAndSet::
+	push hl
+	push de
+	ld d, 0
+	ld e, a
+	call GetCardPointer
+	jr c, .done
+	ld a, BANK(CardPointers)
+	call BankpushROM2
+	ld e, [hl] ; CARD_DATA_TYPE
+	ld bc, CARD_DATA_RARITY
+	add hl, bc
+	ld b, [hl] ; CARD_DATA_RARITY
+	inc hl
+	ld c, [hl] ; CARD_DATA_SET
+	call BankpopROM
+	ld a, e
+	or a
+.done
+	pop de
+	pop hl
+	ret
+
 ; return at hl the pointer to the data of the card with id at e
 ; return carry if e was out of bounds, so no pointer was returned
 GetCardPointer::

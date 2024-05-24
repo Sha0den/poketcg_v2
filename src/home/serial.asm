@@ -390,6 +390,26 @@ SerialRecvBytes::
 	scf
 	ret
 
+; frame function during Link Opponent's turn
+; if opponent makes a decision, jump directly
+; to the address in wLinkOpponentTurnReturnAddress
+LinkOpponentTurnFrameFunction::
+	ld a, [wSerialFlags]
+	or a
+	jr nz, .return
+	call Func_0e32
+	ret nc
+.return
+	ld a, $01
+	call BankswitchROM
+	ld hl, wLinkOpponentTurnReturnAddress
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld sp, hl
+	scf
+	ret
+
 ; load the number at wSerialFlags (error code?) to TxRam3, print
 ; TransmissionErrorText, exit the duel, and reset serial registers.
 DuelTransmissionError::
@@ -453,6 +473,20 @@ SetOppAction_SerialSendDuelData::
 	call SerialSendBytes
 	call ExchangeRNG
 .not_link
+	pop bc
+	pop hl
+	ret
+
+; receive 10 bytes of data from wSerialRecvBuf and store them into hOppActionTableIndex,
+; hTempCardIndex_ff9f, hTemp_ffa0, and hTempPlayAreaLocation_ffa1,
+; and hTempRetreatCostCards. also exchange RNG data.
+SerialRecvDuelData::
+	push hl
+	push bc
+	ld hl, hOppActionTableIndex
+	ld bc, 10
+	call SerialRecvBytes
+	call ExchangeRNG
 	pop bc
 	pop hl
 	ret

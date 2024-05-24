@@ -270,7 +270,14 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **[May 23, 2024]:** 8 Files Changed
+- **May 24, 2024:** 5 Files Changed
+    - Put a few more functions back in the home bank
+    - At least the booster pack one was causing a crash
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1)*
+
+<br/>
+
+- **[May 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/5969356ada125d565e72bf34d37ca90f2ce8f73e):** 8 Files Changed
     - Put all of the animation and palette data back in their original locations
     - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/35903e93b9fb412009cec5f03ae57e90fa101c00) that sorted all of the animation and palette data in the proper banks*
 
