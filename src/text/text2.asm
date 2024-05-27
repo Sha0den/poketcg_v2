@@ -383,24 +383,24 @@ NidoranMNidoranFText:
 	text "Nidoran♂ or Nidoran♀"
 	done
 
-UnusedText0140: ; Unused
-	text "????"
-	done
-
-UnusedText0141: ; Unused
-	text "????"
-	done
-
-UnusedText0142: ; Unused
-	text "????"
-	done
-
 BasicFightingPokemonText:
 	text "Basic <FIGHTING> Pokémon"
 	done
 
-BasicEnergyText:
-	text "Basic Energy"
+BasicPokemonText:
+	text "Basic Pokémon"
+	done
+
+EvolutionCardText:
+	text "Evolution card"
+	done
+
+TrainerCardText:
+	text "Trainer card"
+	done
+
+BasicEnergyCardText:
+	text "Basic Energy card"
 	done
 
 PeekWasUsedToLookInYourHandText:
@@ -525,9 +525,8 @@ ChoosePokemonToScoopUpText:
 	line "Scoop Up."
 	done
 
-ChooseCardFromYourHandToSwitchText:
-	text "Choose a card from your"
-	line "hand to Switch."
+ChoosePokemonFromYourHandText:
+	text "Choose a Pokémon from your hand."
 	done
 
 UnusedText015f: ; Unused
@@ -551,8 +550,8 @@ PleaseCheckTheOpponentsHandText:
 	text "Please check the opponent's hand."
 	done
 
-EvolutionCardText:
-	text "Evolution card"
+UnusedText0164: ; Unused
+	text "????"
 	done
 
 CardWasChosenText:
@@ -588,14 +587,13 @@ PokemonAndAllAttachedCardsWereReturnedToDeckText:
 	line "cards were returned to the deck."
 	done
 
-ActivePokemonWasReturnedToHandText:
-	text "The Active <RAMTEXT> was"
-	line "returned to its owner's hand."
+PokemonWasReturnedToHandText:
+	text "<RAMTEXT> was returned"
+	line "to the hand."
 	done
 
-BenchedPokemonWasReturnedToHandText:
-	text "A Benched <RAMTEXT> was"
-	line "returned to its owner's hand."
+UnusedText016d: ; Unused
+	text "????"
 	done
 
 PokemonWasReturnedToDeckText:

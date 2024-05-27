@@ -1,31 +1,3 @@
-BasicPokemonText:
-	text "Basic Pokémon"
-	done
-
-ChooseBasicPokemonText:
-	text "Choose a"
-	line "Basic Pokémon."
-	done
-
-ChooseBasicPokemonFromDeckText:
-	text "Choose a Basic Pokémon"
-	line "from your deck."
-	done
-
-EvolutionPokemonText:
-	text "Evolution Pokémon"
-	done
-
-ChooseEvolutionPokemonText:
-	text "Choose an"
-	line "Evolution Pokémon."
-	done
-
-ChooseEvolutionPokemonFromDeckText:
-	text "Choose an Evolution Pokémon"
-	line "from your deck."
-	done
-
 NewIntroText1:
 	text "Oh! Why the rush, <RAMNAME>?"
 	line "What? "
@@ -49,4 +21,38 @@ NewIntroText3:
 	line "using the practice decks.          "
 	line "Sam can usually be found near "
 	line "the card table to your left."
+	done
+
+ChooseBasicPokemonText:
+	text "Choose a"
+	line "Basic Pokémon."
+	done
+
+ChooseBasicPokemonFromDeckText:
+	text "Choose a Basic Pokémon from"
+	line "your deck."
+	done
+
+ChooseEvolutionCardText:
+	text "Choose an"
+	line "Evolution card."
+	done
+
+ChooseEvolutionCardFromDeckText:
+	text "Choose an Evolution card from"
+	line "your deck."
+	done
+
+ChooseTrainerCardText:
+	text "Choose a"
+	line "Trainer card."
+	done
+
+ChooseTrainerCardFromDeckText:
+	text "Choose a Trainer card from"
+	line "your deck."
+	done
+
+Draw2CardsText:
+	text "Draw 2 cards."
 	done

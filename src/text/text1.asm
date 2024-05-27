@@ -118,12 +118,12 @@ ColorlessPokemonText:
 	text "Colorless Pokémon"
 	done
 
-TrainerCardText:
-	text "Trainer Card"
+TrainerCardsText:
+	text "Trainer Cards"
 	done
 
-EnergyCardText:
-	text "Energy Card"
+EnergyCardsText:
+	text "Energy Cards"
 	done
 
 DeckPrinterText:
@@ -843,9 +843,9 @@ CantEvolvePokemonInSameTurnItsPlacedText:
 	line "on its first turn in play."
 	done
 
-NotAffectedByPoisonSleepParalysisOrConfusionText:
-	text "Not affected by any"
-	line "Special Conditions."
+NotAffectedBySpecialConditionsText:
+	text "The Active Pokémon is not affected"
+	line "by any Special Conditions."
 	done
 
 NotEnoughCardsInHandText:
@@ -868,8 +868,8 @@ ConditionsForEvolvingToStage2NotFulfilledText:
 	done
 
 NoPokemonInHandText:
-	text "You don't have any"
-	line "Pokémon in your hand."
+	text "You don't have any Pokémon"
+	line "in your hand."
 	done
 
 NoCardsInTheDiscardPileText:
@@ -943,8 +943,8 @@ OnlyOncePerTurnText:
 	done
 
 CannotUseDueToStatusText:
-	text "Cannot use due to Sleep, Paralysis,"
-	line "or Confusion."
+	text "Cannot be used while this Pokémon"
+	line "is affected by a Special Condition."
 	done
 
 CannotBeUsedInTurnWhichWasPlayedText:

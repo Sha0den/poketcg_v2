@@ -971,40 +971,40 @@ _PrintCardList:
 
 .IconTextList
 	; Fire
-	db $e0 ; icon tile
+	db ICON_TILE_FIRE
 	tx FirePokemonText
 
 	; Grass
-	db $e4 ; icon tile
+	db ICON_TILE_GRASS
 	tx GrassPokemonText
 
 	; Lightning
-	db $e8 ; icon tile
+	db ICON_TILE_LIGHTNING
 	tx LightningPokemonText
 
 	; Water
-	db $ec ; icon tile
+	db ICON_TILE_WATER
 	tx WaterPokemonText
 
 	; Fighting
-	db $f0 ; icon tile
+	db ICON_TILE_FIGHTING
 	tx FightingPokemonText
 
 	; Psychic
-	db $f4 ; icon tile
+	db ICON_TILE_PSYCHIC
 	tx PsychicPokemonText
 
 	; Colorless
-	db $f8 ; icon tile
+	db ICON_TILE_COLORLESS
 	tx ColorlessPokemonText
 
 	; Energy
-	db $fc ; icon tile
-	tx EnergyCardText
+	db ICON_TILE_ENERGY
+	tx EnergyCardsText
 
 	; Trainer
-	db $dc ; icon tile
-	tx TrainerCardText
+	db ICON_TILE_TRAINER
+	tx TrainerCardsText
 
 ShowPrinterTransmitting:
 	call SetSpriteAnimationsAsVBlankFunction

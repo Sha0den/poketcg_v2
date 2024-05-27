@@ -137,6 +137,7 @@ LookForCardsInDeck:
 	jr z, SetCarryEF2
 	call CheckDeckIndexForStage1OrStage2Pokemon
 	jr nc, .loop_deck_evolution ; skip if not a Stage 1/2 Pokemon
+	or a
 	ret
 
 ; returns carry if no Basic Pokemon are found in the player's deck
@@ -148,6 +149,7 @@ LookForCardsInDeck:
 	jr z, SetCarryEF2
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_deck_bscpkmn ; skip if not a Basic Pokemon
+	or a
 	ret
 
 ; returns carry if no Basic Fighting Pokemon are found in the player's deck
@@ -188,26 +190,28 @@ SetCarryEF2:
 	ret
 
 FindBasicEnergy:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
 	call CreateDeckCardList
 	ldtx hl, Choose1BasicEnergyCardFromDeckText
+	ldtx bc, BasicEnergyCardText
 	lb de, SEARCHEFFECT_BASIC_ENERGY, 0
-	ldtx bc, BasicEnergyText
 	call LookForCardsInDeck
-	ret c ; skip showing the deck
+	jr c, .exit ; no Basic Energy cards in the deck
 
+; draw deck list interface and print text
 	bank1call Func_5591
 	ldtx hl, ChooseBasicEnergyCardText
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
+
 .read_input
 	bank1call DisplayCardList
-	jr c, .try_exit ; B button was pressed?
+	jr c, .attempt_to_cancel ; the B button was pressed
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .play_sfx ; not a Basic Energy card
+
+; a Basic Energy card was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
-	call CheckDeckIndexForBasicEnergy
-	jr nc, .play_sfx
 	or a
 	ret
 
@@ -218,7 +222,7 @@ FindBasicEnergy:
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Energy cards.
-.try_exit
+.attempt_to_cancel
 	ld hl, wDuelTempList
 .next_card
 	ld a, [hli]
@@ -235,8 +239,7 @@ FindBasicEnergy:
 	or a
 	ret
 
-; check if card index in a is a Basic Energy card
-; sets the carry flag if the check is a success
+; returns carry if the card in a is a Basic Energy card
 CheckDeckIndexForBasicEnergy:
 ;	call LoadCardDataToBuffer2_FromDeckIndex
 ;	ld a, [wLoadedCard2Type]
@@ -252,38 +255,37 @@ CheckDeckIndexForBasicEnergy:
 	ret
 
 FindBasicEnergyToAttach:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
-; search the cards in the deck
 	call CreateDeckCardList
 	ldtx hl, Choose1BasicEnergyCardFromDeckText
-	ldtx bc, BasicEnergyText
+	ldtx bc, BasicEnergyCardText
 	lb de, SEARCHEFFECT_BASIC_ENERGY, 0
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Basic Energy cards in the deck
 
+; draw deck list interface and print text
 	bank1call Func_5591
 	ldtx hl, ChooseBasicEnergyCardText
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
-.select_card
-	bank1call DisplayCardList
-	jr c, .try_cancel
-	call CheckDeckIndexForBasicEnergy
-	jr nc, .play_sfx ; skip if not a Basic Energy
 
+.read_input
+	bank1call DisplayCardList
+	jr c, .attempt_to_cancel ; the B button was pressed
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .play_sfx ; not a Basic Energy card
+
+; a Basic Energy card was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
+
+; now to choose an in-play Pokemon to attach it to
 	call EmptyScreen
 	ldtx hl, ChoosePokemonToAttachEnergyCardText
 	call DrawWideTextBox_WaitForInput
-
-; choose a Pokemon in the Play Area to attach the card to
 	bank1call HasAlivePokemonInPlayArea
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
-	jr c, .loop_input
+	jr c, .loop_input ; must choose, B button can't be used to exit
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret
@@ -291,31 +293,22 @@ FindBasicEnergyToAttach:
 ; play SFX and loop back
 .play_sfx
 	call PlaySFX_InvalidChoice
-	jr .select_card
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Energy cards.
-.try_cancel
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_deck
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next_card
-	ld a, l
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	and TYPE_ENERGY
-	jr z, .next_card ; not an Energy card, move on to the next card
-	cp TYPE_ENERGY + NUM_COLORED_TYPES
-	jr c, .play_sfx ; found a Basic Energy card, return to selection process
+.attempt_to_cancel
+	ld hl, wDuelTempList
 .next_card
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_deck
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .next_card
+	jr .play_sfx ; found a Basic Energy card, return to selection process
 
 ; no Basic Energy in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a
@@ -330,6 +323,7 @@ AIFindBasicEnergyToAttach:
 ; Maybe this could be used to replace the broken ai function.
 ; I'm not entirely sure; more code might be needed.
 ; finds the first basic energy in the deck
+; and attaches it to the Active Pokemon
 ;AIFindBasicEnergyToAttach:
 ;	call CreateDeckCardList
 ;	ld hl, wDuelTempList
@@ -340,38 +334,105 @@ AIFindBasicEnergyToAttach:
 ;	ret z ; reached the end of the list
 ;	call CheckDeckIndexForBasicEnergy
 ;	jr nc, .loop_deck ; card isn't a Basic Energy
-;	or a ; reset the carry flag
-;	ret ; a Basic Energy was found
+;	xor a ; PLAY_AREA_ARENA
+;	ldh a, [hTempPlayAreaLocation_ff9d]
+;	ldh [hTempPlayAreaLocation_ffa1], a
+;	ret
+
+FindTrainer:
+	call CreateDeckCardList
+	ldtx hl, ChooseTrainerCardFromDeckText
+	ldtx bc, TrainerCardText
+	lb de, SEARCHEFFECT_TRAINER, 0
+	call LookForCardsInDeck
+	jr c, .exit ; no Trainer cards in the deck
+
+; draw deck list interface and print text
+	bank1call Func_5591
+	ldtx hl, ChooseTrainerCardText
+	ldtx de, DuelistDeckText
+	bank1call SetCardListHeaderText
+
+.read_input
+	bank1call DisplayCardList
+	jr c, .attempt_to_cancel ; the B button was pressed
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, [wLoadedCard2Type]
+	cp TYPE_TRAINER
+	jr nz, .play_sfx ; not a Trainer card
+
+; a Trainer card was selected
+	ldh a, [hTempCardIndex_ff98]
+	ldh [hTemp_ffa0], a
+	or a
+	ret
+
+; play SFX and loop back
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
+
+; see if the Player can exit the screen without selecting a card,
+; that is, if the deck contains no Trainer cards.
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, [wLoadedCard2Type]
+	cp TYPE_TRAINER
+	jr nz, .next_card
+	jr .play_sfx ; found a Trainer card, return to selection process
+
+; no Trainer cards in the deck, can safely exit screen
+.exit
+	ld a, $ff
+	ldh [hTemp_ffa0], a
+	or a
+	ret
+
+; finds the first Trainer card in the deck
+AIFindTrainer:
+	call CreateDeckCardList
+	ld hl, wDuelTempList
+.loop_deck
+	ld a, [hli]
+	ldh [hTemp_ffa0], a
+	cp $ff
+	ret z ; reached the end of the list
+	call GetCardIDFromDeckIndex
+	call GetCardType
+	cp TYPE_TRAINER
+	jr nz, .loop_deck ; card isn't a Trainer card
+	ret ; Trainer card found
 
 FindAnyPokemon:
-; create a list of every Pokemon in the deck
 	call CreateDeckCardList
 	ldtx hl, ChoosePokemonFromDeckText
 	ldtx bc, PokemonName
 	lb de, SEARCHEFFECT_POKEMON, 0
 	call LookForCardsInDeck
-	jr c, .no_pkmn ; return if the Player chose not to check the deck
+	jr c, .exit ; no Pokemon in the deck
 
-; handle input
+; draw deck list interface and print text
 	bank1call Func_5591
 	ldtx hl, ChoosePokemonCardText
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
+
 .read_input
 	bank1call DisplayCardList
-	jr c, .try_exit ; B button was pressed
+	jr c, .attempt_to_cancel ; the B button was pressed
 	ldh a, [hTempCardIndex_ff98]
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr nc, .play_sfx ; can't select a non-Pokemon card
-	ldh a, [hTempCardIndex_ff98]
-	ldh [hTempList + 1], a
-	or a
-	ret
+	jr nc, .play_sfx ; not a Pokemon
 
-.no_pkmn
-	ld a, $ff
+; a Pokemon was selected
+	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempList + 1], a
 	or a
 	ret
@@ -383,39 +444,48 @@ FindAnyPokemon:
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Pokemon.
-.try_exit
+.attempt_to_cancel
 	ld hl, wDuelTempList
-.loop
+.next_card
 	ld a, [hli]
 	cp $ff
-	jr z, .no_pkmn
+	jr z, .exit
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr nc, .loop
-	jr .play_sfx ; no, need to select a Pokemon
+	jr nc, .next_card
+	jr .play_sfx ; found a Pokemon, return to selection process
+
+; no Pokemon in the deck, can safely exit screen
+.exit
+	ld a, $ff
+	ldh [hTempList + 1], a
+	or a
+	ret
 
 FindEvolution:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
 	call CreateDeckCardList
-	ldtx hl, ChooseEvolutionPokemonFromDeckText
+	ldtx hl, ChooseEvolutionCardFromDeckText
+	ldtx bc, EvolutionCardText
 	lb de, SEARCHEFFECT_EVOLUTION, 0
-	ldtx bc, EvolutionPokemonText
 	call LookForCardsInDeck
-	ret c ; skip showing the deck
+	jr c, .exit ; no Evolution cards in the deck
 
+; draw deck list interface and print text
 	bank1call Func_5591
-	ldtx hl, ChooseEvolutionPokemonText
+	ldtx hl, ChooseEvolutionCardText
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
+
 .read_input
 	bank1call DisplayCardList
-	jr c, .try_exit ; B button was pressed?
+	jr c, .attempt_to_cancel ; the B button was pressed
+	call CheckDeckIndexForStage1OrStage2Pokemon
+	jr nc, .play_sfx ; not an Evolution card
+
+; an Evolution card was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
-	call CheckDeckIndexForStage1OrStage2Pokemon
-	jr nc, .play_sfx
 	or a
 	ret
 
@@ -426,7 +496,7 @@ FindEvolution:
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Evolution cards.
-.try_exit
+.attempt_to_cancel
 	ld hl, wDuelTempList
 .next_card
 	ld a, [hli]
@@ -443,8 +513,7 @@ FindEvolution:
 	or a
 	ret
 
-; check if card index in a is an Evolution card
-; sets the carry flag if the check is a success
+; returns carry if the card in a is an Evolution card
 CheckDeckIndexForStage1OrStage2Pokemon:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
@@ -468,19 +537,15 @@ AIFindEvolution:
 	ret z ; reached the end of the list
 	call CheckDeckIndexForStage1OrStage2Pokemon
 	jr nc, .loop_deck ; card isn't an Evolution card
-	or a ; reset the carry flag
 	ret ; Evolution card found
 
 FindBasicPokemon:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicPokemonFromDeckText
 	ldtx bc, BasicPokemonText
 	lb de, SEARCHEFFECT_BASIC_POKEMON, $00
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Basic Pokemon in the deck
 
 ; draw deck list interface and print text
 	bank1call Func_5591
@@ -488,12 +553,13 @@ FindBasicPokemon:
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
 
-.loop
+.read_input
 	bank1call DisplayCardList
-	jr c, .pressed_b
-
+	jr c, .attempt_to_cancel ; the B button was pressed
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .play_sfx ; not a Basic Pokemon
+
+; a Basic Pokemon was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
@@ -502,32 +568,22 @@ FindBasicPokemon:
 ; play SFX and loop back
 .play_sfx
 	call PlaySFX_InvalidChoice
-	jr .loop
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Pokemon.
-.pressed_b
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .next ; not a Pokemon, move on to the next card
-	ld a, [wLoadedCard1Stage]
-	or a
-	jr z, .play_sfx ; found a Basic Pokemon, return to selection process
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .next_card
+	jr .play_sfx ; found a Basic Pokemon, return to selection process
 
 ; no Basic Pokemon in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a
@@ -544,19 +600,15 @@ AIFindBasicPokemon:
 	ret z ; reached the end of the list
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_deck ; card isn't a Basic Pokemon
-	or a ; reset the carry flag
 	ret ; Basic Pokemon found
 
 FindBasicFightingPokemon:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicFightingPokemonFromDeckText
 	ldtx bc, BasicFightingPokemonText
 	lb de, SEARCHEFFECT_BASIC_FIGHTING, $00
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Basic Fighting Pokemon in the deck
 
 ; draw deck list interface and print text
 	bank1call Func_5591
@@ -564,17 +616,18 @@ FindBasicFightingPokemon:
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
 
-.loop
+.read_input
 	bank1call DisplayCardList
-	jr c, .pressed_b
-
+	jr c, .attempt_to_cancel ; the B button was pressed
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp FIGHTING
-	jr nz, .play_sfx ; is Fighting?
+	jr nz, .play_sfx ; not a Fighting Pokemon
 	ld a, [wLoadedCard2Stage]
 	or a
-	jr nz, .play_sfx ; is Basic?
+	jr nz, .play_sfx ; not a Basic Pokemon
+
+; a Basic Fighting Pokemon was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
@@ -583,32 +636,27 @@ FindBasicFightingPokemon:
 ; play SFX and loop back
 .play_sfx
 	call PlaySFX_InvalidChoice
-	jr .loop
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Fighting Pokemon.
-.pressed_b
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	cp FIGHTING
-	jr nz, .next ; not a Fighting Pokemon, move on to the next card
+	jr nz, .next_card ; not a Fighting Pokemon, move on to the next card
 	ld a, [wLoadedCard1Stage]
 	or a
-	jr z, .play_sfx ; found a Basic Fighting Pokemon, return to selection
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
+	jr nz, .next_card
+	jr .play_sfx ; found a Basic Fighting Pokemon, return to selection process
 
 ; no Basic Fighting Pokemon in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a
@@ -626,22 +674,19 @@ AIFindBasicFighting:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp FIGHTING
-	jr nz, .loop_deck
+	jr nz, .loop_deck ; card isn't a Fighting Pokemon
 	ld a, [wLoadedCard2Stage]
 	or a
-	jr nz, .loop_deck ; card isn't a Basic Fighting Pokemon
+	jr nz, .loop_deck ; card isn't a Basic Pokemon
 	ret ; Fighting Pokemon found
 
 FindNidoran:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
 	call CreateDeckCardList
 	ldtx hl, ChooseNidoranFromDeckText
 	ldtx bc, NidoranMNidoranFText
 	lb de, SEARCHEFFECT_NIDORAN, $00
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Nidoran in the deck
 
 ; draw deck list interface and print text
 	bank1call Func_5591
@@ -649,16 +694,16 @@ FindNidoran:
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
 
-.loop
+.read_input
 	bank1call DisplayCardList
-	jr c, .pressed_b
+	jr c, .attempt_to_cancel ; the B button was pressed
 	call GetCardIDFromDeckIndex
 	ld bc, NIDORANF
 	call CompareDEtoBC
 	jr z, .selected_nidoran
 	ld bc, NIDORANM
 	call CompareDEtoBC
-	jr nz, .play_sfx
+	jr nz, .play_sfx ; not a Nidoran
 
 .selected_nidoran
 	ldh a, [hTempCardIndex_ff98]
@@ -669,31 +714,26 @@ FindNidoran:
 ; play SFX and loop back
 .play_sfx
 	call PlaySFX_InvalidChoice
-	jr .loop
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no NidoranF or NidoranM cards.
-.pressed_b
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
 	call GetCardIDFromDeckIndex
 	ld bc, NIDORANF
 	call CompareDEtoBC
-	jr z, .play_sfx ; found a Nidoran, return to selection
+	jr z, .play_sfx ; found a Nidoran, return to selection process
 	ld bc, NIDORANM
-	jr z, .play_sfx ; found a Nidoran, return to selection
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
+	jr nz, .next_card
+	jr .play_sfx ; found a Nidoran, return to selection process
 
 ; no Nidoran in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a
@@ -711,21 +751,18 @@ AIFindNidoran:
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp NIDORANF
-	ret z
+	ret z ; Nidoran found
 	cp NIDORANM
 	jr nz, .loop_deck ; card isn't a Nidoran
 	ret ; Nidoran found
 
 FindOddish:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
 	call CreateDeckCardList
 	ldtx hl, ChooseAnOddishFromDeckText
 	ldtx bc, OddishName
 	lb de, SEARCHEFFECT_CARD_ID, ODDISH
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Oddish in the deck
 
 ; draw deck list interface and print text
 	bank1call Func_5591
@@ -733,46 +770,41 @@ FindOddish:
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
 
-.loop
+.read_input
 	bank1call DisplayCardList
-	jr c, .pressed_b
+	jr c, .attempt_to_cancel ; the B button was pressed
 	call GetCardIDFromDeckIndex
 	ld bc, ODDISH
 	call CompareDEtoBC
-	jr nz, .play_sfx
+	jr nz, .play_sfx ; not an Oddish
 
-; Oddish was selected
+; an Oddish was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
+; play SFX and loop back
 .play_sfx
-	; play SFX and loop back
 	call PlaySFX_InvalidChoice
-	jr .loop
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Oddish cards.
-.pressed_b
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
 	call GetCardIDFromDeckIndex
 	ld bc, ODDISH
 	call CompareDEtoBC
-	jr z, .play_sfx ; found an Oddish, return to selection
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
+	jr nz, .next_card
+	jr .play_sfx ; found a Oddish, return to selection process
 
 ; no Oddish in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a
@@ -794,15 +826,12 @@ AIFindOddish:
 	ret ; Oddish found
 
 FindBellsprout:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
 	call CreateDeckCardList
 	ldtx hl, ChooseABellsproutFromDeckText
 	ldtx bc, BellsproutName
 	lb de, SEARCHEFFECT_CARD_ID, BELLSPROUT
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Bellsprout in the Deck
 
 ; draw deck list interface and print text
 	bank1call Func_5591
@@ -810,15 +839,15 @@ FindBellsprout:
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
 
-.loop
+.read_input
 	bank1call DisplayCardList
-	jr c, .pressed_b
+	jr c, .attempt_to_cancel ; the B button was pressed
 	call GetCardIDFromDeckIndex
 	ld bc, BELLSPROUT
 	call CompareDEtoBC
-	jr nz, .play_sfx
+	jr nz, .play_sfx ; not a Bellsprout
 
-; Bellsprout was selected
+; a Bellsprout was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
@@ -827,29 +856,24 @@ FindBellsprout:
 ; play SFX and loop back
 .play_sfx
 	call PlaySFX_InvalidChoice
-	jr .loop
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Bellsprout cards.
-.pressed_b
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
 	call GetCardIDFromDeckIndex
 	ld bc, BELLSPROUT
 	call CompareDEtoBC
-	jr z, .play_sfx ; found a Bellsprout, return to selection
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
+	jr nz, .next_card
+	jr .play_sfx ; found a Bellsprout, return to selection process
 
 ; no Bellsprout in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a
@@ -871,15 +895,12 @@ AIFindBellsprout:
 	ret ; Bellsprout found
 
 FindKrabby:
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
 	call CreateDeckCardList
 	ldtx hl, ChooseAKrabbyFromDeckText
 	ldtx bc, KrabbyName
 	lb de, SEARCHEFFECT_CARD_ID, KRABBY
 	call LookForCardsInDeck
-	ret c
+	jr c, .exit ; no Krabby in the deck
 
 ; draw deck list interface and print text
 	bank1call Func_5591
@@ -887,15 +908,15 @@ FindKrabby:
 	ldtx de, DuelistDeckText
 	bank1call SetCardListHeaderText
 
-.loop
+.read_input
 	bank1call DisplayCardList
-	jr c, .pressed_b
+	jr c, .attempt_to_cancel ; the B button was pressed
 	call GetCardIDFromDeckIndex
 	ld bc, KRABBY
 	call CompareDEtoBC
-	jr nz, .play_sfx
+	jr nz, .play_sfx ; not a Krabby
 
-; Krabby was selected
+; a Krabby was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
@@ -904,29 +925,24 @@ FindKrabby:
 ; play SFX and loop back
 .play_sfx
 	call PlaySFX_InvalidChoice
-	jr .loop
+	jr .read_input
 
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains Krabby cards.
-.pressed_b
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
+.attempt_to_cancel
+	ld hl, wDuelTempList
+.next_card
+	ld a, [hli]
+	cp $ff
+	jr z, .exit
 	call GetCardIDFromDeckIndex
 	ld bc, KRABBY
 	call CompareDEtoBC
-	jr z, .play_sfx ; found a Krabby, return to selection
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
+	jr nz, .next_card
+	jr .play_sfx ; found a Krabby, return to selection process
 
 ; no Krabby in the deck, can safely exit screen
+.exit
 	ld a, $ff
 	ldh [hTemp_ffa0], a
 	or a

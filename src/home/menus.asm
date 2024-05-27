@@ -685,18 +685,18 @@ DrawCardSymbol::
 
 CardSymbolTable::
 ; starting tile number, cgb palette (grey, yellow/red, green/blue, pink/orange)
-	db $e0, $01 ; TYPE_ENERGY_FIRE
-	db $e4, $02 ; TYPE_ENERGY_GRASS
-	db $e8, $01 ; TYPE_ENERGY_LIGHTNING
-	db $ec, $02 ; TYPE_ENERGY_WATER
-	db $f0, $03 ; TYPE_ENERGY_PSYCHIC
-	db $f4, $03 ; TYPE_ENERGY_FIGHTING
-	db $f8, $00 ; TYPE_ENERGY_DOUBLE_COLORLESS
-	db $fc, $02 ; TYPE_ENERGY_UNUSED
-	db $d0, $02 ; TYPE_PKMN_*, Basic
-	db $d4, $02 ; TYPE_PKMN_*, Stage 1
-	db $d8, $01 ; TYPE_PKMN_*, Stage 2
-	db $dc, $02 ; TYPE_TRAINER
+	db ICON_TILE_FIRE,            $01 ; TYPE_ENERGY_FIRE
+	db ICON_TILE_GRASS,           $02 ; TYPE_ENERGY_GRASS
+	db ICON_TILE_LIGHTNING,       $01 ; TYPE_ENERGY_LIGHTNING
+	db ICON_TILE_WATER,           $02 ; TYPE_ENERGY_WATER
+	db ICON_TILE_FIGHTING,        $03 ; TYPE_ENERGY_PSYCHIC
+	db ICON_TILE_PSYCHIC,         $03 ; TYPE_ENERGY_FIGHTING
+	db ICON_TILE_COLORLESS,       $00 ; TYPE_ENERGY_DOUBLE_COLORLESS
+	db ICON_TILE_ENERGY,          $02 ; TYPE_ENERGY_UNUSED
+	db ICON_TILE_BASIC_POKEMON,   $02 ; TYPE_PKMN_*, Basic
+	db ICON_TILE_STAGE_1_POKEMON, $02 ; TYPE_PKMN_*, Stage 1
+	db ICON_TILE_STAGE_2_POKEMON, $01 ; TYPE_PKMN_*, Stage 2
+	db ICON_TILE_TRAINER,         $02 ; TYPE_TRAINER
 
 ; copy the name and level of the card at wLoadedCard1 to wDefaultText
 ; a = length in number of tiles (the resulting string will be padded with spaces to match it)

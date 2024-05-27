@@ -2244,8 +2244,7 @@ CopyOpponentName::
 	ldtx hl, Player2Text
 	jp CopyText
 
-; check if card index in a is a Basic Pokemon
-; sets the carry flag if the check is a success
+; returns carry if the card in a is a Basic Pokemon
 CheckDeckIndexForBasicPokemon::
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]

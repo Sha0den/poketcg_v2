@@ -513,7 +513,7 @@ MetapodCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_PROTECT ; animation
 
 	; attack 2
 	energy GRASS, 2 ; energies
@@ -666,7 +666,7 @@ KakunaCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_PROTECT ; animation
 
 	; attack 2
 	energy GRASS, 2 ; energies
@@ -916,7 +916,7 @@ NidorinaCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1023,7 +1023,7 @@ NidoranMCard:
 	db NONE ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_HIT ; animation
 
 	; attack 2
 	energy 0 ; energies
@@ -1171,7 +1171,7 @@ ZubatCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3077,7 +3077,7 @@ MoltresLv35Card:
 	db NONE ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db  ATK_ANIM_DIVE_BOMB ; animation
 
 	db 2 ; retreat cost
 	db NONE ; weakness
@@ -3128,7 +3128,7 @@ MoltresLv37Card:
 	db NONE ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db  ATK_ANIM_DIVE_BOMB ; animation
 
 	db 2 ; retreat cost
 	db NONE ; weakness
@@ -3179,7 +3179,7 @@ SquirtleCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_PROTECT ; animation
 
 	db 1 ; retreat cost
 	db WR_LIGHTNING ; weakness
@@ -3216,7 +3216,7 @@ WartortleCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_PROTECT ; animation
 
 	; attack 2
 	energy WATER, 1, COLORLESS, 2 ; energies
@@ -3619,7 +3619,7 @@ TentacruelCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3772,7 +3772,7 @@ ShellderCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3791,7 +3791,7 @@ ShellderCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_PROTECT ; animation
 
 	db 1 ; retreat cost
 	db WR_LIGHTNING ; weakness
@@ -3828,7 +3828,7 @@ CloysterCard:
 	db NONE ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_HIT_EFFECT ; animation
 
 	; attack 2
 	energy WATER, 2 ; energies
@@ -6837,7 +6837,7 @@ RhyhornCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_LEER ; animation
 
 	; attack 2
 	energy FIGHTING, 1, COLORLESS, 2 ; energies
@@ -7296,7 +7296,7 @@ SlowpokeLv18Card:
 	db HEAL_USER ; flags 2
 	db NONE ; flags 3
 	db 1
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_RECOVER ; animation
 
 	; attack 2
 	energy PSYCHIC, 2 ; energies
@@ -7393,7 +7393,7 @@ GastlyLv8Card:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictSleepEffectCommands ; effect commands
+	dw MayInflictSleepNoDamageEffectCommands ; effect commands
 	db INFLICT_SLEEP ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -8566,7 +8566,7 @@ ClefairyCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictSleepEffectCommands ; effect commands
+	dw MayInflictSleepNoDamageEffectCommands ; effect commands
 	db INFLICT_SLEEP ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -9192,7 +9192,7 @@ LickitungCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -9234,7 +9234,7 @@ ChanseyCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_SCRUNCH ; animation
 
 	; attack 2
 	energy COLORLESS, 4 ; energies
@@ -9438,7 +9438,7 @@ EeveeCard:
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
 	db 0
-	db ATK_ANIM_NONE ; animation
+	db ATK_ANIM_LURE ; animation
 
 	; attack 2
 	energy COLORLESS, 2 ; energies
@@ -9878,7 +9878,7 @@ BillCard:
 	db CIRCLE ; rarity
 	db COLOSSEUM | NONE ; sets
 	db BILL
-	dw Draw2EffectCommands ; effect commands
+	dw BillEffectCommands ; effect commands
 	tx BillDescription ; description
 	dw NONE ; description (cont)
 

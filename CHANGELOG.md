@@ -65,6 +65,14 @@
 
 
 ## Code Optimization
+- **May 27, 2024:** 11 Files Changed
+    - Refactor a variety of code pertaining to the effect functions
+    - Fix numerous errors in the effect functions code
+    - Replace some hexadecimal numbers with the appropriate icon tile offset constants
+    - Miscellaneous Text Changes
+
+<br/>
+
 - **[May 17, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ebd54a7d1dff4084a149f63f822959c088e70e8f):** 3 Files Changed
     - Review most of the code comments in the effect functions files
     - Replace many jp's with jr's and fallthroughs, moving functions as necessary
@@ -131,7 +139,7 @@
     - Transfer some functions out of the home banks
     - Eliminate some same bank tail calls (replacing a call ret with a fallthrough/jr/jp)
     - Replace some mistaken farcalls/bank1calls with calls
-    - *This commit caused a game-breaking glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f))*
+    - *Relocating some of the home bank functions led to some crashes ([Reversion #1](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f), [Reversion #2](https://github.com/Sha0den/improvedpoketcg/commit/c3e01965877e98d425d696233ba56e8e43fa0a91), [Reversion #3](https://github.com/Sha0den/poketcg_v2/commit/0982afa57559a557f3ddbf6ecabe43151c00f2dd))*
 
 <br/>
 
@@ -270,7 +278,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **May 24, 2024:** 5 Files Changed
+- **[May 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/0982afa57559a557f3ddbf6ecabe43151c00f2dd):** 5 Files Changed
     - Put a few more functions back in the home bank
     - At least the booster pack one was causing a crash
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1)*

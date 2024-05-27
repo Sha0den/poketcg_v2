@@ -59,7 +59,7 @@ DrawCardEffectCommands:
 	db  $00
 
 Draw2EffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Draw2Effect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Draw2CardsEffect
 	db  $00
 
 EnergySearchEffectCommands:
@@ -75,8 +75,19 @@ EnergySpikeEffectCommands:
 	dbw EFFECTCMDTYPE_AI_SELECTION, AttachBasicEnergyFromDeck_AISelection
 	db  $00
 
-; this is an attack effect that searches for an Evolution card
-; and adds it to the player's hand (e.g. Fast Evolution in the TCG)
+; This is an attack effect that searches for a Trainer card
+; and adds it to the player's hand. (a.k.a. Errand-Running)
+; Feel free to delete this effect command or modify it into a Trainer effect.
+TrainerSearchEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AddCardFromDeckToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, TrainerSearch_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, TrainerSearch_AISelection
+	db  $00
+
+; This is an attack effect that searches for an Evolution card
+; and adds it to the player's hand. (a.k.a. Fast Evolution)
+; Feel free to delete this effect command or modify it into a Trainer effect.
 EvolutionSearchEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AddCardFromDeckToHandEffect
@@ -131,7 +142,7 @@ CallForRandomBasic50PercentEffectCommands:
 	db  $00
 
 RandomBenchFillEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, PlayArea_BenchCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EitherPlayArea_BenchSpaceCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, RandomlyFillBothBenchesEffect
 	db  $00
 
@@ -161,7 +172,7 @@ EnergyAbsorptionEffectCommands:
 SwitchAfterAttackEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchAfterAttack_SwitchEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Switch_PlayerSelection
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SwitchAfterAttack_PlayerSelection
 	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchAfterAttack_AISelection
 	db  $00
 
@@ -209,6 +220,10 @@ PsychicRecoverEffectCommands:
 	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedPsychicEnergy_AISelection
 	db  $00
 
+MayInflictSleepNoDamageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Sleep50PercentWithoutDamageEffect
+	db  $00
+
 MayInflictSleepEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Sleep50PercentEffect
 	db  $00
@@ -219,6 +234,10 @@ InflictSleepEffectCommands:
 
 DreamEaterEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DefendingPokemon_SleepCheck
+	db  $00
+
+MayInflictConfusionNoDamageEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentWithoutDamageEffect
 	db  $00
 
 MayInflictConfusionEffectCommands:
@@ -329,11 +348,11 @@ CannotAttackEffectCommands:
 	db  $00
 
 LeerEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentLeerEffect
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentEffect
 	db  $00
 
 TailWagEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentTailWagEffect
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentEffect
 	db  $00
 
 SmokescreenEffectCommands:
@@ -409,12 +428,12 @@ SwitchDefendingPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchDefendingPokemon_SwitchEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SwitchDefendingPokemon_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchDefendingPokemon_AISelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, ChooseWeakestBenchedPokemon_AISelection
 	db  $00
 
 GustOfWindEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchDefendingPokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, GustOfWind_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GustOfWind_SwitchEffect
 	db  $00
 
@@ -432,7 +451,7 @@ HurricaneEffectCommands:
 
 DamageUnaffectedByColorEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoColorEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NoColor_NullEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NullEffect
 	dbw EFFECTCMDTYPE_AI, NoColorEffect
 	db  $00
 
@@ -626,7 +645,7 @@ Recoil80EffectCommands:
 DiscardAttachedFireEnergyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_FireEnergyCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedFireEnergy_PlayerSelection
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, VariableDiscardEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, AlternateCardDiscardEffect
 	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedFireEnergy_AISelection
 	db  $00
 
@@ -686,7 +705,7 @@ Selfdestruct100And20EffectCommands:
 Also10DamageTo1BenchedEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Also10DamageTo1Benched_DamageEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AlsoDamageTo1Benched_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, AlsoDamageTo1Benched_AISelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, AlsoChooseWeakestBenchedPokemon_AISelection
 	db  $00
 
 Also10DamageTo3BenchedEffectCommands:
@@ -707,7 +726,7 @@ Benched20DamageEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageTo1Benched_20DamageEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, DamageTo1Benched_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, DamageTo1Benched_AISelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, ChooseWeakestBenchedPokemon_AISelection
 	db  $00
 
 RandomEnemy20DamageEffectCommands:
@@ -916,6 +935,10 @@ TrainerCardAsPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, TrainerCardAsPokemon_BenchCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TrainerCardAsPokemon_DiscardEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, TrainerCardAsPokemon_PlayerSelectSwitch
+	db  $00
+
+BillEffectCommands:
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Draw2CardsFromDeck
 	db  $00
 
 ClefairyDollEffectCommands:
