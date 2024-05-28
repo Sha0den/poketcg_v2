@@ -1269,24 +1269,9 @@ AIDecide_GustOfWind:
 	farcall LookForEnergyNeededForAttackInHand
 	jr c, .found
 
-; revert player's arena card and return to loop
+; the following two local routines can be condensed into one
+; since they both revert the player's arena card
 .next
-	call .revert_active
-	pop de
-	inc e
-	pop hl
-	jr .loop_4
-
-; revert player's arena card and set carry
-.found
-	call .revert_active
-	pop de
-	ld a, e
-	pop hl
-	scf
-	ret
-
-.revert_active
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	pop af
@@ -1295,6 +1280,25 @@ AIDecide_GustOfWind:
 	call GetNonTurnDuelistVariable
 	pop af
 	ld [hl], a
+	pop de
+	inc e
+	pop hl
+	jr .loop_4
+
+; revert player's arena card and set carry
+.found
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetNonTurnDuelistVariable
+	pop af
+	ld [hl], a
+	ld a, DUELVARS_ARENA_CARD
+	call GetNonTurnDuelistVariable
+	pop af
+	ld [hl], a
+	pop de
+	ld a, e
+	pop hl
+	scf
 	ret
 
 ; returns carry if any of arena card's attacks
@@ -1353,8 +1357,18 @@ AIDecide_GustOfWind:
 	farcall CheckIfCanDamageDefendingPokemon
 	jr c, .can_damage
 
+; the following two local routines can be condensed into one
+; since they both revert the player's arena card
+
 ; can't damage
-	call .revert_active
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetNonTurnDuelistVariable
+	pop af
+	ld [hl], a
+	ld a, DUELVARS_ARENA_CARD
+	call GetNonTurnDuelistVariable
+	pop af
+	ld [hl], a
 	pop hl
 	pop de
 	pop bc
@@ -1362,7 +1376,14 @@ AIDecide_GustOfWind:
 	ret
 
 .can_damage
-	call .revert_active
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetNonTurnDuelistVariable
+	pop af
+	ld [hl], a
+	ld a, DUELVARS_ARENA_CARD
+	call GetNonTurnDuelistVariable
+	pop af
+	ld [hl], a
 	pop hl
 	pop de
 	pop bc

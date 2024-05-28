@@ -65,7 +65,7 @@
 
 
 ## Code Optimization
-- **May 27, 2024:** 11 Files Changed
+- **[May 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/2ebfcd7572efe3007ed6fa75a8719fc4c395a04f):** 11 Files Changed
     - Refactor a variety of code pertaining to the effect functions
     - Fix numerous errors in the effect functions code
     - Replace some hexadecimal numbers with the appropriate icon tile offset constants
@@ -96,6 +96,7 @@
     - Replace some conditional jumps to returns with conditional returns (e.g. "ret z" instead of "jr z, .done")
     - Refactor some code in src/engine/duel/effect_functions.asm and effect_functions2.asm
     - Removed references to Sand Attack substatus (since it was merged with Smokescreen substatus)
+    - *The changes to AIDecide_GustOfWind crash the game*
 
 <br/>
 
@@ -278,6 +279,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **May 27, 2024:** 1 File Changed
+    - Revert a change to AIDecide_GustOfWind that was causing the game to crash
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/569060cc0e7d3ffd3a56d4e556aa25c4387d5edd)*
+
+<br/>
+
 - **[May 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/0982afa57559a557f3ddbf6ecabe43151c00f2dd):** 5 Files Changed
     - Put a few more functions back in the home bank
     - At least the booster pack one was causing a crash
