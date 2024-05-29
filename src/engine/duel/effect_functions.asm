@@ -43,6 +43,12 @@ DiscardedEnergyCheck:
 	ldtx hl, NoEnergyCardsInDiscardPileText
 	ret
 
+; returns carry if there are no Benched Pokemon
+TrainerCardAsPokemon_BenchCheck:
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh [hTemp_ffa0], a
+;	fallthrough
+
 ; returns carry if there are no Pokemon on the Turn Duelist's Bench
 BenchedPokemonCheck:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -5996,15 +6002,6 @@ Peek_SelectEffect:
 	cp $40
 	jr c, .hand
 	ldh a, [hAIPkmnPowerEffectParam]
-	jr .prize_or_deck
-
-.hand
-; AI chose to look at a random card in the hand,
-; so display it to the Player on screen.
-	call SwapTurn
-	ldtx hl, PeekWasUsedToLookInYourHandText
-	bank1call DisplayCardDetailScreen
-	jp SwapTurn
 
 .prize_or_deck
 ; AI chose either a prize card or the top card of the Player's deck,
@@ -6017,6 +6014,14 @@ Peek_SelectEffect:
 	call SwapTurn
 	ldtx hl, CardPeekWasUsedOnText
 	jp DrawWideTextBox_WaitForInput
+
+.hand
+; AI chose to look at a random card in the hand,
+; so display it to the Player on screen.
+	call SwapTurn
+	ldtx hl, PeekWasUsedToLookInYourHandText
+	bank1call DisplayCardDetailScreen
+	jp SwapTurn
 
 ; returns carry if Damage Swap cannot be used.
 DamageSwapCheck:
@@ -6512,12 +6517,6 @@ HandlePlayerSelection2HandCards:
 PlayThisAsBasicPokemonEffect:
 	ldh a, [hTempCardIndex_ff9f]
 	jp PutHandPokemonCardInPlayArea
-
-; returns carry if there are no Benched Pokemon
-TrainerCardAsPokemon_BenchCheck:
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hTemp_ffa0], a
-	jp BenchedPokemonCheck
 
 TrainerCardAsPokemon_PlayerSelectSwitch:
 	ldh a, [hTemp_ffa0]
@@ -7654,9 +7653,8 @@ CheckIfCanEvolveInto_BasicToStage2:
 	add DUELVARS_ARENA_CARD_FLAGS
 	call GetTurnDuelistVariable
 	and CAN_EVOLVE_THIS_TURN
-	jr nz, .can_evolve
-	jr .cant_evolve
-.can_evolve
+	jr z, .cant_evolve
+	; can evolve
 	ld a, e
 	add DUELVARS_ARENA_CARD
 	ld l, a

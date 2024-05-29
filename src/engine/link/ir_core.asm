@@ -175,7 +175,26 @@ TransmitIRDataBuffer:
 	call TransmitByteThroughIR
 	ld hl, wIRDataBuffer
 	ld c, 8
-	jr TransmitNBytesFromHLThroughIR
+;	fallthrough
+
+; hl = start of data to transmit
+; c = number of bytes to transmit
+TransmitNBytesFromHLThroughIR:
+	ld b, $0
+.loop_data_bytes
+	ld a, b
+	add [hl]
+	ld b, a
+	ld a, [hli]
+	call TransmitByteThroughIR
+	ret c
+	dec c
+	jr nz, .loop_data_bytes
+	ld a, b
+	cpl
+	inc a
+	call TransmitByteThroughIR
+	ret
 
 ReceiveIRDataBuffer:
 	call Func_1971e
@@ -188,27 +207,7 @@ ReceiveIRDataBuffer:
 	jr nz, ReceiveIRDataBuffer
 	ld hl, wIRDataBuffer
 	ld c, 8
-	jr ReceiveNBytesToHLThroughIR
-
-; hl = start of data to transmit
-; c = number of bytes to transmit
-TransmitNBytesFromHLThroughIR:
-	ld b, $0
-.loop_data_bytes
-	ld a, b
-	add [hl]
-	ld b, a
-	ld a, [hli]
-	call TransmitByteThroughIR
-	jr c, .asm_1977c
-	dec c
-	jr nz, .loop_data_bytes
-	ld a, b
-	cpl
-	inc a
-	call TransmitByteThroughIR
-.asm_1977c
-	ret
+;	fallthrough
 
 ; hl = address to write received data
 ; c = number of bytes to be received

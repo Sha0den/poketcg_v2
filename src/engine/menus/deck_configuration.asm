@@ -3103,8 +3103,7 @@ HandlePlayersCardsScreen:
 	jr nc, .wait_input
 	ld a, [hffb3]
 	cp $ff ; operation cancelled
-	jr nz, .jump_to_list
-	ret
+	ret z
 
 .jump_to_list
 	ld a, [wNumEntriesInCurFilter]

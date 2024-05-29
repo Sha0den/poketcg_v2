@@ -74,7 +74,7 @@ AdvanceCreditsSequenceCmdPtr:
 CreditsSequenceCmd_Wait:
 	ld a, c
 	ld [wSequenceDelay], a
-	jp AdvanceCreditsSequenceCmdPtrBy3
+	jr AdvanceCreditsSequenceCmdPtrBy3
 
 CreditsSequenceCmd_LoadScene:
 	push bc
@@ -92,7 +92,7 @@ CreditsSequenceCmd_LoadScene:
 	ld b, a
 	ld a, e
 	call LoadScene
-	jp AdvanceCreditsSequenceCmdPtrBy5
+	jr AdvanceCreditsSequenceCmdPtrBy5
 
 CreditsSequenceCmd_LoadBooster:
 	push bc
@@ -110,7 +110,7 @@ CreditsSequenceCmd_LoadBooster:
 	ld b, a
 	ld a, e
 	farcall LoadBoosterGfx
-	jp AdvanceCreditsSequenceCmdPtrBy5
+	jr AdvanceCreditsSequenceCmdPtrBy5
 
 CreditsSequenceCmd_LoadClubMap:
 	ld b, $00
@@ -142,12 +142,12 @@ CreditsSequenceCmd_LoadClubMap:
 	ld h, [hl]
 	ld l, a
 	or h
-	jr z, .done
+	jp z, AdvanceCreditsSequenceCmdPtrBy3 ; done
 
 .loop_npcs
 	ld a, [hli] ; NPC ID
 	or a
-	jr z, .done
+	jp z, AdvanceCreditsSequenceCmdPtrBy3 ; done
 	ld d, a
 	ld a, [hli] ; NPC x coord
 	ld c, a
@@ -159,9 +159,6 @@ CreditsSequenceCmd_LoadClubMap:
 	call LoadNPCForCreditsSequence
 	pop hl
 	jr .loop_npcs
-
-.done
-	jp AdvanceCreditsSequenceCmdPtrBy3
 
 MACRO credits_club_map
 	db \1 ; x

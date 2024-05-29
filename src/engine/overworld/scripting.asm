@@ -94,6 +94,7 @@ Func_c9bc:
 
 Func_c9c0:
 	ld l, MAP_SCRIPT_MOVED_PLAYER
+;	fallthrough
 
 CallMapScriptPointerIfExists::
 	call GetMapScriptPointer
@@ -194,8 +195,7 @@ DetermineChallengeHallEvent:
 	ld c, CHALLENGE_CUP_NOT_STARTED
 .start_challenge_cup_three
 	set_event_value EVENT_CHALLENGE_CUP_3_STATE
-	jr .close_challenge_cup_two
-.close_challenge_cup_two
+; close challenge cup two
 	ld c, CHALLENGE_CUP_OVER
 	set_event_value EVENT_CHALLENGE_CUP_2_STATE
 .close_challenge_cup_one
@@ -590,6 +590,8 @@ IncreaseScriptPointerBy7:
 
 IncreaseScriptPointerBy3:
 	ld a, 3
+;	fallthrough
+
 IncreaseScriptPointer:
 	ld c, a
 	ld a, [wScriptPointer]
@@ -621,6 +623,8 @@ GetScriptArgs2AfterPointer:
 
 GetScriptArgs3AfterPointer:
 	ld a, 3
+;	fallthrough
+
 GetScriptArgsAfterPointer:
 	push hl
 	ld l, a
@@ -1791,14 +1795,13 @@ ScriptCommand_GiftCenter:
 	farcall GiftCenterMenu
 	ld c, a
 	set_event_value EVENT_GIFT_CENTER_MENU_CHOICE
-	jr .done
+	jp IncreaseScriptPointerBy2
 
 .load_gift_center
 	ld a, GAME_EVENT_GIFT_CENTER
 	ld [wGameEvent], a
 	ld hl, wOverworldTransition
 	set 6, [hl]
-.done
 	jp IncreaseScriptPointerBy2
 
 ScriptCommand_PlayCredits:

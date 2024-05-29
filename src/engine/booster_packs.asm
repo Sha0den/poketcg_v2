@@ -140,7 +140,8 @@ CheckCardInSetAndRarity:
 	jr nz, .invalid_card
 .return_valid_card
 	or a
-	jr .return
+	pop bc
+	ret
 .invalid_card
 	scf
 .return
@@ -332,19 +333,6 @@ GenerateBoosterEnergies:
 	pop af
 	ret
 
-; add the (energy) card at a to wBoosterTempNonEnergiesDrawn and wTempCardCollection
-AddBoosterEnergyToDrawnEnergies:
-	ld [wBoosterCurrentCard], a
-	call AddBoosterCardToDrawnEnergies
-	ret
-
-; generates a random energy card
-GenerateRandomEnergy:
-	ld a, NUM_COLORED_TYPES
-	call Random
-	add $01
-	jr AddBoosterEnergyToDrawnEnergies
-
 ; generates a booster with 10 random energies
 GenerateRandomEnergyBooster:
 	ld a, NUM_CARDS_IN_BOOSTER
@@ -369,7 +357,7 @@ GenerateEnergyBoosterWaterFighting:
 ; generates a booster with 5 Grass energies and 5 Psychic energies
 GenerateEnergyBoosterGrassPsychic:
 	ld hl, EnergyBoosterGrassPsychicData
-	jr GenerateTwoTypesEnergyBooster
+;	fallthrough
 
 ; generates a booster with 5 energies of 2 different types each
 GenerateTwoTypesEnergyBooster:
@@ -405,6 +393,18 @@ EnergyBoosterWaterFightingData:
 
 EnergyBoosterGrassPsychicData:
 	db GRASS_ENERGY, PSYCHIC_ENERGY
+
+; generates a random energy card
+GenerateRandomEnergy:
+	ld a, NUM_COLORED_TYPES
+	call Random
+	add $01
+;	fallthrough
+
+; add the (energy) card at a to wBoosterTempNonEnergiesDrawn and wTempCardCollection
+AddBoosterEnergyToDrawnEnergies:
+	ld [wBoosterCurrentCard], a
+;	fallthrough
 
 ; add the (energy) card at [wBoosterCurrentCard] to wBoosterTempNonEnergiesDrawn and wTempCardCollection
 AddBoosterCardToDrawnEnergies:

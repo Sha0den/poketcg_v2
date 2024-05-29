@@ -337,7 +337,6 @@ DrawYourOrOppPlayArea_DrawArrows:
 	ld a, d
 	call WriteByteToBGMap0
 	jr .loop
-	ret
 
 YourOrOppPlayAreaArrowPositions:
 	dw YourOrOppPlayAreaArrowPositions_PlayerPokemon
@@ -466,7 +465,7 @@ _DrawYourOrOppPlayAreaScreen::
 	call DrawPlayArea_BenchCards
 	xor a
 	call DrawYourOrOppPlayArea_Icons
-	jr .done
+	jp EnableLCD
 
 .not_equal
 	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.opponent
@@ -478,10 +477,7 @@ _DrawYourOrOppPlayAreaScreen::
 	call DrawPlayArea_BenchCards
 	ld a, $01
 	call DrawYourOrOppPlayArea_Icons
-
-.done
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 Func_82b6:
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
@@ -2077,7 +2073,13 @@ GetFirstSetPrizeCard:
 	dec e
 	jr nz, .next_prize
 	ld c, 0
-	jr .done
+.done
+	ld a, c ; first prize index that is set
+	pop hl
+	pop de
+	pop bc
+	ret
+
 .next_prize
 	inc c
 	ld a, PRIZES_6
@@ -2085,13 +2087,6 @@ GetFirstSetPrizeCard:
 	jr nz, .loop_prizes
 	ld c, 0
 	jr .loop_prizes
-
-.done
-	ld a, c ; first prize index that is set
-	pop hl
-	pop de
-	pop bc
-	ret
 
 ; returns 1 shifted left by c bits
 .GetPrizeMask

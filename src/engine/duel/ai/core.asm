@@ -1316,7 +1316,8 @@ LookForEnergyNeededInHand:
 	ld a, e
 	call LookForCardIDInHandList_Bank5
 	ret c
-	jr .no_carry
+	or a
+	ret
 
 .one_colorless
 	call CreateEnergyCardListFromHand
@@ -1328,7 +1329,8 @@ LookForEnergyNeededInHand:
 	ld a, DOUBLE_COLORLESS_ENERGY
 	call LookForCardIDInHandList_Bank5
 	ret c
-	jr .no_carry
+	or a
+	ret
 
 ; looks for energy card(s) in hand depending on
 ; what is needed for selected card and attack
@@ -1362,7 +1364,8 @@ LookForEnergyNeededForAttackInHand:
 	ld a, e
 	call LookForCardIDInHandList_Bank5
 	ret c
-	jr .done
+	or a
+	ret
 
 .one_colorless
 	call CreateEnergyCardListFromHand
@@ -1374,7 +1377,8 @@ LookForEnergyNeededForAttackInHand:
 	ld a, DOUBLE_COLORLESS_ENERGY
 	call LookForCardIDInHandList_Bank5
 	ret c
-	jr .done
+	or a
+	ret
 
 ; goes through $00 terminated list pointed
 ; by wAICardListPlayFromHandPriority and compares it to each card in hand.
@@ -1487,6 +1491,7 @@ CheckEnergyFlagsNeededInList:
 	cp DOUBLE_COLORLESS_ENERGY
 	jr nz, .next_card
 	ld a, COLORLESS_F
+	; fallthrough
 
 ; if energy card matches required energy, return carry
 .check_energy

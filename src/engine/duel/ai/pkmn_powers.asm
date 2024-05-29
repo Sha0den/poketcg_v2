@@ -173,11 +173,6 @@ HandleAIEnergyTrans:
 	cp GRASS_ENERGY
 	jr nz, .attack_false
 	ld c, b
-	jr .count_if_enough
-
-.attack_false
-	or a
-	ret
 
 .count_if_enough
 ; if there's enough Grass energy cards in Bench
@@ -189,6 +184,10 @@ HandleAIEnergyTrans:
 	jr c, .attack_false
 	ld a, c
 	scf
+	ret
+
+.attack_false
+	or a
 	ret
 
 .is_exeggutor
@@ -358,14 +357,6 @@ AIEnergyTransTransferEnergyToBench:
 	; store the deck index of energy card
 	ld a, e
 	ldh [hAIEnergyTransEnergyCard], a
-	jr .transfer
-
-.next_card
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop_deck_locations
-	jr .done_transfer
 
 .transfer
 ; get the Bench card location to transfer Grass energy card to.
@@ -388,6 +379,12 @@ AIEnergyTransTransferEnergyToBench:
 	ld a, OPPACTION_6B15
 	bank1call AIMakeDecision
 	jr .loop_energy
+
+.next_card
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop_deck_locations
 
 ; transfer is done, perform delay
 ; and return to main scene.
@@ -445,7 +442,10 @@ HandleAIPkmnPowers:
 	cp POKEMON_POWER
 	jr z, .execute_effect
 	pop bc
-	jr .next_3
+
+.next_3
+	pop af
+	jr .next_2
 
 .execute_effect
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
@@ -494,10 +494,6 @@ HandleAIPkmnPowers:
 	cp b
 	jr nz, .loop_play_area
 	ret
-
-.next_3
-	pop af
-	jr .next_2
 
 .done
 	pop bc

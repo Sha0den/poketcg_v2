@@ -1344,10 +1344,7 @@ Func_80cd7:
 	jr .incr_npc_id
 .right
 	ld a, 1
-	jr .incr_npc_id
-.left
-	ld a, 1
-	jr .decr_npc_id
+	; fallthrough
 
 .incr_npc_id
 	ld c, a
@@ -1359,6 +1356,10 @@ Func_80cd7:
 	cp $2c
 	jr nc, .load_last_npc
 	jr .got_npc
+
+.left
+	ld a, 1
+	; fallthrough
 
 .decr_npc_id
 	ld c, a
@@ -1380,7 +1381,7 @@ Func_80cd7:
 	ld [wLoadedNPCTempIndex], a
 	call ClearSpriteAnimations
 	call .DrawNPCSprite
-	jr .PrintNPCInfo
+;	fallthrough
 
 .PrintNPCInfo
 	lb de, 0, 4

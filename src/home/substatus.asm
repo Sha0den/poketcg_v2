@@ -422,50 +422,7 @@ IsClairvoyanceActive::
 	ccf
 	ret nc
 	ld a, OMANYTE
-	jr CountPokemonIDInPlayArea
-
-; returns carry if turn holder's arena card is paralyzed, asleep, confused,
-; and/or toxic gas in play, meaning that attack and/or pkmn power cannot be used
-CheckCannotUseDueToStatus::
-	xor a
-
-; same as above, but if a is non-0, only toxic gas is checked
-CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
-	or a
-	jr nz, .check_toxic_gas
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
-	and CNF_SLP_PRZ
-	ldtx hl, CannotUseDueToStatusText
-	scf
-	ret nz ; return carry
-.check_toxic_gas
-	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
-	ldtx hl, UnableDueToToxicGasText
-	ret
-
-; return, in a, the amount of times that the Pokemon card with a given ID is found in the
-; play area of both duelists. Also return carry if the Pokemon card is at least found once.
-; if the arena Pokemon is asleep, confused, or paralyzed (Pkmn Power-incapable), it doesn't count.
-; input: a = Pokemon card ID to search
-CountPokemonIDInBothPlayAreas::
-	push bc
-	ld [wTempPokemonID_ce7c], a
-	call CountPokemonIDInPlayArea
-	ld c, a
-	call SwapTurn
-	ld a, [wTempPokemonID_ce7c]
-	call CountPokemonIDInPlayArea
-	call SwapTurn
-	add c
-	or a
-	scf
-	jr nz, .found
-	or a
-.found
-	pop bc
-	ret
+;	fallthrough
 
 ; return, in a, the amount of times that the Pokemon card with a given ID is found in the
 ; turn holder's play area. Also return carry if the Pokemon card is at least found once.
@@ -515,6 +472,49 @@ CountPokemonIDInPlayArea::
 	pop bc
 	pop de
 	pop hl
+	ret
+
+; return, in a, the amount of times that the Pokemon card with a given ID is found in the
+; play area of both duelists. Also return carry if the Pokemon card is at least found once.
+; if the arena Pokemon is asleep, confused, or paralyzed (Pkmn Power-incapable), it doesn't count.
+; input: a = Pokemon card ID to search
+CountPokemonIDInBothPlayAreas::
+	push bc
+	ld [wTempPokemonID_ce7c], a
+	call CountPokemonIDInPlayArea
+	ld c, a
+	call SwapTurn
+	ld a, [wTempPokemonID_ce7c]
+	call CountPokemonIDInPlayArea
+	call SwapTurn
+	add c
+	or a
+	scf
+	jr nz, .found
+	or a
+.found
+	pop bc
+	ret
+
+; returns carry if turn holder's arena card is paralyzed, asleep, confused,
+; and/or toxic gas in play, meaning that attack and/or pkmn power cannot be used
+CheckCannotUseDueToStatus::
+	xor a
+
+; same as above, but if a is non-0, only toxic gas is checked
+CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
+	or a
+	jr nz, .check_toxic_gas
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	call GetTurnDuelistVariable
+	and CNF_SLP_PRZ
+	ldtx hl, CannotUseDueToStatusText
+	scf
+	ret nz ; return carry
+.check_toxic_gas
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ldtx hl, UnableDueToToxicGasText
 	ret
 
 ; return, in a, the retreat cost of the card in wLoadedCard1,

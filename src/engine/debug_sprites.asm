@@ -66,8 +66,7 @@ Func_1c890:
 	and (1 << SPRITE_ANIM_FLAG_X_SUBTRACT)
 	jr nz, .asm_1c8b9
 	res SPRITE_ANIM_FLAG_SPEED, [hl]
-	jr .asm_1c8bb
+	ret
 .asm_1c8b9
 	set SPRITE_ANIM_FLAG_SPEED, [hl]
-.asm_1c8bb
 	ret

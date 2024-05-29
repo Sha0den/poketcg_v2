@@ -69,14 +69,14 @@ AnimationCommand_AnimOpponent:
 	ld [wDuelAnimDuelistSide], a
 	jr AnimationCommand_AnimNormal
 
+AnimationCommand_AnimEnd2:
+	ret
+
 AnimationCommand_AnimPlayArea:
 	ld a, [wDamageAnimPlayAreaLocation]
 	and $7f
 	ld [wDuelAnimLocationParam], a
-	jr AnimationCommand_AnimNormal
-
-AnimationCommand_AnimEnd2:
-	ret
+;	fallthrough
 
 AnimationCommand_AnimNormal:
 	ld a, [de]

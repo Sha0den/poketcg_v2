@@ -117,7 +117,7 @@ SetScriptData:
 	ld [wNextScript + 1], a
 	ld a, OWMODE_SCRIPT
 	ld [wOverworldMode], a
-	jr EnterScript
+;	fallthrough
 
 EnterScript:
 	ld hl, wNextScript
@@ -1094,14 +1094,12 @@ FindNPCOrObject:
 	call HandleMoveModeAPress
 	jr nc, .exit
 	ld a, OWMODE_SCRIPT
-	jr .set_mode
-.exit
-	or a
-	ret
-
 .set_mode
 	ld [wOverworldMode], a
 	scf
+	ret
+.exit
+	or a
 	ret
 
 OpenPauseMenu:

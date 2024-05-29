@@ -256,6 +256,7 @@ CreateCardSetListAndInitListCoords:
 	jr .got_prefix
 .colosseum
 	lb de, 3, "FW3_A"
+	; fallthrough
 
 .got_prefix
 	ld hl, wCurDeckName
@@ -334,15 +335,15 @@ PrintCardSetListEntries:
 	call .AppendCardListIndex
 	call ProcessText
 	ld hl, wDefaultText
-	jr .asm_a76d
-
-	; this code is never reached
+;	jr .asm_a76d
+;
+;	; this code is never reached
 ;	pop de
 ;	push hl
 ;	call InitTextPrinting
 ;	ld hl, Text_9a36
-
-.asm_a76d
+;
+;.asm_a76d
 	call ProcessText
 	pop hl
 	ld a, b
@@ -832,6 +833,7 @@ CardAlbum:
 .colosseum
 	ldtx hl, Item1ColosseumText
 	ld e, NUM_CARDS_COLOSSEUM
+	; fallthrough
 
 .has_card_set_count
 	push de

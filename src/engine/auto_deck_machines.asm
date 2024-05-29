@@ -129,10 +129,8 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 	ret nc
 	sla a ; next deck
 	cp (1 << NUM_DECKS)
-	jr z, .two_deck_combinations
-	jr .loop_single_built_decks
+	jr nz, .loop_single_built_decks
 
-.two_deck_combinations
 ; next check all two deck combinations
 	ld a, DECK_1 | DECK_2
 	call .CheckIfCanBuild
@@ -160,10 +158,8 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 	ret nc
 	sra a
 	cp $ff
-	jr z, .all_decks
-	jr .loop_three_deck_combinations
+	jr nz, .loop_three_deck_combinations
 
-.all_decks
 ; finally check if can be built by dismantling all decks
 	call .CheckIfCanBuild
 	ret nc

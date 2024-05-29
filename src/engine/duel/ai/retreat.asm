@@ -527,19 +527,6 @@ AIDecideBenchPokemonToSwitchTo:
 	ld [wSelectedAttack], a
 	call CheckIfSelectedAttackIsUnusable
 	call nc, .HandleAttackDamageScore
-	jr .check_energy_card
-
-; adds to AI score depending on amount of damage
-; it can inflict to the defending Pokémon
-; AI score += floor(Damage / 10) + 1
-.HandleAttackDamageScore
-	ld a, [wSelectedAttack]
-	call EstimateDamage_VersusDefendingCard
-	ld a, [wDamage]
-	call CalculateByteTensDigit
-	inc a
-	call AddToAIScore
-	ret
 
 ; if an energy card that is needed is found in hand
 ; calculate damage of the move and raise AI score
@@ -671,7 +658,24 @@ AIDecideBenchPokemonToSwitchTo:
 	or a
 	jr nz, .add_hp_score
 	ld [wAIScore], a
-	jr .store_score
+
+.store_score
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld c, a
+	ld b, $00
+	ld hl, wPlayAreaAIScore
+	add hl, bc
+	ld a, [wAIScore]
+	ld [hl], a
+	pop bc
+	inc c
+	dec b
+	jp nz, .next_bench
+
+; done
+	xor a
+	ld [wAIRetreatScore], a
+	jp FindHighestBenchScore
 
 ; AI score += floor(HP/40)
 .add_hp_score
@@ -752,23 +756,16 @@ AIDecideBenchPokemonToSwitchTo:
 	inc hl
 	jr .loop_ids
 
-.store_score
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld c, a
-	ld b, $00
-	ld hl, wPlayAreaAIScore
-	add hl, bc
-	ld a, [wAIScore]
-	ld [hl], a
-	pop bc
-	inc c
-	dec b
-	jp nz, .next_bench
-
-; done
-	xor a
-	ld [wAIRetreatScore], a
-	jp FindHighestBenchScore
+; adds to AI score depending on amount of damage
+; it can inflict to the defending Pokémon
+; AI score += floor(Damage / 10) + 1
+.HandleAttackDamageScore
+	ld a, [wSelectedAttack]
+	call EstimateDamage_VersusDefendingCard
+	ld a, [wDamage]
+	call CalculateByteTensDigit
+	inc a
+	jp AddToAIScore
 
 ; handles AI action of retreating Arena Pokémon
 ; and chooses which energy cards to discard.

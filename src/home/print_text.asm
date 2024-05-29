@@ -84,22 +84,6 @@ CountLinesOfTextFromID::
 	pop hl
 	ret
 
-; call PrintScrollableText with text box label, then wait for the
-; player to press A or B to advance the printed text
-PrintScrollableText_WithTextBoxLabel::
-	call PrintScrollableText_WithTextBoxLabel_NoWait
-	jr WaitForPlayerToAdvanceText
-
-PrintScrollableText_WithTextBoxLabel_NoWait::
-	push hl
-	ld hl, wTextBoxLabel
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	pop hl
-	ld a, $01
-	jr PrintScrollableText
-
 ; call PrintScrollableText with no text box label, then wait for the
 ; player to press A or B to advance the printed text
 PrintScrollableText_NoTextBoxLabel::
@@ -115,6 +99,22 @@ WaitForPlayerToAdvanceText::
 	call SetCursorParametersForTextBox
 	call WaitForButtonAorB
 	ret
+
+; call PrintScrollableText with text box label, then wait for the
+; player to press A or B to advance the printed text
+PrintScrollableText_WithTextBoxLabel::
+	call PrintScrollableText_WithTextBoxLabel_NoWait
+	jr WaitForPlayerToAdvanceText
+
+PrintScrollableText_WithTextBoxLabel_NoWait::
+	push hl
+	ld hl, wTextBoxLabel
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	pop hl
+	ld a, $01
+;	fallthrough
 
 ; draws a text box, and prints the text with id at hl, with letter delay. unlike PrintText,
 ; PrintScrollableText also supports scrollable text, and prompts the user to press A or B

@@ -12,14 +12,14 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/637b2675313f43498707565d050d9fcf825319db):** 3 Files Changed
+- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/637b2675313f43498707565d050d9fcf825319db):** 3 Files Changed
     - Finish fixing the "Big Lightning" and "Dive Bomb" animations
     - Split "Gfx 12" and "Anims 1" into 2 banks
     - Split "Anims 4" and "Palettes1" into 2 banks
 
 <br/>
 
-- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/3e7fab86d81231648bee2b0256eef81262d78f24):** 17 Files Changed (bugs_and_glitches.md was also removed)
+- **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/3e7fab86d81231648bee2b0256eef81262d78f24):** 17 Files Changed (bugs_and_glitches.md was also removed)
     - Fix the lower left tiles of the pool area in the Water Club using the wrong color
     - Fix the emblems in the Club entrances using some incorrect tiles
     - Fix a problem with the frame data being used for NPCs with a green palette
@@ -65,6 +65,12 @@
 
 
 ## Code Optimization
+- **May 29, 2024:** 35 Files Changed
+    - Refactor code to minimize use of unconditional jr's
+    - Other minor optimizations, most of which involve jumps
+
+<br/>
+
 - **[May 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/2ebfcd7572efe3007ed6fa75a8719fc4c395a04f):** 11 Files Changed
     - Refactor a variety of code pertaining to the effect functions
     - Fix numerous errors in the effect functions code
@@ -96,7 +102,7 @@
     - Replace some conditional jumps to returns with conditional returns (e.g. "ret z" instead of "jr z, .done")
     - Refactor some code in src/engine/duel/effect_functions.asm and effect_functions2.asm
     - Removed references to Sand Attack substatus (since it was merged with Smokescreen substatus)
-    - *The changes to AIDecide_GustOfWind crash the game*
+    - *The changes to AIDecide_GustOfWind crash the game ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/4602ebf753565eeef9c9d46d8355182c05b531f7))*
 
 <br/>
 
@@ -140,7 +146,7 @@
     - Transfer some functions out of the home banks
     - Eliminate some same bank tail calls (replacing a call ret with a fallthrough/jr/jp)
     - Replace some mistaken farcalls/bank1calls with calls
-    - *Relocating some of the home bank functions led to some crashes ([Reversion #1](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f), [Reversion #2](https://github.com/Sha0den/improvedpoketcg/commit/c3e01965877e98d425d696233ba56e8e43fa0a91), [Reversion #3](https://github.com/Sha0den/poketcg_v2/commit/0982afa57559a557f3ddbf6ecabe43151c00f2dd))*
+    - *Relocating some of the home bank functions led to some crashes ([Reversion #1](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f), [Reversion #2](https://github.com/Sha0den/improvedpoketcg/commit/c3e01965877e98d425d696233ba56e8e43fa0a91), [Reversion #3](https://github.com/Sha0den/poketcg_v2/commit/0982afa57559a557f3ddbf6ecabe43151c00f2dd))*
 
 <br/>
 
@@ -243,7 +249,7 @@
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f):** 5 Files Changed
     - Add support for common accented characters (halfwidth and fullwidth)
     - Expand the halfwidth font graphics (at the cost of some kanji)
-    - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
+    - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
 
 <br/>
 
@@ -279,7 +285,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **May 27, 2024:** 1 File Changed
+- **[May 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/4602ebf753565eeef9c9d46d8355182c05b531f7):** 1 File Changed
     - Revert a change to AIDecide_GustOfWind that was causing the game to crash
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/569060cc0e7d3ffd3a56d4e556aa25c4387d5edd)*
 
@@ -292,7 +298,7 @@
 
 <br/>
 
-- **[May 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/5969356ada125d565e72bf34d37ca90f2ce8f73e):** 8 Files Changed
+- **[May 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/5969356ada125d565e72bf34d37ca90f2ce8f73e):** 8 Files Changed
     - Put all of the animation and palette data back in their original locations
     - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/35903e93b9fb412009cec5f03ae57e90fa101c00) that sorted all of the animation and palette data in the proper banks*
 

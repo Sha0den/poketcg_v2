@@ -40,8 +40,8 @@ PrinterMenu_PokemonCards:
 	jr nc, .loop_frame_1
 	ld a, [hffb3]
 	cp $ff
-	jr nz, .asm_abd7
-	ret
+	ret z
+;	fallthrough
 
 .asm_abd7
 	ld a, [wNumEntriesInCurFilter]

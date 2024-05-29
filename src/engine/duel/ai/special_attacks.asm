@@ -53,9 +53,7 @@ HandleSpecialAIAttacks:
 	jp z, .HyperBeam
 	cp DRAGONAIR
 	jp z, .HyperBeam
-
-; return zero score.
-.zero_score
+	; return zero score.
 	xor a
 	ret
 
@@ -117,7 +115,12 @@ HandleSpecialAIAttacks:
 	ld a, CARD_LOCATION_DECK
 	call CheckIfAnyCardIDinLocation
 	jr c, .found_fighting_card
-	jr .zero_score
+
+; return zero score.
+.zero_score
+	xor a
+	ret
+
 .found_fighting_card
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -147,7 +150,7 @@ HandleSpecialAIAttacks:
 ; if AI decides to retreat, return a score of $80 + 10.
 .Teleport:
 	call AIDecideWhetherToRetreat
-	jp nc, .zero_score
+	jr nc, .zero_score
 	ld a, $8a
 	ret
 
@@ -168,7 +171,7 @@ HandleSpecialAIAttacks:
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
 	or a
-	jp nz, .zero_score
+	jr nz, .zero_score
 .swords_dance_focus_energy_success
 	ld a, $85
 	ret
@@ -194,14 +197,16 @@ HandleSpecialAIAttacks:
 	pop bc
 	cp b
 	jr nz, .loop_chain_lightning_bench
-	jp .zero_score
+	; return zero score
+	xor a
+	ret
 .chain_lightning_success
 	ld a, $82
 	ret
 
 .DevolutionBeam:
 	call LookForCardThatIsKnockedOutOnDevolution
-	jp nc, .zero_score
+	jr nc, .zero_score
 	ld a, $85
 	ret
 

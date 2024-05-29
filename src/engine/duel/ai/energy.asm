@@ -1,3 +1,20 @@
+; have AI decide whether to play energy card from hand
+; and determine which card is best to attach it.
+AIProcessAndTryToPlayEnergy:
+	xor a
+	ld [wAIEnergyAttachLogicFlags], a
+
+.has_logic_flags
+	call CreateEnergyCardListFromHand
+	jr nc, AIProcessEnergyCards
+
+; no energy
+	ld a, [wAIEnergyAttachLogicFlags]
+	or a
+	jp nz, RetrievePlayAreaAIScoreFromBackup
+	or a
+	ret
+
 ; have AI choose an energy card to play, but do not play it.
 ; does not consider whether the cards have evolutions to be played.
 ; return carry if an energy card is chosen to use in any Play Area card,
@@ -43,27 +60,7 @@ AIProcessButDontPlayEnergy_SkipEvolutionAndArena:
 
 	ld a, [wAIScore]
 	ld [de], a
-
-	jr AIProcessEnergyCards
-
-; have AI decide whether to play energy card from hand
-; and determine which card is best to attach it.
-AIProcessAndTryToPlayEnergy:
-	xor a
-	ld [wAIEnergyAttachLogicFlags], a
-
-.has_logic_flags
-	call CreateEnergyCardListFromHand
-	jr nc, AIProcessEnergyCards
-
-; no energy
-	ld a, [wAIEnergyAttachLogicFlags]
-	or a
-	jr z, .exit
-	jp RetrievePlayAreaAIScoreFromBackup
-.exit
-	or a
-	ret
+;	fallthrough
 
 ; have AI decide whether to play energy card
 ; and determine which card is best to attach it.
@@ -152,7 +149,24 @@ AIProcessEnergyCards:
 ; if Player is running MewtwoLv53 mill deck.
 	ld a, 5
 	call SubFromAIScore
-	jr .check_defending_can_ko
+
+.check_defending_can_ko
+	call CheckIfDefendingPokemonCanKnockOut
+	jr nc, .ai_score_bonus
+	ld a, 10
+	call SubFromAIScore
+
+; if either poison will KO or defending Pokémon can KO,
+; check if there are bench Pokémon,
+; if there are not, add AI score
+.check_bench
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	dec a
+	jr nz, .ai_score_bonus
+	ld a, 6
+	call AddToAIScore
+	jr .ai_score_bonus
 
 .add_to_score
 	ld a, 4
@@ -184,23 +198,6 @@ AIProcessEnergyCards:
 	ld a, 10
 	call SubFromAIScore
 	jr .check_bench
-.check_defending_can_ko
-	call CheckIfDefendingPokemonCanKnockOut
-	jr nc, .ai_score_bonus
-	ld a, 10
-	call SubFromAIScore
-
-; if either poison will KO or defending Pokémon can KO,
-; check if there are bench Pokémon,
-; if there are not, add AI score
-.check_bench
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
-	dec a
-	jr nz, .ai_score_bonus
-	ld a, 6
-	call AddToAIScore
-	jr .ai_score_bonus
 
 ; lower AI score by 3 - (bench HP)/10
 ; if bench HP < 30
@@ -255,6 +252,11 @@ AIProcessEnergyCards:
 	call SubFromAIScore
 	jr .store_score
 
+.next_id
+	inc hl
+	inc hl
+	jr .loop_id_list
+
 .check_id_score
 	ld a, [hli]
 	cp $80
@@ -268,12 +270,6 @@ AIProcessEnergyCards:
 	ld a, $80
 	sub d
 	call SubFromAIScore
-	jr .check_boss_deck
-
-.next_id
-	inc hl
-	inc hl
-	jr .loop_id_list
 
 ; if it's a boss deck, call Func_174f2
 ; and apply to the AI score the values
@@ -342,7 +338,7 @@ AIProcessEnergyCards:
 	call CreateEnergyCardListFromHand
 	jp AITryToPlayEnergyCard
 
-.not_found:
+.not_found
 	ld a, [wAIEnergyAttachLogicFlags]
 	or a
 	jr z, .no_carry

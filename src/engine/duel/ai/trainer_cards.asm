@@ -1198,11 +1198,9 @@ AIDecide_GustOfWind:
 	ld [wSelectedAttack], a
 	call .CheckIfAttackDealsNoDamage
 	ret nc
-; second attack
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
-	call .CheckIfAttackDealsNoDamage
-	ret
+	; fallthrough
 
 ; returns carry if attack is Pokemon Power
 ; or otherwise doesn't deal any damage
@@ -1217,7 +1215,7 @@ AIDecide_GustOfWind:
 
 	; skip if attack is a Power or has 0 damage
 	cp POKEMON_POWER
-	jr z, .set_carry ; no damage
+	jr z, .set_carry ; attack deals no damage
 	ld a, [wDamage]
 	or a
 	ret z
@@ -1228,7 +1226,9 @@ AIDecide_GustOfWind:
 	ld a, [wAIMaxDamage]
 	or a
 	ret nz
-	jr .set_carry
+	; attack deals no damage
+	scf
+	ret
 
 ; returns carry if there is a player's bench card that
 ; the opponent's current active card can KO
@@ -1461,19 +1461,6 @@ AIDecide_EnergyRemoval:
 	inc e
 	jr .loop_1
 
-.pick_energy
-; a play area card was picked to remove energy
-; store the picked energy card to remove in wce1a
-; and set carry
-	ld a, e
-	push af
-	call PickAttachedEnergyCardToRemove
-	ld [wce1a], a
-	pop af
-	call SwapTurn
-	scf
-	ret
-
 ; if no card in player's Play Area was found with enough energy
 ; to attack, just pick an energy card from player's active card
 ; (in case the AI cannot KO it this turn)
@@ -1512,7 +1499,20 @@ AIDecide_EnergyRemoval:
 	or a
 	jr z, .no_carry ; skip if none found
 	ld e, a
-	jr .pick_energy
+
+.pick_energy
+; a play area card was picked to remove energy
+; store the picked energy card to remove in wce1a
+; and set carry
+	ld a, e
+	push af
+	call PickAttachedEnergyCardToRemove
+	ld [wce1a], a
+	pop af
+	call SwapTurn
+	scf
+	ret
+
 .no_carry
 	call SwapTurn
 	or a
@@ -1777,8 +1777,7 @@ AIDecide_SuperEnergyRemoval:
 .found_damage
 	ld a, [wce08]
 	or a
-	jr z, .no_carry
-	jr .pick_energy
+	jr nz, .pick_energy
 .no_carry
 	call SwapTurn
 	or a
@@ -2674,7 +2673,7 @@ AIDecide_EnergyRetrieval:
 
 	ld a, [wce1a]
 	cp $ff
-	jr nz, .second_energy_1
+	jr nz, .second_energy
 
 ; check if there were already chosen cards,
 ; if this is the second chosen card, return carry
@@ -2683,11 +2682,6 @@ AIDecide_EnergyRetrieval:
 	ld a, b
 	ld [wce1a], a
 	call RemoveCardFromList
-	jr .next_play_area
-.second_energy_1
-	ld a, b
-	ld [wce1b], a
-	jr .set_carry
 
 .next_play_area
 	inc e
@@ -2705,16 +2699,19 @@ AIDecide_EnergyRetrieval:
 	ld b, a
 	ld a, [wce1a]
 	cp $ff
-	jr nz, .second_energy_2
+	jr nz, .second_energy
 	ld a, b
 	ld [wce1a], a
 	call RemoveCardFromList
 	jr .loop_energy_cards_2
 
-.second_energy_2
+.second_energy
 	ld a, b
 	ld [wce1b], a
-	jr .set_carry
+.set_carry
+	ld a, [wce06]
+	scf
+	ret
 
 ; will set carry if at least one has been chosen
 .check_chosen
@@ -2723,11 +2720,6 @@ AIDecide_EnergyRetrieval:
 	jr nz, .set_carry
 .no_carry
 	or a
-	ret
-
-.set_carry
-	ld a, [wce06]
-	scf
 	ret
 
 ; remove an element from the list
@@ -2965,16 +2957,11 @@ AIDecide_SuperEnergyRetrieval:
 .third_energy_1
 	ld a, [wce1d]
 	cp $ff
-	jr nz, .fourth_energy_1
+	jr nz, .fourth_energy
 	ld a, b
 	ld [wce1d], a
 	call RemoveCardFromList
-	jr .next_play_area
-
-.fourth_energy_1
-	ld a, b
-	ld [wce1e], a
-	jr .set_carry
+	; fallthrough
 
 .next_play_area
 	inc e
@@ -3021,7 +3008,13 @@ AIDecide_SuperEnergyRetrieval:
 .fourth_energy
 	ld a, b
 	ld [wce1e], a
-	jr .set_carry
+
+.set_carry
+	ld a, [wce08]
+	ld [wce1a], a
+	ld a, [wce06]
+	scf
+	ret
 
 ; will set carry if at least one has been chosen
 .check_chosen
@@ -3031,12 +3024,6 @@ AIDecide_SuperEnergyRetrieval:
 
 .no_carry
 	or a
-	ret
-.set_carry
-	ld a, [wce08]
-	ld [wce1a], a
-	ld a, [wce06]
-	scf
 	ret
 
 ; finds the card with deck index a in list hl,
@@ -3764,6 +3751,14 @@ AIDecide_FullHeal:
 	scf
 	ret
 
+; returns carry if player's Arena card
+; is card in register a
+.CheckPlayerArenaCard:
+	call SwapTurn
+	ld b, PLAY_AREA_ARENA
+	call LookForCardIDInPlayArea_Bank8
+	jp SwapTurn
+
 .asleep
 ; set carry if any of the following
 ; cards are in the Play Area.
@@ -3776,15 +3771,6 @@ AIDecide_FullHeal:
 	ld a, HAUNTER_LV22
 	call .CheckPlayerArenaCard
 	ret c
-	jr .paralyzed
-
-; returns carry if player's Arena card
-; is card in register a
-.CheckPlayerArenaCard:
-	call SwapTurn
-	ld b, PLAY_AREA_ARENA
-	call LookForCardIDInPlayArea_Bank8
-	jp SwapTurn
 
 .paralyzed
 ; if Scoop Up is in hand and decided to be played, skip.
@@ -3844,7 +3830,8 @@ AIDecide_FullHeal:
 	or a
 	jr nz, .set_carry
 ; if not, return no carry.
-	jr .no_carry
+	or a
+	ret
 
 AIPlay_MrFuji:
 	ld a, [wAITrainerCardToPlay]
@@ -5168,7 +5155,7 @@ AIDecide_ComputerSearch_RockCrusher:
 	jp c, .no_carry
 	call CreateHandCardList
 	ld hl, wDuelTempList
-	jr .find_discard_cards_2
+	; fallthrough
 
 .find_discard_cards_2
 	ld a, $ff
@@ -5259,6 +5246,7 @@ AIDecide_ComputerSearch_WondersOfScience:
 	call LookForCardIDInLocation
 	jr nc, .no_carry
 	ld [wce06], a
+	; fallthrough
 
 ; only discard Trainer cards from hand.
 ; if there are less than 2 Trainer cards to discard,
@@ -5324,6 +5312,7 @@ AIDecide_ComputerSearch_FireCharge:
 	call LookForCardIDInLocation
 	jp nc, .no_carry
 	ld [wce06], a
+	; fallthrough
 
 ; only discard Trainer cards from hand.
 ; if there are less than 2 Trainer cards to discard,
@@ -5571,7 +5560,8 @@ AIDecide_PokemonTrader_LegendaryDragonite:
 	ld b, CHARIZARD
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
-	jr .no_carry
+	or a
+	ret
 
 .kangaskhan
 	ld e, KANGASKHAN

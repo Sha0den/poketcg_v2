@@ -813,10 +813,10 @@ CheckAbleToRetreat:
 	ld h, $00
 	call LoadTxRam3
 	ldtx hl, EnergyCardsRequiredToRetreatText
-	jr .done
+	scf
+	ret
 .unable_to_retreat
 	ldtx hl, UnableToRetreatText
-.done
 	scf
 	ret
 
@@ -1348,13 +1348,13 @@ _CheckIfEnoughEnergiesToAttack:
 	cp b
 	jr c, .not_usable_or_not_enough_energies
 	or a
-.done
 	pop de
 	ret
 
 .not_usable_or_not_enough_energies
 	scf
-	jr .done
+	pop de
+	ret
 
 ; given the amount of energies of a specific type required for an attack in the
 ; lower nybble of register a, test if the pokemon card has enough energies of that type
@@ -1396,10 +1396,10 @@ CheckIfActiveCardParalyzedOrAsleep:
 	ret
 .paralyzed
 	ldtx hl, UnableDueToParalysisText
-	jr .return_with_status_condition
+	scf
+	ret
 .asleep
 	ldtx hl, UnableDueToSleepText
-.return_with_status_condition
 	scf
 	ret
 
@@ -1516,7 +1516,25 @@ PrintDeckAndHandIconsAndNumberOfCards:
 	call BankswitchVRAM0
 .not_cgb
 	call PrintPlayerNumberOfHandAndDeckCards
-	jr PrintOpponentNumberOfHandAndDeckCards
+;	fallthrough
+
+PrintOpponentNumberOfHandAndDeckCards:
+	ld a, [wOpponentNumberOfCardsInHand]
+	ld hl, wNumCardsBeingDrawn
+	add [hl]
+	ld d, a
+	ld a, DECK_SIZE
+	ld hl, wOpponentNumberOfCardsNotInDeck
+	sub [hl]
+	ld hl, wNumCardsBeingDrawn
+	sub [hl]
+	ld e, a
+	ld a, d
+	lb bc, 5, 3
+	call WriteTwoDigitNumberInTxSymbolFormat
+	ld a, e
+	lb bc, 11, 3
+	jp WriteTwoDigitNumberInTxSymbolFormat
 
 ; prints, for each duelist, the number of cards in the hand, and the number
 ; of cards in the deck, according to their placement in the draw card(s) screen.
@@ -1544,24 +1562,6 @@ PrintPlayerNumberOfHandAndDeckCards:
 	call WriteTwoDigitNumberInTxSymbolFormat
 	ld a, e
 	lb bc, 10, 10
-	jp WriteTwoDigitNumberInTxSymbolFormat
-
-PrintOpponentNumberOfHandAndDeckCards:
-	ld a, [wOpponentNumberOfCardsInHand]
-	ld hl, wNumCardsBeingDrawn
-	add [hl]
-	ld d, a
-	ld a, DECK_SIZE
-	ld hl, wOpponentNumberOfCardsNotInDeck
-	sub [hl]
-	ld hl, wNumCardsBeingDrawn
-	sub [hl]
-	ld e, a
-	ld a, d
-	lb bc, 5, 3
-	call WriteTwoDigitNumberInTxSymbolFormat
-	ld a, e
-	lb bc, 11, 3
 	jp WriteTwoDigitNumberInTxSymbolFormat
 
 DeckAndHandIconsTileData:
@@ -1986,11 +1986,9 @@ ChooseInitialArenaAndBenchPokemon:
 	ldh a, [hTempCardIndex_ff98]
 	ldtx hl, PlacedInTheArenaText
 	call DisplayCardDetailScreen
-	jr .choose_bench
 
 ; after choosing the active Pokemon, let the player place 0 or more basic Pokemon
 ; cards in the bench. loop until the player decides to stop placing Pokemon cards.
-.choose_bench
 	call EmptyScreen
 	ld a, BOXMSG_BENCH_POKEMON
 	call DrawDuelBoxMessage
@@ -3087,7 +3085,14 @@ DisplayPlaceInitialPokemonCardsScreen:
 	; in the bench, however, we can get away without placing anything
 	; alternatively, the player doesn't want or can't place more bench Pokemon
 	scf
-	jr .done
+.done
+	; valid basic Pokemon card selected, or no card selected (bench only)
+	push af
+	ld a, [wSortCardListByID]
+	or a
+	call nz, SortHandCardsByID
+	pop af
+	ret
 .card_selected
 	ldh a, [hTempCardIndex_ff98]
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -3098,14 +3103,6 @@ DisplayPlaceInitialPokemonCardsScreen:
 	call DrawWideTextBox_WaitForInput
 	call DrawCardListScreenLayout
 	jr .display_card_list
-.done
-	; valid basic Pokemon card selected, or no card selected (bench only)
-	push af
-	ld a, [wSortCardListByID]
-	or a
-	call nz, SortHandCardsByID
-	pop af
-	ret
 
 Func_5542:
 	call CreateDiscardPileCardList
@@ -3285,6 +3282,22 @@ DisplayCardList:
 	ld [wSortCardListByID], a
 	call EraseCursor
 	jr .reload_list
+.down_pressed
+	call CountCardsInDuelTempList
+	ld b, a
+	ldh a, [hCurMenuItem]
+	inc a
+	cp b
+	jr nc, .open_card_page ; if can't go down, reload card page of current card
+.move_to_another_card
+	; update hCurMenuItem, and wSelectedDuelSubMenuScrollOffset.
+	; this means that when navigating up/down through card pages, the page is
+	; scrolled to reflect the movement, rather than the cursor going up/down.
+	ldh [hCurMenuItem], a
+	ld hl, wSelectedDuelSubMenuItem
+	ld [hl], $00
+	inc hl
+	ld [hl], a
 .open_card_page
 	; open the card page directly, without an item selection menu
 	; in this mode, D_UP and D_DOWN can be used to open the card page
@@ -3307,23 +3320,6 @@ DisplayCardList:
 	jr z, .open_card_page ; if can't go up, reload card page of current card
 	dec a
 	jr .move_to_another_card
-.down_pressed
-	call CountCardsInDuelTempList
-	ld b, a
-	ldh a, [hCurMenuItem]
-	inc a
-	cp b
-	jr nc, .open_card_page ; if can't go down, reload card page of current card
-.move_to_another_card
-	; update hCurMenuItem, and wSelectedDuelSubMenuScrollOffset.
-	; this means that when navigating up/down through card pages, the page is
-	; scrolled to reflect the movement, rather than the cursor going up/down.
-	ldh [hCurMenuItem], a
-	ld hl, wSelectedDuelSubMenuItem
-	ld [hl], $00
-	inc hl
-	ld [hl], a
-	jr .open_card_page
 .b_pressed
 	ldh a, [hCurMenuItem]
 	scf
@@ -4336,7 +4332,32 @@ DisplayCardPage_PokemonOverview:
 	call PrintCardPageWeaknessesOrResistances
 	inc c ; 16
 	ld a, e
-	jr PrintCardPageWeaknessesOrResistances
+;	fallthrough
+
+; print the weaknesses or resistances of a Pokemon card, given in a, at b,c
+PrintCardPageWeaknessesOrResistances:
+	push bc
+	push de
+	ld d, a
+	xor a ; FIRE
+.loop
+	; each WR_* constant is a different bit. rotate the value to find out
+	; which bits are set and therefore which WR_* values are active.
+	; a is kept updated with the equivalent TYPE_* constant.
+	inc a
+	cp 8
+	jr nc, .done
+	rl d
+	jr nc, .loop
+	push af
+	call JPWriteByteToBGMap0
+	inc b
+	pop af
+	jr .loop
+.done
+	pop de
+	pop bc
+	ret
 
 ; displays the name, damage, and energy cost of an attack or Pokemon power.
 ; used in the Attack menu and in the card page of a Pokemon.
@@ -4396,7 +4417,6 @@ PrintAttackOrPkmnPowerInformation:
 	ld c, e
 	inc c
 	call WriteByteToBGMap0
-	jr .print_energy_cost
 .print_energy_cost
 	ld bc, CARD_DATA_ATTACK1_ENERGY_COST - CARD_DATA_ATTACK1_CATEGORY
 	add hl, bc
@@ -4436,31 +4456,6 @@ PrintEnergiesOfColor:
 	dec d
 	jr nz, .print_energies_loop
 	pop de
-	ret
-
-; print the weaknesses or resistances of a Pokemon card, given in a, at b,c
-PrintCardPageWeaknessesOrResistances:
-	push bc
-	push de
-	ld d, a
-	xor a ; FIRE
-.loop
-	; each WR_* constant is a different bit. rotate the value to find out
-	; which bits are set and therefore which WR_* values are active.
-	; a is kept updated with the equivalent TYPE_* constant.
-	inc a
-	cp 8
-	jr nc, .done
-	rl d
-	jr nc, .loop
-	push af
-	call JPWriteByteToBGMap0
-	inc b
-	pop af
-	jr .loop
-.done
-	pop de
-	pop bc
 	ret
 
 ; prints surrounding box, card name at 5,1, type, set 2, and rarity.
@@ -5012,8 +5007,7 @@ DisplayPlayAreaScreen:
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	or a
-	jr nz, .asm_60ac
-	jr .skip_ahead
+	jr z, .skip_ahead
 .asm_60ac
 	pop af
 	ldh [hTempCardIndex_ff98], a
@@ -6497,22 +6491,28 @@ HandleSpecialDuelMainSceneHotkeys:
 	or a
 	jr nz, .both_duelist_play_areas
 	call OpenInPlayAreaScreen_FromSelectButton
-	jr .return_carry
+	scf
+	ret
 .both_duelist_play_areas
 	call Func_4597
-	jr .return_carry
+	scf
+	ret
 .down_pressed
 	call OpenTurnHolderPlayAreaScreen
-	jr .return_carry
+	scf
+	ret
 .left_pressed
 	call OpenTurnHolderDiscardPileScreen
-	jr .return_carry
+	scf
+	ret
 .up_pressed
 	call OpenNonTurnHolderPlayAreaScreen
-	jr .return_carry
+	scf
+	ret
 .right_pressed
 	call OpenNonTurnHolderDiscardPileScreen
-	jr .return_carry
+	scf
+	ret
 
 SetLinkDuelTransmissionFrameFunction:
 	call FinishQueuedAnimations
@@ -7090,15 +7090,6 @@ RedrawTurnDuelistsMainSceneOrDuelHUD:
 	call DrawDuelMainScene
 	jp SwapTurn
 
-RedrawTurnDuelistsDuelHUD:
-	ld hl, wWhoseTurn
-	ldh a, [hWhoseTurn]
-	cp [hl]
-	jp z, DrawDuelHUDs
-	call SwapTurn
-	call DrawDuelHUDs
-	jp SwapTurn
-
 ; input:
 ;	a = animation ID
 PlayBetweenTurnsAnimation:
@@ -7132,7 +7123,16 @@ PlayBetweenTurnsAnimation:
 	call DoFrame
 	call CheckAnyAnimationPlaying
 	jr c, .loop_anim
-	jr RedrawTurnDuelistsDuelHUD
+;	fallthrough
+
+RedrawTurnDuelistsDuelHUD:
+	ld hl, wWhoseTurn
+	ldh a, [hWhoseTurn]
+	cp [hl]
+	jp z, DrawDuelHUDs
+	call SwapTurn
+	call DrawDuelHUDs
+	jp SwapTurn
 
 ; prints the name of the card at wTempNonTurnDuelistCardID in a text box
 PrintCardNameFromCardIDInTextBox:

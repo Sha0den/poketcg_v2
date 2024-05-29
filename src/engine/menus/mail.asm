@@ -309,16 +309,16 @@ PCMailBoosterPacks:
 	db BOOSTER_LABORATORY_TRAINER, $00 ; mail 15
 	assert_table_length NUM_MAILS + 1
 
-UpdateMailMenuCursor:
-	ld a, [wCursorBlinkTimer]
-	and $10
-	jr z, ShowMailMenuCursor
-	jr HideMailMenuCursor
-	
 ShowMailMenuCursor:
 	ld a, SYM_CURSOR_R
 	jr DrawMailMenuCursor
 	
+UpdateMailMenuCursor:
+	ld a, [wCursorBlinkTimer]
+	and $10
+	jr z, ShowMailMenuCursor
+;	fallthrough
+
 HideMailMenuCursor:
 	ld a, SYM_SPACE
 ;	fallthrough

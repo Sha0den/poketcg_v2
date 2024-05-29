@@ -132,9 +132,8 @@ _LoadScene::
 	inc hl
 	ld a, [wSceneSpriteAnimation]
 	cp $ff
-	jr z, .no_animation
+	jr z, .next_animation
 	farcall StartSpriteAnimation
-.no_animation
 	jr .next_animation
 .done
 	pop af

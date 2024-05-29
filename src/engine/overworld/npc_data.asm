@@ -149,15 +149,14 @@ _GetNPCDuelConfigurations::
 	ld a, [hl]
 	ld [wNPCDuelPrizes], a
 	scf
-	jr .done
-.next_deck_id
-	add hl, bc
-	jr .loop_deck_ids
 .done
 	pop de
 	pop bc
 	pop hl
 	ret
+.next_deck_id
+	add hl, bc
+	jr .loop_deck_ids
 
 _GetChallengeMachineDuelConfigurations:
 	push bc
@@ -185,11 +184,10 @@ _GetChallengeMachineDuelConfigurations:
 	pop hl
 	dec hl
 	scf
-	jr .done
-.next_deck_id
-	add hl, bc
-	jr .loop_deck_ids
 .done
 	pop de
 	pop bc
 	ret
+.next_deck_id
+	add hl, bc
+	jr .loop_deck_ids

@@ -337,11 +337,6 @@ GetAIScoreOfAttack:
 	ld [wAIScore], a
 	ret
 
-.encourage_high_recoil_atk
-	ld a, 20
-	call AddToAIScore
-	ret
-
 ; Zapping Selfdestruct deck only uses this attack
 ; if number of cards in deck >= 30 and
 ; HP of active card is < half max HP.
@@ -373,7 +368,10 @@ GetAIScoreOfAttack:
 	ld a, 1 ; count active Pokémon as KO'd
 	call .check_if_kos_bench
 	jr c, .dismiss_high_recoil_atk
-	jr .encourage_high_recoil_atk
+
+.encourage_high_recoil_atk
+	ld a, 20
+	jp AddToAIScore
 
 ; Rock Crusher Deck only uses this attack if
 ; prize count is below 4 and attack wins (or potentially draws) the duel,
@@ -412,6 +410,7 @@ GetAIScoreOfAttack:
 	jr .check_bench_kos
 .chansey
 	ld b, 0 ; no bench damage
+	; fallthrough
 
 .check_bench_kos
 	push bc
@@ -435,8 +434,7 @@ GetAIScoreOfAttack:
 ; attack causes CPU to draw all prize cards
 .wins_the_duel
 	ld a, 20
-	call AddToAIScore
-	ret
+	jp AddToAIScore
 
 ; subtract from AI score number of own benched Pokémon KO'd
 .count_own_ko_bench
@@ -452,56 +450,6 @@ GetAIScoreOfAttack:
 	pop bc
 	ld a, b
 	call AddToAIScore
-	jr .check_defending_can_ko
-
-; local function that gets called to determine damage to
-; benched Pokémon caused by a HIGH_RECOIL attack.
-; return carry if using attack causes number of benched Pokémon KOs
-; equal to or larger than remaining prize cards.
-; this function is independent on duelist turn, so whatever
-; turn it is when this is called, it's that duelist's
-; bench/prize cards that get checked.
-; input:
-;	a = initial number of KO's beside benched Pokémon,
-;		so that if the active Pokémon is KO'd by the attack,
-;		this counts towards the prize cards collected
-;	b = damage dealt to bench Pokémon
-.check_if_kos_bench
-	ld d, a
-	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
-	ld e, PLAY_AREA_ARENA
-.loop
-	inc e
-	ld a, [hli]
-	cp $ff
-	jr z, .exit_loop
-	ld a, e
-	add DUELVARS_ARENA_CARD_HP
-	push hl
-	call GetTurnDuelistVariable
-	pop hl
-	cp b
-	jr z, .increase_count
-	jr nc, .loop
-.increase_count
-	; increase d if damage dealt KOs
-	inc d
-	jr .loop
-.exit_loop
-	push de
-	call SwapTurn
-	call CountPrizes
-	call SwapTurn
-	pop de
-	cp d
-	ret c
-	jr z, .set_carry
-	or a
-	ret
-.set_carry
-	scf
-	ret
 
 ; if defending card can KO, encourage attack
 ; unless attack is non-damaging.
@@ -707,11 +655,58 @@ GetAIScoreOfAttack:
 	cp $80
 	jr c, .negative_score
 	sub $80
-	call AddToAIScore
-	ret
+	jp AddToAIScore
 .negative_score
 	ld b, a
 	ld a, $80
 	sub b
-	call SubFromAIScore
+	jp SubFromAIScore
+
+; local function that gets called to determine damage to
+; benched Pokémon caused by a HIGH_RECOIL attack.
+; return carry if using attack causes number of benched Pokémon KOs
+; equal to or larger than remaining prize cards.
+; this function is independent on duelist turn, so whatever
+; turn it is when this is called, it's that duelist's
+; bench/prize cards that get checked.
+; input:
+;	a = initial number of KO's beside benched Pokémon,
+;		so that if the active Pokémon is KO'd by the attack,
+;		this counts towards the prize cards collected
+;	b = damage dealt to bench Pokémon
+.check_if_kos_bench
+	ld d, a
+	ld a, DUELVARS_BENCH
+	call GetTurnDuelistVariable
+	ld e, PLAY_AREA_ARENA
+.loop
+	inc e
+	ld a, [hli]
+	cp $ff
+	jr z, .exit_loop
+	ld a, e
+	add DUELVARS_ARENA_CARD_HP
+	push hl
+	call GetTurnDuelistVariable
+	pop hl
+	cp b
+	jr z, .increase_count
+	jr nc, .loop
+.increase_count
+	; increase d if damage dealt KOs
+	inc d
+	jr .loop
+.exit_loop
+	push de
+	call SwapTurn
+	call CountPrizes
+	call SwapTurn
+	pop de
+	cp d
+	ret c
+	jr z, .set_carry
+	or a
+	ret
+.set_carry
+	scf
 	ret

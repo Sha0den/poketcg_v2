@@ -28,34 +28,7 @@ SetUpBossStartingHandAndDeck:
 	ld a, DUELVARS_DECK_CARDS
 	call GetTurnDuelistVariable
 	ld b, STARTING_HAND_SIZE
-.loop_deck_1
-	ld a, [hli]
-	push bc
-	call LoadCardDataToBuffer1_FromDeckIndex
-	pop bc
-	ld a, [wLoadedCard1Type]
-	cp TYPE_ENERGY
-	jr c, .pokemon_card_1
-	cp TYPE_TRAINER
-	jr z, .next_card_deck_1
-
-; energy card
-	ld a, [wAISetupEnergyCount]
-	inc a
-	ld [wAISetupEnergyCount], a
-	jr .next_card_deck_1
-
-.pokemon_card_1
-	ld a, [wLoadedCard1Stage]
-	or a
-	jr nz, .next_card_deck_1 ; not basic
-	ld a, [wAISetupBasicPokemonCount]
-	inc a
-	ld [wAISetupBasicPokemonCount], a
-
-.next_card_deck_1
-	dec b
-	jr nz, .loop_deck_1
+	call .Loop_Deck
 
 ; tally the number of Energy and basic Pokemon cards
 ; and if any of them is smaller than 2, re-shuffle deck.
@@ -83,34 +56,7 @@ SetUpBossStartingHandAndDeck:
 ; (counting with the ones found in the initial hand)
 ; then re-shuffle deck.
 	ld b, 6
-.loop_deck_2
-	ld a, [hli]
-	push bc
-	call LoadCardDataToBuffer1_FromDeckIndex
-	pop bc
-	ld a, [wLoadedCard1Type]
-	cp TYPE_ENERGY
-	jr c, .pokemon_card_2
-	cp TYPE_TRAINER
-	jr z, .next_card_deck_2
-
-; energy card
-	ld a, [wAISetupEnergyCount]
-	inc a
-	ld [wAISetupEnergyCount], a
-	jr .next_card_deck_2
-
-.pokemon_card_2
-	ld a, [wLoadedCard1Stage]
-	or a
-	jr nz, .next_card_deck_2
-	ld a, [wAISetupBasicPokemonCount]
-	inc a
-	ld [wAISetupBasicPokemonCount], a
-
-.next_card_deck_2
-	dec b
-	jr nz, .loop_deck_2
+	call .Loop_Deck
 
 	ld a, [wAISetupBasicPokemonCount]
 	cp 4
@@ -161,4 +107,34 @@ SetUpBossStartingHandAndDeck:
 .false
 	pop hl
 	or a
+	ret
+
+.Loop_Deck
+	ld a, [hli]
+	push bc
+	call LoadCardDataToBuffer1_FromDeckIndex
+	pop bc
+	ld a, [wLoadedCard1Type]
+	cp TYPE_ENERGY
+	jr c, .pokemon_card
+	cp TYPE_TRAINER
+	jr z, .next_card_deck
+
+; energy card
+	ld a, [wAISetupEnergyCount]
+	inc a
+	ld [wAISetupEnergyCount], a
+	jr .next_card_deck
+
+.pokemon_card
+	ld a, [wLoadedCard1Stage]
+	or a
+	jr nz, .next_card_deck
+	ld a, [wAISetupBasicPokemonCount]
+	inc a
+	ld [wAISetupBasicPokemonCount], a
+
+.next_card_deck
+	dec b
+	jr nz, .Loop_Deck
 	ret

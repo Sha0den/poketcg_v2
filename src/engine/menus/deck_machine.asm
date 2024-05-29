@@ -842,6 +842,26 @@ GetSavedDeckPointers:
 	jr nz, .loop_saved_decks
 	ret
 
+UpdateDeckMachineScrollArrowsAndEntries:
+	call DrawListScrollArrows
+	jr PrintVisibleDeckMachineEntries
+
+DrawDeckMachineScreen:
+	call DrawListScrollArrows
+	ld hl, hffb0
+	ld [hl], $01
+	call SetDeckMachineTitleText
+	lb de, 1, 14
+	call InitTextPrinting
+	ld hl, wDeckMachineText
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call ProcessTextFromID
+	ld hl, hffb0
+	ld [hl], $00
+;	fallthrough
+
 ; given the cursor position in the deck machine menu
 ; prints the deck names of all entries that are visible
 PrintVisibleDeckMachineEntries:
@@ -863,26 +883,6 @@ PrintVisibleDeckMachineEntries:
 	inc e
 	inc e
 	jr .loop
-
-UpdateDeckMachineScrollArrowsAndEntries:
-	call DrawListScrollArrows
-	jr PrintVisibleDeckMachineEntries
-
-DrawDeckMachineScreen:
-	call DrawListScrollArrows
-	ld hl, hffb0
-	ld [hl], $01
-	call SetDeckMachineTitleText
-	lb de, 1, 14
-	call InitTextPrinting
-	ld hl, wDeckMachineText
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	call ProcessTextFromID
-	ld hl, hffb0
-	ld [hl], $00
-	jr PrintVisibleDeckMachineEntries
 
 ; prints the deck name of the deck corresponding
 ; to index in register a, from wMachineDeckPtrs
@@ -950,7 +950,19 @@ PrintDeckMachineEntry:
 	ld hl, wDefaultText
 	jr c, .cannot_build
 	lb de, TX_FULLWIDTH3, "FW3_○" ; can build
-	jr .asm_b4c2
+	; fallthrough
+
+.asm_b4c2
+	call Func_22ca
+	pop de
+	ld d, 13
+	inc e
+	call InitTextPrinting
+	ld hl, .text
+	call ProcessText
+	or a
+	ret
+
 .cannot_build
 	push bc
 	ld a, ALL_DECKS
@@ -989,17 +1001,6 @@ PrintDeckMachineEntry:
 	ld [hli], a
 	ld [hl], TX_END
 	ld hl, wDefaultText
-	call ProcessText
-	or a
-	ret
-
-.asm_b4c2
-	call Func_22ca
-	pop de
-	ld d, 13
-	inc e
-	call InitTextPrinting
-	ld hl, .text
 	call ProcessText
 	or a
 	ret
@@ -1210,7 +1211,45 @@ CheckIfCanBuildSavedDeck:
 	ld l, a
 	ld bc, DECK_NAME_SIZE
 	add hl, bc
-	jr CheckIfHasEnoughCardsToBuildDeck
+;	fallthrough
+
+; returns carry if wTempCardCollection does not
+; have enough cards to build deck pointed by hl
+; hl = pointer to cards of deck to check
+CheckIfHasEnoughCardsToBuildDeck:
+	call EnableSRAM
+	ld de, wTempCardCollection
+	ld b, 0
+.loop
+	inc b
+	ld a, DECK_SIZE
+	cp b
+	jr c, .no_carry
+	ld a, [hli]
+	push hl
+	ld l, a
+	ld h, $00
+	add hl, de
+	ld a, [hl]
+	or a
+	jr z, .set_carry
+	cp CARD_NOT_OWNED
+	jr z, .set_carry
+	dec a
+	ld [hl], a
+	pop hl
+	jr .loop
+
+.set_carry
+	pop hl
+	call DisableSRAM
+	scf
+	ret
+
+.no_carry
+	call DisableSRAM
+	or a
+	ret
 
 ; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM
 ; skips if current SRAM bank is already 0
@@ -1252,44 +1291,6 @@ SafelySwitchToTempSRAMBank:
 .skip
 	pop bc
 	pop af
-	ret
-
-; returns carry if wTempCardCollection does not
-; have enough cards to build deck pointed by hl
-; hl = pointer to cards of deck to check
-CheckIfHasEnoughCardsToBuildDeck:
-	call EnableSRAM
-	ld de, wTempCardCollection
-	ld b, 0
-.loop
-	inc b
-	ld a, DECK_SIZE
-	cp b
-	jr c, .no_carry
-	ld a, [hli]
-	push hl
-	ld l, a
-	ld h, $00
-	add hl, de
-	ld a, [hl]
-	or a
-	jr z, .set_carry
-	cp CARD_NOT_OWNED
-	jr z, .set_carry
-	dec a
-	ld [hl], a
-	pop hl
-	jr .loop
-
-.set_carry
-	pop hl
-	call DisableSRAM
-	scf
-	ret
-
-.no_carry
-	call DisableSRAM
-	or a
 	ret
 
 ; outputs in a the first slot that is empty to build a deck
@@ -2210,6 +2211,12 @@ GiftCenter_ReceiveDeck:
 	ld a, $01
 	or a
 	ret
+.asm_bcc4
+	ldtx hl, OKIfFileDeletedText
+	call YesOrNoMenuWithText
+	jr nc, .asm_bcd1
+	ld a, [wCardListCursorPos]
+	jr .asm_bc90
 .asm_bcb5
 	ld b, a
 	ld a, [wCardListVisibleOffset]
@@ -2217,13 +2224,6 @@ GiftCenter_ReceiveDeck:
 	ld [wSelectedDeckMachineEntry], a
 	call CheckIfSelectedDeckMachineEntryIsEmpty
 	jr nc, .asm_bcc4
-	jr .asm_bcd1
-.asm_bcc4
-	ldtx hl, OKIfFileDeletedText
-	call YesOrNoMenuWithText
-	jr nc, .asm_bcd1
-	ld a, [wCardListCursorPos]
-	jr .asm_bc90
 .asm_bcd1
 	xor a
 	ld [wDuelTempList], a
