@@ -65,7 +65,7 @@
 
 
 ## Code Optimization
-- **May 29, 2024:** 35 Files Changed
+- **[May 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/d9cbaa4bd90be37a382faa9cd81c903b1f92d66f):** 35 Files Changed
     - Refactor code to minimize use of unconditional jr's
     - Other minor optimizations, most of which involve jumps
 
@@ -168,6 +168,12 @@
 
 
 ## Miscellaneous Changes
+- **May 30, 2024:** 1 File Changed
+    - Attempt to identify all unused wram bytes (total is around 2 kilobytes)
+    - Edit some of the existing comments in wram.asm and create some new ones as well
+
+<br/>
+
 - **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/4ac1004d0f7b04743060b5fb916a9fb7640f7cea):** 22 Files Changed
     - Fix minor typos and remove end of line spaces in the text files
     - Adjust texts to better fit the 2 line display used by the text boxes
