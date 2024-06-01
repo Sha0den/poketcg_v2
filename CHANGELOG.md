@@ -168,7 +168,7 @@
 
 
 ## Miscellaneous Changes
-- **May 30, 2024:** 1 File Changed
+- **[May 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/265a0f002e721711d2daec6be55d5b1672caf384):** 1 File Changed
     - Attempt to identify all unused wram bytes (total is around 2 kilobytes)
     - Edit some of the existing comments in wram.asm and create some new ones as well
 
@@ -252,6 +252,12 @@
 
 
 ## New Features
+- **June 1, 2024:** 2 Files Changed
+    - Allow lowercase halfwidth font characters
+    - Increase size of half_width.png to account for future additions
+
+<br/>
+
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/29c218bf8169f5123b1e3b886217ea76cb506b8f):** 5 Files Changed
     - Add support for common accented characters (halfwidth and fullwidth)
     - Expand the halfwidth font graphics (at the cost of some kanji)

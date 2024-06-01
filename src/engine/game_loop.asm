@@ -12,8 +12,9 @@ GameLoop::
 	ld a, [sSkipDelayAllowed]
 	ld [wSkipDelayAllowed], a
 	call DisableSRAM
-	ld a, 1
-	ld [wUppercaseHalfWidthLetters], a
+	; only use uppercase font characters
+;	ld a, 1
+;	ld [wUppercaseHalfWidthLetters], a
 	ei
 ;	farcall StubbedUnusedSaveDataValidation
 	ldh a, [hKeysHeld]
@@ -37,8 +38,9 @@ GameLoop::
 
 InitSaveDataAndSetUppercase::
 	farcall InitSaveData
-	ld a, 1
-	ld [wUppercaseHalfWidthLetters], a
+	; only use uppercase font characters
+;	ld a, 1
+;	ld [wUppercaseHalfWidthLetters], a
 	ret
 
 ; basic setup to be able to print the ResetBackUpRamText in an empty screen
