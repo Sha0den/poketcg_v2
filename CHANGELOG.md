@@ -168,6 +168,16 @@
 
 
 ## Miscellaneous Changes
+- **June 2, 2024:** 16 Files Changed
+    - Update the Glossary (both the overall display and the actual text information)
+    - Increase the size of the font tile section in vram when viewing the Glossary from a duel
+    - Create many new fullwidth and halfwidth font characters, plus 2 new text box symbols
+    - Move a lot of texts from text3.asm to text2.asm (Needed more space for Glossary)
+    - Move a lot of texts from text2.asm to text1.asm
+    - Make some minor adjustments to several of the title menu texts in text3.asm
+
+<br/>
+
 - **[May 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/265a0f002e721711d2daec6be55d5b1672caf384):** 1 File Changed
     - Attempt to identify all unused wram bytes (total is around 2 kilobytes)
     - Edit some of the existing comments in wram.asm and create some new ones as well
@@ -252,8 +262,8 @@
 
 
 ## New Features
-- **June 1, 2024:** 2 Files Changed
-    - Allow lowercase halfwidth font characters
+- **[June 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/3cccfcb07e93fa73d4bc0ab4978a295d98321e4a):** 2 Files Changed
+    - Display lowercase halfwidth font characters
     - Increase size of half_width.png to account for future additions
 
 <br/>

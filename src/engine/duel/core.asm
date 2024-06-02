@@ -2372,6 +2372,8 @@ DrawDuelMainScene::
 	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
 	call LoadSymbolsFont
+	lb de, $38, $9f
+	call SetupText
 	ld a, DUEL_MAIN_SCENE
 	ld [wDuelDisplayedScreen], a
 	ld a, DUELVARS_ARENA_CARD
@@ -5921,6 +5923,8 @@ TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1:
 	ret
 
 ; DrawHPBar is commented out because it's now unreferenced
+; Before uncommenting, SYM_HP_OK must be returned to gfx/fonts/symbols.png
+; and the TX_SYMBOL constant must also be redefined in constants/charmaps.asm
 ; input d, e: max. HP, current HP
 ;DrawHPBar:
 ;	ld a, MAX_HP
@@ -5931,7 +5935,7 @@ TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank1:
 ;	call .fill_hp_bar ; fill (max. HP) with HP counters
 ;	ld a, d
 ;	sub e
-;	ld c, SYM_HP_NOK
+;	ld c, SYM_DAMAGE_COUNTER
 ;	; fill (max. HP - current HP) with damaged HP counters
 ;.fill_hp_bar
 ;	or a

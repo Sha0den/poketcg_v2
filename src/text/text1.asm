@@ -1180,4 +1180,705 @@ IfHeadsOpponentCannotAttackText:
 	line "can't attack next turn!"
 	done
 
+AttackUnsuccessfulText:
+	text "The attack was not successful."
+	done
+
+UnableToRetreatDueToAcidText:
+	text "This Pokémon can't retreat"
+	line "until your next turn."
+	done
+
+UnableToUseTrainerDueToHeadacheText:
+	text "Unable to use a Trainer card"
+	line "due to the effects of Headache."
+	done
+
+CannotUsePokemonFluteText:
+	text "There are no Basic Pokémon in"
+	line "your opponent's discard pile."
+	done
+
+UnableToAttackThatPokemonText:
+	text "You can't attack that Pokémon."
+	done
+
+UnableToAttackText:
+	text "This Pokémon can't attack this turn."
+	done
+
+UnableToUseAttackDueToAmnesiaText:
+	text "Unable to use this attack"
+	line "due to the effects of Amnesia."
+	done
+
+KnockedOutDueToDestinyBondText:
+	text "<RAMTEXT> was Knocked Out"
+	line "due to the effects of Destiny Bond."
+	done
+
+ReceivesDamageDueToStrikesBackText:
+	text "<RAMTEXT> receives <RAMNUM> damage"
+	line "due to the effects of Strikes Back."
+	done
+
+UnableToEvolveDueToPrehistoricPowerText:
+	text "Unable to evolve due to the"
+	line "effects of Prehistoric Power."
+	done
+
+UnusedText0107: ; Unused
+	text "????"
+	done
+
+UnusedText0108: ; Unused
+	text "????"
+	done
+
+NoDamageOrEffectDueToAttackText:
+	text "The attack failed to affect"
+	line "the Defending Pokémon."
+	done
+
+UnableToUseAttackDueToNShieldText:
+	text "Unable to use this attack due to"
+	line "Mew's Neutralizing Shield."
+	done
+
+NoDamageOrEffectDueToNShieldText:
+	text "The Neutralizing Shield power"
+	line "protected Mew from the atack."
+	done
+
+NoDamageOrEffectDueToTransparencyText:
+	text "The Transparency power"
+	line "protected Haunter from the atack."
+	done
+
+MetamorphsToText:
+	text "<RAMTEXT> transformed into"
+	line "<RAMTEXT>."
+	done
+
+SelectNewDefendingPokemonText:
+	text "Select a Benched Pokémon to switch"
+	line "with your opponent's Active Pokémon."
+	done
+
+SelectNewActivePokemonText :
+	text "Select 1 of your Benched Pokémon to"
+	line "become your new Active Pokémon."
+	done
+
+DuelistIsSelectingPokemonToPlaceInArenaText:
+	text "<RAMNAME> is selecting"
+	line "an Active Pokémon..."
+	done
+
+ChooseWeaknessYouWishToChangeText:
+	text "Choose the Weakness you wish"
+	line "to change with Conversion 1."
+	done
+
+ChooseResistanceYouWishToChangeText:
+	text "Choose the Resistance you wish"
+	line "to change with Conversion 2."
+	done
+
+ChoosePokemonToCopyWithShiftText:
+	text "Choose the Pokémon you want to copy"
+	line "with Venomoth's Shift."
+	done
+
+ChangedTheWeaknessOfPokemonToColorText:
+	text "Changed the Weakness of"
+	line ""
+	text "<RAMTEXT> to <RAMTEXT>."
+	done
+
+ChangedTheResistanceOfPokemonToColorText:
+	text "Changed the Resistance of"
+	line ""
+	text "<RAMTEXT> to <RAMTEXT>."
+	done
+
+ChangedTheColorOfText:
+	text "Changed the color of"
+	line ""
+	text "<RAMTEXT> to <RAMTEXT>."
+	done
+
+Draw1CardFromTheDeckText:
+	text "Draw a card."
+	done
+
+DrawCardsFromTheDeckText:
+	text " Draw <RAMNUM> cards."
+	done
+
+CannotDrawCardBecauseNoCardsInDeckText:
+	text "Cannot draw a card because"
+	line "there are no cards in the deck."
+	done
+
+ChoosePkmnInTheBenchToGiveDamageText:
+	text "Which 1 of your opponent's Benched"
+	line "Pokémon will receive the damage?"
+	done
+
+ChooseUpTo3PkmnOnBenchToGiveDamageText:
+	text "Choose up to 3 of your opponent's"
+	line "Benched Pokémon to give damage to."
+	done
+
+Choose1BasicEnergyCardFromDeckText:
+	text "Choose a Basic Energy card"
+	line "from your deck."
+	done
+
+ChoosePokemonToAttachEnergyCardText:
+	text "Choose a Pokémon to attach"
+	line "the Energy card to."
+	done
+
+UnusedText011e: ; Unused
+	text "Discard 1 <FIRE> Energy."
+	done
+
+ChooseAndDiscard2FireEnergyCardsText:
+	text "Discard 2 <FIRE> Energy."
+	done
+
+DiscardOppDeckAsManyFireEnergyCardsText:
+	text "Discard a card from the opponent's"
+	line "deck for each discarded <FIRE> Energy."
+	done
+
+ChooseAndDiscard2EnergyCardsText:
+	text "Choose and discard"
+	line "2 Energy cards."
+	done
+
+ChooseAKrabbyFromDeckText:
+	text "Choose a Krabby"
+	line "from your deck."
+	done
+
+ChooseDiscardEnergyCardFromOpponentText:
+	text "Choose and discard an Energy card"
+	line "from the opponent's Active Pokémon."
+	done
+
+ChooseAttackOpponentWillNotBeAbleToUseText:
+	text "Choose the attack the opponent will"
+	line "not be able to use on the next turn."
+	done
+
+ChooseBasicFightingPokemonFromDeckText:
+	text "Choose a Basic <FIGHTING> Pokémon"
+	line "from your deck."
+	done
+
+ChooseAnOddishFromDeckText:
+	text "Choose an Oddish"
+	line "from your deck."
+	done
+
+ChooseAnOddishText:
+	text "Choose an Oddish"
+	done
+
+ChooseAKrabbyText:
+	text "Choose a Krabby."
+	done
+
+ChooseBasicEnergyCardText:
+	text "Choose a"
+	line "Basic Energy card."
+	done
+
+ChooseNidoranFromDeckText:
+	text "Choose a Nidoran♀ or a Nidoran♂"
+	line "from the deck."
+	done
+
+ChooseNidoranText:
+	text "Choose a Nidoran♀"
+	line "or a Nidoran♂."
+	done
+
+ChooseBasicFightingPokemonText:
+	text "Choose a Basic"
+	line "<FIGHTING> Pokémon."
+	done
+
+ProcedureForEnergyTransferText:
+	text "Procedure for Energy Transfer:"
+	line ""
+	line "1. Choose the Pokémon to take the <GRASS>"
+	line "   Energy from.  Press the A Button."
+	line ""
+	line "2. Choose the Pokémon to move the"
+	line "   energy to and press the A Button."
+	line ""
+	line "3. Repeat steps 1 and 2."
+	line ""
+	line "4. Press the B Button to end."
+	done
+
+ChooseABellsproutFromDeckText:
+	text "Choose a Bellsprout"
+	line "from the deck."
+	done
+
+ChooseABellsproutText:
+	text "Choose a Bellsprout."
+	done
+
+ChoosePkmnToRemoveDamageCounterText:
+	text "Choose a Pokémon to remove"
+	line "a damage counter from."
+	done
+
+ProcedureForCurseText:
+	text "Procedure for Curse:"
+	line ""
+	line "1. Choose the Pokémon to take"
+	line "   a damage counter from and"
+	line "   press the A Button."
+	line ""
+	line "2. Choose a Pokémon to receive"
+	line "   the damage counter and"
+	line "   press the A Button."
+	line ""
+	line "3. Press the B Button to cancel."
+	done
+
+UnusedText0132: ; Unused
+	text "????"
+	done
+
+Choose2EnergyCardsFromDiscardPileText:
+	text "Choose 2 Energy cards from"
+	line "your discard pile."
+	done
+
+ChooseAnEnergyCardText:
+	text "Choose an Energy"
+	line "card."
+	done
+
+ProcedureForProphecyText:
+	text "Procedure for Prophecy:"
+	line ""
+	line "1. Choose either your deck"
+	line "   or your opponent's deck"
+	line ""
+	line "2. Choose the cards you wish to"
+	line "   place on top and press the"
+	line "   A Button."
+	line ""
+	line "3. Select ”Yes” after you choose"
+	line "   the 3 cards and their order."
+	line ""
+	line "4. Press the B Button to cancel."
+	done
+
+ChooseTheOrderOfTheCardsText:
+	text "Choose the order"
+	line "of the cards."
+	done
+
+ProcedureForDamageSwapText:
+	text "Procedure for Damage Swap:"
+	line ""
+	line "1. Choose a Pokémon to take"
+	line "   a damage counter from and"
+	line "   press the A Button."
+	line ""
+	line "2. Choose a Pokémon to receive"
+	line "   the damage counter and"
+	line "   press the A Button."
+	line "   (You cannot give a Pokémon"
+	line "   a damage counter if it would"
+	line "   Knock Out that Pokémon.)"
+	line ""
+	line "3. Repeat steps 1 and 2."
+	line ""
+	line "4. Press the B Button to end."
+	done
+
+ProcedureForDevolutionBeamText:
+	text "Procedure for Devolution Beam."
+	line ""
+	line "1. Choose whether you want to"
+	line "   devolve one of your Pokémon or"
+	line "   one of your opponent's Pokémon."
+	line "   Then, press the A Button."
+	line ""
+	line "2. Choose the Pokémon to devolve"
+	line "   and press the A Button."
+	line ""
+	line "3. Press the B Button to cancel."
+	done
+
+ProcedureForStrangeBehaviorText:
+	text "Procedure for Strange Behavior:"
+	line ""
+	line "1. Choose the Pokémon to take"
+	line "   a damage counter from and"
+	line "   press the A Button."
+	line ""
+	line "2. Repeat step 1 until you're"
+	line "   satisfied. (You cannot move"
+	line "   a damage counter if it would"
+	line "   cause Slowbro to be Knocked Out.)"
+	line ""
+	line "3. Press the B Button to end."
+	done
+
+ChooseOppAttackToBeUsedWithMetronomeText:
+	text "Choose the opponent's attack to"
+	line "copy with Metronome."
+	done
+
+ThereIsNoInTheDeckText:
+	text "There is no <RAMTEXT>"
+	line "in the deck."
+	done
+
+WouldYouLikeToCheckTheDeckText:
+	text "Would you like to check the deck?"
+	done
+
+PleaseSelectTheDeckText:
+	text "Please select the deck:"
+	line "            Yours   Opponent's"
+	done
+
+PleaseSelectThePlayAreaText:
+	text "Please select the Play Area:"
+	line "            Yours   Opponent's"
+	done
+
+NidoranMNidoranFText:
+	text "Nidoran♂ or Nidoran♀"
+	done
+
+BasicFightingPokemonText:
+	text "Basic <FIGHTING> Pokémon"
+	done
+
+BasicPokemonText:
+	text "Basic Pokémon"
+	done
+
+EvolutionCardText:
+	text "Evolution card"
+	done
+
+TrainerCardText:
+	text "Trainer card"
+	done
+
+BasicEnergyCardText:
+	text "Basic Energy card"
+	done
+
+PeekWasUsedToLookInYourHandText:
+	text "Peek was used to look at the"
+	line "<RAMTEXT> in your hand."
+	done
+
+CardPeekWasUsedOnText:
+	text "The card that Peek was used on"
+	done
+
+PokemonAndAllAttachedCardsReturnedToHandText:
+	text "<RAMTEXT> and all attached"
+	line "cards were returned to the hand."
+	done
+
+WasChosenForTheEffectOfAmnesiaText:
+	text "<RAMTEXT> was chosen"
+	line "with the effect of Amnesia."
+	done
+
+BasicPokemonWasPlacedOnEachBenchText:
+	text "A Basic Pokémon was placed"
+	line "on each Bench."
+	done
+
+WasUnsuccessfulText:
+	text "<RAMTEXT>'s"
+	line "<RAMTEXT> was unsuccessful."
+	done
+
+ThereWasNoEffectFromTxRam2Text:
+	text "There was no effect from"
+	line "<RAMTEXT>."
+	done
+
+TheEnergyCardFromPlayAreaWasMovedText:
+	text "<RAMNAME> moved an Energy card"
+	line "from 1 of their Pokémon to another."
+	done
+
+DrewFireEnergyFromTheHandText:
+	text "<RAMNAME> drew <RAMNUM> <FIRE> Energy"
+	line "from their deck."
+	done
+
+ThePkmnCardsInHandAndDeckWereShuffledText:
+	text "The Pokémon in <RAMNAME>'s hand"
+	line "were replaced."
+	done
+
+UnusedText014f: ; Unused
+	text "????"
+	done
+
+ChoosePokemonToHealText:
+	text "Choose the Pokémon from which"
+	line "to remove the damage counter."
+	done
+
+ChooseCardToDiscardFromHandText:
+	text "Choose the card to discard"
+	line "from the hand."
+	done
+
+ChoosePokemonToRemoveEnergyFromText:
+	text "Choose a Pokémon to remove"
+	line "Energy from and choose the Energy."
+	done
+
+Choose2BasicEnergyCardsFromDiscardPileText:
+	text "Choose 2 Basic Energy cards"
+	line "from the discard pile."
+	done
+
+UnusedText0154: ; Unused
+	text "????"
+	done
+
+Choose2CardsFromHandToDiscardText:
+	text "Choose 2 cards from your hand"
+	line "to discard."
+	done
+
+Choose2HandCardsFromHandToReturnToDeckText:
+	text "Choose 2 cards from your hand"
+	line "to return to your deck."
+	done
+
+ChooseCardToPlaceInHandText:
+	text "Choose a card to"
+	line "put into your hand."
+	done
+
+ChoosePokemonToAttachDefenderToText:
+	text "Choose a Pokémon to"
+	line "attach Defender to."
+	done
+
+UnusedText0159: ; Unused
+	text "You can draw up to <RAMNUM> cards."
+	line "A to Draw, B to End."
+	done
+
+ChoosePokemonToReturnToTheDeckText:
+	text "Choose a Pokémon to"
+	line "return to the deck."
+	done
+
+ChoosePokemonToPlaceInPlayText:
+	text "Choose a Pokémon to"
+	line "put into play."
+	done
+
+ChooseBasicPokemonToEvolveText:
+	text "Choose a Basic Pokémon"
+	line "to evolve."
+	done
+
+ChoosePokemonToScoopUpText:
+	text "Choose a Pokémon to"
+	line "Scoop Up."
+	done
+
+ChoosePokemonFromYourHandText:
+	text "Choose a Pokémon from your hand."
+	done
+
+UnusedText015f: ; Unused
+	text "????"
+	done
+
+ChoosePokemonFromDeckText:
+	text "Choose a Pokémon from the deck."
+	done
+
+ChoosePokemonCardText:
+	text "Choose a Pokémon."
+	done
+
+RearrangeThe5CardsAtTopOfDeckText:
+	text "Rearrange 5 cards from"
+	line "the top of the deck."
+	done
+
+PleaseCheckTheOpponentsHandText:
+	text "Please check the opponent's hand."
+	done
+
+UnusedText0164: ; Unused
+	text "????"
+	done
+
+CardWasChosenText:
+	text "<RAMTEXT> was chosen."
+	done
+
+ChooseBasicPokemonToPlaceOnBenchText:
+	text "Choose a Basic Pokémon"
+	line "to place on the Bench."
+	done
+
+ChooseEvolutionCardAndPressAButtonToDevolveText:
+	text "Choose an Evolved Pokémon and"
+	line "press the A Button to devolve it."
+	done
+
+ChoosePokemonInYourAreaThenPokemonInYourOppText:
+	text "Choose 1 of your Pokémon, then"
+	line "choose 1 of your opponent's Pokémon."
+	done
+
+ChooseUpTo4FromDiscardPileText:
+	text "Choose up to 4 Basic Energy cards"
+	line "from your discard pile."
+	done
+
+UnusedText016a: ; Unused
+	text "????"
+	done
+
+PokemonAndAllAttachedCardsWereReturnedToDeckText:
+	text "<RAMTEXT> and all attached"
+	line "cards were returned to the deck."
+	done
+
+PokemonWasReturnedToHandText:
+	text "<RAMTEXT> was returned"
+	line "to the hand."
+	done
+
+UnusedText016d: ; Unused
+	text "????"
+	done
+
+PokemonWasReturnedToDeckText:
+	text "<RAMTEXT> was returned"
+	line "to the deck."
+	done
+
+WasPlacedInTheHandText:
+	text "<RAMTEXT> was placed"
+	line "in the hand."
+	done
+
+TheCardYouReceivedText:
+	text "The card you received"
+	done
+
+YouReceivedTheseCardsText:
+	text "You received these cards:"
+	done
+
+ChooseTheCardToPutBackText:
+	text "Choose the card"
+	line "to put back."
+	done
+
+ChooseTheCardToDiscardText:
+	text "Choose the card"
+	line "to discard."
+	done
+
+DiscardedCardsFromDeckText:
+	text "Discarded <RAMNUM> cards from"
+	line "<RAMNAME>'s deck."
+	done
+
+UnusedText0175: ; Unused
+	text "Discarded <RAMTEXT>"
+	line "from the Hand."
+	done
+
+UnusedText0176: ; Unused
+	text "????"
+	done
+
+UnusedText0177: ; Unused
+	text "????"
+	done
+
+DuelistHasNoCardsInHandText:
+	text "<RAMNAME> has"
+	line "no cards in hand!"
+	done
+
+PokemonHealedDamageText:
+	text "<RAMTEXT> healed"
+	line "<RAMNUM> damage!"
+	done
+
+PokemonDevolvedToText:
+	text "<RAMTEXT> devolved into"
+	line "<RAMTEXT>!"
+	done
+
+ThereWasNoFireEnergyText:
+	text "There were no <FIRE> Energy"
+	line "in your deck."
+	done
+
+YouCanSelectMoreCardsQuitText:
+	text "<RAMNUM> more cards can be chosen. Quit?"
+	done
+
+ThereWasNoEffectText:
+	text "There was no effect!"
+	done
+
+UnusedText017e: ; Unused
+	text "????"
+	done
+
+ThereWasNoEffectFromPoisonText:
+	text "The Pokémon could not be Poisoned."
+	done
+
+ThereWasNoEffectFromSleepText:
+	text "The Pokémon could be put to Sleep."
+	done
+
+ThereWasNoEffectFromParalysisText:
+	text "The Pokémon could not be Paralyzed."
+	done
+
+ThereWasNoEffectFromConfusionText:
+	text "The Pokémon could not be Confused."
+	done
+
+ThereWasNoEffectFromPoisonConfusionText:
+	text "The Pokémon could not be"
+	line "Poisoned or Confused."
+	done
+
+RearrangedCardsInDuelistsDeckText:
+	text "<RAMNAME>'s deck was rearranged."
+	done
+
 ;	ds $d

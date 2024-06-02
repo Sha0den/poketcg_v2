@@ -41,6 +41,8 @@ DuelCheckMenu_InPlayArea:
 
 ; opens the Glossary submenu
 DuelCheckMenu_Glossary:
+	lb de, $38, $ff
+	call SetupText
 	farcall OpenGlossaryScreen
 	ret
 
@@ -409,6 +411,8 @@ _DrawYourOrOppPlayAreaScreen::
 	call LoadCursorTile
 	call LoadSymbolsFont
 	call LoadDeckAndDiscardPileIcons
+	lb de, $38, $9f
+	call SetupText
 
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
 	cp PLAYER_TURN

@@ -250,8 +250,7 @@ ContinueDrawingTextBoxCGB::
 	; bottom line (border) of the text box
 	ld a, SYM_BOX_BOTTOM
 	lb de, SYM_BOX_BTM_L, SYM_BOX_BTM_R
-	call CopyCurrentLineTilesAndAttrCGB
-	ret
+;	fallthrough
 
 ; d = id of top left tile
 ; e = id of top right tile
@@ -333,3 +332,26 @@ AttrBlkPacket_TextBox::
 	db ATTR_BLK_CTRL_INSIDE + ATTR_BLK_CTRL_LINE, 0 << 0 + 1 << 2, 0, 0, 0, 0 ; data set 1
 	ds 6 ; data set 2
 	ds 2 ; data set 3
+
+; creates a subsection within a textbox (useful for making a header)
+; by drawing a second bottom row at the specified coordinates
+; input:
+;	b = length of the row in tiles (usually SCREEN_WIDTH, i.e. 20)
+;	de = coordinates to print line
+DrawTextBoxSeparator::
+	call DECoordToBGMap0Address
+	ld a, SYM_BOX_BOTTOM
+	lb de, SYM_BOX_HEADER_L, SYM_BOX_HEADER_R
+	push hl
+	call CopyLine
+	pop hl
+	ld a, [wConsole]
+	cp CONSOLE_CGB
+	ret nz ; return if not CGB
+	call BankswitchVRAM1
+	ld a, [wTextBoxFrameType] ; on CGB, wTextBoxFrameType determines the palette and the other attributes
+	ld e, a
+	ld d, a
+	call CopyLine
+	call BankswitchVRAM0
+	ret

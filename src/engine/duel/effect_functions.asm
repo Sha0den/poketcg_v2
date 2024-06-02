@@ -6089,7 +6089,7 @@ DamageSwap_SelectAndSwapEffect:
 
 ; draw damage counter in cursor
 	ldh a, [hTempPlayAreaLocation_ffa1]
-	ld b, SYM_HP_NOK
+	ld b, SYM_DAMAGE_COUNTER
 	call DrawSymbolOnPlayAreaCursor
 
 ; handle selection of Pokemon to give damage to
@@ -6299,7 +6299,7 @@ Curse_PlayerSelection:
 
 ; draw damage counter on cursor
 	ldh a, [hTempPlayAreaLocation_ffa1]
-	ld b, SYM_HP_NOK
+	ld b, SYM_DAMAGE_COUNTER
 	call DrawSymbolOnPlayAreaCursor
 
 ; handle input to pick the target to receive the damage counter.

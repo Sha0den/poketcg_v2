@@ -974,6 +974,37 @@ ContinueDuel::
 	call BankswitchROM
 	jp _ContinueDuel
 
+; draws the same tile across an entire line in BG Map
+; if CGB, also fills the line with background palette 4 in VRAM1
+; input:
+;	a = TX_SYMBOL (SYM_?)
+;	bc = coordinates to print line
+FillBGMapLineWithA::
+	call BCCoordToBGMap0Address
+	ld b, SCREEN_WIDTH
+	call FillDEWithA
+	ld a, [wConsole]
+	cp CONSOLE_CGB
+	ret nz ; return if not CGB
+	ld a, $04
+	ld b, SCREEN_WIDTH
+	call BankswitchVRAM1
+	call FillDEWithA
+	call BankswitchVRAM0
+	ret
+
+; fills de with b bytes of the value in register a
+FillDEWithA:
+	push hl
+	ld l, e
+	ld h, d
+.loop
+	ld [hli], a
+	dec b
+	jr nz, .loop
+	pop hl
+	ret
+
 ;
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS

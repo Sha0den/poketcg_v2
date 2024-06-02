@@ -1,511 +1,51 @@
-FightingMachineText:
-	text "  Fighting Machine  "
-	done
-
-RockMachineText:
-	text "  Rock Machine  "
-	done
-
-WaterMachineText:
-	text "  Water Machine   "
-	done
-
-LightningMachineText:
-	text "  Lightning Machine   "
-	done
-
-GrassMachineText:
-	text "  Grass Machine   "
-	done
-
-PsychicMachineText:
-	text "  Psychic Machine   "
-	done
-
-ScienceMachineText:
-	text "  Science Machine   "
-	done
-
-FireMachineText:
-	text "  Fire Machine  "
-	done
-
-AutoMachineText:
-	text "  Auto Machine  "
-	done
-
-LegendaryMachineText:
-	text "  Legendary Machine   "
-	done
-
-AllFightingPokemonText:
-	text "All Fighting Pokémon"
-	done
-
-BenchAttackText:
-	text "Bench Attack"
-	done
-
-BattleContestText:
-	text "Battle Contest"
-	done
-
-HeatedBattleText:
-	text "Heated Battle"
-	done
-
-FirstStrikeText:
-	text "First-Strike"
-	done
-
-SqueakingMouseText:
-	text "Squeaking Mouse"
-	done
-
-GreatQuakeText:
-	text "Great Quake"
-	done
-
-BoneAttackText:
-	text "Bone Attack"
-	done
-
-ExcavationText:
-	text "Excavation"
-	done
-
-RockCrusherText:
-	text "Rock Crusher"
-	done
-
-BlueWaterText:
-	text "Blue Water"
-	done
-
-OnTheBeachText:
-	text "On the Beach"
-	done
-
-ParalyzeText:
-	text "Paralyze!"
-	done
-
-EnergyRemovalText:
-	text "Energy Removal"
-	done
-
-RainDancerText:
-	text "Rain Dancer"
-	done
-
-CutePokemonText:
-	text "Cute Pokémon"
-	done
-
-PokemonFluteText:
-	text "Pokémon Flute"
-	done
-
-YellowFlashText:
-	text "Yellow Flash"
-	done
-
-ElectricShockText:
-	text "Electric Shock"
-	done
-
-ZappingSelfdestructText:
-	text "Zapping Selfdestruct"
-	done
-
-InsectCollectionText:
-	text "Insect Collection"
-	done
-
-JungleText:
-	text "Jungle"
-	done
-
-FlowerGardenText:
-	text "Flower Garden"
-	done
-
-KaleidoscopeText:
-	text "Kaleidoscope"
-	done
-
-FlowerPowerText:
-	text "Flower Power"
-	done
-
-PsychicPowerText:
-	text "Psychic Power"
-	done
-
-DreamEaterHaunterText:
-	text "Dream Eater Haunter"
-	done
-
-ScavengingSlowbroText:
-	text "Scavenging Slowbro"
-	done
-
-StrangePowerText:
-	text "Strange Power"
-	done
-
-StrangePsyshockText:
-	text "Strange Psyshock"
-	done
-
-LovelyNidoranText:
-	text "Lovely Nidoran"
-	done
-
-ScienceCorpsText:
-	text "Science Corps"
-	done
-
-FlyinPokemonText:
-	text "Flyin' Pokémon"
-	done
-
-PoisonText:
-	text "Poison"
-	done
-
-WondersOfScienceText:
-	text "Wonders of Science"
-	done
-
-ReplaceEmAllText:
-	text "Replace 'Em All"
-	done
-
-ChariSaurText:
-	text "Chari-Saur"
-	done
-
-TrafficLightText:
-	text "Traffic Light"
-	done
-
-FirePokemonDeckText:
-	text "Fire Pokémon"
-	done
-
-FireChargeText:
-	text "Fire Charge"
-	done
-
-CharmanderAndFriendsText:
-	text "Charmander & Friends"
-	done
-
-SquirtleAndFriendsText:
-	text "Squirtle & Friends"
-	done
-
-BulbasaurAndFriendsText:
-	text "Bulbasaur & Friends"
-	done
-
-PsychicMachampText:
-	text "Psychic Machamp"
-	done
-
-WaterBeetleText:
-	text "Water Beetle"
-	done
-
-LegendaryMoltresText:
-	text "Legendary Moltres"
-	done
-
-LegendaryZapdosText:
-	text "Legendary Zapdos"
-	done
-
-LegendaryArticunoText:
-	text "Legendary Articuno"
-	done
-
-LegendaryDragoniteText:
-	text "Legendary Dragonite"
-	done
-
-MysteriousPokemonText:
-	text "Mysterious Pokémon"
-	done
-
-AllFightingPokemonDescriptionText:
-	text "A deck of Fighting Pokémon:"
-	line "Feel their Fighting power!"
-	done
-
-BenchAttackDescriptionText:
-	text "A deck of Pokémon that can"
-	line "attack the Bench."
-	done
-
-BattleContestDescriptionText:
-	text "A deck which uses Fighting attacks"
-	line "such as Slash and Punch."
-	done
-
-HeatedBattleDescriptionText:
-	text "A powerful deck with both Fire"
-	line "and Fighting Pokémon."
-	done
-
-FirstStrikeDescriptionText:
-	text "A deck for fast and furious"
-	line "attacks."
-	done
-
-SqueakingMouseDescriptionText:
-	text "A deck made of Mouse Pokémon."
-	line "Uses PlusPower to power up!"
-	done
-
-GreatQuakeDescriptionText:
-	text "Use Dugtrio's Earthquake"
-	line "to cause great damage."
-	done
-
-BoneAttackDescriptionText:
-	text "A deck of Cubone and Marowak -"
-	line "A call for help."
-	done
-
-ExcavationDescriptionText:
-	text "A deck which creates Pokémon by"
-	line "evolving Mysterious Fossils."
-	done
-
-RockCrusherDescriptionText:
-	text "A deck of Rock Pokémon. It's"
-	line "strong against Lightning Pokémon."
-	done
-
-BlueWaterDescriptionText:
-	text "A deck of Water Pokémon: Their"
-	line "Blue Horror washes over enemies."
-	done
-
-OnTheBeachDescriptionText:
-	text "A well balanced deck"
-	line "of Sandshrew and Water Pokémon!"
-	done
-
-ParalyzeDescriptionText:
-	text "Paralyze the opponent's Pokémon:"
-	line "Stop 'em and drop 'em!"
-	done
-
-EnergyRemovalDescriptionText:
-	text "Uses Whirlpool and Hyper Beam to"
-	line "remove opponents' Energy cards."
-	done
-
-RainDancerDescriptionText:
-	text "Use Rain Dance to attach Water"
-	line "Energy for powerful attacks!"
-	done
-
-CutePokemonDescriptionText:
-	text "A deck of cute Pokémon such as"
-	line "Pikachu and Eevee."
-	done
-
-PokemonFluteDescriptionText:
-	text "Use the Pokémon Flute to revive"
-	line "opponents' Pokémon and attack!"
-	done
-
-YellowFlashDescriptionText:
-	text "A deck of Pokémon that use Lightning"
-	line "Energy to zap opponents."
-	done
-
-ElectricShockDescriptionText:
-	text "A deck which Shocks and Paralyzes"
-	line "opponents with its attacks."
-	done
-
-ZappingSelfdestructDescriptionText:
-	text "Selfdestruct causes great damage"
-	line "- even to the opponent's Bench."
-	done
-
-InsectCollectionDescriptionText:
-	text "A deck made of Insect Pokémon"
-	line "Go Bug Power!"
-	done
-
-JungleDescriptionText:
-	text "A deck of Grass Pokémon: There"
-	line "are many dangers in the jungle."
-	done
-
-FlowerGardenDescriptionText:
-	text "A deck of Flower Pokémon:"
-	line "Beautiful but Dangerous"
-	done
-
-KaleidoscopeDescriptionText:
-	text "Uses Venomoth's Pokémon Power to"
-	line "change the opponent's Weakness."
-	done
-
-FlowerPowerDescriptionText:
-	text "A powerful Big Eggsplosion"
-	line "and Energy Transfer combo!"
-	done
-
-PsychicPowerDescriptionText:
-	text "Use the Psychic power of the"
-	line "Psychic Pokémon to attack!"
-	done
-
-DreamEaterHaunterDescriptionText:
-	text "Uses Haunter's Dream Eater"
-	line "to cause great damage!"
-	done
-
-ScavengingSlowbroDescriptionText:
-	text "Continually draw Trainer"
-	line "cards from the discard pile!"
-	done
-
-StrangePowerDescriptionText:
-	text "Confuse opponents with"
-	line "mysterious power!"
-	done
-
-StrangePsyshockDescriptionText:
-	text "Use Alakazam's Damage Swap"
-	line "to move damage counters!"
-	done
-
-LovelyNidoranDescriptionText:
-	text "Uses Nidoqueen's Boyfriends to cause"
-	line "great damage to the opponent."
-	done
-
-ScienceCorpsDescriptionText:
-	text "The march of the Science Corps!"
-	line "Attack with the power of science!"
-	done
-
-FlyinPokemonDescriptionText:
-	text "Pokémon with feathers flock"
-	line "together! Retreating is easy!"
-	done
-
-PoisonDescriptionText:
-	text "A deck that uses Poison to"
-	line "slowly Knock Out the opponent."
-	done
-
-WondersOfScienceDescriptionText:
-	text "Block Pokémon Powers with"
-	line "Muk and attack with Mewtwo!"
-	done
-
-ReplaceEmAllDescriptionText:
-	text "A deck that shuffles"
-	line "the opponent's cards"
-	done
-
-ChariSaurDescriptionText:
-	text "Attack with Charizard - with"
-	line "just a few Fire Energy cards!"
-	done
-
-TrafficLightDescriptionText:
-	text "Pokémon that can attack with"
-	line "Fire, Water or Lightning Energy!"
-	done
-
-FirePokemonDescriptionText:
-	text "With Fire Pokémon like Charizard,"
-	line "Rapidash and Magmar, it's hot!"
-	done
-
-FireChargeDescriptionText:
-	text "Desperate attacks damage your"
-	line "opponent and you!"
-	done
-
-CharmanderAndFriendsDescriptionText:
-	text "A Fire, Grass and Water Deck:"
-	line "Charmander, Pinsir and Seel"
-	done
-
-SquirtleAndFriendsDescriptionText:
-	text "A Water, Fire, and Lightning Deck:"
-	line "Squirtle, Charmander and Pikachu"
-	done
-
-BulbasaurAndFriendsDescriptionText:
-	text "A Grass, Lightning and Psychic Deck:"
-	line "Bulbasaur, Pikachu and Abra"
-	done
-
-PsychicMachampDescriptionText:
-	text "Machamp, Hitmonlee, Hitmonchan"
-	line "Gengar and Alakazam are furious!"
-	done
-
-WaterBeetleDescriptionText:
-	text "An evolution deck with Weedle,"
-	line "Nidoran♂ and Bellsprout."
-	done
-
-LegendaryMoltresDescriptionText:
-	text "Gather Fire Energy with the"
-	line "Legendary Moltres!"
-	done
-
-LegendaryZapdosDescriptionText:
-	text "Zap opponents with the"
-	line "Legandary Zapdos!"
-	done
-
-LegendaryArticunoDescriptionText:
-	text "Paralyze opponents with the"
-	line "Legendary Articuno!"
-	done
-
-LegendaryDragoniteDescriptionText:
-	text "Heal your Pokémon with the"
-	line "Legendary Dragonite!"
-	done
-
-MysteriousPokemonDescriptionText:
-	text "A very special deck made of"
-	line "very rare Pokémon cards!"
-	done
-
-PokemonCardGlossaryText:
-	text "Pokémon TCG Glossary"
-	done
-
-GlossaryMenuPage1Text:
-	text "Deck                Active Pokémon"
-	line "Discard Pile        Benched Pokémon"
-	line "Hand                Prizes    "
-	line "Arena               Damage Counters"
-	line "Bench               To next page    "
-	done
-
-GlossaryMenuPage2Text:
-	text "Energy Cards        Pokémon Powers"
-	line "Trainer Cards       Weakness       "
-	line "Basic Pokémon       Resistance"
-	line "Evolution Cards     Retreating     "
-	line "Attacks             To previous page"
+GlossaryFWText:
+	textfw "Glossary"
+	done
+
+;GlossaryMenuPage1Text:
+;	text "Active & Bench      Basic Pokémon"
+;	line "Prizes              Evolution Cards"
+;	line "The Deck            Trainer Cards  "
+;	line "The Discard Pile    Energy Cards   "
+;	line "The Hand            To next page    "
+;	done
+;
+;GlossaryMenuPage2Text:
+;	text "Attacking           Weakness     "
+;	line "Damage Counters     Resistance     "
+;	line "Evolving            S. Conditions 1"
+;	line "Pokémon Powers      S. Conditions 2"
+;	line "Retreating          To previous page"
+;	done
+
+GlossaryMenuPage1LeftText:
+	text "Active & Bench"
+	line "Prizes         "
+	line "The Deck"
+	line "The Discard Pile"
+	line "The Hand  "
+	done
+
+GlossaryMenuPage1RightText:
+	text "Basic Pokémon"
+	line "Evolution Cards"
+	line "Trainer Cards  "
+	line "Energy Cards   "
+	done
+
+GlossaryMenuPage2LeftText:
+	text "Attacking     "
+	line "Damage Counters"
+	line "Evolving"
+	line "Pokémon Powers  "
+	line "Retreating"
+	done
+
+GlossaryMenuPage2RightText:
+	text "Weakness     "
+	line "Resistance     "
+	line "S. Conditions 1"
+	line "S. Conditions 2"
 	done
 
 ChooseWordAndPressAButtonText:
@@ -513,328 +53,399 @@ ChooseWordAndPressAButtonText:
 	line "A button."
 	done
 
-AboutTheDeckText:
-	text "About the Deck"
-	done
-
-AboutTheDiscardPileText:
-	text "About the Discard Pile"
-	done
-
-AboutTheHandText:
-	text "About the Hand"
-	done
-
-AboutTheArenaText:
-	text "About the Arena"
-	done
-
-AboutTheBenchText:
-	text "About the Bench"
-	done
-
-AboutTheActivePokemonText:
-	text "About the Active Pokémon"
-	done
-
-AboutBenchPokemonText:
-	text "About Benched Pokémon"
+AboutActivePokemonAndBenchText:
+	textfw "Active & Bench"
 	done
 
 AboutPrizesText:
-	text "About Prizes"
+	textfw "Prizes"
 	done
 
-AboutDamageCountersText:
-	text "About Damage Counters"
+AboutTheDeckText:
+	textfw "The Deck"
 	done
 
-AboutEnergyCardsText:
-	text "About Energy Cards"
+AboutTheDiscardPileText:
+	textfw "The Discard Pile"
 	done
 
-AboutTrainerCardsText:
-	text "About Trainer Cards"
+AboutTheHandText:
+	textfw "The Hand"
 	done
 
 AboutBasicPokemonText:
-	text "About Basic Pokémon"
+	textfw "Basic Pokémon"
 	done
 
 AboutEvolutionCardsText:
-	text "About Evolution Cards"
+	textfw "Evolution Cards"
+	done
+
+AboutTrainerCardsText:
+	textfw "Trainer Cards"
+	done
+
+AboutEnergyCardsText:
+	textfw "Energy Cards"
 	done
 
 AboutAttackingText:
-	text "About Attacking"
+	textfw "Attacking"
 	done
 
-AboutPokemonPowerText:
-	text "About Pokémon Powers"
+AboutDamageCountersText:
+	textfw "Damage Counters"
 	done
 
-AboutWeaknessText:
-	text "About Weakness"
+AboutEvolvingText:
+	textfw "Evolving"
 	done
 
-AboutResistanceText:
-	text "About Resistance"
+AboutPokemonPowersText:
+	textfw "Pokémon Powers"
 	done
 
 AboutRetreatingText:
-	text "About Retreating"
+	textfw "Retreating"
 	done
 
-DeckDescriptionText:
-	text "A player's deck contains their"
-	line "Pokémon as well as the Trainer and"
-	line "Energy cards needed to support them."
-	line "Every deck must contain exactly"
-	line "60 cards. Once a match begins, no"
-	line "one can look at or reorder the cards"
-	line "in either player's deck unless told"
-	line "to do so by a card effect. Players"
-	line "begin their turn by drawing a card"
-	line "from their deck. If a player cannot"
-	line "do so because their deck is empty,"
-	line "that player loses the match."
+AboutWeaknessText:
+	textfw "Weakness"
 	done
 
-DiscardPileDescriptionText:
-	text "Discarded cards go to their owner's"
-	line "discard pile, and when a Pokémon is"
-	line "Knocked Out, it and any attached"
-	line "cards are sent to the discard pile."
-	line "Cards in the discard pile are not"
-	line "considered to be in play."
-	line ""
-	line "Press B+Left to view"
-	line "your own discard pile."
-	line ""
-	line "Press B+Right to view"
-	line "your opponent's discard pile."
+AboutResistanceText:
+	textfw "Resistance"
 	done
 
-HandDescriptionText:
-	text "The hand is where a player holds"
-	line "cards that have been drawn until"
-	line "they are played."
-	line ""
-	line "There is no limit to the number of"
-	line "cards in a player's hand."
-	line ""
-	line "You cannot look at your opponent's"
-	line "hand unless a card says to do so."
-	line ""
-	line "Press SELECT to organize the cards"
-	line "in your hand by card type."
+AboutSpecialConditions1Text:
+;	text "Special Conditions 1/2"
+	textfw "Special Conditions"
 	done
 
-ArenaDescriptionText:
-	text "The place where the Pokémon"
-	line "that is actively fighting"
-	line "is placed is called the Arena."
-	line "The game proceeds by using the"
-	line "Active Pokémon in the Arena."
+AboutSpecialConditions2Text:
+;	text "Special Conditions 2/2"
+	textfw "Special Conditions"
 	done
 
-BenchDescriptionText:
-	text "The Bench is where your Pokémon"
-	line "that are in play but aren't actively"
-	line "fighting sit. They're ready to come"
-	line "out and fight if the Active Pokémon"
-	line "retreats or is Knocked Out."
+ActivePokemonAndBenchDescriptionText:
+	text " Your Active Pokémon is the only one"
+	line " of your Pokémon that can attack."
+	line " Pokémon that are put into play but"
+	line " aren't actively fighting are placed"
+	line " on the Bench. Each player can have"
+	line " up to 5 Benched Pokémon. When the"
+	line " Active Pokémon retreats or is KO'd,"
+	line " it's replaced by a Benched Pokémon."
 	line ""
-	line "You can have up to 5 Pokémon on"
-	line "the Bench."
-	done
-
-ActivePokemonDescriptionText:
-	text "The Active Pokémon is the"
-	line "Pokémon that is in the Arena."
-	line "Only Active Pokémon can attack."
-	done
-
-BenchPokemonDescriptionText:
-	text "The Pokémon that are in play"
-	line "but aren't actively fighting"
-	line "are called Benched Pokémon."
-	line "They're ready to come out and fight"
-	line "if the Active Pokémon retreats or"
-	line "is Knocked Out."
+	line " Press B+Down to view your Pokémon."
 	line ""
-	line "If your Active Pokémon is Knocked"
-	line "Out and you don't have a Benched"
-	line "Pokémon, you lose the game."
+	line " B+Up shows your opponent's Pokémon."
 	done
 
 PrizesDescriptionText:
-	text "Prizes are cards placed face down"
-	line "at the start of a game. You draw"
-	line "1 of your Prizes each time an"
-	line "opponent's Pokémon is Knocked Out."
-	line "When you draw your last Prize,"
-	line "you win the game!"
+	text " Prizes are random cards from your"
+	line " deck which are placed face down at"
+	line " the start of a game. You draw 1 of"
+	line " your Prize cards each time an"
+	line " opponent's Pokémon is Knocked Out."
+	line " The first player to draw all of"
+	line " their Prizes wins the game."
 	line ""
-	line "You will also win a game if your"
-	line "opponent has no Pokémon left in play"
-	line "or no cards left to draw at the"
-	line "beginning of their turn."
+	line " You will also win the game if your"
+	line " opponent has no Pokémon left in"
+	line " play or no cards left to draw at"
+	line " the beginning of their turn."
 	done
 
-DamageCountersDescriptionText:
-	text "Damage Counters are used to show"
-	line "that a Pokémon has taken damage."
-	line "Each Damage Counter represents"
-	line "10 HP worth of damage."
-	line ""
-	line "A Pokémon is Knocked Out if it has"
-	line "damage that is greater than or"
-	line "equal to its HP."
-	line ""
-	line "Damage Counters stay on a Pokémon,"
-	line "even when it is moves to the Bench"
-	line "or evolves."
+TheDeckDescriptionText:
+	text " A player's deck is composed of a"
+	line " combination of Pokémon, Trainer,"
+	line " and Energy cards. Every deck must"
+	line " contain exactly 60 cards. Once a"
+	line " match begins, no one can look at"
+	line " or reorder the cards in either"
+	line " player's deck unless told to do so"
+	line " by a card effect. Players begin"
+	line " each of their turns by drawing a"
+	line " card from their deck. If a player"
+	line " cannot do so because their deck is"
+	line " empty, that player loses the game."
 	done
 
-EnergyCardsDescriptionText:
-	text "Pokémon require Energy to attack."
-	line "When playing an Energy card, you"
-	line "attach it to 1 of your Pokémon."
-	line "You can only play 1 Energy card"
-	line "from your hand each turn."
+TheDiscardPileDescriptionText:
+	text " Discarded cards go to their owner's"
+	line " discard pile, and when a Pokémon is"
+	line " Knocked Out, it and any attached"
+	line " cards are sent to the discard pile."
+	line " Cards in the discard pile are not"
+	line " considered to be in play."
 	line ""
-	line "There are 6 types of Basic Energy:"
-	line "  <GRASS> Grass        <FIRE> Fire,"
-	line "  <WATER> Water        <LIGHTNING> Lightning,"
-	line "  <PSYCHIC> Psychic      <FIGHTING> Fighting."
+	line "   Press B+Left to view"
+	line "   your own discard pile."
 	line ""
-	line "(Any Energy can be used for <COLORLESS>)"
+	line "   Press B+Right to view"
+	line "   your opponent's discard pile."
 	done
 
-TrainerCardsDescriptionText:
-	text "Trainer cards are support cards."
-	line "There are many Trainer cards"
-	line "with a wide variety of effects."
+TheHandDescriptionText:
+	text " The hand is where a player holds"
+	line " cards that have been drawn until"
+	line " they are played."
 	line ""
-	line "You may play any number of Trainer"
-	line "cards during your turn by following"
-	line "the instructions on the card"
-	line "and then discarding it."
+	line " There is no limit to the number of"
+	line " cards in a player's hand."
+	line ""
+	line " You cannot look at your opponent's"
+	line " hand unless a card says to do so."
+	line ""
+	line " Press SELECT to organize the cards"
+	line " in your hand by card type."
 	done
 
 BasicPokemonDescriptionText:
-	text "Basic Pokémon are the lowest"
-	line "evolutionary stage and act as"
-	line "the base for Evolution cards."
-	line "Bulbasaur, Charmander, and Squirtle"
-	line "are some examples of Basic Pokémon."
+	text " Basic Pokémon are the lowest"
+	line " evolutionary stage and act as the"
+	line " base for your Evolution cards."
+	line " Bulbasaur, Charmander, and Squirtle"
+	line " are some examples of Basic Pokémon."
 	line ""
-	line "Basic Pokémon can be put directly"
-	line "into play from your hand."
+	line " Basic Pokémon can be put directly"
+	line " into play from your hand."
 	line ""
-	line "Every deck must have at least 1"
-	line "Basic Pokémon in it."
+	line " Every deck must have at least 1"
+	line " Basic Pokémon in it."
 	done
 
 EvolutionCardsDescriptionText:
-	text "Evolution cards are cards you can"
-	line "play on top of a Basic Pokémon card"
-	line "(or sometimes on top of another"
-	line "Evolution card) to make it stronger."
+	text " Cards which show evolved forms of"
+	line " Pokémon are called Evolution cards."
+	line " An Evolution card is played on top"
+	line " of a Basic Pokémon (or occasionally"
+	line " on top of another Evolution card)"
+	line " to create an evolved Pokémon."
+	line " A Stage 1 Evolution card can be put"
+	line " on a matching Basic Pokémon, and"
+	line " a Stage 2 Evolution card can be put"
+	line " on a matching Stage 1 Pokémon."
 	line ""
-	line "A Stage 1 Evolution card can be put"
-	line "on a matching Basic Pokémon, and"
-	line "a Stage 2 Evolution card can be put"
-	line "on a matching Stage 1 Pokémon."
+	line " See ”Evolving”."
+	done
+
+TrainerCardsDescriptionText:
+	text " Trainer cards are support cards."
+	line " There are many Trainer cards"
+	line " with a wide variety of effects."
+	line ""
+	line " You may play any number of Trainer"
+	line " cards during your turn by following"
+	line " the instructions on the card and"
+	line " then discarding it."
+	line ""
+	line " Trainer cards are generally"
+	line " not put into play."
+	done
+
+EnergyCardsDescriptionText:
+	text " Pokémon require Energy to attack."
+	line " When playing an Energy card, you"
+	line " attach it to 1 of your Pokémon."
+	line " You can only play 1 Energy card"
+	line " from your hand each turn."
+	line ""
+	line " There are 6 types of Basic Energy:"
+	line "  <GRASS> Grass        <FIRE> Fire"
+	line "  <WATER> Water        <LIGHTNING> Lightning"
+	line "  <PSYCHIC> Psychic      <FIGHTING> Fighting"
+	line ""
+	line " Any Energy can be used for <COLORLESS>."
 	done
 
 AttackingDescriptionText:
-	text "By choosing ”Attack” from the menu,"
-	line "your Active Pokémon will fight"
-	line "your opponent's Pokémon."
-	line ""
-	line "Pokémon require Energy to attack."
-	line "The amount of Energy required"
-	line "differs according to the attack."
-	line ""
-	line "Your turn ends after you attack."
+	text " Use the ”Attack” menu to have your"
+	line " Active Pokémon fight the opposing"
+	line " Pokémon. Follow the instructions"
+	line " written after the attack's name and"
+	line " then deal damage to the Defending"
+	line " Pokémon equal to the number printed"
+	line " beside the attack (accounting for"
+	line " Weakness and Resistance). Before"
+	line " you can select an attack, you will"
+	line " need to attach Energy cards to your"
+	line " Active Pokémon. The amount will"
+	line " depend on the cost of the attack."
+	line " Your turn ends after you attack."
 	done
 
-PokemonPowerDescriptionText:
-	text "Unlike attacks, Pokémon Powers can"
-	line "be used by both Active and Benched"
-	line "Pokémon. Some Pokémon Powers are"
-	line "activated by simply putting the"
-	line "Pokémon into play, but for others,"
-	line "you must use the ”PKMN Power” menu."
+DamageCountersDescriptionText:
+	text " Damage Counters are used to show"
+	line " that a Pokémon has taken damage."
+	line " Each Damage Counter represents"
+	line " 10 HP worth of damage."
 	line ""
-	line "Pokémon Powers are usually disabled"
-	line "while a Pokémon is Asleep, Confused,"
-	line "or Paralyzed."
+	line " A Pokémon is Knocked Out if it has"
+	line " damage that is greater than or"
+	line " equal to its HP."
 	line ""
+	line " Damage Counters stay on a Pokémon,"
+	line " even when it moves to the Bench"
+	line " or evolves."
 	done
 
-WeaknessDescriptionText:
-	text "Some Pokémon have a Weakness."
+EvolvingDescriptionText:
+	text " When a Pokémon evolves or devolves,"
+	line " it keeps all of its attached cards"
+	line " and damage counters. However, any"
+	line " effects of attacks or Special"
+	line " Conditions that affected the"
+	line " previous stage are removed."
 	line ""
-	line "If an Active Pokémon has a Weakness,"
-	line "it takes double damage if attacked"
-	line "by a Pokémon of a certain type."
-	line ""
-	line "Damage to Benched Pokémon is not"
-	line "usually affected by Weakness."
+	line " A player cannot evolve a Pokémon"
+	line " on the same turn that it came into"
+	line " play or during their first turn."
 	done
 
-ResistanceDescriptionText:
-	text "Some Pokémon have a Resistance."
+PokemonPowersDescriptionText:
+	text " Some Pokémon have special abilities"
+	line " known as Pokémon Powers. Unlike"
+	line " attacks, Pokémon Powers can be used"
+	line " by Benched Pokémon and do not"
+	line " automatically end a player's turn."
+	line " Some Powers are triggered after"
+	line " putting the Pokémon into play, but"
+	line " for many others, you will need to"
+	line " use the ”PKMN Power” menu."
 	line ""
-	line "If an Active Pokémon has a"
-	line "Resistance, it takes 30 less damage"
-	line "when it is attacked by a Pokémon"
-	line "of a certain type."
-	line ""
-	line "Damage to Benched Pokémon is not"
-	line "usually affected by Resistance."
+	line " A Pokémon cannot use its Power if"
+	line " it's Asleep, Confused or Paralyzed."
 	done
 
 RetreatingDescriptionText:
-	text "By choosing ”Retreat”, you can"
-	line "switch your Active Pokémon with 1 of"
-	line "your Benched Pokémon. You must first"
-	line "discard Energy from the retreating"
-	line "Pokémon equal to its Retreat Cost."
+	text " By choosing ”Retreat”, you can"
+	line " switch your Active Pokémon with"
+	line " 1 of your Benched Pokémon. You"
+	line " must first discard Energy from that"
+	line " Pokémon equal to its Retreat Cost."
+	line " You may retreat as often as you"
+	line " like during your turn."
 	line ""
-	line "A Pokémon will recover from all"
-	line "Special Conditions when it moves to"
-	line "the Bench,  but Pokémon that are"
-	line "Asleep or Paralyzed cannot retreat."
+	line " A Pokémon will recover from all"
+	line " Special Conditions when it moves to"
+	line " the Bench,  but Pokémon that are"
+	line " Asleep or Paralyzed cannot retreat."
 	done
 
-UnusedText031e: ; Unused
-	text "Modify Deck"
-	line "Card List"
-	line "Album List"
-	line "Deck Save Machine"
-	line "Printing Menu"
-	line "Auto Deck Machine"
-	line "Gift Center"
-	line "Name Input"
+WeaknessDescriptionText:
+	text " Some Pokémon have a Weakness."
+	line ""
+	line " If an Active Pokémon has Weakness"
+	line " to a certain type, then it will"
+	line " receive double damage when it is"
+	line " attacked by a Pokémon of that type."
+	line ""
+	line " Damage to Benched Pokémon is not"
+	line " usually affected by Weakness."
 	done
 
-UnusedText031f: ; Unused
-	text "Fighting Machine"
-	line "Rock Machine"
-	line "Water Machine"
-	line "Lightning Machine"
-	line "Grass Machine"
-	line "Psychic Machine"
-	line "Science Machine"
-	line "Fire Machine"
-	line "Auto Machine"
-	line "Legendary Machine"
+ResistanceDescriptionText:
+	text " Some Pokémon have a Resistance."
+	line ""
+	line " If an Active Pokémon has"
+	line " Resistance to a certain type, then"
+	line " it will receive 30 less damage when"
+	line " attacked by a Pokémon of that type."
+	line ""
+	line " Damage to Benched Pokémon is not"
+	line " usually affected by Resistance."
 	done
 
+SpecialConditions1DescriptionText:
+	text " A Pokémon will recover from all"
+	line " Special Conditions if it evolves"
+	line " or moves to the Bench."
+	line ""
+	line " An Active Pokémon can be either"
+	line " Asleep, Confused, or Paralyzed."
+	line " Any new condition erases the last."
+	line ""
+	line "<ASLEEP> A Pokémon that is Asleep cannot"
+	line "   attack or retreat. Flip a coin"
+	line "   between turns. If heads, the"
+	line "   Pokémon is no longer Asleep."
+	done
+
+SpecialConditions2DescriptionText:
+	text "<CONFUSED> Flip a coin before a Pokémon that"
+	line "   is Confused can attack or retreat"
+	line "   (after you pay any costs)."
+	line "   Tails: the retreat/attack fails"
+	line "   & 20 damage to self if attacking"
+	line ""
+	line "<PARALYZED> A Paralyzed Pokémon cannot"
+	line "   attack or retreat. It recovers"
+	line "   after one turn."
+	line ""
+	line "<POISONED> Put a damage counter on any"
+	line "   Poisoned Pokémon between turns."
+	done
+
+;Setup1DescriptionText:
+;	text "1) Shuffle your deck and draw seven"
+;	line "   cards. Check to see if you have"
+;	line "   a Basic Pokémon. If not, shuffle"
+;	line "   your hand into your deck and"
+;	line "   draw seven new cards. Repeat"
+;	line "   until you get a Basic Pokémon."
+;	line ""
+;	line "2) Choose a Basic Pokémon to become"
+;	line "   your Active Pokémon."
+;	line ""
+;	line "3) You may place up to 5 more"
+;	line "   Basic Pokémon on your Bench."
+;	done
+;
+;Setup2DescriptionText:
+;	text "4) Take cards from the top of your"
+;	line "   deck equal to the stated number"
+;	line "   of prizes and put them face down"
+;	line "   to the left of your play area."
+;	line ""
+;	line "5) Flip a coin to decide who gets"
+;	line "   the first turn. That player"
+;	line "   doesn't draw a card at the start"
+;	line "   of their first turn."
+;	line ""
+;	line "6) Play the game."
+;	done
+;
+;HalfwidthCharactersText:
+;	text "  ! ” ≠ ♂ ♀ & ' ( ) * + , - . /"
+;	line "0 1 2 3 4 5 6 7 8 9 : ; ‹ = > ?"
+;	line "É A B C D E F G H I J K L M N O"
+;	line "P Q R S T U V W X Y Z [ \\ ] ^ _"
+;	line "é a b c d e f g h i j k l m n o"
+;	line "p q r s t u v w x y z \{ ¦ } | ‾"
+;	line "à á â ä ç è ê ë ì í î ï ò ó ô ö"
+;	line "ù ú û ü ã ñ õ ′ À Á Â Ä Ç È Ê Ë"
+;	line "Ì Í Î Ï Ò Ó Ô Ö Ù Ú Û Ü Ã Ñ Õ ¿"
+;	line "¡ $ ‘ ’ % ° • ■"
+;	line ""
+;	line ""
+;	done
+;
+;FullwidthCharactersText:
+;	textfw " ABCDEFGHIJKLMNOP"
+;	linefw " QRSTUVWXYZṙṡṫṛ♀♂"
+;	linefw " 【】●◆★☆_▪℃゛°゜ˍ&꞉○"
+;	linefw " ※ ^♪ß"
+;	linefw "   ╚╔║═¿“‘'”.■abc"
+;	linefw " defghijklmnopqrs"
+;	linefw " tuvwxyz「＼」|ˉ !₽#"
+;	linefw " $%ǶĽ()*+、-—/0123"
+;	linefw " 456789:;<=>?@æçœ"
+;	linefw " àáâäèéêëìíîïòóôö"
+;	linefw " ùúûüãñõ[¥]"
+;	done
+;
 UnusedText0320: ; Unused
 	text "Send a Card"
 	line "Receive a Card"
@@ -991,7 +602,7 @@ PlayerStatusPlayTimeText:
 	done
 
 PlayerDiaryTitleText:
-	text "<RAMNAME>'s diary"
+	text "<RAMNAME>'s Diary"
 	done
 
 PlayerDiaryMedalsWonText:
@@ -1192,8 +803,8 @@ CardPopContinueDiaryNewGameContinueDuelText:
 	done
 
 WhenYouCardPopWithFriendText:
-	text "When you Card Pop! with a friend,"
-	line "you will each receive a new card!"
+	text " When you Card Pop! with a friend,"
+	line " you will each receive a new card!"
 	done
 
 ContinueFromDiarySummaryText:
@@ -1213,14 +824,14 @@ ContinueFromDiarySummaryText:
 	done
 
 StartANewGameText:
-	text "Start a New Game."
+	text "  Start a New Game."
 	line ""
 	done
 
 TheGameWillContinueFromThePointInTheDuelText:
-	text "The game will continue from"
-	line "the point in the duel at"
-	line "which the power was turned off."
+	text "  The game will continue from"
+	line "  the point in the duel when"
+	line "  the power was turned off."
 	done
 
 SavedDataAlreadyExistsText:
@@ -1245,13 +856,13 @@ DataExistsWhenPowerWasTurnedOFFDuringDuelText:
 	line "If you continue now, the heading,"
 	line "”Continue Duel”, will be deleted,"
 	line "and the game will start from when"
-	line "you last wrote in the Diary."
+	line "you last wrote in your diary."
 	line "Would you like to continue the game"
 	line "from the point saved in"
 	done
 
 ContinueFromDiaryText:
-	text "Continue from Diary?"
+	text "”Continue from Diary?”"
 	done
 
 YouCanAccessCardPopOnlyWithGameBoyColorsText:

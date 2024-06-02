@@ -904,26 +904,7 @@ DrawCardTypeIconsAndPrintCardCounts:
 	call PrintTotalCardCount
 	lb de, 17, 0
 	call PrintSlashSixty
-	call EnableLCD
-	ret
-
-; fills one line at coordinate bc in BG Map
-; with the byte in register a
-; fills the same line with $04 in VRAM1 if in CGB
-; bc = coordinates
-FillBGMapLineWithA:
-	call BCCoordToBGMap0Address
-	ld b, SCREEN_WIDTH
-	call FillDEWithA
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	ret nz ; return if not CGB
-	ld a, $04
-	ld b, SCREEN_WIDTH
-	call BankswitchVRAM1
-	call FillDEWithA
-	call BankswitchVRAM0
-	ret
+	jp EnableLCD
 
 ; saves the count of each type of card that is in wCurDeckCards
 ; stores these values in wCardFilterCounts
@@ -938,18 +919,6 @@ CountNumberOfCardsForEachCardType:
 	call CountNumberOfCardsOfType
 	ld [hli], a
 	jr .loop
-
-; fills de with b bytes of the value in register a
-FillDEWithA:
-	push hl
-	ld l, e
-	ld h, d
-.loop
-	ld [hli], a
-	dec b
-	jr nz, .loop
-	pop hl
-	ret
 
 ; draws all the card type icons
 ; in a line specified by .CardTypeIcons
