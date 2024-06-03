@@ -53,8 +53,7 @@ HandleMoveModeAPress::
 	pop af
 	call BankswitchROM
 	ld l, MAP_SCRIPT_PRESSED_A
-	call CallMapScriptPointerIfExists
-	ret
+	jp CallMapScriptPointerIfExists
 
 ; returns a map script pointer in hl given
 ; current map in wCurMap and which sub-script in l
@@ -139,8 +138,7 @@ ResetAnimationQueue::
 	call BankswitchROM
 	call _ResetAnimationQueue
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 FinishQueuedAnimations::
 	ldh a, [hBankROM]
@@ -157,8 +155,7 @@ FinishQueuedAnimations::
 	ld a, 1
 	ld [wVBlankOAMCopyToggle], a
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ;
 ;----------------------------------------
@@ -172,5 +169,4 @@ FinishQueuedAnimations::
 ;	call BankswitchROM
 ;	call _GameLoop
 ;	pop af
-;	call BankswitchROM
-;	ret
+;	jp BankswitchROM

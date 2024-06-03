@@ -1854,7 +1854,7 @@ ScriptCommand_SetDefaultSong:
 
 ScriptCommand_PlaySong:
 	ld a, c
-	call ScriptPlaySong
+	call PlaySong
 	jp IncreaseScriptPointerBy2
 
 ScriptCommand_PlaySFX:

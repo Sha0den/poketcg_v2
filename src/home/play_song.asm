@@ -1,7 +1,3 @@
-ScriptPlaySong::
-	call PlaySong
-	ret
-
 WaitForSongToFinish::
 	call DoFrameIfLCDEnabled
 	call AssertSongFinished
@@ -20,5 +16,4 @@ WaitForSongToFinish::
 ;	pop af
 ;	call PlaySong
 ;	call WaitForSongToFinish
-;	call ResumeSong
-;	ret
+;	jp ResumeSong

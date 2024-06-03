@@ -989,11 +989,10 @@ EmptyPlayAreaSlot::
 
 ; shift play area Pokemon of both players to the first available play area (arena + benchx) slots
 ShiftAllPokemonToFirstPlayAreaSlots::
-	call ShiftTurnPokemonToFirstPlayAreaSlots
 	call SwapTurn
 	call ShiftTurnPokemonToFirstPlayAreaSlots
 	call SwapTurn
-	ret
+;	fallthrough
 
 ; shift play area Pokemon of the turn holder to the first available play area (arena + benchx) slots
 ShiftTurnPokemonToFirstPlayAreaSlots::
@@ -1249,8 +1248,7 @@ ProcessPlayedPokemonCard::
 	call DisplayUsePokemonPowerScreen
 	ldtx hl, UnableDueToToxicGasText
 	call DrawWideTextBox_WaitForInput
-	call ExchangeRNG
-	ret
+	jp ExchangeRNG
 
 .use_pokemon_power
 	ld hl, wLoadedAttackEffectCommands
@@ -1281,8 +1279,7 @@ ProcessPlayedPokemonCard::
 	call ExchangeRNG
 	call Func_7415
 	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
-	call TryExecuteEffectCommandFunction
-	ret
+	jp TryExecuteEffectCommandFunction
 
 ; copies, given a card identified by register a (card ID):
 ; - e into wSelectedAttack and d into hTempCardIndex_ff9f
@@ -1372,6 +1369,39 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	bank1call ClearNonTurnTemporaryDuelvars_CopyStatus
 	ret
 
+; use Pokemon Power
+UsePokemonPower::
+	call Func_7415
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+	call TryExecuteEffectCommandFunction
+	jr c, DisplayUsePokemonPowerScreen_WaitForInput
+	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
+	call TryExecuteEffectCommandFunction
+	jr c, ReturnCarry
+	ld a, OPPACTION_USE_PKMN_POWER
+	call SetOppAction_SerialSendDuelData
+	call ExchangeRNG
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	call SetOppAction_SerialSendDuelData
+	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
+	call TryExecuteEffectCommandFunction
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	jp SetOppAction_SerialSendDuelData
+
+DisplayUsePokemonPowerScreen_WaitForInput::
+	push hl
+	call DisplayUsePokemonPowerScreen
+	pop hl
+;	fallthrough
+
+DrawWideTextBox_WaitForInput_ReturnCarry::
+	call DrawWideTextBox_WaitForInput
+;	fallthrough
+
+ReturnCarry::
+	scf
+	ret
+
 ; Use an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
 UseAttackOrPokemonPower::
 	ld a, [wSelectedAttack]
@@ -1382,16 +1412,16 @@ UseAttackOrPokemonPower::
 	ld [wPlayerAttackingCardID], a
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
-	jp z, UsePokemonPower
+	jr z, UsePokemonPower
 	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
-	jp c, DrawWideTextBox_WaitForInput_ReturnCarry
+	jr c, DrawWideTextBox_WaitForInput_ReturnCarry
 	call CheckSmokescreenSubstatus
 	jr c, .sand_attack_smokescreen
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
-	jp c, ReturnCarry
+	jr c, ReturnCarry
 	call SendAttackDataToLinkOpponent
 	jr .next
 .sand_attack_smokescreen
@@ -1400,7 +1430,7 @@ UseAttackOrPokemonPower::
 	jp c, ClearNonTurnTemporaryDuelvars_ResetCarry
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
-	jp c, ReturnCarry
+	jr c, ReturnCarry
 .next
 	ld a, OPPACTION_USE_ATTACK
 	call SetOppAction_SerialSendDuelData
@@ -1474,20 +1504,6 @@ HandleAfterDamageEffects::
 	or a
 	ret
 
-DisplayUsePokemonPowerScreen_WaitForInput::
-	push hl
-	call DisplayUsePokemonPowerScreen
-	pop hl
-;	fallthrough
-
-DrawWideTextBox_WaitForInput_ReturnCarry::
-	call DrawWideTextBox_WaitForInput
-;	fallthrough
-
-ReturnCarry::
-	scf
-	ret
-
 ClearNonTurnTemporaryDuelvars_ResetCarry::
 	bank1call ClearNonTurnTemporaryDuelvars
 	or a
@@ -1509,26 +1525,6 @@ HandleConfusionDamageToSelf::
 	call Func_6e49
 	bank1call ClearNonTurnTemporaryDuelvars
 	or a
-	ret
-
-; use Pokemon Power
-UsePokemonPower::
-	call Func_7415
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	call TryExecuteEffectCommandFunction
-	jr c, DisplayUsePokemonPowerScreen_WaitForInput
-	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
-	call TryExecuteEffectCommandFunction
-	jr c, ReturnCarry
-	ld a, OPPACTION_USE_PKMN_POWER
-	call SetOppAction_SerialSendDuelData
-	call ExchangeRNG
-	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
-	call SetOppAction_SerialSendDuelData
-	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
-	call TryExecuteEffectCommandFunction
-	ld a, OPPACTION_DUEL_MAIN_SCENE
-	call SetOppAction_SerialSendDuelData
 	ret
 
 ; called by UseAttackOrPokemonPower (on an attack only)
@@ -1771,10 +1767,22 @@ ApplyDamageModifiers_DamageToTarget::
 	call ApplyAttachedDefender
 	call HandleDamageReduction
 	bit 7, d
-	jr z, .no_underflow
+	jr z, SwapTurn ; no underflow
 	ld de, 0
-.no_underflow
-	call SwapTurn
+;	fallthrough
+
+; returns [hWhoseTurn] <-- ([hWhoseTurn] ^ $1)
+;   As a side effect, this also returns a duelist variable in a similar manner to
+;   GetNonTurnDuelistVariable, but this function appears to be
+;   only called to swap the turn value.
+SwapTurn::
+	push af
+	push hl
+	call GetNonTurnDuelistVariable
+	ld a, h
+	ldh [hWhoseTurn], a
+	pop hl
+	pop af
 	ret
 
 ; convert a color to its equivalent WR_* (weakness/resistance) value
@@ -2074,8 +2082,7 @@ PrintPokemonsAttackText::
 	ld a, [wLoadedAttackName + 1]
 	ld [hli], a
 	ldtx hl, PokemonsAttackText
-	call DrawWideTextBox_PrintText
-	ret
+	jp DrawWideTextBox_PrintText
 
 Func_1bb4::
 	call FinishQueuedAnimations
@@ -2085,8 +2092,7 @@ Func_1bb4::
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call PrintFailedEffectText
 	call WaitForWideTextBoxInput
-	call ExchangeRNG
-	ret
+	jp ExchangeRNG
 
 ; prints one of the ThereWasNoEffectFrom*Text if wEffectFailed contains EFFECT_FAILED_NO_EFFECT,
 ; and prints WasUnsuccessfulText if wEffectFailed contains EFFECT_FAILED_UNSUCCESSFUL
@@ -2130,7 +2136,40 @@ GetPlayAreaCardRetreatCost::
 	add DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
-	call GetLoadedCard1RetreatCost
+;	fallthrough
+
+; return, in a, the retreat cost of the card in wLoadedCard1,
+; adjusting for any Dodrio's Retreat Aid Pkmn Power that is active.
+GetLoadedCard1RetreatCost::
+	ld c, 0
+	ld a, DUELVARS_BENCH
+	call GetTurnDuelistVariable
+.check_bench_loop
+	ld a, [hli]
+	cp -1
+	jr z, .no_more_bench
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp DODRIO
+	jr nz, .not_dodrio
+	inc c
+.not_dodrio
+	jr .check_bench_loop
+.no_more_bench
+	ld a, c
+	or a
+	jr nz, .dodrio_found
+.muk_found
+	ld a, [wLoadedCard1RetreatCost] ; return regular retreat cost
+	ret
+.dodrio_found
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	jr c, .muk_found
+	ld a, [wLoadedCard1RetreatCost]
+	sub c ; apply Retreat Aid for each Pkmn Power-capable Dodrio
+	ret nc
+	xor a
 	ret
 
 ; calculate damage and max HP of card at PLAY_AREA_* in e.
@@ -2192,57 +2231,6 @@ CheckLoadedAttackFlag::
 	pop de
 	pop hl
 	ret
-
-; returns [hWhoseTurn] <-- ([hWhoseTurn] ^ $1)
-;   As a side effect, this also returns a duelist variable in a similar manner to
-;   GetNonTurnDuelistVariable, but this function appears to be
-;   only called to swap the turn value.
-SwapTurn::
-	push af
-	push hl
-	call GetNonTurnDuelistVariable
-	ld a, h
-	ldh [hWhoseTurn], a
-	pop hl
-	pop af
-	ret
-
-; copy the TX_END-terminated player's name from sPlayerName to de
-CopyPlayerName::
-	call EnableSRAM
-	ld hl, sPlayerName
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	or a ; TX_END
-	jr nz, .loop
-	dec de
-	call DisableSRAM
-	ret
-
-; copy the opponent's name to de
-; if text ID at wOpponentName is non-0, copy it from there
-; else, if text at wc500 is non-0, copy if from there
-; else, copy Player2Text
-CopyOpponentName::
-	ld hl, wOpponentName
-	ld a, [hli]
-	or [hl]
-	jr z, .special_name
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
-	jp CopyText
-.special_name
-	ld hl, wNameBuffer
-	ld a, [hl]
-	or a
-	jr z, .print_player2
-	jr CopyPlayerName.loop
-.print_player2
-	ldtx hl, Player2Text
-	jp CopyText
 
 ; returns carry if the card in a is a Basic Pokemon
 CheckDeckIndexForBasicPokemon::

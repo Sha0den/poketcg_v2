@@ -320,6 +320,50 @@ Func_0e8e::
 	ldh [rIE], a
 	ret
 
+; exchange RNG during a link duel between both games
+ExchangeRNG::
+	ld a, [wDuelType]
+	cp DUELTYPE_LINK
+	jr z, .link_duel
+	ret
+.link_duel
+	ld a, DUELVARS_DUELIST_TYPE
+	call GetTurnDuelistVariable
+	or a ; cp DUELIST_TYPE_PLAYER
+	jr z, .player_turn
+; link opponent's turn
+	ld hl, wOppRNG1
+	ld de, wRNG1
+	jr .exchange
+.player_turn
+	ld hl, wRNG1
+	ld de, wOppRNG1
+.exchange
+	ld c, 3 ; wRNG1, wRNG2, and wRNGCounter
+	call SerialExchangeBytes
+	ret nc
+;	fallthrough
+
+; load the number at wSerialFlags (error code?) to TxRam3, print
+; TransmissionErrorText, exit the duel, and reset serial registers.
+DuelTransmissionError::
+	ld a, [wSerialFlags]
+	ld l, a
+	ld h, 0
+	call LoadTxRam3
+	ldtx hl, TransmissionErrorText
+	call DrawWideTextBox_WaitForInput
+	ld a, -1
+	ld [wDuelResult], a
+	ld hl, wDuelReturnAddress
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld sp, hl
+	xor a
+	call PlaySong
+;	fallthrough
+
 ; disable serial interrupt, and clear rSB, rSC, and serial registers in WRAM
 ResetSerial::
 	ldh a, [rIE]
@@ -408,50 +452,6 @@ LinkOpponentTurnFrameFunction::
 	ld l, a
 	ld sp, hl
 	scf
-	ret
-
-; load the number at wSerialFlags (error code?) to TxRam3, print
-; TransmissionErrorText, exit the duel, and reset serial registers.
-DuelTransmissionError::
-	ld a, [wSerialFlags]
-	ld l, a
-	ld h, 0
-	call LoadTxRam3
-	ldtx hl, TransmissionErrorText
-	call DrawWideTextBox_WaitForInput
-	ld a, -1
-	ld [wDuelResult], a
-	ld hl, wDuelReturnAddress
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	ld sp, hl
-	xor a
-	call PlaySong
-	jp ResetSerial
-
-; exchange RNG during a link duel between both games
-ExchangeRNG::
-	ld a, [wDuelType]
-	cp DUELTYPE_LINK
-	jr z, .link_duel
-	ret
-.link_duel
-	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
-	or a ; cp DUELIST_TYPE_PLAYER
-	jr z, .player_turn
-; link opponent's turn
-	ld hl, wOppRNG1
-	ld de, wRNG1
-	jr .exchange
-.player_turn
-	ld hl, wRNG1
-	ld de, wOppRNG1
-.exchange
-	ld c, 3 ; wRNG1, wRNG2, and wRNGCounter
-	call SerialExchangeBytes
-	jp c, DuelTransmissionError
 	ret
 
 ; sets hOppActionTableIndex to an AI action specified in register a.

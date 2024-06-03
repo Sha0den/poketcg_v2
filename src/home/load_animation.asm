@@ -10,8 +10,7 @@ ClearSpriteAnimations::
 	call BankswitchROM
 	call _ClearSpriteAnimations
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 HandleAllSpriteAnimations::
 	ldh a, [hBankROM]
@@ -20,8 +19,7 @@ HandleAllSpriteAnimations::
 	call BankswitchROM
 	call _HandleAllSpriteAnimations
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; hl - pointer to animation frame
 ; wCurrSpriteFrameBank - bank of animation frame
@@ -134,8 +132,7 @@ DrawSpriteAnimationFrame::
 	jr nz, .loop
 .done
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; Loads a pointer to the current animation frame into SPRITE_ANIM_FRAME_DATA_POINTER using
 ; the current frame's offset
@@ -187,8 +184,7 @@ GetAnimationFramePointer::
 	ld [hl], a
 	pop hl
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; return hl pointing to the start of a sprite in wSpriteAnimBuffer.
 ; the sprite is identified by its index in wWhichSprite.
@@ -260,8 +256,7 @@ DrawPortrait::
 	call BankswitchROM
 	call _DrawPortrait
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; draws opponent's portrait given in a at b,c
 DrawOpponentPortrait::
@@ -277,8 +272,7 @@ Func_3e31::
 	call BankswitchROM
 	call DoLoadedFramesetSubgroupsFrame
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ;
 ;----------------------------------------

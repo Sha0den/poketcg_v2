@@ -65,6 +65,13 @@
 
 
 ## Code Optimization
+- **June 3, 2024:** 22 Files Changed
+    - Rearrange some functions in the home bank to replace some jp's with jr's or fallthroughs
+    - Eliminate remaining home bank tail calls (replacing a call ret with a fallthrough/jr/jp)
+        - *Intentially ignored BankpopROM tail calls (that function can't be jumped to)*
+
+<br/>
+
 - **[May 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/d9cbaa4bd90be37a382faa9cd81c903b1f92d66f):** 35 Files Changed
     - Refactor code to minimize use of unconditional jr's
     - Other minor optimizations, most of which involve jumps
@@ -168,7 +175,7 @@
 
 
 ## Miscellaneous Changes
-- **June 2, 2024:** 16 Files Changed
+- **[June 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/b16b83b296ee35aa3d05b7066ed8c649343e0879):** 16 Files Changed
     - Update the Glossary (both the overall display and the actual text information)
     - Increase the size of the font tile section in vram when viewing the Glossary from a duel
     - Create many new fullwidth and halfwidth font characters, plus 2 new text box symbols

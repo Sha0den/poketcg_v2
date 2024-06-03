@@ -10,8 +10,7 @@ DecompressDataFromBank::
 	call BankswitchROM
 	call DecompressData
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; Copies bc bytes from [wTempPointer] to de
 CopyBankedDataToDE::
@@ -27,8 +26,7 @@ CopyBankedDataToDE::
 	call CopyDataHLtoDE_SaveRegisters
 	pop hl
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; fill bc bytes of data at hl with a
 FillMemoryWithA::

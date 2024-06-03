@@ -122,8 +122,7 @@ CreateTempCardCollection::
 	call .AddDeckCards
 	ld de, sDeck4Name
 	call .AddDeckCards
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; adds the cards from a deck to wTempCardCollection given de = sDeck*Name
 .AddDeckCards:

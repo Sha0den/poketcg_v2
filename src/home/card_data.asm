@@ -202,5 +202,4 @@ LoadCardGfx::
 	dec b
 	jr nz, .copy_card_palette
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM

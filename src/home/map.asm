@@ -18,8 +18,7 @@ OverworldDoFrameFunction::
 	call DoLoadedFramesetSubgroupsFrame
 	call UpdateRNGSources
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; enable the play time counter and execute the game event at [wGameEvent].
 ; then return to the overworld, or restart the game (only after Credits).
@@ -35,8 +34,7 @@ ExecuteGameEvent::
 	jr .loop
 .restart
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; execute a game event at [wGameEvent] from GameEventPointerTable
 _ExecuteGameEvent::
@@ -150,8 +148,7 @@ GetReceivedLegendaryCards::
 	farcall GetEventValue
 	call EnableSRAM
 	ld [sReceivedLegendaryCards], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; return in a the permission byte corresponding to the current map's x,y coordinates at bc
 GetPermissionOfMapPosition::
@@ -213,8 +210,7 @@ CopyGfxDataFromTempBank::
 	call BankswitchROM
 	call CopyGfxData
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; Movement offsets for player movements
 PlayerMovementOffsetTable::
@@ -255,14 +251,12 @@ HandleMapWarp::
 	call BankswitchROM
 	call _HandleMapWarp
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; returns in hl a pointer to the first element for the a'th NPC
 GetLoadedNPCID::
 	ld l, LOADED_NPC_ID
-	call GetItemInLoadedNPCIndex
-	ret
+;	fallthrough
 
 ; return in hl a pointer to the a'th items element l
 GetItemInLoadedNPCIndex::

@@ -248,11 +248,14 @@ HandleCantAttackSubstatus::
 	ret z
 	ldtx hl, UnableToAttackThatPokemonText
 	cp SUBSTATUS2_CANNOT_ATTACK_THIS
-	jp z, ReturnCarry ; can't attack
+	jr z, .return_with_cant_attack
 	ldtx hl, UnableToAttackText
 	cp SUBSTATUS2_CANNOT_ATTACK
-	jp z, ReturnCarry ; can't attack
+	jr z, .return_with_cant_attack
 	or a
+	ret
+.return_with_cant_attack
+	scf
 	ret
 
 ; return carry if the turn holder's arena Pokemon cannot use
@@ -517,40 +520,6 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	ldtx hl, UnableDueToToxicGasText
 	ret
 
-; return, in a, the retreat cost of the card in wLoadedCard1,
-; adjusting for any Dodrio's Retreat Aid Pkmn Power that is active.
-GetLoadedCard1RetreatCost::
-	ld c, 0
-	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
-.check_bench_loop
-	ld a, [hli]
-	cp -1
-	jr z, .no_more_bench
-	call GetCardIDFromDeckIndex
-	ld a, e
-	cp DODRIO
-	jr nz, .not_dodrio
-	inc c
-.not_dodrio
-	jr .check_bench_loop
-.no_more_bench
-	ld a, c
-	or a
-	jr nz, .dodrio_found
-.muk_found
-	ld a, [wLoadedCard1RetreatCost] ; return regular retreat cost
-	ret
-.dodrio_found
-	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
-	jr c, .muk_found
-	ld a, [wLoadedCard1RetreatCost]
-	sub c ; apply Retreat Aid for each Pkmn Power-capable Dodrio
-	ret nc
-	xor a
-	ret
-
 ; return carry if the turn holder's arena Pokemon is affected by Acid and can't retreat
 CheckCantRetreatDueToAcid::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
@@ -693,7 +662,7 @@ HandleStrikesBack_AgainstResidualAttack::
 	ret c
 	ld hl, 10 ; damage to be dealt to attacker
 	call ApplyStrikesBack_AgainstResidualAttack
-	call nc, WaitForWideTextBoxInput
+	jp nc, WaitForWideTextBoxInput
 	ret
 
 ApplyStrikesBack_AgainstResidualAttack::

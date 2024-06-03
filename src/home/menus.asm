@@ -755,7 +755,7 @@ SetCursorParametersForTextBox::
 ; print the text at hl without letter delay, and wait for A or B pressed
 DrawWideTextBox_PrintTextNoDelay_Wait::
 	call DrawWideTextBox_PrintTextNoDelay
-	jp WaitForWideTextBoxInput
+	jr WaitForWideTextBoxInput
 
 ; draw a 20x6 text box aligned to the bottom of the screen
 ; and print the text at hl without letter delay
@@ -802,8 +802,7 @@ DrawNarrowTextBox::
 	lb de, 0, 12
 	lb bc, 12, 6
 	call AdjustCoordinatesForBGScroll
-	call DrawRegularTextBox
-	ret
+	jp DrawRegularTextBox
 
 ; draw a 12x6 text box aligned to the bottom left of the screen,
 ; print the text at hl without letter delay, and wait for A or B pressed
@@ -834,8 +833,7 @@ DrawWideTextBox::
 	lb de, 0, 12
 	lb bc, 20, 6
 	call AdjustCoordinatesForBGScroll
-	call DrawRegularTextBox
-	ret
+	jp DrawRegularTextBox
 
 ; draw a 20x6 text box aligned to the bottom of the screen,
 ; print the text at hl with letter delay, and wait for A or B pressed
@@ -855,8 +853,7 @@ WaitForWideTextBoxInput::
 	ldh a, [hKeysPressed]
 	and A_BUTTON | B_BUTTON
 	jr z, .wait_A_or_B_loop
-	call EraseCursor
-	ret
+	jp EraseCursor
 
 WideTextBoxMenuParameters::
 	db 18, 17 ; cursor x, cursor y
@@ -865,19 +862,6 @@ WideTextBoxMenuParameters::
 	db SYM_CURSOR_D ; cursor tile number
 	db SYM_BOX_BOTTOM ; tile behind cursor
 	dw NULL ; function pointer if non-0
-
-; display a two-item horizontal menu with custom text provided in hl and handle input
-TwoItemHorizontalMenu::
-	call DrawWideTextBox_PrintText
-	lb de, 6, 16 ; x, y
-	ld a, d
-	ld [wLeftmostItemCursorX], a
-	lb bc, SYM_CURSOR_R, SYM_SPACE ; cursor tile, tile behind cursor
-	call SetCursorParametersForTextBox
-	ld a, 1
-	ld [wCurMenuItem], a
-	call EnableLCD
-	jp HandleYesOrNoMenu.refresh_menu
 
 YesOrNoMenuWithText_SetCursorToYes::
 	ld a, $01
@@ -962,12 +946,24 @@ HandleYesOrNoMenu::
 	scf
 	ret
 
+; display a two-item horizontal menu with custom text provided in hl and handle input
+TwoItemHorizontalMenu::
+	call DrawWideTextBox_PrintText
+	lb de, 6, 16 ; x, y
+	ld a, d
+	ld [wLeftmostItemCursorX], a
+	lb bc, SYM_CURSOR_R, SYM_SPACE ; cursor tile, tile behind cursor
+	call SetCursorParametersForTextBox
+	ld a, 1
+	ld [wCurMenuItem], a
+	call EnableLCD
+	jr HandleYesOrNoMenu.refresh_menu
+
 ; prints "YES NO" at de
 PrintYesOrNoItems::
 	call AdjustCoordinatesForBGScroll
 	ldtx hl, YesOrNoText
-	call InitTextPrinting_ProcessTextFromID
-	ret
+	jp InitTextPrinting_ProcessTextFromID
 
 ContinueDuel::
 	ld a, BANK(_ContinueDuel)
@@ -990,8 +986,7 @@ FillBGMapLineWithA::
 	ld b, SCREEN_WIDTH
 	call BankswitchVRAM1
 	call FillDEWithA
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0
 
 ; fills de with b bytes of the value in register a
 FillDEWithA:

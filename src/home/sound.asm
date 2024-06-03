@@ -51,8 +51,7 @@ Func_37a5::
 	set 6, h ; $4000 ≤ hl ≤ $7fff
 	call Func_37c5
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 Func_37c5::
 	ld c, $08

@@ -145,7 +145,7 @@ DrawLabeledTextBox::
 	pop de
 	inc e
 	; top border done, draw the rest of the text box
-	jp ContinueDrawingTextBoxCGB
+	jr ContinueDrawingTextBoxCGB
 
 ; Draws a bxc text box at de to print menu data in the overworld.
 ; Also used to print a text box during a duel.
@@ -268,8 +268,7 @@ CopyCurrentLineAttrCGB::
 	ld e, a
 	ld d, a
 	call CopyLine
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0
 
 ; DrawRegularTextBox branches here on SGB console
 DrawRegularTextBoxSGB::
@@ -322,8 +321,7 @@ ColorizeTextBoxSGB::
 	ld [wTempSGBPacket + 2], a
 .send_packet
 	ld hl, wTempSGBPacket
-	call SendSGB
-	ret
+	jp SendSGB
 
 AttrBlkPacket_TextBox::
 	sgb ATTR_BLK, 1 ; sgb_command, length
@@ -353,5 +351,4 @@ DrawTextBoxSeparator::
 	ld e, a
 	ld d, a
 	call CopyLine
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0

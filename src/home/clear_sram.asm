@@ -19,8 +19,7 @@ ValidateSRAM::
 	call RestartSRAM
 	scf
 	call InitSaveDataAndSetUppercase
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 .check_sequence
 	ld hl, s0a000
 	ld a, [hli]
@@ -37,8 +36,7 @@ ValidateSRAM::
 	call RestartSRAM
 	or a
 	call InitSaveDataAndSetUppercase
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; zero all SRAM banks and set s0a000 to $04, $21, $05
 RestartSRAM::

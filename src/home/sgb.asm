@@ -21,7 +21,65 @@ InitSGB::
 	ld hl, Pal01Packet_InitSGB
 	call SendSGB
 	ld hl, MaskEnPacket_Cancel
-	call SendSGB
+;	fallthrough
+
+; send SGB packet at hl (or packets, if length > 1)
+SendSGB::
+	ld a, [hl]
+	and $7
+	ret z ; return if packet length is 0
+	ld b, a ; length (1-7)
+	ld c, LOW(rJOYP)
+.send_packets_loop
+	push bc
+	ld a, $0
+	ld [$ff00+c], a
+	ld a, P15 | P14
+	ld [$ff00+c], a
+	ld b, SGB_PACKET_SIZE
+.send_packet_loop
+	ld e, $8
+	ld a, [hli]
+	ld d, a
+.read_byte_loop
+	bit 0, d
+	ld a, P14 ; '1' bit
+	jr nz, .transfer_bit
+	ld a, P15 ; '0' bit
+.transfer_bit
+	ld [$ff00+c], a
+	ld a, P15 | P14
+	ld [$ff00+c], a
+	rr d
+	dec e
+	jr nz, .read_byte_loop
+	dec b
+	jr nz, .send_packet_loop
+	ld a, P15 ; stop bit
+	ld [$ff00+c], a
+	ld a, P15 | P14
+	ld [$ff00+c], a
+	pop bc
+	dec b
+	jr nz, .send_packets_loop
+	ld bc, 4
+;	fallthrough
+
+; loops 63000 * bc cycles (~15 * bc ms)
+Wait::
+	ld de, 1750
+.loop
+	nop
+	nop
+	nop
+	dec de
+	ld a, d
+	or e
+	jr nz, .loop
+	dec bc
+	ld a, b
+	or c
+	jr nz, Wait
 	ret
 
 DataSndPacket1::
@@ -112,49 +170,6 @@ AttrBlkPacket_0b10::
 	ds 6 ; data set 2
 	ds 2 ; data set 3
 
-; send SGB packet at hl (or packets, if length > 1)
-SendSGB::
-	ld a, [hl]
-	and $7
-	ret z ; return if packet length is 0
-	ld b, a ; length (1-7)
-	ld c, LOW(rJOYP)
-.send_packets_loop
-	push bc
-	ld a, $0
-	ld [$ff00+c], a
-	ld a, P15 | P14
-	ld [$ff00+c], a
-	ld b, SGB_PACKET_SIZE
-.send_packet_loop
-	ld e, $8
-	ld a, [hli]
-	ld d, a
-.read_byte_loop
-	bit 0, d
-	ld a, P14 ; '1' bit
-	jr nz, .transfer_bit
-	ld a, P15 ; '0' bit
-.transfer_bit
-	ld [$ff00+c], a
-	ld a, P15 | P14
-	ld [$ff00+c], a
-	rr d
-	dec e
-	jr nz, .read_byte_loop
-	dec b
-	jr nz, .send_packet_loop
-	ld a, P15 ; stop bit
-	ld [$ff00+c], a
-	ld a, P15 | P14
-	ld [$ff00+c], a
-	pop bc
-	dec b
-	jr nz, .send_packets_loop
-	ld bc, 4
-	call Wait
-	ret
-
 ; SGB hardware detection
 ; return carry if SGB detected and disable multi-controller mode before returning
 DetectSGB::
@@ -208,23 +223,6 @@ MltReq2Packet::
 	sgb MLT_REQ, 1 ; sgb_command, length
 	db MLT_REQ_2_PLAYERS
 	ds $0e
-
-; loops 63000 * bc cycles (~15 * bc ms)
-Wait::
-	ld de, 1750
-.loop
-	nop
-	nop
-	nop
-	dec de
-	ld a, d
-	or e
-	jr nz, .loop
-	dec bc
-	ld a, b
-	or c
-	jr nz, Wait
-	ret
 
 ;
 ;----------------------------------------

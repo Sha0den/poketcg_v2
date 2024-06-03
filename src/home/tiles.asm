@@ -1,3 +1,22 @@
+; load the graphics and draw the duel box message given a BOXMSG_* constant in a
+DrawDuelBoxMessage::
+	ld l, a
+	ld h, 40 tiles / 4 ; boxes are 10x4 tiles
+	call HtimesL
+	add hl, hl
+	add hl, hl
+	; hl = a * 40 tiles
+	ld de, DuelBoxMessages
+	add hl, de
+	ld de, v0Tiles1 + $20 tiles
+	ld b, 40
+	call CopyFontsOrDuelGraphicsTiles
+	ld a, $a0
+	lb hl, 1, 10
+	lb bc, 10, 4
+	lb de, 5, 4
+;	fallthrough
+
 ; Fill a bxc rectangle at de and at sp-$26,
 ; using tile a and the subsequent ones in the following pattern:
 ; | a+0*l+0*h | a+0*l+1*h | a+0*l+2*h |
@@ -217,25 +236,6 @@ Func_212f::
 	ld de, sGfxBuffer4 + $10 tiles
 	ld b, $30
 	jr CopyFontsOrDuelGraphicsTiles
-
-; load the graphics and draw the duel box message given a BOXMSG_* constant in a
-DrawDuelBoxMessage::
-	ld l, a
-	ld h, 40 tiles / 4 ; boxes are 10x4 tiles
-	call HtimesL
-	add hl, hl
-	add hl, hl
-	; hl = a * 40 tiles
-	ld de, DuelBoxMessages
-	add hl, de
-	ld de, v0Tiles1 + $20 tiles
-	ld b, 40
-	call CopyFontsOrDuelGraphicsTiles
-	ld a, $a0
-	lb hl, 1, 10
-	lb bc, 10, 4
-	lb de, 5, 4
-	jp FillRectangle
 
 ; load the tiles for the latin, katakana, and hiragana fonts into VRAM
 ; from gfx/fonts/full_width/3.1bpp and gfx/fonts/full_width/4.1bpp

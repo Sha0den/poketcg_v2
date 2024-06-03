@@ -46,8 +46,7 @@ ProcessTextFromID::
 	call GetTextOffsetFromTextID
 	call ProcessText
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; return, in a, the number of lines of the text given in hl as an ID
 ; this is calculated by counting the amount of '\n' characters and adding 1 to the result
@@ -97,8 +96,7 @@ WaitForPlayerToAdvanceText::
 	lb bc, SYM_CURSOR_D, SYM_BOX_BOTTOM ; cursor tile, tile behind cursor
 	lb de, 18, 17 ; x, y
 	call SetCursorParametersForTextBox
-	call WaitForButtonAorB
-	ret
+	jp WaitForButtonAorB
 
 ; call PrintScrollableText with text box label, then wait for the
 ; player to press A or B to advance the printed text
@@ -160,8 +158,7 @@ PrintScrollableText::
 	jr .print_char_loop
 .asm_2cc3
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; zero wWhichTextHeader, wWhichTxRam2 and wWhichTxRam3, and set hJapaneseSyllabary to TX_KATAKANA
 ; fill wTextHeader1 with TX_KATAKANA, wFontWidth, hBankROM, and register bc for the text's pointer.
@@ -424,7 +421,7 @@ CopyPlayerNameOrTurnDuelistName::
 	push de
 	ldh a, [hWhoseTurn]
 	cp OPPONENT_TURN
-	jp z, .opponent_turn
+	jr z, .opponent_turn
 	call CopyPlayerName
 	pop hl
 	ret
@@ -444,8 +441,7 @@ PrintText::
 	call GetTextOffsetFromTextID
 	call .print_text
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 .from_ram
 	ld hl, wDefaultText
 .print_text
@@ -483,8 +479,7 @@ PrintTextNoDelay::
 	call ProcessTextHeader
 	jr nc, .next_tile_loop
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; copies a text given its id at hl, to de
 ; if hl is 0, the name of the turn duelist is copied instead
@@ -508,8 +503,44 @@ CopyText::
 .special
 	ldh a, [hWhoseTurn]
 	cp OPPONENT_TURN
-	jp z, CopyOpponentName
-	jp CopyPlayerName
+	jr z, CopyOpponentName
+;	fallthrough
+
+; copy the TX_END-terminated player's name from sPlayerName to de
+CopyPlayerName::
+	call EnableSRAM
+	ld hl, sPlayerName
+.loop
+	ld a, [hli]
+	ld [de], a
+	inc de
+	or a ; TX_END
+	jr nz, .loop
+	dec de
+	jp DisableSRAM
+
+; copy the opponent's name to de
+; if text ID at wOpponentName is non-0, copy it from there
+; else, if text at wc500 is non-0, copy if from there
+; else, copy Player2Text
+CopyOpponentName::
+	ld hl, wOpponentName
+	ld a, [hli]
+	or [hl]
+	jr z, .special_name
+	ld a, [hld]
+	ld l, [hl]
+	ld h, a
+	jr CopyText
+.special_name
+	ld hl, wNameBuffer
+	ld a, [hl]
+	or a
+	jr z, .print_player2
+	jr CopyPlayerName.loop
+.print_player2
+	ldtx hl, Player2Text
+	jr CopyText
 
 ; copy text of maximum length a (in tiles) from its ID at hl to de,
 ; then terminate the text with TX_END if it doesn't contain it already.
@@ -523,8 +554,7 @@ CopyTextData_FromTextID::
 	ldh a, [hff96]
 	call CopyTextData
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; text id (usually of a card name) for TX_RAM2
 LoadTxRam2::

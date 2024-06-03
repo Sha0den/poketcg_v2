@@ -5,8 +5,7 @@ OpenDuelCheckMenu::
 	call BankswitchROM
 	call _OpenDuelCheckMenu
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 OpenInPlayAreaScreen_FromSelectButton::
 	ldh a, [hBankROM]
@@ -18,8 +17,7 @@ OpenInPlayAreaScreen_FromSelectButton::
 	call OpenInPlayAreaScreen
 	pop bc
 	ld a, b
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; loads tiles and icons to display Your Play Area / Opp. Play Area screen,
 ; and draws the screen according to the turn player
@@ -39,8 +37,7 @@ DrawYourOrOppPlayAreaScreen_Bank0::
 	call _DrawYourOrOppPlayAreaScreen
 	call DrawWideTextBox
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 DrawPlayersPrizeAndBenchCards::
 	ldh a, [hBankROM]
@@ -49,8 +46,7 @@ DrawPlayersPrizeAndBenchCards::
 	call BankswitchROM
 	call _DrawPlayersPrizeAndBenchCards
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 HandlePeekSelection::
 	ldh a, [hBankROM]
@@ -72,8 +68,7 @@ DrawAIPeekScreen::
 	call BankswitchROM
 	call _DrawAIPeekScreen
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 ; a = number of prize cards for player to select to take
 SelectPrizeCards::
@@ -84,8 +79,7 @@ SelectPrizeCards::
 	call BankswitchROM
 	call _SelectPrizeCards
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM
 
 DrawPlayAreaToPlacePrizeCards::
 	ldh a, [hBankROM]
@@ -94,5 +88,4 @@ DrawPlayAreaToPlacePrizeCards::
 	call BankswitchROM
 	call _DrawPlayAreaToPlacePrizeCards
 	pop af
-	call BankswitchROM
-	ret
+	jp BankswitchROM

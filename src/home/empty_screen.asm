@@ -10,8 +10,7 @@ EmptyScreen::
 	call EnableLCD
 	ld hl, AttrBlkPacket_EmptyScreen
 	call SendSGB
-	call DisableLCD
-	ret
+	jp DisableLCD
 
 AttrBlkPacket_EmptyScreen::
 	sgb ATTR_BLK, 1 ; sgb_command, length
