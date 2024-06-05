@@ -81,7 +81,7 @@ HandleDeckMissingCardsList:
 	jr .loop
 
 .selection_made
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	cp $ff
 	ret z
 	jr .open_card_pge
@@ -122,7 +122,7 @@ HandleDeckMissingCardsList:
 	ret
 
 .ClearScreenAndPrintDeckTitle
-	call EmptyScreenAndLoadFontDuelAndHandCardsIcons
+	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	call .PrintDeckIndexAndName
 	call EnableLCD
 	ret
@@ -293,7 +293,7 @@ GiftCenter_ReceiveCard:
 	call DrawListCursor_Invisible
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	cp $ff
 	jr nz, .asm_aff5
 	ld hl, wNameBuffer
@@ -470,7 +470,7 @@ PrintReceivedTheseCardsText:
 
 EmptyScreenAndDrawTextBox:
 	call Set_OBJ_8x8
-	call PrepareMenuGraphics
+	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	lb de, 0, 0
 	lb bc, 20, 13
 	call DrawRegularTextBox
@@ -710,7 +710,7 @@ HandleDeckMachineSelection:
 	ld [wTempCardListVisibleOffset], a
 	ld a, [wCardListCursorPos]
 	ld [wTempDeckMachineCursorPos], a
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	or a
 	ret
 
@@ -918,7 +918,7 @@ PrintDeckMachineEntry:
 	inc d
 	inc d
 	push de
-	call AppendDeckName
+	call PrintDeckNameForDeckMachine
 	pop de
 	pop bc
 	jr nc, .valid_deck
@@ -1113,7 +1113,7 @@ SaveDeckInDeckSaveMachine:
 	call DrawDecksScreen
 	xor a
 .wait_input
-	ld hl, DeckMachineMenuParameters
+	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	ldtx hl, ChooseADeckToSaveText
 	call DrawWideTextBox_PrintText
@@ -1413,7 +1413,7 @@ HandleDismantleDeckToMakeSpace:
 	call DrawDecksScreen
 	xor a
 .init_menu_params
-	ld hl, DeckMachineMenuParameters
+	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	ldtx hl, ChooseADeckToDismantleText
 	call DrawWideTextBox_PrintText
@@ -1459,7 +1459,7 @@ HandleDismantleDeckToMakeSpace:
 	ld a, ALL_DECKS
 	call DrawDecksScreen
 	ld a, [wCurDeck]
-	ld hl, DeckMachineMenuParameters
+	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	call DrawCursor2
 	call SafelySwitchToTempSRAMBank
@@ -1560,7 +1560,7 @@ TryBuildDeckMachineDeck:
 	call DrawDecksScreen
 	ld a, [wDeckSlotForNewDeck]
 	ld [wCurDeck], a
-	ld hl, DeckMachineMenuParameters
+	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	call DrawCursor2
 	call GetPointerToDeckName

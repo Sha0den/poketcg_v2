@@ -1,6 +1,7 @@
 INCLUDE "data/glossary_menu_transitions.asm"
 
 ; copies DECK_SIZE number of cards from de to hl in SRAM
+; preserves bc
 CopyDeckFromSRAM:
 	push bc
 	call EnableSRAM
@@ -17,8 +18,9 @@ CopyDeckFromSRAM:
 	pop bc
 	ret
 
-; clears some WRAM addresses to act as
-; terminator bytes to wFilteredCardList and wCurDeckCards
+; clears some WRAM addresses to act as terminator bytes
+; to wFilteredCardList and wCurDeckCards
+; preserves de
 WriteCardListsTerminatorBytes:
 	xor a
 	ld hl, wFilteredCardList
@@ -32,6 +34,7 @@ WriteCardListsTerminatorBytes:
 	ret
 
 ; inits some SRAM addresses
+; preserves bc and de
 InitPromotionalCardAndDeckCounterSaveData:
 	call EnableSRAM
 	xor a
@@ -42,39 +45,29 @@ InitPromotionalCardAndDeckCounterSaveData:
 	ld [hli], a
 	ld [hl], a
 	ld [sUnnamedDeckCounter], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
-; loads the Hard Cards icon gfx to v0Tiles2
-LoadHandCardsIcon:
-	ld hl, HandCardsGfx
-	ld de, v0Tiles2 + $38 tiles
-	call CopyListFromHLToDE
-	ret
+; loads the Deck icon to v0Tiles2
+LoadDeckIcon:
+	ld hl, DuelOtherGraphics + $29 tiles
+	ld de, v0Tiles1 + $48 tiles
+	ld b, $04
+	jp CopyFontsOrDuelGraphicsTiles
 
-HandCardsGfx:
-	INCBIN "gfx/hand_cards.2bpp"
-	db $00 ; end of data
+; loads the Deck Box icon gfx to v0Tiles2
+LoadDeckBoxIcon:
+	ld hl, DeckBoxGfx
+	ld bc, 64
+	ld de, v0Tiles1 + $4c tiles
+	jp CopyDataHLtoDE
 
-EmptyScreenAndLoadFontDuelAndHandCardsIcons:
-	xor a
-	ld [wTileMapFill], a
-	call EmptyScreen
-	call ZeroObjectPositions
-	ld a, $1
-	ld [wVBlankOAMCopyToggle], a
-	call LoadSymbolsFont
-	call LoadDuelCardSymbolTiles
-	call LoadHandCardsIcon
-	bank1call SetDefaultConsolePalettes
-	lb de, $3c, $bf
-	call SetupText
-	ret
+DeckBoxGfx:
+	INCBIN "gfx/deck_box.2bpp"
 
-; empties screen, zeroes object positions,
-; loads cursor tile, symbol fonts, duel card symbols
-; hand card icon and sets default palettes
-PrepareMenuGraphics:
+; empties screen, zeroes object positions, loads cursor sprite,
+; loads tiles for font symbols, card type symbols, and deck/deck box icons,
+; sets default palettes, and designates tiles for text
+EmptyScreenAndLoadFontDuelAndDeckIcons:
 	xor a
 	ld [wTileMapFill], a
 	call ZeroObjectPositions
@@ -83,10 +76,11 @@ PrepareMenuGraphics:
 	ld [wVBlankOAMCopyToggle], a
 	call LoadCursorTile
 	call LoadSymbolsFont
+	call LoadDeckIcon
+	call LoadDeckBoxIcon
 	call LoadDuelCardSymbolTiles
-	call LoadHandCardsIcon
 	bank1call SetDefaultConsolePalettes
-	lb de, $3c, $bf
+	lb de, $38, $bf
 	call SetupText
 	ret
 
@@ -122,7 +116,7 @@ DeckSelectionMenu:
 	xor a
 
 .init_menu_params
-	ld hl, .DeckSelectionMenuParameters
+	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	ldtx hl, PleaseSelectDeckText
 	call DrawWideTextBox_PrintText
@@ -135,75 +129,10 @@ DeckSelectionMenu:
 	jr nc, .loop_input
 	ldh a, [hCurMenuItem]
 	cp $ff
-	ret z ; B btn returns
-; A btn pressed on a deck
+	ret z ; B button was pressed
+	; A button was pressed on a deck
 	ld [wCurDeck], a
-	jp DeckSelectionSubMenu
-
-.DeckSelectionMenuParameters
-	db 1, 2 ; cursor x, cursor y
-	db 3 ; y displacement between items
-	db 4 ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
-
-; handles START button press when in deck selection menu
-; does nothing if START button isn't pressed
-; if a press was handled, returns carry
-; prints "There is no deck here!" if the selected deck is empty
-HandleStartButtonInDeckSelectionMenu:
-	ldh a, [hDPadHeld]
-	and START
-	ret z ; skip
-
-; set menu item as current deck
-	ld a, [wCurMenuItem]
-	ld [wCurDeck], a
-	call CheckIfCurDeckIsValid
-	jr nc, .valid_deck
-
-; not a valid deck, cancel
-	ld a, $ff ; cancel
-	call PlaySFXConfirmOrCancel
-	call PrintThereIsNoDeckHereText
-	scf
-	ret
-
-.valid_deck
-	ld a, $1
-	call PlaySFXConfirmOrCancel
-	call GetPointerToDeckCards
-	push hl
-	call GetPointerToDeckName
-	pop de
-	call OpenDeckConfirmationMenu
-	ld a, ALL_DECKS
-	call DrawDecksScreen
-	ld a, [wCurDeck]
-	scf
-	ret
-
-OpenDeckConfirmationMenu:
-; copy deck name
-	push de
-	ld de, wCurDeckName
-	call CopyListFromHLToDEInSRAM
-	pop de
-
-; copy deck cards
-	ld hl, wCurDeckCards
-	call CopyDeckFromSRAM
-
-	ld a, NUM_FILTERS
-	ld hl, wCardFilterCounts
-	call ClearNBytesFromHL
-	ld a, DECK_SIZE
-	ld [wTotalCardCount], a
-	ld hl, wCardFilterCounts
-	ld [hl], a
-	call HandleDeckConfirmationMenu
-	ret
+;	fallthrough
 
 ; handles the submenu when selecting a deck
 ; (Modify Deck, Select Deck, Change Name and Cancel)
@@ -215,15 +144,14 @@ DeckSelectionSubMenu:
 .loop_input
 	call DoFrame
 	call HandleCheckMenuInput
-	jp nc, .loop_input
+	jr nc, .loop_input
 	cp $ff
 	jr nz, .option_selected
-; B btn pressed
-; erase cursor and go back
-; to deck selection handling
+	; the B button was pressed, so erase the cursor
+	; and go back to the deck selection handling
 	call EraseCheckMenuCursor
 	ld a, [wCurDeck]
-	jp DeckSelectionMenu.init_menu_params
+	jr DeckSelectionMenu.init_menu_params
 
 .option_selected
 	ld a, [wCheckMenuCursorXPosition]
@@ -231,7 +159,7 @@ DeckSelectionSubMenu:
 	jp nz, DeckSelectionSubMenu_SelectOrCancel
 	ld a, [wCheckMenuCursorYPosition]
 	or a
-	jp nz, .ChangeName
+	jr nz, .ChangeName
 
 ; Modify Deck
 ; read deck from SRAM
@@ -283,7 +211,7 @@ DeckSelectionSubMenu:
 
 .ChangeName
 	call CheckIfCurDeckIsValid
-	jp nc, .get_input_deck_name
+	jr nc, .get_input_deck_name
 	call PrintThereIsNoDeckHereText
 	jp DeckSelectionMenu.init_menu_params
 .get_input_deck_name
@@ -304,6 +232,50 @@ DeckSelectionSubMenu:
 	ld a, [wCurDeck]
 	jp DeckSelectionMenu.init_menu_params
 
+DeckSelectionMenuParameters:
+	db 3, 2 ; cursor x, cursor y
+	db 3 ; y displacement between items
+	db 4 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+; handles START button press when in deck selection menu
+; does nothing if START button isn't pressed
+; if a press was handled, returns carry
+; prints "There is no deck here!" if the selected deck is empty
+HandleStartButtonInDeckSelectionMenu:
+	ldh a, [hDPadHeld]
+	and START
+	ret z ; skip
+
+; set menu item as current deck
+	ld a, [wCurMenuItem]
+	ld [wCurDeck], a
+	call CheckIfCurDeckIsValid
+	jr nc, .valid_deck
+
+; not a valid deck, cancel
+	ld a, $ff ; cancel
+	call PlaySFXConfirmOrCancel
+	call PrintThereIsNoDeckHereText
+	scf
+	ret
+
+.valid_deck
+	ld a, $1
+	call PlaySFXConfirmOrCancel
+	call GetPointerToDeckCards
+	push hl
+	call GetPointerToDeckName
+	pop de
+	call OpenDeckConfirmationMenu
+	ld a, ALL_DECKS
+	call DrawDecksScreen
+	ld a, [wCurDeck]
+	scf
+	ret
+
 ; gets current deck's name from user input
 InputCurDeckName:
 	ld a, [wCurDeck]
@@ -323,6 +295,7 @@ InputCurDeckName:
 	jr .got_deck_ptr
 .deck_4
 	ld hl, Deck4Data
+	; fallthrough
 .got_deck_ptr
 	ld a, MAX_DECK_NAME_LENGTH
 	lb bc, 4, 1
@@ -331,16 +304,13 @@ InputCurDeckName:
 	ld a, [wCurDeckName]
 	or a
 	ret nz
-	; empty name
-	call .UnnamedDeck
-	ret
+	; fallthrough if deck wasn't given a name by the player
 
 ; handles the naming of unnamed decks
 ; inputs as the deck name "DECK XXX"
 ; where XXX is the current unnamed deck counter
 .UnnamedDeck
-; read the current unnamed deck number
-; and convert it to text
+; read the current unnamed deck number and convert it to text
 	ld hl, sUnnamedDeckCounter
 	call EnableSRAM
 	ld a, [hli]
@@ -395,8 +365,7 @@ InputCurDeckName:
 	ld [hl], d
 	dec hl
 	ld [hl], e
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; handle deck selection sub-menu
 ; the option is either "Select Deck" or "Cancel"
@@ -408,7 +377,7 @@ DeckSelectionSubMenu_SelectOrCancel:
 
 ; select deck
 	call CheckIfCurDeckIsValid
-	jp nc, .SelectDeck
+	jr nc, .SelectDeck
 	; invalid deck
 	call PrintThereIsNoDeckHereText
 	jp DeckSelectionMenu.init_menu_params
@@ -418,26 +387,26 @@ DeckSelectionSubMenu_SelectOrCancel:
 	ld a, [sCurrentlySelectedDeck]
 	call DisableSRAM
 
-; draw empty rectangle on currently selected deck
-; i.e. erase the Hand Cards Gfx icon
+; replace the previously selected deck's deck box icon with a deck icon
 	ld h, $3
 	ld l, a
 	call HtimesL
 	ld e, l
 	inc e
-	ld d, 2
-	xor a
-	lb hl, 0, 0
-	lb bc, 2, 2
-	call FillRectangle
+	ld d, 1
+	call DrawDeckIcon
+	; draw an empty rectangle
+;	xor a
+;	lb hl, 0, 0
+;	lb bc, 2, 2
+;	call FillRectangle
 
-; set current deck as the selected deck
-; and draw the Hand Cards Gfx icon
+; set the current deck as the selected deck and draw the deck box icon
 	ld a, [wCurDeck]
 	call EnableSRAM
 	ld [sCurrentlySelectedDeck], a
 	call DisableSRAM
-	call DrawHandCardsTileOnCurDeck
+	call DrawDeckBoxTileOnCurDeck
 
 ; print "<DECK> was chosen as the dueling deck!"
 	call GetPointerToDeckName
@@ -458,8 +427,8 @@ PrintThereIsNoDeckHereText:
 	ld a, [wCurDeck]
 	ret
 
-; returns carry if deck in wCurDeck
-; is not a valid deck
+; returns carry if the deck in wCurDeck is not a valid deck
+; preserves de
 CheckIfCurDeckIsValid:
 	ld a, [wCurDeck]
 	ld hl, wDecksValid
@@ -480,6 +449,7 @@ DeckSelectionData:
 	db $ff
 
 ; return, in hl, the pointer to sDeckXName where X is [wCurDeck] + 1
+; preserves bc and de
 GetPointerToDeckName:
 	ld a, [wCurDeck]
 	ld h, a
@@ -492,6 +462,7 @@ GetPointerToDeckName:
 	ret
 
 ; return, in hl, the pointer to sDeckXCards where X is [wCurDeck] + 1
+; preserves af, bc, and de
 GetPointerToDeckCards:
 	push af
 	ld a, [wCurDeck]
@@ -505,6 +476,7 @@ GetPointerToDeckCards:
 	pop af
 	ret
 
+; preserves all registers except af
 ResetCheckMenuCursorPositionAndBlink:
 	xor a
 	ld [wCheckMenuCursorXPosition], a

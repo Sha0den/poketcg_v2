@@ -554,7 +554,7 @@ TextOffsets::
 	textpointer ChangeNameText                                     ; 0x0226
 	textpointer SelectDeckText                                     ; 0x0227
 	textpointer CancelText                                         ; 0x0228
-	textpointer UnusedText0229                                     ; 0x0229
+	textpointer NoDeckText                                         ; 0x0229
 	textpointer ChosenAsDuelingDeckText                            ; 0x022a
 	textpointer Deck1Text                                          ; 0x022b
 	textpointer Deck2Text                                          ; 0x022c

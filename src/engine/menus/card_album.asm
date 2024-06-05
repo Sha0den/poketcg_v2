@@ -739,7 +739,7 @@ CardAlbum:
 	call DrawListCursor_Invisible
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	cp $ff
 	jr nz, .open_card_page
 	ldh a, [hCurMenuItem]
@@ -885,7 +885,7 @@ CardAlbum:
 	xor a
 	ld [wTileMapFill], a
 	call EmptyScreen
-	ld a, [hffb4]
+	ldh a, [hffb4]
 	dec a
 	jr nz, .draw_box
 	ld [hffb4], a

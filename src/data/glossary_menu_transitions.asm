@@ -1,6 +1,6 @@
 ; related to wMenuInputTablePointer
 ; with this table, the cursor moves into the proper location based on the input.
-; x coordinate, y coordinate, , D-pad up, D-pad down, D-pad left, D-pad right
+; x coordinate, y coordinate, , D-pad up, D-pad down, D-pad right, D-pad left
 OpenGlossaryScreen_TransitionTable:
 	cursor_transition $08, $20, $00, $04, $01, $05, $05
 	cursor_transition $08, $30, $00, $00, $02, $06, $06
@@ -11,4 +11,4 @@ OpenGlossaryScreen_TransitionTable:
 	cursor_transition $60, $30, $00, $05, $07, $01, $01
 	cursor_transition $60, $40, $00, $06, $08, $02, $02
 	cursor_transition $60, $50, $00, $07, $09, $03, $03
-	cursor_transition $88, $60, $00, $08, $05, $04, $04
+	cursor_transition $88, $60, $00, $08, $05, $04, $04 ; next page

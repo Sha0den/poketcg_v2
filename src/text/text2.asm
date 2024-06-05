@@ -795,11 +795,11 @@ DeckNameKeyboardText:
 	done
 
 NewDeckText:
-	text "New deck"
+	text "New Deck"
 	done
 
 PleaseSelectDeckText:
-	text "Please select deck."
+	text "Please select a deck."
 	done
 
 ModifyDeckText:
@@ -818,8 +818,8 @@ CancelText:
 	text "Cancel"
 	done
 
-UnusedText0229: ; Unused
-	text "????"
+NoDeckText:
+	text "No Deck"
 	done
 
 ChosenAsDuelingDeckText:
@@ -828,19 +828,19 @@ ChosenAsDuelingDeckText:
 	done
 
 Deck1Text:
-	textfw "1・"
+	textfw "1."
 	done
 
 Deck2Text:
-	textfw "2・"
+	textfw "2."
 	done
 
 Deck3Text:
-	textfw "3・"
+	textfw "3."
 	done
 
 Deck4Text:
-	textfw "4・"
+	textfw "4."
 	done
 
 ThereIsNoDeckHereText:
@@ -873,13 +873,13 @@ ThereIsOnly1DeckSoCannotBeDismantledText:
 	done
 
 ThereAreNoBasicPokemonInThisDeckText:
-	text "There are no Basic Pokémon"
-	line "in this deck!"
+	text "There are no Basic Pokémon in this"
+	line "deck!"
 	done
 
 YouMustIncludeABasicPokemonInTheDeckText:
-	text "You must include a Basic Pokémon"
-	line "in every deck!"
+	text "You must include a Basic Pokémon in"
+	line "every deck!"
 	done
 
 ThisIsntA60CardDeckText:
@@ -906,7 +906,7 @@ DismantleThisDeckText:
 	text "Dismantle this deck?"
 	done
 
-NoCardsChosenText:
+NoCardsChosenText: ; Unused
 	text "No cards chosen."
 	done
 
@@ -1119,8 +1119,8 @@ BuiltDeckText:
 	done
 
 TheseCardsAreNeededToBuildThisDeckText:
-	text "These cards are needed"
-	line "to build this deck:"
+	text "These cards are needed to build"
+	line "this deck:"
 	done
 
 DismantleTheseDecksText:
@@ -1222,8 +1222,8 @@ ReceivedTheseCardsFromText:
 	done
 
 PleaseChooseADeckConfigurationToSendText:
-	text "Please choose a deck "
-	line "configuration to send."
+	text "Please choose a deck configuration"
+	line "to send."
 	done
 
 PleaseChooseASaveSlotText:

@@ -38,7 +38,7 @@ PrinterMenu_PokemonCards:
 .asm_abca
 	call HandleCardSelectionInput
 	jr nc, .loop_frame_1
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	cp $ff
 	ret z
 ;	fallthrough
@@ -117,7 +117,7 @@ PrinterMenu_PokemonCards:
 	ld [wTempCardListNumCursorPositions], a
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	cp $ff
 	jr nz, .asm_ac92
 
@@ -146,7 +146,7 @@ PrinterMenu_PokemonCards:
 	call DoFrame
 	call HandleCardSelectionInput
 	jr nc, .loop_frame
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	or a
 	jr nz, .asm_acd5
 	ld hl, wFilteredCardList
@@ -200,7 +200,7 @@ Data_ad05:
 PrinterMenu_CardList:
 	call WriteCardListsTerminatorBytes
 	call Set_OBJ_8x8
-	call PrepareMenuGraphics
+	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	lb bc, 0, 4
 	ld a, SYM_BOX_TOP
 	call FillBGMapLineWithA
@@ -221,7 +221,7 @@ PrinterMenu_CardList:
 	call DoFrame
 	call HandleCardSelectionInput
 	jr nc, .loop_frame
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	or a
 	ret nz
 	bank1call PrintCardList
@@ -234,7 +234,7 @@ HandlePrinterMenu:
 .loop
 	ld hl, PrinterMenuParameters
 	call InitializeMenuParameters
-	call EmptyScreenAndLoadFontDuelAndHandCardsIcons
+	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	lb de, 4, 0
 	lb bc, 12, 12
 	call DrawRegularTextBox
@@ -291,7 +291,7 @@ PrinterMenu_PrintQuality:
 	call DoFrame
 	call HandleCardSelectionInput
 	jr nc, .loop_frame
-	ld a, [hffb3]
+	ldh a, [hffb3]
 	cp $ff
 	jr z, .asm_ade2
 	call EnableSRAM

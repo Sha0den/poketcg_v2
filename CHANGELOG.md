@@ -65,7 +65,7 @@
 
 
 ## Code Optimization
-- **June 3, 2024:** 22 Files Changed
+- **[June 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/7ee531a00d768ea38ac6abcd5854b6a22d002f1c):** 22 Files Changed
     - Rearrange some functions in the home bank to replace some jp's with jr's or fallthroughs
     - Eliminate remaining home bank tail calls (replacing a call ret with a fallthrough/jr/jp)
         - *Intentially ignored BankpopROM tail calls (that function can't be jumped to)*
@@ -175,6 +175,16 @@
 
 
 ## Miscellaneous Changes
+- **June 5, 2024:** 10 Files Changed
+    - Make small adjustments to the menu screens related to deck selection
+    - Replace hand_cards icon with a deck_box icon I made (used to represent the active deck)
+    - Also add a deck icon next to the other completed decks on the deck selection screens
+    - Revise/add code comments and perform minor code optimizations in both engine/menus/deck_configuration.asm and engine/menus/deck/selection.asm
+    - Replace all uses of "ld a, [hff__]" in the repository with "ldh a, [hff__]"
+    - Alter the number fonts stored in gfx/fonts/full_width?/0_2_digits_kanji1.png
+
+<br/>
+
 - **[June 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/b16b83b296ee35aa3d05b7066ed8c649343e0879):** 16 Files Changed
     - Update the Glossary (both the overall display and the actual text information)
     - Increase the size of the font tile section in vram when viewing the Glossary from a duel
