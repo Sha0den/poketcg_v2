@@ -51,16 +51,39 @@ OpenInPlayAreaScreen::
 
 	ld a, [wInPlayAreaCurPosition]
 	cp INPLAYAREA_PLAYER_PLAY_AREA
-	jp z, .show_turn_holder_play_area
+	jr z, .show_turn_holder_play_area
 	cp INPLAYAREA_OPP_PLAY_AREA
-	jp z, .show_non_turn_holder_play_area
+	jr z, .show_non_turn_holder_play_area
 
 	; check if the cursor moved.
 	ld hl, wInPlayAreaTemporaryPosition
 	cp [hl]
 	call nz, .print_associated_text
-
 	jr .on_frame
+
+.show_turn_holder_play_area
+	lb de, $38, $9f
+	call SetupText
+	ldh a, [hWhoseTurn]
+	push af
+	bank1call OpenTurnHolderPlayAreaScreen
+	pop af
+	ldh [hWhoseTurn], a
+	ld a, [wInPlayAreaPreservedPosition]
+	ld [wInPlayAreaCurPosition], a
+	jr .start
+
+.show_non_turn_holder_play_area
+	lb de, $38, $9f
+	call SetupText
+	ldh a, [hWhoseTurn]
+	push af
+	bank1call OpenNonTurnHolderPlayAreaScreen
+	pop af
+	ldh [hWhoseTurn], a
+	ld a, [wInPlayAreaPreservedPosition]
+	ld [wInPlayAreaCurPosition], a
+	jp .start
 
 .pressed
 	cp -1
@@ -90,7 +113,6 @@ OpenInPlayAreaScreen::
 	call JumpToFunctionInTable
 	ld a, [wInPlayAreaPreservedPosition]
 	ld [wInPlayAreaCurPosition], a
-
 	jp .start
 
 .print_associated_text
@@ -168,48 +190,18 @@ OpenInPlayAreaScreen::
 	ld a, 18
 	call CopyCardNameAndLevel
 	ld hl, wDefaultText
-	call ProcessText
-	ret
+	jp ProcessText
 
 .print_hand_or_discard_pile
 ; if we make it here, cursor position is to Hand or Discard Pile
 ; so DuelistHandText or DuelistDiscardPileText will be printed
-
 	ld a, [wInPlayAreaCurPosition]
 	cp INPLAYAREA_OPP_ACTIVE
-	jr nc, .opp_side_print_hand_or_discard_pile
-	call PrintTextNoDelay
-	ret
-
-.opp_side_print_hand_or_discard_pile
+	jp c, PrintTextNoDelay ; print on player's side
+	; print on opponent's side
 	call SwapTurn
 	call PrintTextNoDelay
-	call SwapTurn
-	ret
-
-.show_turn_holder_play_area
-	lb de, $38, $9f
-	call SetupText
-	ldh a, [hWhoseTurn]
-	push af
-	bank1call OpenTurnHolderPlayAreaScreen
-	pop af
-	ldh [hWhoseTurn], a
-	ld a, [wInPlayAreaPreservedPosition]
-	ld [wInPlayAreaCurPosition], a
-	jp .start
-
-.show_non_turn_holder_play_area
-	lb de, $38, $9f
-	call SetupText
-	ldh a, [hWhoseTurn]
-	push af
-	bank1call OpenNonTurnHolderPlayAreaScreen
-	pop af
-	ldh [hWhoseTurn], a
-	ld a, [wInPlayAreaPreservedPosition]
-	ld [wInPlayAreaCurPosition], a
-	jp .start
+	jp SwapTurn
 
 .PositionsJumpTable
 	table_width 2, OpenInPlayAreaScreen.PositionsJumpTable
@@ -271,8 +263,7 @@ OpenInPlayAreaScreen_NonTurnHolderPlayArea:
 	xor a
 	ld [wCurPlayAreaY], a
 	bank1call OpenCardPage_FromCheckPlayArea
-	call SwapTurn
-	ret
+	jp SwapTurn
 
 OpenInPlayAreaScreen_TurnHolderHand:
 	ldh a, [hWhoseTurn]

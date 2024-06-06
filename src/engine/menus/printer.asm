@@ -136,9 +136,8 @@ PrinterMenu_PokemonCards:
 	call DrawListCursor_Visible
 	call .Func_acde
 	lb de, 1, 1
-	call InitTextPrinting
 	ldtx hl, PrintThisCardYesNoText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld a, $01
 	ld hl, Data_ad05
 	call InitCardSelectionParams
@@ -184,8 +183,7 @@ PrinterMenu_PokemonCards:
 	lb bc, 20, 4
 	call BankswitchVRAM1
 	call FillRectangle
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0
 
 Data_ad05:
 	db 3 ; x pos
@@ -211,9 +209,8 @@ PrinterMenu_CardList:
 	call PrintFilteredCardSelectionList
 	call EnableLCD
 	lb de, 1, 1
-	call InitTextPrinting
 	ldtx hl, PrintTheCardListText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld a, $01
 	ld hl, Data_ad05
 	call InitCardSelectionParams
@@ -239,9 +236,8 @@ HandlePrinterMenu:
 	lb bc, 12, 12
 	call DrawRegularTextBox
 	lb de, 6, 2
-	call InitTextPrinting
 	ldtx hl, PrintMenuItemsText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ldtx hl, WhatWouldYouLikeToPrintText
 	call DrawWideTextBox_PrintText
 	call EnableLCD
@@ -261,8 +257,7 @@ HandlePrinterMenu:
 PrinterMenu_QuitPrint:
 	add sp, $2 ; exit menu
 	ldtx hl, PleaseMakeSureToTurnGameBoyPrinterOffText
-	call DrawWideTextBox_WaitForInput
-	ret
+	jp DrawWideTextBox_WaitForInput
 
 PrinterMenuFunctionTable:
 	dw PrinterMenu_PokemonCards

@@ -116,8 +116,7 @@ InputPlayerName:
 	jr nc, .loop
 	; if the player selected the end button,
 	; end its naming.
-	call FinalizeInputName
-	ret
+	jr FinalizeInputName
 .on_b_button
 	ld a, [wNamingScreenBufferLength]
 	or a
@@ -199,7 +198,9 @@ FinalizeInputName:
 ; draws the keyboard frame
 ; and the question if it exists.
 DrawNamingScreenBG:
-	call DrawTextboxForKeyboard
+	lb de, 0, 3 ; x, y
+	lb bc, 20, 15 ; w, h
+	call DrawRegularTextBox
 	call PrintPlayerNameFromInput
 	ld hl, wNamingScreenQuestionPointer
 	ld c, [hl]
@@ -218,19 +219,11 @@ DrawNamingScreenBG:
 	call PlaceTextItems
 	ldtx hl, PlayerNameKeyboardText
 	lb de, 2, 4
-	call InitTextPrinting
-	call ProcessTextFromID
-	call EnableLCD
-	ret
+	call InitTextPrinting_ProcessTextFromID
+	jp EnableLCD
 .data
 	textitem $0f, $10, EndText ; "End"
 	db $ff
-
-DrawTextboxForKeyboard:
-	lb de, 0, 3 ; x, y
-	lb bc, 20, 15 ; w, h
-	call DrawRegularTextBox
-	ret
 
 PrintPlayerNameFromInput:
 	ld hl, wNamingScreenNamePosition
@@ -255,8 +248,7 @@ PrintPlayerNameFromInput:
 	call InitTextPrinting
 	; print the input from the user.
 	ld hl, wNamingScreenBuffer
-	call ProcessText
-	ret
+	jp ProcessText
 .char_underbar
 	db $56
 REPT 10
@@ -557,15 +549,15 @@ NamingScreen_ProcessInput:
 	or a
 	jr nz, .asm_6aac
 	ld a, $01
-	jp .asm_6ace
+	jr .asm_6ace
 .asm_6aac
 	dec a
 	jr nz, .asm_6ab4
 	ld a, $02
-	jp .asm_6ace
+	jr .asm_6ace
 .asm_6ab4
 	xor a
-	jp .asm_6ace
+	jr .asm_6ace
 .asm_6ab8
 	cp $08
 	jr nz, .asm_6ad6
@@ -992,11 +984,10 @@ InputDeckName:
 
 	ld a, [hl]
 	or a
-	jr nz, .return
+	ret nz
 
 	dec hl
 	ld [hl], TX_END
-.return
 	ret
 .asm_6e1c
 	ld a, [wNamingScreenBufferLength]
@@ -1014,7 +1005,7 @@ InputDeckName:
 	dec [hl]
 	call ProcessTextWithUnderbar
 
-	jp .loop
+	jr .loop
 
 ; load, to the first tile of v0Tiles0, the graphics for the
 ; blinking black square used in name input screens.
@@ -1065,8 +1056,7 @@ ProcessTextWithUnderbar:
 	jr .loop2
 .print_name
 	ld hl, wDefaultText
-	call ProcessText
-	ret
+	jp ProcessText
 .underbar_data
 	db TX_HALFWIDTH
 REPT MAX_DECK_NAME_LENGTH
@@ -1075,7 +1065,9 @@ ENDR
 	db TX_END
 
 Func_1ae99:
-	call DrawTextboxForKeyboard
+	lb de, 0, 3 ; x, y
+	lb bc, 20, 15 ; w, h
+	call DrawRegularTextBox
 	call ProcessTextWithUnderbar
 	ld hl, wNamingScreenQuestionPointer
 	ld c, [hl]
@@ -1094,10 +1086,8 @@ Func_1ae99:
 	; print the keyboard characters.
 	ldtx hl, DeckNameKeyboardText ; "A B C D..."
 	lb de, 2, 4
-	call InitTextPrinting
-	call ProcessTextFromID
-	call EnableLCD
-	ret
+	call InitTextPrinting_ProcessTextFromID
+	jp EnableLCD
 
 Func_1aec3:
 	ld a, [wNamingScreenCursorX]
@@ -1143,7 +1133,7 @@ Func_1aefb:
 	ld [wMenuInputSFX], a
 	ldh a, [hDPadHeld]
 	or a
-	jp z, .asm_6f73
+	jr z, .asm_6f73
 	ld b, a
 	ld a, [wNamingScreenKeyboardHeight]
 	ld c, a
@@ -1212,7 +1202,7 @@ Func_1aefb:
 	ld [wCheckMenuCursorBlinkCounter], a
 	ld a, $02
 	cp d
-	jp z, Func_1aefb
+	jr z, Func_1aefb
 	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
 .asm_6f73

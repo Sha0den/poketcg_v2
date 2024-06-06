@@ -126,36 +126,7 @@ DetermineImakuniAndChallengeHall:
 	xor a
 	ld [wEventVars + EVENT_VAR_BYTES - 1], a
 	call DetermineImakuniRoom
-	call DetermineChallengeHallEvent
-	ret
-
-; Determines what room Imakuni is in when you reset
-; Skips current room and does not occur if you haven't talked to Imakuni
-DetermineImakuniRoom:
-	ld c, IMAKUNI_FIGHTING_CLUB
-	get_event_value EVENT_IMAKUNI_STATE
-	cp IMAKUNI_TALKED
-	jr c, .skip
-.loop
-	call UpdateRNGSources
-	and %11
-	ld c, a
-	ld b, 0
-	ld hl, ImakuniPossibleRooms
-	add hl, bc
-	ld a, [wTempMap]
-	cp [hl]
-	jr z, .loop
-.skip
-	ld a, c
-	set_event_value EVENT_IMAKUNI_ROOM
-	ret
-
-ImakuniPossibleRooms:
-	db FIGHTING_CLUB_LOBBY
-	db SCIENCE_CLUB_LOBBY
-	db LIGHTNING_CLUB_LOBBY
-	db WATER_CLUB_LOBBY
+;	fallthrough
 
 DetermineChallengeHallEvent:
 	ld a, [wOverworldMapSelection]
@@ -203,6 +174,34 @@ DetermineChallengeHallEvent:
 	set_event_value EVENT_CHALLENGE_CUP_1_STATE
 	ret
 
+; Determines what room Imakuni is in when you reset
+; Skips current room and does not occur if you haven't talked to Imakuni
+DetermineImakuniRoom:
+	ld c, IMAKUNI_FIGHTING_CLUB
+	get_event_value EVENT_IMAKUNI_STATE
+	cp IMAKUNI_TALKED
+	jr c, .skip
+.loop
+	call UpdateRNGSources
+	and %11
+	ld c, a
+	ld b, 0
+	ld hl, ImakuniPossibleRooms
+	add hl, bc
+	ld a, [wTempMap]
+	cp [hl]
+	jr z, .loop
+.skip
+	ld a, c
+	set_event_value EVENT_IMAKUNI_ROOM
+	ret
+
+ImakuniPossibleRooms:
+	db FIGHTING_CLUB_LOBBY
+	db SCIENCE_CLUB_LOBBY
+	db LIGHTNING_CLUB_LOBBY
+	db WATER_CLUB_LOBBY
+
 GetStackEventValue:
 	call GetByteAfterCall
 ;	fallthrough
@@ -227,6 +226,13 @@ GetEventValue::
 	pop hl
 	or a
 	ret
+
+; Gets event value at c (Script defaults)
+; c takes on the value of b as a side effect
+GetEventValueBC:
+	ld a, c
+	ld c, b
+	jr GetEventValue
 
 SetStackEventZero:
 	call GetByteAfterCall
@@ -514,7 +520,24 @@ PrintInteractableObjectText:
 	ld h, [hl]
 	ld l, a
 	call Func_cc32
-	call CloseAdvancedDialogueBox
+;	fallthrough
+
+; closes dialogue window. seems to be for other things as well.
+CloseAdvancedDialogueBox:
+	ld a, [wOverworldNPCFlags]
+	bit AUTO_CLOSE_TEXTBOX, a
+	call nz, CloseTextBox
+	ld a, [wOverworldNPCFlags]
+	bit RESTORE_FACING_DIRECTION, a
+	jr z, .skip
+	ld a, [wScriptNPC]
+	ld [wLoadedNPCTempIndex], a
+	farcall Func_1c5e9
+.skip
+	xor a
+	ld [wOverworldNPCFlags], a
+	ld a, [wOverworldModeBackup]
+	ld [wOverworldMode], a
 	ret
 
 Func_cc32:
@@ -524,8 +547,39 @@ Func_cc32:
 	inc hl
 	ld d, [hl]
 	pop hl
-	call Func_c8ba
-	ret
+;	fallthrough
+
+Func_c8ba:
+	ld a, e
+	or d
+	jp z, Func_c891
+	push hl
+	ld a, [wOverworldNPCFlags]
+	bit AUTO_CLOSE_TEXTBOX, a
+	jr z, .asm_c8d4
+	ld hl, wd3b9
+	ld a, [hli]
+	cp e
+	jr nz, .asm_c8d1
+	ld a, [hl]
+	cp d
+	jr z, .asm_c8d4
+
+.asm_c8d1
+	call CloseTextBox
+
+.asm_c8d4
+	ld hl, wd3b9
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	pop hl
+	ld a, 1 << AUTO_CLOSE_TEXTBOX
+	call SetOverworldNPCFlags
+	call Func_c241
+	call Func_c915
+	call DoFrameIfLCDEnabled
+	jp PrintScrollableText_WithTextBoxLabel
 
 ; Used for things that are represented as NPCs but don't have a Script
 ; EX: Clerks and legendary cards that interact through Level Objects
@@ -539,8 +593,7 @@ Script_LegendaryCardLeftSpark:
 Script_LegendaryCardBottomLeft:
 Script_LegendaryCardBottomRight:
 Script_LegendaryCardRightSpark:
-	call CloseAdvancedDialogueBox
-	ret
+	jr CloseAdvancedDialogueBox
 
 ; Enters into the script loop, continuing until wBreakScriptLoop > 0
 ; When the loop is broken, it resumes normal code execution where script ended
@@ -1969,14 +2022,6 @@ ScriptCommand_JumpIfEventLessThan:
 	cp c
 	jr c, ScriptCommand_JumpIfEventEqual.pass_try_jump
 	jr ScriptCommand_JumpIfEventEqual.fail
-
-; Gets event value at c (Script defaults)
-; c takes on the value of b as a side effect
-GetEventValueBC:
-	ld a, c
-	ld c, b
-	call GetEventValue
-	ret
 
 ScriptCommand_MaxOutEventValue:
 	ld a, c

@@ -39,11 +39,31 @@ OverworldMap_Update:
 	ret
 .player_walking
 	cp 2
-	jr z, .player_finished_walking
-	call OverworldMap_UpdatePlayerWalkingAnimation
-	ret
-.player_finished_walking
-	call OverworldMap_LoadSelectedMap
+	jp nz, OverworldMap_UpdatePlayerWalkingAnimation
+;	fallthrough if player finished walking
+
+OverworldMap_LoadSelectedMap:
+	push hl
+	push bc
+	ld a, [wOverworldMapSelection]
+	rlca
+	rlca
+	ld c, a
+	ld b, 0
+	ld hl, OverworldMapWarps
+	add hl, bc
+	ld a, [hli]
+	ld [wTempMap], a
+	ld a, [hli]
+	ld [wTempPlayerXCoord], a
+	ld a, [hli]
+	ld [wTempPlayerYCoord], a
+	ld a, NORTH
+	ld [wTempPlayerDirection], a
+	ld hl, wOverworldTransition
+	set 4, [hl]
+	pop bc
+	pop hl
 	ret
 
 ; update the map selection if the DPad is pressed
@@ -63,7 +83,47 @@ OverworldMap_HandleKeyPress:
 	ld a, SFX_CONFIRM
 	call PlaySFX
 	call OverworldMap_UpdateCursorAnimation
-	call OverworldMap_BeginPlayerMovement
+;	fallthrough
+
+; begin walking the player across the overworld
+; from wOverworldMapStartingPosition to wOverworldMapSelection
+OverworldMap_BeginPlayerMovement:
+	ld a, SFX_PLAYER_WALK_MAP
+	call PlaySFX
+	ld a, [wPlayerSpriteIndex]
+	ld [wWhichSprite], a
+	ld c, SPRITE_ANIM_FLAGS
+	call GetSpriteAnimBufferProperty
+	set SPRITE_ANIM_FLAG_SPEED, [hl]
+
+; get pointer table for starting map
+	ld hl, OverworldMap_PlayerMovementPaths
+	ld a, [wOverworldMapStartingPosition]
+	dec a
+	add a
+	ld c, a
+	ld b, 0
+	add hl, bc
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+
+; get path sequence for selected map
+	ld a, [wOverworldMapSelection]
+	dec a
+	add a
+	ld c, a
+	ld b, 0
+	add hl, bc
+	ld a, [hli]
+	ld [wOverworldMapPlayerMovementPtr], a
+	ld a, [hl]
+	ld [wOverworldMapPlayerMovementPtr + 1], a
+
+	ld a, 1
+	ld [wOverworldMapPlayerAnimationState], a
+	xor a
+	ld [wOverworldMapPlayerMovementCounter], a
 	ret
 
 ; update wOverworldMapSelection based on the pressed direction in wPlayerDirection
@@ -176,30 +236,6 @@ OverworldMap_GetOWMapID:
 	pop bc
 	ret
 
-OverworldMap_LoadSelectedMap:
-	push hl
-	push bc
-	ld a, [wOverworldMapSelection]
-	rlca
-	rlca
-	ld c, a
-	ld b, 0
-	ld hl, OverworldMapWarps
-	add hl, bc
-	ld a, [hli]
-	ld [wTempMap], a
-	ld a, [hli]
-	ld [wTempPlayerXCoord], a
-	ld a, [hli]
-	ld [wTempPlayerYCoord], a
-	ld a, NORTH
-	ld [wTempPlayerDirection], a
-	ld hl, wOverworldTransition
-	set 4, [hl]
-	pop bc
-	pop hl
-	ret
-
 INCLUDE "data/overworld_map/overworld_warps.asm"
 
 OverworldMap_InitVolcanoSprite:
@@ -242,62 +278,41 @@ OverworldMap_InitCursorSprite:
 	ld a, EVENT_MASON_LAB_STATE
 	farcall GetEventValue
 	or a
-	jr nz, .visited_lab
+	ret nz ; visited lab
 	ld c, SPRITE_ANIM_FLAGS
 	call GetSpriteAnimBufferProperty
 	set SPRITE_ANIM_FLAG_UNSKIPPABLE, [hl]
-.visited_lab
 	ret
 
-; play animation SPRITE_ANIM_SGB_OWMAP_CURSOR_FAST (non-cgb) or SPRITE_ANIM_CGB_OWMAP_CURSOR_FAST (cgb)
-; to make the cursor blink faster after a selection is made
-OverworldMap_UpdateCursorAnimation:
-	ld a, [wOverworldMapCursorSprite]
-	ld [wWhichSprite], a
-	ld a, [wOverworldMapCursorAnimation]
-	inc a
-	call StartNewSpriteAnimation
-	ret
-
-; begin walking the player across the overworld
-; from wOverworldMapStartingPosition to wOverworldMapSelection
-OverworldMap_BeginPlayerMovement:
-	ld a, SFX_PLAYER_WALK_MAP
-	call PlaySFX
-	ld a, [wPlayerSpriteIndex]
-	ld [wWhichSprite], a
-	ld c, SPRITE_ANIM_FLAGS
+; add the x/y speed to the current sprite position,
+; accounting for sub-pixel position
+; and decrement [wOverworldMapPlayerMovementCounter]
+OverworldMap_ContinuePlayerWalkingAnimation:
+	ld a, [wOverworldMapPlayerHorizontalSubPixelPosition]
+	ld d, a
+	ld a, [wOverworldMapPlayerVerticalSubPixelPosition]
+	ld e, a
+	ld c, SPRITE_ANIM_COORD_X
 	call GetSpriteAnimBufferProperty
-	set SPRITE_ANIM_FLAG_SPEED, [hl]
-
-; get pointer table for starting map
-	ld hl, OverworldMap_PlayerMovementPaths
-	ld a, [wOverworldMapStartingPosition]
-	dec a
-	add a
-	ld c, a
-	ld b, 0
-	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-
-; get path sequence for selected map
-	ld a, [wOverworldMapSelection]
-	dec a
-	add a
-	ld c, a
-	ld b, 0
-	add hl, bc
-	ld a, [hli]
-	ld [wOverworldMapPlayerMovementPtr], a
-	ld a, [hl]
-	ld [wOverworldMapPlayerMovementPtr + 1], a
-
-	ld a, 1
-	ld [wOverworldMapPlayerAnimationState], a
-	xor a
-	ld [wOverworldMapPlayerMovementCounter], a
+	ld a, [wOverworldMapPlayerPathHorizontalMovement]
+	add d
+	ld d, a
+	ld a, [wOverworldMapPlayerPathHorizontalMovement + 1]
+	adc [hl] ; add carry from sub-pixel movement
+	ld [hl], a
+	inc hl
+	ld a, [wOverworldMapPlayerPathVerticalMovement]
+	add e
+	ld e, a
+	ld a, [wOverworldMapPlayerPathVerticalMovement + 1]
+	adc [hl] ; add carry from sub-pixel movement
+	ld [hl], a
+	ld a, d
+	ld [wOverworldMapPlayerHorizontalSubPixelPosition], a
+	ld a, e
+	ld [wOverworldMapPlayerVerticalSubPixelPosition], a
+	ld hl, wOverworldMapPlayerMovementCounter
+	dec [hl]
 	ret
 
 ; update the player walking across the overworld
@@ -308,7 +323,7 @@ OverworldMap_UpdatePlayerWalkingAnimation:
 	ld [wWhichSprite], a
 	ld a, [wOverworldMapPlayerMovementCounter]
 	or a
-	jp nz, OverworldMap_ContinuePlayerWalkingAnimation
+	jr nz, OverworldMap_ContinuePlayerWalkingAnimation
 
 ; get next x,y on the path
 	ld a, [wOverworldMapPlayerMovementPtr]
@@ -321,7 +336,14 @@ OverworldMap_UpdatePlayerWalkingAnimation:
 	ld c, a
 	and b
 	cp $ff
-	jr z, .player_finished_walking
+	jr nz, .not_done_walking
+
+.player_finished_walking
+	ld a, 2
+	ld [wOverworldMapPlayerAnimationState], a
+	ret
+
+.not_done_walking
 	ld a, c
 	or b
 	jr nz, .next_point
@@ -342,13 +364,7 @@ OverworldMap_UpdatePlayerWalkingAnimation:
 	ld [wOverworldMapPlayerMovementPtr], a
 	ld a, h
 	ld [wOverworldMapPlayerMovementPtr + 1], a
-	call OverworldMap_InitNextPlayerVelocity
-	ret
-
-.player_finished_walking
-	ld a, 2
-	ld [wOverworldMapPlayerAnimationState], a
-	ret
+;	fallthrough
 
 ; input:
 ; b = target x position
@@ -530,35 +546,4 @@ OverworldMap_NegateBC:
 	cpl
 	adc 0
 	ld b, a
-	ret
-
-; add the x/y speed to the current sprite position,
-; accounting for sub-pixel position
-; and decrement [wOverworldMapPlayerMovementCounter]
-OverworldMap_ContinuePlayerWalkingAnimation:
-	ld a, [wOverworldMapPlayerHorizontalSubPixelPosition]
-	ld d, a
-	ld a, [wOverworldMapPlayerVerticalSubPixelPosition]
-	ld e, a
-	ld c, SPRITE_ANIM_COORD_X
-	call GetSpriteAnimBufferProperty
-	ld a, [wOverworldMapPlayerPathHorizontalMovement]
-	add d
-	ld d, a
-	ld a, [wOverworldMapPlayerPathHorizontalMovement + 1]
-	adc [hl] ; add carry from sub-pixel movement
-	ld [hl], a
-	inc hl
-	ld a, [wOverworldMapPlayerPathVerticalMovement]
-	add e
-	ld e, a
-	ld a, [wOverworldMapPlayerPathVerticalMovement + 1]
-	adc [hl] ; add carry from sub-pixel movement
-	ld [hl], a
-	ld a, d
-	ld [wOverworldMapPlayerHorizontalSubPixelPosition], a
-	ld a, e
-	ld [wOverworldMapPlayerVerticalSubPixelPosition], a
-	ld hl, wOverworldMapPlayerMovementCounter
-	dec [hl]
 	ret

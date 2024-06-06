@@ -24,20 +24,6 @@ InvalidateSaveData:
 	pop hl
 	ret
 
-; saves all data to SRAM, including
-; General save data and Album/Deck data
-; and backs up in SRAM2
-SaveAndBackupData:
-	push de
-	ld de, sGeneralSaveData
-	call SaveGeneralSaveDataFromDE
-	ld de, sAlbumProgress
-	call UpdateAlbumProgress
-	call WriteBackupGeneralSaveData
-	call WriteBackupCardAndDeckSaveData
-	pop de
-	ret
-
 _SaveGeneralSaveData::
 	push de
 	call GetReceivedLegendaryCards
@@ -508,7 +494,7 @@ _SaveGame::
 	or a
 	jr nz, .force_mason_lab
 	farcall BackupPlayerPosition
-	jr .save
+	jr SaveAndBackupData
 
 .force_mason_lab
 	ld a, $2
@@ -521,9 +507,20 @@ _SaveGame::
 	ld [wTempMap], a
 	ld a, OWMAP_MASON_LABORATORY
 	ld [wOverworldMapSelection], a
+;	fallthrough
 
-.save
-	call SaveAndBackupData
+; saves all data to SRAM, including
+; General save data and Album/Deck data
+; and backs up in SRAM2
+SaveAndBackupData:
+	push de
+	ld de, sGeneralSaveData
+	call SaveGeneralSaveDataFromDE
+	ld de, sAlbumProgress
+	call UpdateAlbumProgress
+	call WriteBackupGeneralSaveData
+	call WriteBackupCardAndDeckSaveData
+	pop de
 	ret
 
 _AddCardToCollectionAndUpdateAlbumProgress::
@@ -584,8 +581,7 @@ WriteDataToBackup:
 	jr nz, .loop
 	pop af
 	call BankswitchSRAM
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 LoadBackupCardAndDeckSaveData:
 	ld bc, sCardAndDeckSaveDataEnd - sCardAndDeckSaveData
@@ -618,5 +614,4 @@ LoadDataFromBackup:
 	jr nz, .loop
 	pop af
 	call BankswitchSRAM
-	call DisableSRAM
-	ret
+	jp DisableSRAM

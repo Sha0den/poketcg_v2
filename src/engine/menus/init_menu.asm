@@ -42,5 +42,4 @@ FlashWhiteScreen:
 	pop af
 
 	call BankswitchSRAM
-	call DisableSRAM
-	ret
+	jp DisableSRAM

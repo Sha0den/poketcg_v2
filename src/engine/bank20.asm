@@ -51,9 +51,38 @@ LoadMapTilesAndPals:
 	ld [wd4cb], a
 	ld a, [wCurMapPalette]
 	or a
-	jr z, .asm_80076
-	call SetBGPAndLoadedPal
-.asm_80076
+	ret z
+;	fallthrough
+
+; sets BGP in wLoadedPalData (if any)
+; then loads the rest of the palette data
+; a = palette index to load
+SetBGPAndLoadedPal:
+	push hl
+	push bc
+	push de
+	call LoadPaletteDataToBuffer
+	ld hl, wLoadedPalData
+	ld a, [hli]
+	or a
+	jr z, .skip_bgp
+	ld a, [hli]
+	push hl
+	call SetBGP
+	pop hl
+.skip_bgp
+
+	ld a, [hli]
+	or a
+	jr z, .skip_pal
+	ld c, a
+	ld a, [wd4cb]
+	ld b, a
+	call LoadPaletteDataFromHL
+.skip_pal
+	pop de
+	pop bc
+	pop hl
 	ret
 
 ; loads the BG map corresponding to wCurTilemap to SRAM
@@ -475,8 +504,7 @@ GetTileOffsetPointerAndSwitchVRAM:
 ; if bottom bit in wd4cb is set     = VRAM1
 	ld a, [wd4cb]
 	and $1
-	call BankswitchVRAM
-	ret
+	jp BankswitchVRAM
 
 ; converts wVRAMTileOffset to address in VRAM
 ; and stores it in wVRAMPointer
@@ -667,37 +695,6 @@ Func_803b9:
 	call LoadGraphicsPointerFromHL
 	ld a, [hl]
 	ld [wCurTileset], a
-	ret
-
-; sets BGP in wLoadedPalData (if any)
-; then loads the rest of the palette data
-; a = palette index to load
-SetBGPAndLoadedPal:
-	push hl
-	push bc
-	push de
-	call LoadPaletteDataToBuffer
-	ld hl, wLoadedPalData
-	ld a, [hli]
-	or a
-	jr z, .skip_bgp
-	ld a, [hli]
-	push hl
-	call SetBGP
-	pop hl
-.skip_bgp
-
-	ld a, [hli]
-	or a
-	jr z, .skip_pal
-	ld c, a
-	ld a, [wd4cb]
-	ld b, a
-	call LoadPaletteDataFromHL
-.skip_pal
-	pop de
-	pop bc
-	pop hl
 	ret
 
 ; copies from palette data in hl c*8 bytes to palette index b
@@ -1385,9 +1382,8 @@ Func_80cd7:
 
 .PrintNPCInfo
 	lb de, 0, 4
-	call InitTextPrinting
 	ldtx hl, SPRText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld bc, FlushAllPalettes
 	ld a, [wLoadedNPCTempIndex]
 	bank1call WriteTwoByteNumberInTxSymbolFormat
@@ -1536,8 +1532,7 @@ SpriteNullAnimationFrame:
 ;	ld [wLineSeparation], a
 ;	xor a
 ;	ld hl, .menu_parameters
-;	call InitializeMenuParameters
-;	ret
+;	jp InitializeMenuParameters
 ;
 ;.menu_parameters
 ;	db 1, 13 ; cursor x, cursor y

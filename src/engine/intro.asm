@@ -45,12 +45,10 @@ PlayIntroSequence:
 	lb bc, 0, 0
 	ld a, SCENE_TITLE_SCREEN
 	call LoadScene
-	call IntroSequenceEmptyFunc
 .asm_1d39f
 	call EnableAndClearSpriteAnimations
 	call .ShowPressStart
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 .ShowPressStart
 	ld a, SPRITE_PRESS_START

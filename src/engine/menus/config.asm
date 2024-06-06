@@ -97,8 +97,7 @@ GetConfigCursorPositions:
 	add hl, bc
 	ld a, [hl]
 	ld [wConfigDuelAnimationCursorPos], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; indexes into DuelAnimationSettings
 ; 0: show all
@@ -134,8 +133,7 @@ SaveConfigSettings:
 	ld a, [hl]
 	ld [sTextSpeed], a
 	ld [wTextSpeed], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 DuelAnimationSettings:
 ; animation disabled, skip delay allowed
@@ -200,8 +198,7 @@ DrawConfigMenuCursor:
 	ld a, [hl]
 	ld c, a
 	pop af
-	call WriteByteToBGMap0
-	ret
+	jp WriteByteToBGMap0
 
 ConfigScreenCursorPositions:
 	dw MessageSpeedCursorPositions
@@ -282,8 +279,7 @@ ConfigScreenDPadDown:
 	ld a, [wConfigCursorYPos]
 	call UpdateConfigMenuCursor
 	ld a, SFX_CURSOR
-	call PlaySFX
-	ret
+	jp PlaySFX
 
 Unknown_106ff:
 	db $18 ; message speed, start hidden
@@ -343,11 +339,9 @@ ConfigScreenDPadLeft:
 	ld [de], a
 	ld a, c
 	or a
-	jr z, .skip_sfx
+	ret z ; skip sfx
 	ld a, SFX_CURSOR
-	call PlaySFX
-.skip_sfx
-	ret
+	jp PlaySFX
 
 .MaxCursorPositions:
 ; x pos variable, max x value

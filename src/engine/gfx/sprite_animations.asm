@@ -242,6 +242,15 @@ TryHandleSpriteAnimationFrame:
 	pop hl
 	ret
 
+; play animation SPRITE_ANIM_SGB_OWMAP_CURSOR_FAST (non-cgb) or SPRITE_ANIM_CGB_OWMAP_CURSOR_FAST (cgb)
+; to make the cursor blink faster after a selection is made
+OverworldMap_UpdateCursorAnimation:
+	ld a, [wOverworldMapCursorSprite]
+	ld [wWhichSprite], a
+	ld a, [wOverworldMapCursorAnimation]
+	inc a
+;	fallthrough
+
 StartNewSpriteAnimation:
 	push hl
 	push af

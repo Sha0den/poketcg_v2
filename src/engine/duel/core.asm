@@ -18,7 +18,7 @@ _ContinueDuel::
 	xor a
 	ld [wDuelFinished], a
 	call DuelMainInterface
-	jp MainDuelLoop.between_turns
+	jr MainDuelLoop.between_turns
 
 HandleFailedToContinueDuel:
 	call DrawWideTextBox_WaitForInput
@@ -226,8 +226,7 @@ SetupDuel:
 	call SetDefaultConsolePalettes
 	lb de, $38, $9f
 	call SetupText
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; handle the turn of the duelist identified by hWhoseTurn.
 ; if player's turn, display the animation of the player drawing the card at
@@ -298,6 +297,40 @@ DuelMainInterface:
 	ld [wPlayerAttackingAttackIndex], a
 	ret
 
+; triggered by pressing B + UP in the duel menu
+DuelMenuShortcut_OpponentPlayArea:
+	call OpenNonTurnHolderPlayAreaScreen
+	jr DuelMainInterface
+
+; triggered by pressing B + DOWN in the duel menu
+DuelMenuShortcut_PlayerPlayArea:
+	call OpenTurnHolderPlayAreaScreen
+	jr DuelMainInterface
+
+; triggered by pressing B + RIGHT in the duel menu
+DuelMenuShortcut_OpponentDiscardPile:
+	call OpenNonTurnHolderDiscardPileScreen
+	jr c, PrintDuelMenuAndHandleInput
+	jr DuelMainInterface
+
+; triggered by pressing B + LEFT in the duel menu
+DuelMenuShortcut_PlayerDiscardPile:
+	call OpenTurnHolderDiscardPileScreen
+	jr c, PrintDuelMenuAndHandleInput
+	jr DuelMainInterface
+
+; triggered by pressing B + START in the duel menu
+DuelMenuShortcut_OpponentActivePokemon:
+	call SwapTurn
+	call OpenActivePokemonScreen
+	call SwapTurn
+	jr DuelMainInterface
+
+; triggered by pressing START in the duel menu
+DuelMenuShortcut_PlayerActivePokemon:
+	call OpenActivePokemonScreen
+	jr DuelMainInterface
+
 PrintDuelMenuAndHandleInput:
 	call DrawWideTextBox
 	ld hl, DuelMenuData
@@ -325,12 +358,12 @@ PrintDuelMenuAndHandleInput:
 	bit D_RIGHT_F, a
 	jr nz, DuelMenuShortcut_OpponentDiscardPile
 	bit START_F, a
-	jp nz, DuelMenuShortcut_OpponentActivePokemon
+	jr nz, DuelMenuShortcut_OpponentActivePokemon
 
 .b_not_held
 	ldh a, [hKeysPressed]
 	and START
-	jp nz, DuelMenuShortcut_PlayerActivePokemon
+	jr nz, DuelMenuShortcut_PlayerActivePokemon
 	ldh a, [hKeysPressed]
 	bit SELECT_F, a
 	jp nz, DuelMenuShortcut_BothActivePokemon
@@ -352,28 +385,6 @@ DuelMenuFunctionTable:
 	dw DuelMenu_PkmnPower
 	dw DuelMenu_Retreat
 	dw DuelMenu_Done
-
-; triggered by pressing B + UP in the duel menu
-DuelMenuShortcut_OpponentPlayArea:
-	call OpenNonTurnHolderPlayAreaScreen
-	jp DuelMainInterface
-
-; triggered by pressing B + DOWN in the duel menu
-DuelMenuShortcut_PlayerPlayArea:
-	call OpenTurnHolderPlayAreaScreen
-	jp DuelMainInterface
-
-; triggered by pressing B + RIGHT in the duel menu
-DuelMenuShortcut_OpponentDiscardPile:
-	call OpenNonTurnHolderDiscardPileScreen
-	jp c, PrintDuelMenuAndHandleInput
-	jp DuelMainInterface
-
-; triggered by pressing B + LEFT in the duel menu
-DuelMenuShortcut_PlayerDiscardPile:
-	call OpenTurnHolderDiscardPileScreen
-	jp c, PrintDuelMenuAndHandleInput
-	jp DuelMainInterface
 
 ; draw the non-turn holder's play area screen
 OpenNonTurnHolderPlayAreaScreen:
@@ -416,18 +427,6 @@ OpenTurnHolderHandScreen_Simple:
 .no_cards_in_hand
 	ldtx hl, NoCardsInHandText
 	jp DrawWideTextBox_WaitForInput
-
-; triggered by pressing B + START in the duel menu
-DuelMenuShortcut_OpponentActivePokemon:
-	call SwapTurn
-	call OpenActivePokemonScreen
-	call SwapTurn
-	jp DuelMainInterface
-
-; triggered by pressing START in the duel menu
-DuelMenuShortcut_PlayerActivePokemon:
-	call OpenActivePokemonScreen
-	jp DuelMainInterface
 
 ; draw the turn holder's active Pokemon screen if it exists
 OpenActivePokemonScreen:
@@ -1065,7 +1064,7 @@ DuelMenu_Attack:
 .display_selected_attack_info
 	call OpenAttackPage
 	call DrawDuelMainScene
-	jp .try_open_attack_menu
+	jr .try_open_attack_menu
 
 ; draw the attack page of the card at wLoadedCard1 and of the attack selected in the Attack
 ; menu by hCurMenuItem, and listen for input in order to switch the page or to exit.
@@ -1492,13 +1491,10 @@ PlayTurnDuelistDrawAnimation:
 .loop_anim
 	call DoFrame
 	call CheckSkipDelayAllowed
-	jr c, .done_anim
+	jp c, FinishQueuedAnimations ; done with animation
 	call CheckAnyAnimationPlaying
 	jr c, .loop_anim
-
-.done_anim
-	call FinishQueuedAnimations
-	ret
+	jp FinishQueuedAnimations
 
 ; prints, for each duelist, the number of cards in the hand along with the
 ; hand icon, and the number of cards in the deck, along with the deck icon,
@@ -1625,7 +1621,36 @@ DrawDuelistPortraitsAndNames:
 	lb bc, 13, 1
 	call DrawOpponentPortrait
 	; middle line
-	jp DrawDuelHorizontalSeparator
+;	fallthrough
+
+; draws an horizontal line that separates the arena side of each duelist
+; also colorizes the line on CGB
+DrawDuelHorizontalSeparator:
+	ld hl, DuelHorizontalSeparatorTileData
+	call WriteDataBlocksToBGMap0
+	ld a, [wConsole]
+	cp CONSOLE_CGB
+	ret nz
+	call BankswitchVRAM1
+	ld hl, DuelHorizontalSeparatorCGBPalData
+	call WriteDataBlocksToBGMap0
+	jp BankswitchVRAM0
+
+DuelHorizontalSeparatorTileData:
+; x, y, tiles[], 0
+	db 0, 4, $37, $37, $37, $37, $37, $37, $37, $37, $37, $31, $32, 0
+	db 9, 5, $33, $34, 0
+	db 9, 6, $33, $34, 0
+	db 9, 7, $35, $36, $37, $37, $37, $37, $37, $37, $37, $37, $37, 0
+	db $ff
+
+DuelHorizontalSeparatorCGBPalData:
+; x, y, pals[], 0
+	db 0, 4, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, 0
+	db 9, 5, $02, $02, 0
+	db 9, 6, $02, $02, 0
+	db 9, 7, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, 0
+	db $ff
 
 ; print the number of prizes left, of active Pokemon, and of cards left in the deck
 ; of both duelists. this is called when the duel ends.
@@ -1780,7 +1805,7 @@ HandleDuelSetup:
 	call InitializeDuelVariables
 	call SwapTurn
 	call PrintReturnCardsToDeckDrawAgain
-	jp HandleDuelSetup
+	jr HandleDuelSetup
 
 .hand_cards_ok
 	ldh a, [hWhoseTurn]
@@ -1949,17 +1974,15 @@ ChooseInitialArenaAndBenchPokemon:
 	ld de, wOpponentDuelVariables
 	ld c, (wOpponentDuelVariables - wPlayerDuelVariables) / 2
 	call SerialExchangeBytes
-	jr c, .error
+	jp c, DuelTransmissionError
 	ld c, (wOpponentDuelVariables - wPlayerDuelVariables) / 2
 	call SerialExchangeBytes
-	jr c, .error
+	jp c, DuelTransmissionError
 	ld a, DUELVARS_DUELIST_TYPE
 	call GetTurnDuelistVariable
 	ld [hl], DUELIST_TYPE_LINK_OPP
 	or a
 	ret
-.error
-	jp DuelTransmissionError
 
 ; player's turn (either AI or link duel)
 ; prompt (force) the player to choose a basic Pokemon card to place in the arena
@@ -2570,7 +2593,7 @@ DrawDuelHUD:
 	call WriteTwoByteNumberInTxSymbolFormat
 	ld a, SYM_SLASH
 	call WriteByteToBGMap0
-	.skip
+.skip
 	inc b
 	inc b
 	inc b
@@ -2608,42 +2631,12 @@ DrawDuelHUD:
 	add SYM_0
 	jp WriteByteToBGMap0
 
-; draws an horizontal line that separates the arena side of each duelist
-; also colorizes the line on CGB
-DrawDuelHorizontalSeparator:
-	ld hl, DuelHorizontalSeparatorTileData
-	call WriteDataBlocksToBGMap0
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	ret nz
-	call BankswitchVRAM1
-	ld hl, DuelHorizontalSeparatorCGBPalData
-	call WriteDataBlocksToBGMap0
-	call BankswitchVRAM0
-	ret
-
 DuelEAndHPTileData:
 ; x, y, tiles[], 0
 	db 1, 1, SYM_E,  0
 	db 1, 2, SYM_HP, 0
 	db 9, 8, SYM_E,  0
 	db 9, 9, SYM_HP, 0
-	db $ff
-
-DuelHorizontalSeparatorTileData:
-; x, y, tiles[], 0
-	db 0, 4, $37, $37, $37, $37, $37, $37, $37, $37, $37, $31, $32, 0
-	db 9, 5, $33, $34, 0
-	db 9, 6, $33, $34, 0
-	db 9, 7, $35, $36, $37, $37, $37, $37, $37, $37, $37, $37, $37, 0
-	db $ff
-
-DuelHorizontalSeparatorCGBPalData:
-; x, y, pals[], 0
-	db 0, 4, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, 0
-	db 9, 5, $02, $02, 0
-	db 9, 6, $02, $02, 0
-	db 9, 7, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, 0
 	db $ff
 
 ; if this is a practice duel, execute the practice duel action at wPracticeDuelAction
@@ -2699,7 +2692,7 @@ PracticeDuel_VerifyInitialPlay:
 	ret z
 	ldtx hl, ChooseStaryuPracticeDuelText
 	scf
-	jp PrintPracticeDuelDrMasonInstructions
+	jr PrintPracticeDuelDrMasonInstructions
 
 PracticeDuel_DonePuttingOnBench:
 	call DisplayPracticeDuelPlayerHandScreen
@@ -2707,7 +2700,7 @@ PracticeDuel_DonePuttingOnBench:
 	ld a, $ff
 	ld [wPracticeDuelTurn], a
 	ldtx hl, PressBToFinishPracticeDuelText
-	jp PrintPracticeDuelDrMasonInstructions
+	jr PrintPracticeDuelDrMasonInstructions
 
 PracticeDuel_PrintTurnInstructions:
 	call DrawPracticeDuelInstructionsTextBox
@@ -2961,7 +2954,7 @@ PracticeDuelVerify_Turn2:
 	jp nz, ReturnWrongAction
 	ld a, [wSelectedAttack]
 	cp 1
-	jp nz, ReturnWrongAction
+	jr nz, ReturnWrongAction
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
 	ld a, [wAttachedEnergies + PSYCHIC]
@@ -3943,8 +3936,7 @@ LoadLoaded1CardGfx:
 	ld h, [hl]
 	ld l, a
 	lb bc, $30, TILE_SIZE
-	call LoadCardGfx
-	ret
+	jp LoadCardGfx
 
 SetBGP7OrSGB2ToCardPalette:
 	ld a, [wConsole]
@@ -4015,10 +4007,8 @@ FlushAllPalettesOrSendPal23Packet:
 	or a ; CONSOLE_DMG
 	ret z
 	cp CONSOLE_SGB
-	jr z, .sgb
-	call FlushAllPalettes
-	ret
-.sgb
+	jp nz, FlushAllPalettes ; not sgb
+
 ; sgb PAL23, 1 ; sgb_command, length
 ; rgb 28, 28, 24
 ; colors 1-7 carried over
@@ -4032,8 +4022,7 @@ FlushAllPalettesOrSendPal23Packet:
 	dec hl
 	xor a
 	ld [wTempSGBPacket + $f], a
-	call SendSGB
-	ret
+	jp SendSGB
 
 ApplyBGP6OrSGB3ToCardImage:
 	ld a, [wConsole]
@@ -4049,8 +4038,7 @@ ApplyBGP6OrSGB3ToCardImage:
 
 SendCardAttrBlkPacket:
 	call CreateCardAttrBlkPacket
-	call SendSGB
-	ret
+	jp SendSGB
 
 ApplyBGP7OrSGB2ToCardImage:
 	ld a, [wConsole]
@@ -4086,8 +4074,7 @@ Func_5a81:
 	lb de, 12, 1 ; Data Set #2: X, Y
 	call CreateCardAttrBlkPacket_DataSet
 	pop hl
-	call SendSGB
-	ret
+	jp SendSGB
 
 CreateCardAttrBlkPacket:
 ; sgb ATTR_BLK, 1 ; sgb_command, length
@@ -4132,8 +4119,7 @@ ApplyCardCGBAttributes:
 	lb hl, 0, 0
 	lb bc, 8, 6
 	call FillRectangle
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0
 
 ; set the default game palettes for all three systems
 ; BGP and OBP0 on DMG
@@ -4162,8 +4148,7 @@ SetDefaultConsolePalettes:
 	ld hl, wObjectPalettesCGB
 	ld c, CGB_PAL_SIZE
 	call .copy_de_to_hl
-	call FlushAllPalettes
-	ret
+	jp FlushAllPalettes
 .sgb
 	ld a, $04
 	ld [wTextBoxFrameType], a
@@ -4176,8 +4161,7 @@ SetDefaultConsolePalettes:
 	call .copy_de_to_hl
 	ld [hl], c
 	pop hl
-	call SendSGB
-	ret
+	jp SendSGB
 
 .copy_de_to_hl
 	ld a, [de]
@@ -4480,7 +4464,36 @@ PrintPokemonCardPageGenericInformation:
 	lb bc, 18, 1
 	inc a
 	call JPWriteByteToBGMap0
-	jp DrawCardPageSet2AndRarityIcons
+;	fallthrough
+
+; prints the card's set 2 icon and the full width text character of the card's rarity
+DrawCardPageSet2AndRarityIcons:
+	ld a, [wLoadedCard1Set]
+	call LoadCardSet2Tiles
+	jr c, .icon_done
+	; draw the 2x2 set 2 icon of this card
+	ld a, $fc
+	lb hl, 1, 2
+	lb bc, 2, 2
+	lb de, 15, 8
+	call FillRectangle
+.icon_done
+	lb de, 18, 9
+	ld hl, CardRarityTextIDs
+	ld a, [wLoadedCard1Rarity]
+	cp NO_RARITY
+	ret z
+;	fallthrough
+
+; given a card rarity constant in a, and CardRarityTextIDs in hl,
+; print the text character associated to it at d,e
+PrintCardPageRarityIcon:
+	inc a
+	add a
+	ld c, a
+	ld b, $00
+	add hl, bc
+	jp InitTextPrinting_ProcessTextFromPointerToID
 
 ; draws the 20x18 surrounding box and also colorizes the card image
 DrawCardPageSurroundingBox:
@@ -4636,35 +4649,6 @@ DisplayCardPage_PokemonDescription:
 	call ProcessTextFromPointerToID
 	jp SetOneLineSeparation
 
-; given a card rarity constant in a, and CardRarityTextIDs in hl,
-; print the text character associated to it at d,e
-PrintCardPageRarityIcon:
-	inc a
-	add a
-	ld c, a
-	ld b, $00
-	add hl, bc
-	jp InitTextPrinting_ProcessTextFromPointerToID
-
-; prints the card's set 2 icon and the full width text character of the card's rarity
-DrawCardPageSet2AndRarityIcons:
-	ld a, [wLoadedCard1Set]
-	call LoadCardSet2Tiles
-	jr c, .icon_done
-	; draw the 2x2 set 2 icon of this card
-	ld a, $fc
-	lb hl, 1, 2
-	lb bc, 2, 2
-	lb de, 15, 8
-	call FillRectangle
-.icon_done
-	lb de, 18, 9
-	ld hl, CardRarityTextIDs
-	ld a, [wLoadedCard1Rarity]
-	cp NO_RARITY
-	call nz, PrintCardPageRarityIcon
-	ret
-
 CardPageLengthWeightTextData:
 	textitem 1, 11, LengthText
 	textitem 1, 12, WeightText
@@ -4769,20 +4753,6 @@ LargeCardTileData:
 	db 14, 10, $d7, 0                                              ; empty line 2 (right)
 	db  5, 11, $d2, $d5, $d5, $d5, $d5, $d5, $d5, $d5, $d5, $d3, 0 ; bottom border
 	db $ff
-
-; print lines of text with no separation between them
-SetNoLineSeparation:
-	ld a, $01
-;	fallthrough
-
-SetLineSeparation:
-	ld [wLineSeparation], a
-	ret
-
-; separate lines of text by an empty line
-SetOneLineSeparation:
-	xor a
-	jr SetLineSeparation
 
 ; given a number in hl, print it divided by 10 at b,c, with decimal part
 ; separated by a dot (unless it's 0). used to print a Pokemon card's weight.
@@ -5762,7 +5732,21 @@ PrintAttackOrCardDescription:
 	ld a, 19
 	call InitTextPrintingInTextbox
 	call ProcessTextFromID
-	jp SetOneLineSeparation
+;	fallthrough
+
+; separate lines of text by an empty line
+SetOneLineSeparation:
+	xor a
+	jr SetLineSeparation
+
+; print lines of text with no separation between them
+SetNoLineSeparation:
+	ld a, $01
+;	fallthrough
+
+SetLineSeparation:
+	ld [wLineSeparation], a
+	ret
 
 ; moves the cards loaded by deck index at hTempRetreatCostCards to the discard pile
 DiscardRetreatCostCards:
@@ -6057,8 +6041,7 @@ SaveDuelStateToSRAM:
 	call DisableSRAM
 	call SaveDuelDataToDE
 	xor a
-	call BankswitchSRAM
-	ret
+	jp BankswitchSRAM
 
 ; save data of the current duel to sCurrentDuel
 ; byte 0 is $01, bytes 1 and 2 are the checksum, byte 3 is [wDuelType]
@@ -6126,8 +6109,7 @@ SaveDuelDataToDE::
 	inc hl
 	ld a, [wDuelType]
 	ld [hl], a ; sCurrentDuelData
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; loads current Duel data from SRAM and also general save data
 ; if the data is not valid, returns carry
@@ -6160,7 +6142,7 @@ LoadSavedDuelData:
 	inc hl
 	ld a, c
 	or b
-	jr z, .done
+	jp z, DisableSRAM ; done
 	push hl
 	push bc
 	ld c, [hl]
@@ -6180,9 +6162,6 @@ LoadSavedDuelData:
 	inc hl
 	inc hl
 	jr .next_block
-.done
-	call DisableSRAM
-	ret
 
 DuelDataToSave:
 ;	dw address, number of bytes to copy
@@ -6257,8 +6236,7 @@ DiscardSavedDuelData:
 	ld [hli], a
 	ld [hli], a
 	ld [hl], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; loads a player deck (sDeck*Cards) from SRAM to wPlayerDeck
 ; sCurrentlySelectedDeck determines which sDeck*Cards source (0-3)
@@ -6278,8 +6256,7 @@ LoadPlayerDeck:
 	inc de
 	dec c
 	jr nz, .copy_cards_loop
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; loads opponent deck at wOpponentDeckID to wOpponentDeck, and initializes wPlayerDuelistType.
 ; on a duel against Sam, also loads PRACTICE_PLAYER_DECK to wPlayerDeck.
@@ -6634,7 +6611,7 @@ OppActionTable:
 
 OppAction_DrawCard:
 	call DrawCardFromDeck
-	call nc, AddCardToHand
+	jp nc, AddCardToHand
 	ret
 
 OppAction_FinishTurnWithoutAttacking:
@@ -6811,8 +6788,7 @@ OppAction_ForceSwitchActive:
 	jr c, .force_selection
 	call SwapTurn
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	call SerialSendByte
-	ret
+	jp SerialSendByte
 
 OppAction_UsePokemonPower:
 	ldh a, [hTempCardIndex_ff9f]
@@ -6899,7 +6875,7 @@ OppAction_UseMetronomeAttack:
 	pop bc
 	ld a, c
 	ld [wMetronomeEnergyCost], a
-	ret
+;	fallthrough
 
 OppAction_NoAction:
 	ret
@@ -7467,8 +7443,7 @@ HandleBetweenTurnKnockOuts:
 	call GetNonTurnDuelistVariable
 	or a
 	ret nz
-	call ClearDamageReductionSubstatus2
-	ret
+	jp ClearDamageReductionSubstatus2
 
 .Func_6ef6:
 	call Func_6fa5
@@ -8189,7 +8164,7 @@ Func_72ff:
 	ret nz
 	ldh a, [hff96]
 	call SerialSendByte
-	jp Func_7344
+	jr Func_7344
 
 Func_7310:
 	ldh [hff96], a
@@ -8233,8 +8208,7 @@ Func_7344:
 	ret
 .asm_734d
 	call FinishQueuedAnimations
-	call DuelTransmissionError
-	ret
+	jp DuelTransmissionError
 
 BuildVersion:
 	db "VER 12/20 09:36", TX_END

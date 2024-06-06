@@ -284,7 +284,7 @@ LoadDuelAnimationToBuffer::
 	add DUEL_ANIM_STRUCT_SIZE
 	and %01111111
 	cp b
-	jp z, .skip
+	jr z, .skip
 	ld [hl], a
 
 	ld b, $00
@@ -415,9 +415,8 @@ _UpdateQueuedAnimations::
 .asm_1cafb
 	; if a is $ff, then play buffered animations
 	cp $ff
-	jr nz, .skip_play_anims
+	ret nz
 	call PlayBufferedDuelAnimations
-.skip_play_anims
 	ret
 
 .screen_anim

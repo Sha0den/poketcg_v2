@@ -109,6 +109,3 @@ BoosterScenesAndNameTexts:
 
 	db SCENE_LABORATORY_BOOSTER, SCENE_LABORATORY_BOOSTER
 	tx LaboratoryBoosterText
-
-_PauseMenu_Exit:
-	ret

@@ -31,8 +31,7 @@ DisplayPlayerNamingScreen:
 	ld [sPlayerName+$e], a
 	call UpdateRNGSources
 	ld [sPlayerName+$f], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 .default_name
 	; "MARK": default player name.

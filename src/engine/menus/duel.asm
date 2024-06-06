@@ -483,20 +483,6 @@ _DrawYourOrOppPlayAreaScreen::
 	call DrawYourOrOppPlayArea_Icons
 	jp EnableLCD
 
-Func_82b6:
-	ld a, [wCheckMenuPlayAreaWhichDuelist]
-	ld b, a
-	ld a, [wCheckMenuPlayAreaWhichLayout]
-	cp b
-	jr nz, .not_equal
-
-	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.player
-	jp DrawPlayArea_PrizeCards
-
-.not_equal
-	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.opponent
-	jp DrawPlayArea_PrizeCards
-
 ; loads tiles and icons to display the In Play Area screen,
 ; and draws the screen
 DrawInPlayAreaScreen:
@@ -553,93 +539,8 @@ DrawInPlayAreaScreen:
 	call SwapTurn
 	ld hl, PlayAreaIconCoordinates.opponent2
 	call DrawInPlayArea_Icons
-
 	call SwapTurn
-	jp DrawInPlayArea_ActiveCardGfx
-
-; draws players prize cards and bench cards
-_DrawPlayersPrizeAndBenchCards::
-	xor a
-	ld [wTileMapFill], a
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
-	call DoFrame
-	call EmptyScreen
-	call LoadSymbolsFont
-	call LoadDeckAndDiscardPileIcons
-
-; player cards
-	ld a, PLAYER_TURN
-	ld [wCheckMenuPlayAreaWhichDuelist], a
-	ld [wCheckMenuPlayAreaWhichLayout], a
-	ld hl, PrizeCardsCoordinateData_2.player
-	call DrawPlayArea_PrizeCards
-	lb de, 5, 10 ; coordinates
-	ld c, 3 ; spacing
-	call DrawPlayArea_BenchCards
-
-; opponent cards
-	ld a, OPPONENT_TURN
-	ld [wCheckMenuPlayAreaWhichDuelist], a
-	ld hl, PrizeCardsCoordinateData_2.opponent
-	call DrawPlayArea_PrizeCards
-	lb de, 1, 0 ; coordinates
-	ld c, 3 ; spacing
-	jp DrawPlayArea_BenchCards
-
-; draws the active card gfx at coordinates de
-; of the player (or opponent) depending on wCheckMenuPlayAreaWhichDuelist
-; input:
-; de = coordinates
-DrawYourOrOppPlayArea_ActiveCardGfx:
-	push de
-	ld a, DUELVARS_ARENA_CARD
-	ld l, a
-	ld a, [wCheckMenuPlayAreaWhichDuelist]
-	ld h, a
-	ld a, [hl]
-	cp -1
-	jr z, .no_pokemon
-
-	ld d, a
-	ld a, [wCheckMenuPlayAreaWhichDuelist]
-	ld b, a
-	ldh a, [hWhoseTurn]
-	cp b
-	jr nz, .swap
-	ld a, d
-	call LoadCardDataToBuffer1_FromDeckIndex
-	jr .draw
-.swap
-	call SwapTurn
-	ld a, d
-	call LoadCardDataToBuffer1_FromDeckIndex
-	call SwapTurn
-
-.draw
-	ld de, v0Tiles1 + $20 tiles ; destination offset of loaded gfx
-	ld hl, wLoadedCard1Gfx
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	lb bc, $30, TILE_SIZE
-	call LoadCardGfx
-	bank1call SetBGP6OrSGB3ToCardPalette
-	bank1call FlushAllPalettesOrSendPal23Packet
-	pop de
-
-; draw card gfx
-	ld a, $a0
-	lb hl, 6, 1
-	lb bc, 8, 6
-	call FillRectangle
-	bank1call ApplyBGP6OrSGB3ToCardImage
-	ret
-
-.no_pokemon
-	pop de
-	ret
+;	fallthrough
 
 ; draws player and opponent arena card graphics
 ; in the "In Play Area" screen
@@ -725,8 +626,74 @@ DrawInPlayArea_ActiveCardGfx:
 	lb bc, 8, 6
 	call FillRectangle
 	bank1call ApplyBGP7OrSGB2ToCardImage
+	jp SwapTurn
+
+; draws the active card gfx at coordinates de
+; of the player (or opponent) depending on wCheckMenuPlayAreaWhichDuelist
+; input:
+; de = coordinates
+DrawYourOrOppPlayArea_ActiveCardGfx:
+	push de
+	ld a, DUELVARS_ARENA_CARD
+	ld l, a
+	ld a, [wCheckMenuPlayAreaWhichDuelist]
+	ld h, a
+	ld a, [hl]
+	cp -1
+	jr z, .no_pokemon
+
+	ld d, a
+	ld a, [wCheckMenuPlayAreaWhichDuelist]
+	ld b, a
+	ldh a, [hWhoseTurn]
+	cp b
+	jr nz, .swap
+	ld a, d
+	call LoadCardDataToBuffer1_FromDeckIndex
+	jr .draw
+.swap
 	call SwapTurn
+	ld a, d
+	call LoadCardDataToBuffer1_FromDeckIndex
+	call SwapTurn
+
+.draw
+	ld de, v0Tiles1 + $20 tiles ; destination offset of loaded gfx
+	ld hl, wLoadedCard1Gfx
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	lb bc, $30, TILE_SIZE
+	call LoadCardGfx
+	bank1call SetBGP6OrSGB3ToCardPalette
+	bank1call FlushAllPalettesOrSendPal23Packet
+	pop de
+
+; draw card gfx
+	ld a, $a0
+	lb hl, 6, 1
+	lb bc, 8, 6
+	call FillRectangle
+	bank1call ApplyBGP6OrSGB3ToCardImage
 	ret
+
+.no_pokemon
+	pop de
+	ret
+
+Func_82b6:
+	ld a, [wCheckMenuPlayAreaWhichDuelist]
+	ld b, a
+	ld a, [wCheckMenuPlayAreaWhichLayout]
+	cp b
+	jr nz, .not_equal
+
+	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.player
+	jr DrawPlayArea_PrizeCards
+
+.not_equal
+	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.opponent
+;	fallthrough
 
 ; draws prize cards depending on the turn
 ; loaded in wCheckMenuPlayAreaWhichDuelist
@@ -864,6 +831,37 @@ GetDuelInitialPrizesUpperBitsSet:
 	ld [wDuelInitialPrizesUpperBitsSet], a
 	ret
 
+; draws players prize cards and bench cards
+_DrawPlayersPrizeAndBenchCards::
+	xor a
+	ld [wTileMapFill], a
+	call ZeroObjectPositions
+	ld a, $01
+	ld [wVBlankOAMCopyToggle], a
+	call DoFrame
+	call EmptyScreen
+	call LoadSymbolsFont
+	call LoadDeckAndDiscardPileIcons
+
+; player cards
+	ld a, PLAYER_TURN
+	ld [wCheckMenuPlayAreaWhichDuelist], a
+	ld [wCheckMenuPlayAreaWhichLayout], a
+	ld hl, PrizeCardsCoordinateData_2.player
+	call DrawPlayArea_PrizeCards
+	lb de, 5, 10 ; coordinates
+	ld c, 3 ; spacing
+	call DrawPlayArea_BenchCards
+
+; opponent cards
+	ld a, OPPONENT_TURN
+	ld [wCheckMenuPlayAreaWhichDuelist], a
+	ld hl, PrizeCardsCoordinateData_2.opponent
+	call DrawPlayArea_PrizeCards
+	lb de, 1, 0 ; coordinates
+	ld c, 3 ; spacing
+;	fallthrough
+
 ; draws filled and empty bench slots depending on the turn loaded in wCheckMenuPlayAreaWhichDuelist
 ; if wCheckMenuPlayAreaWhichDuelist is different from wCheckMenuPlayAreaWhichLayout adjusts coordinates of the bench slots
 ; input:
@@ -985,6 +983,27 @@ DrawPlayArea_BenchCards:
 	ld d, a
 	jr .loop_2
 
+PlayAreaIconCoordinates:
+; used for "Your/Opp. Play Area" screen
+.player1
+	db 15,  6 ; hand
+	db 15,  2 ; deck
+	db 15,  4 ; discard pile
+.opponent1
+	db  1,  5 ; hand
+	db  1,  9 ; deck
+	db  1,  7 ; discard pile
+
+; used for "In Play Area" screen
+.player2
+	db 15, 13
+	db 15,  9
+	db 15, 11
+.opponent2
+	db  0,  2
+	db  0,  6
+	db  0,  4
+
 ; draws Your/Opp Play Area icons depending on value in a
 ; the icons correspond to Deck, Discard Pile, and Hand
 ; the corresponding number of cards is printed alongside each icon
@@ -1096,27 +1115,6 @@ DrawPlayArea_IconWithValue:
 	pop hl
 	ret
 
-PlayAreaIconCoordinates:
-; used for "Your/Opp. Play Area" screen
-.player1
-	db 15,  6 ; hand
-	db 15,  2 ; deck
-	db 15,  4 ; discard pile
-.opponent1
-	db  1,  5 ; hand
-	db  1,  9 ; deck
-	db  1,  7 ; discard pile
-
-; used for "In Play Area" screen
-.player2
-	db 15, 13
-	db 15,  9
-	db 15, 11
-.opponent2
-	db  0,  2
-	db  0,  6
-	db  0,  4
-
 ; draws In Play Area icons depending on value in a
 ; the icons correspond to Deck, Discard Pile, and Hand
 ; the corresponding number of cards is printed alongside each icon
@@ -1151,52 +1149,7 @@ DrawInPlayArea_Icons:
 	ld a, [de]
 	ld b, a
 	ld a, $d8 ; discard pile tile
-	jp DrawPlayArea_IconWithValue
-
-; prints text HandText and a cross with decimal value of b
-; input
-; b = value to print alongside text
-DrawPlayArea_HandText:
-	ld d, [hl]
-	inc hl
-	ld e, [hl]
-	inc hl
-
-; text
-	push hl
-	push bc
-	call InitTextPrinting
-	ldtx hl, HandText
-	call ProcessTextFromID
-	pop bc
-
-; decimal value
-	ld a, b
-	call CalculateOnesAndTensDigits
-	ld hl, wDecimalDigitsSymbols
-	ld a, [hli]
-	ld b, a
-	ld a, [hl]
-
-	ld hl, wDefaultText
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld [hl], SYM_CROSS
-	inc hl
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld [hli], a
-	ld [hl], TX_SYMBOL
-	inc hl
-
-; draw to screen
-	ld a, b
-	ld [hli], a
-	ld [hl], TX_END
-	ld hl, wDefaultText
-	call ProcessText
-	pop hl
-	ret
+	jr DrawPlayArea_IconWithValue
 
 ; handle player input in menu in Your or Opp. Play Area
 ; works out which cursor coordinate to go to
@@ -1425,9 +1378,8 @@ _HandlePeekSelection::
 .text_1
 	call DrawWideTextBox
 	lb de, 1, 14
-	call InitTextPrinting
 	ldtx hl, WhichCardWouldYouLikeToSeeText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 
 	xor a
 	ld [wYourOrOppPlayAreaCurPosition], a
@@ -1554,7 +1506,7 @@ ENDR
 
 ; prepare menu parameters to handle selection
 ; of player's own Play Area
-.PrepareYourPlayAreaSelection:
+.PrepareYourPlayAreaSelection
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
 	ld b, a
 	ldh a, [hWhoseTurn]
@@ -1576,9 +1528,8 @@ ENDR
 .text_2
 	call DrawWideTextBox
 	lb de, 1, 14
-	call InitTextPrinting
 	ldtx hl, WhichCardWouldYouLikeToSeeText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 
 	xor a
 	ld [wYourOrOppPlayAreaCurPosition], a
@@ -1672,15 +1623,13 @@ _DrawAIPeekScreen::
 	ld a, [wIsSwapTurnPending]
 	or a
 	ret z
-	call SwapTurn
-	ret
+	jp SwapTurn
 
 LoadCursorTile:
 	ld de, v0Tiles0
 	ld hl, .tile_data
 	ld b, 16
-	call SafeCopyDataHLtoDE
-	ret
+	jp SafeCopyDataHLtoDE
 
 .tile_data:
 	db $e0, $c0, $98, $b0, $84, $8c, $83, $82
@@ -1925,9 +1874,8 @@ _SelectPrizeCards::
 	call DrawYourOrOppPlayAreaScreen
 	call DrawWideTextBox
 	lb de, 1, 14
-	call InitTextPrinting
 	ldtx hl, PleaseChooseAPrizeText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld de, .cursor_transition_table
 	ld hl, wMenuInputTablePointer
 	ld [hl], e
@@ -2044,8 +1992,7 @@ _DrawPlayAreaToPlacePrizeCards::
 	lb hl, 1, 4
 	lb bc, 4, 3
 	call FillRectangle
-	call SwapTurn
-	ret
+	jp SwapTurn
 
 .player_icon_coordinates
 	db 15, 11
@@ -2112,6 +2059,51 @@ GetFirstSetPrizeCard:
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+; prints "Hand x_" to represent the amount of cards in a player's hand
+; input:
+;	b = value to print alongside text
+;DrawPlayArea_HandText:
+;	ld d, [hl]
+;	inc hl
+;	ld e, [hl]
+;	inc hl
+;
+;	; text
+;	push hl
+;	push bc
+;	ldtx hl, HandText
+;	call InitTextPrinting_ProcessTextFromID
+;	pop bc
+;
+;	; decimal value
+;	ld a, b
+;	call CalculateOnesAndTensDigits
+;	ld hl, wDecimalDigitsSymbols
+;	ld a, [hli]
+;	ld b, a
+;	ld a, [hl]
+;
+;	ld hl, wDefaultText
+;	ld [hl], TX_SYMBOL
+;	inc hl
+;	ld [hl], SYM_CROSS
+;	inc hl
+;	ld [hl], TX_SYMBOL
+;	inc hl
+;	ld [hli], a
+;	ld [hl], TX_SYMBOL
+;	inc hl
+;
+;	; draw to screen
+;	ld a, b
+;	ld [hli], a
+;	ld [hl], TX_END
+;	ld hl, wDefaultText
+;	call ProcessText
+;	pop hl
+;	ret
+;
 ;
 ; seems like a function to draw prize cards
 ; given a list of coordinates in hl

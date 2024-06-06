@@ -299,7 +299,6 @@ IntroSequenceCmd_LoadTitleScreenScene:
 	lb bc, 0, 0
 	ld a, SCENE_TITLE_SCREEN
 	call LoadOpeningScene
-	call IntroSequenceEmptyFunc
 	scf
 	ret
 
@@ -318,11 +317,7 @@ LoadOpeningScene:
 	xor a
 	ld [wIntroSequencePalsNeedUpdate], a
 	call AdvanceIntroSequenceCmdPtrBy2
-	call EnableLCD
-	ret
-
-IntroSequenceEmptyFunc:
-	ret
+	jp EnableLCD
 
 INCLUDE "data/sequences/intro.asm"
 

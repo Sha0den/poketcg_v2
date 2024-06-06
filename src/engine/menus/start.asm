@@ -111,7 +111,8 @@ HandleStartMenu:
 	call EnableAndClearSpriteAnimations
 	xor a
 	ld [wLineSeparation], a
-	call .DrawPlayerPortrait
+	lb bc, 14, 1
+	call DrawPlayerPortrait
 	call .SetStartMenuParams
 
 	ld a, $ff
@@ -226,11 +227,6 @@ HandleStartMenu:
 	tx CardPopContinueDiaryNewGameText
 	tx CardPopContinueDiaryNewGameContinueDuelText
 
-.DrawPlayerPortrait
-	lb bc, 14, 1
-	farcall $4, DrawPlayerPortrait
-	ret
-
 ; prints the description for the current selected item
 ; in the Start Menu in the text box
 PrintStartMenuDescriptionText:
@@ -278,22 +274,19 @@ PrintStartMenuDescriptionText:
 	lb de, 1, 12
 	call InitTextPrinting
 	ldtx hl, WhenYouCardPopWithFriendText
-	call PrintTextNoDelay
-	ret
+	jp PrintTextNoDelay
 
 .ContinueDuel
 	lb de, 1, 12
 	call InitTextPrinting
 	ldtx hl, TheGameWillContinueFromThePointInTheDuelText
-	call PrintTextNoDelay
-	ret
+	jp PrintTextNoDelay
 
 .NewGame
 	lb de, 1, 12
 	call InitTextPrinting
 	ldtx hl, StartANewGameText
-	call PrintTextNoDelay
-	ret
+	jp PrintTextNoDelay
 
 .ContinueFromDiary
 	; get OW map name
@@ -408,8 +401,8 @@ DrawPlayerPortraitAndPrintNewGameText:
 	ld hl, HandleAllSpriteAnimations
 	call SetDoFrameFunction
 	lb bc, 7, 3
-	farcall $4, DrawPlayerPortrait
-	farcall FadeScreenFromWhite
+	call DrawPlayerPortrait
+	farcall $4, FadeScreenFromWhite
 	call DoFrameIfLCDEnabled
 	ldtx hl, IsCrazyAboutPokemonAndPokemonCardCollectingText
 	call PrintScrollableText_NoTextBoxLabel

@@ -118,14 +118,12 @@ HandleDeckMissingCardsList:
 	ld [hl], e
 	inc hl
 	ld [hl], d
-	call PrintConfirmationCardList
-	ret
+	jp PrintConfirmationCardList
 
 .ClearScreenAndPrintDeckTitle
 	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	call .PrintDeckIndexAndName
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; prints text in the form "X.<DECK NAME> deck"
 ; where X is the deck index in the list
@@ -160,8 +158,7 @@ HandleDeckMissingCardsList:
 	lb de, 3, 1
 	ld hl, wDefaultText
 	call InitTextPrinting
-	call ProcessText
-	ret
+	jp ProcessText
 
 GiftCenter_SendCard:
 	xor a
@@ -176,9 +173,8 @@ GiftCenter_SendCard:
 	lb de, $3c, $bf
 	call SetupText
 	lb de, 3, 1
-	call InitTextPrinting
 	ldtx hl, ProceduresForSendingCardsText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	lb de, 1, 3
 	call InitTextPrinting
 	ldtx hl, CardSendingProceduresText
@@ -316,9 +312,8 @@ ShowReceivedCardsList:
 	ld hl, hffb0
 	ld [hl], $01
 	lb de, 1, 1
-	call InitTextPrinting
 	ldtx hl, CardReceivedText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld hl, wNameBuffer
 	ld de, wDefaultText
 	call CopyListFromHLToDE
@@ -350,8 +345,7 @@ Func_b088:
 	ld [hl], d
 	ld a, SYM_BOX_RIGHT
 	ld [wCursorAlternateTile], a
-	call PrintCardSelectionList
-	ret
+	jp PrintCardSelectionList
 
 .Func_b0b2
 	ld bc, wTempCardCollection
@@ -447,17 +441,14 @@ Func_b088:
 PrintCardToSendText:
 	call EmptyScreenAndDrawTextBox
 	lb de, 1, 1
-	call InitTextPrinting
 	ldtx hl, CardToSendText
-	call ProcessTextFromID
-	ret
+	jp InitTextPrinting_ProcessTextFromID
 
 PrintReceivedTheseCardsText:
 	call EmptyScreenAndDrawTextBox
 	lb de, 1, 1
-	call InitTextPrinting
 	ldtx hl, CardReceivedText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld hl, wNameBuffer
 	ld de, wDefaultText
 	call CopyListFromHLToDE
@@ -465,16 +456,14 @@ PrintReceivedTheseCardsText:
 	ld [wTxRam2 + 0], a
 	ld [wTxRam2 + 1], a
 	ldtx hl, ReceivedTheseCardsFromText
-	call DrawWideTextBox_PrintText
-	ret
+	jp DrawWideTextBox_PrintText
 
 EmptyScreenAndDrawTextBox:
 	call Set_OBJ_8x8
 	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	lb de, 0, 0
 	lb bc, 20, 13
-	call DrawRegularTextBox
-	ret
+	jp DrawRegularTextBox
 
 Func_b177::
 	ld a, [wGiftCenterChoice]
@@ -538,12 +527,12 @@ HandleDeckSaveMachineMenu:
 .wait_input_submenu
 	call DoFrame
 	call HandleCheckMenuInput
-	jp nc, .wait_input_submenu
+	jr nc, .wait_input_submenu
 	cp $ff
 	jr nz, .submenu_option_selected
 	; return from submenu
 	ld a, [wTempDeckMachineCursorPos]
-	jp .wait_input
+	jr .wait_input
 
 .submenu_option_selected
 	ld a, [wCheckMenuCursorYPosition]
@@ -558,7 +547,7 @@ HandleDeckSaveMachineMenu:
 	jr nc, .prompt_ok_if_deleted
 	call SaveDeckInDeckSaveMachine
 	ld a, [wTempDeckMachineCursorPos]
-	jp c, .wait_input
+	jr c, .wait_input
 	jr .return_to_list
 .prompt_ok_if_deleted
 	ldtx hl, OKIfFileDeletedText
@@ -567,7 +556,7 @@ HandleDeckSaveMachineMenu:
 	jr c, .wait_input
 	call SaveDeckInDeckSaveMachine
 	ld a, [wTempDeckMachineCursorPos]
-	jp c, .wait_input
+	jr c, .wait_input
 	jr .return_to_list
 
 .ok_1
@@ -591,7 +580,7 @@ HandleDeckSaveMachineMenu:
 
 .ok_2
 	cp $2
-	jr nz, .cancel
+	ret nz ; cancel
 
 ; Build a Deck
 	call CheckIfSelectedDeckMachineEntryIsEmpty
@@ -608,9 +597,6 @@ HandleDeckSaveMachineMenu:
 	call PrintNumSavedDecks
 	ld a, [wTempDeckMachineCursorPos]
 	jp .wait_input
-
-.cancel
-	ret
 
 .DeckMachineMenuData
 	textitem  2, 14, SaveADeckText
@@ -804,8 +790,7 @@ ClearScreenAndDrawDeckMachineScreen:
 	call GetSavedDeckPointers
 	call PrintVisibleDeckMachineEntries
 	call GetSavedDeckCount
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; prints wDeckMachineTitleText as title text
 SetDeckMachineTitleText:
@@ -815,8 +800,7 @@ SetDeckMachineTitleText:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call ProcessTextFromID
-	ret
+	jp ProcessTextFromID
 
 ; save all sSavedDecks pointers in wMachineDeckPtrs
 GetSavedDeckPointers:
@@ -925,9 +909,8 @@ PrintDeckMachineEntry:
 
 ; invalid deck, give it the default
 ; empty deck name ("--------------")
-	call InitTextPrinting
 	ldtx hl, EmptyDeckNameText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld d, 13
 	inc e
 	call InitTextPrinting
@@ -1058,8 +1041,7 @@ PrintDeckMachineEntry:
 	jr .loop
 .done
 	ld a, c
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; counts how many decks in sSavedDecks are not empty
 ; stores value in wNumSavedDecks
@@ -1082,8 +1064,7 @@ GetSavedDeckCount:
 .got_count
 	ld a, e
 	ld [wNumSavedDecks], a
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; prints "[wNumSavedDecks]/60"
 PrintNumSavedDecks:
@@ -1100,8 +1081,7 @@ PrintNumSavedDecks:
 	lb de, 14, 1
 	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
-	ret
+	jp ProcessText
 
 ; handles player choice in what deck to save
 ; in the Deck Save Machine
@@ -1400,8 +1380,7 @@ DrawListScrollArrows:
 	ld a, SYM_BOX_RIGHT
 .got_tile_2
 	lb bc, 19, 11
-	call WriteByteToBGMap0
-	ret
+	jp WriteByteToBGMap0
 
 ; handles the deck menu for when the player
 ; needs to make space for new deck to build
@@ -1645,8 +1624,7 @@ TryBuildDeckMachineDeck:
 	call AddDeckToCollection
 	pop hl
 	ld a, DECK_STRUCT_SIZE
-	call ClearNBytesFromHL
-	ret
+	jp ClearNBytesFromHL
 
 ; collects cards missing from player's collection
 ; and shows its confirmation list
@@ -1838,7 +1816,7 @@ PrinterMenu_DeckConfiguration:
 .no
 	ld a, [wTempDeckMachineCursorPos]
 	ld [wCardListCursorPos], a
-	jp .start_selection
+	jr .start_selection
 
 HandleAutoDeckMenu:
 	ld a, [wCurAutoDeckMachine]
@@ -1878,11 +1856,11 @@ HandleAutoDeckMenu:
 	call HandleMenuInput
 	jr c, .deck_selection_made
 
-; the following lines do nothing
-	ldh a, [hDPadHeld]
-	and D_UP | D_DOWN
-	jr z, .asm_ba4e
-.asm_ba4e
+	; the following lines do nothing
+;	ldh a, [hDPadHeld]
+;	and D_UP | D_DOWN
+;	jr z, .asm_ba4e
+;.asm_ba4e
 
 ; check whether to show deck confirmation list
 	ldh a, [hDPadHeld]
@@ -1928,7 +1906,7 @@ HandleAutoDeckMenu:
 	ld [wCardListVisibleOffset], a
 	call .InitAutoDeckMenu
 	ld a, [wTempDeckMachineCursorPos]
-	jp .please_select_deck
+	jr .please_select_deck
 
 .deck_selection_made
 	call DrawCursor2
@@ -1938,7 +1916,7 @@ HandleAutoDeckMenu:
 	ld [wTempDeckMachineCursorPos], a
 	ldh a, [hCurMenuItem]
 	cp $ff
-	jp z, .exit ; operation cancelled
+	jr z, .exit ; operation cancelled
 	ld [wSelectedDeckMachineEntry], a
 	call ResetCheckMenuCursorPositionAndBlink
 	xor a
@@ -1949,7 +1927,7 @@ HandleAutoDeckMenu:
 .wait_submenu_input
 	call DoFrame
 	call HandleCheckMenuInput_YourOrOppPlayArea
-	jp nc, .wait_submenu_input
+	jr nc, .wait_submenu_input
 	cp $ff
 	jr nz, .submenu_option_selected
 	ld a, [wTempDeckMachineCursorPos]
@@ -2095,8 +2073,7 @@ HandleAutoDeckMenu:
 	call .CreateAutoDeckPointerList
 	call PrintVisibleDeckMachineEntries
 	call SafelySwitchToSRAM0
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; writes to wMachineDeckPtrs the pointers
 ; to the Auto Decks in sAutoDecks
@@ -2287,5 +2264,4 @@ GiftCenter_ReceiveDeck:
 ;	lb de, 14, 1
 ;	call InitTextPrinting
 ;	ld hl, wDefaultText
-;	call ProcessText
-;	ret
+;	jp ProcessText

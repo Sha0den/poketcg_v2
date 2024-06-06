@@ -36,8 +36,7 @@ ReadAutoDeckConfiguration:
 	ld a, b
 	cp NUM_DECK_MACHINE_SLOTS
 	jr nz, .loop_decks
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; outputs in de the saved deck with index b
 .GetPointerToSRAMAutoDeck

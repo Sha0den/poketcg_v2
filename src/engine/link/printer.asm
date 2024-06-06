@@ -166,7 +166,7 @@ _RequestToPrintCard:
 ; prints card's type, lv, HP and attacks if it's a Pokemon card
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
-	jr nc, .skip_pokemon_data
+	ret nc ; skip Pokemon data
 	inc a ; symbol corresponding to card's type (color)
 	lb bc, 18, 65
 	call WriteByteToBGMap0
@@ -182,30 +182,6 @@ _RequestToPrintCard:
 	ld a, [wLoadedCard1EffectCommands]
 	inc b
 	bank1call WriteTwoByteNumberInTxSymbolFormat
-.skip_pokemon_data
-	ret
-
-Func_19f87:
-	call TryInitPrinterCommunications
-	ret c ; aborted
-	ld hl, sGfxBuffer0
-	call SendTilesToPrinter
-	ret c
-	call SendTilesToPrinter
-	call SendPrinterInstructionPacket_1Sheet
-	ret
-
-Func_19f99:
-	call TryInitPrinterCommunications
-	ret c
-	ld hl, sGfxBuffer0 + $8 tiles
-	ld c, $06
-.asm_19fa2
-	call SendTilesToPrinter
-	ret c
-	dec c
-	jr nz, .asm_19fa2
-	call SendPrinterInstructionPacket_1Sheet
 	ret
 
 ; writes the tiles necessary to draw
@@ -257,19 +233,6 @@ RetreatWeakResistData:
 	textitem 1, 72, ResistanceText
 	textitem 15, 72, NumberSymbolText
 	db $ff
-
-Func_1a011:
-	call TryInitPrinterCommunications
-	ret c
-	ld hl, sGfxBuffer0
-	ld c, $05
-.asm_1a01a
-	call SendTilesToPrinter
-	ret c
-	dec c
-	jr nz, .asm_1a01a
-	call SendPrinterInstructionPacket_1Sheet_3LineFeeds
-	ret
 
 ; calls setup text and sets wTilePatternSelector
 Func_1a025:
@@ -506,11 +469,55 @@ SendTilesToPrinter:
 	pop hl
 	ret
 
+Func_1a011:
+	call TryInitPrinterCommunications
+	ret c
+	ld hl, sGfxBuffer0
+	ld c, $05
+.asm_1a01a
+	call SendTilesToPrinter
+	ret c
+	dec c
+	jr nz, .asm_1a01a
+	jr SendPrinterInstructionPacket_1Sheet_3LineFeeds
+
+SendCardListToPrinter:
+	ld a, [wPrinterHorizontalOffset]
+	cp 1
+	jr z, .skip_load_gfx
+	call LoadGfxBufferForPrinter
+	ret c
+.skip_load_gfx
+	call TryInitPrinterCommunications
+	ret c
+;	fallthrough
+
 SendPrinterInstructionPacket_1Sheet_3LineFeeds:
 	call GetPrinterContrastSerialData
 	push hl
 	lb hl, 3, 1
 	jr SendPrinterInstructionPacket
+
+Func_19f87:
+	call TryInitPrinterCommunications
+	ret c ; aborted
+	ld hl, sGfxBuffer0
+	call SendTilesToPrinter
+	ret c
+	call SendTilesToPrinter
+	jr SendPrinterInstructionPacket_1Sheet
+
+Func_19f99:
+	call TryInitPrinterCommunications
+	ret c
+	ld hl, sGfxBuffer0 + $8 tiles
+	ld c, $06
+.asm_19fa2
+	call SendTilesToPrinter
+	ret c
+	dec c
+	jr nz, .asm_19fa2
+;	fallthrough
 
 ; uses wPrinterNumberLineFeeds to get number
 ; of line feeds to insert before print
@@ -636,95 +643,6 @@ _PrintDeckConfiguration:
 	call ResetPrinterCommunicationSettings
 	call RestoreVBlankFunction
 	jp HandlePrinterError
-
-SendCardListToPrinter:
-	ld a, [wPrinterHorizontalOffset]
-	cp 1
-	jr z, .skip_load_gfx
-	call LoadGfxBufferForPrinter
-	ret c
-.skip_load_gfx
-	call TryInitPrinterCommunications
-	ret c
-	call SendPrinterInstructionPacket_1Sheet_3LineFeeds
-	ret
-
-; increases printer horizontal offset by 2
-AddToPrinterGfxBuffer:
-	push hl
-	ld hl, wPrinterHorizontalOffset
-	inc [hl]
-	inc [hl]
-	ld a, [hl]
-	pop hl
-	; return no carry if below 18
-	cp 18
-	ccf
-	ret nc
-	; >= 18
-;	fallthrough
-
-; copies Gfx to Gfx buffer and sends some serial data
-; returns carry set if unsuccessful
-LoadGfxBufferForPrinter:
-	push hl
-	call TryInitPrinterCommunications
-	jr c, .set_carry
-	ld a, [wPrinterHorizontalOffset]
-	srl a
-	ld c, a
-	ld hl, sGfxBuffer0
-.loop_gfx_buffer
-	call SendTilesToPrinter
-	jr c, .set_carry
-	dec c
-	jr nz, .loop_gfx_buffer
-	call SendPrinterInstructionPacket_1Sheet
-	jr c, .set_carry
-
-	call ClearPrinterGfxBuffer
-	ld a, 1
-	ld [wPrinterHorizontalOffset], a
-	pop hl
-	or a
-	ret
-
-.set_carry
-	pop hl
-	scf
-	ret
-
-; load symbol, name, level and card count to buffer
-LoadCardInfoForPrinter:
-	push hl
-	ld a, [wPrinterHorizontalOffset]
-	or %1000000
-	ld e, a
-	ld d, 3
-	ld a, [wPrintOnlyStarRarity]
-	or a
-	jr nz, .skip_card_symbol
-	ld hl, wPrinterTotalCardCount
-	ld a, [hli]
-	or [hl]
-	call z, DrawCardSymbol
-.skip_card_symbol
-	ld a, 14
-	call CopyCardNameAndLevel
-	call InitTextPrinting
-	ld hl, wDefaultText
-	call ProcessText
-	ld a, [wPrinterHorizontalOffset]
-	or %1000000
-	ld c, a
-	ld b, 16
-	ld a, SYM_CROSS
-	call WriteByteToBGMap0
-	inc b
-	ld a, [wPrinterCardCount]
-	bank1call WriteTwoDigitNumberInTxSymbolFormat
-	pop hl
-	ret
 
 _PrintCardList:
 ; if Select button is held when printing card list
@@ -892,29 +810,6 @@ _PrintCardList:
 	or a
 	ret
 
-; prints text ID given in hl
-; with decimal representation of
-; the number given in bc
-; hl = text ID
-; bc = number
-.PrintTextWithNumber
-	push bc
-	ld a, [wPrinterHorizontalOffset]
-	dec a
-	or $40
-	ld e, a
-	ld d, 2
-	call InitTextPrinting
-	call ProcessTextFromID
-	ld d, 14
-	call InitTextPrinting
-	pop hl
-	call TwoByteNumberToTxSymbol_TrimLeadingZeros
-	ld hl, wStringBuffer
-	call ProcessText
-	call AddToPrinterGfxBuffer
-	ret
-
 ; loads this card's type icon and text
 ; if it's a new card type that hasn't been printed yet
 .LoadCardTypeEntry
@@ -1006,6 +901,104 @@ _PrintCardList:
 	db ICON_TILE_TRAINER
 	tx TrainerCardsText
 
+; prints text ID given in hl
+; with decimal representation of
+; the number given in bc
+; hl = text ID
+; bc = number
+.PrintTextWithNumber
+	push bc
+	ld a, [wPrinterHorizontalOffset]
+	dec a
+	or $40
+	ld e, a
+	ld d, 2
+	call InitTextPrinting_ProcessTextFromID
+	ld d, 14
+	call InitTextPrinting
+	pop hl
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros
+	ld hl, wStringBuffer
+	call ProcessText
+;	fallthrough
+
+; increases printer horizontal offset by 2
+AddToPrinterGfxBuffer:
+	push hl
+	ld hl, wPrinterHorizontalOffset
+	inc [hl]
+	inc [hl]
+	ld a, [hl]
+	pop hl
+	; return no carry if below 18
+	cp 18
+	ccf
+	ret nc
+	; >= 18
+;	fallthrough
+
+; copies Gfx to Gfx buffer and sends some serial data
+; returns carry set if unsuccessful
+LoadGfxBufferForPrinter:
+	push hl
+	call TryInitPrinterCommunications
+	jr c, .set_carry
+	ld a, [wPrinterHorizontalOffset]
+	srl a
+	ld c, a
+	ld hl, sGfxBuffer0
+.loop_gfx_buffer
+	call SendTilesToPrinter
+	jr c, .set_carry
+	dec c
+	jr nz, .loop_gfx_buffer
+	call SendPrinterInstructionPacket_1Sheet
+	jr c, .set_carry
+
+	call ClearPrinterGfxBuffer
+	ld a, 1
+	ld [wPrinterHorizontalOffset], a
+	pop hl
+	or a
+	ret
+
+.set_carry
+	pop hl
+	scf
+	ret
+
+; load symbol, name, level and card count to buffer
+LoadCardInfoForPrinter:
+	push hl
+	ld a, [wPrinterHorizontalOffset]
+	or %1000000
+	ld e, a
+	ld d, 3
+	ld a, [wPrintOnlyStarRarity]
+	or a
+	jr nz, .skip_card_symbol
+	ld hl, wPrinterTotalCardCount
+	ld a, [hli]
+	or [hl]
+	call z, DrawCardSymbol
+.skip_card_symbol
+	ld a, 14
+	call CopyCardNameAndLevel
+	call InitTextPrinting
+	ld hl, wDefaultText
+	call ProcessText
+	ld a, [wPrinterHorizontalOffset]
+	or %1000000
+	ld c, a
+	ld b, 16
+	ld a, SYM_CROSS
+	call WriteByteToBGMap0
+	inc b
+	ld a, [wPrinterCardCount]
+	bank1call WriteTwoDigitNumberInTxSymbolFormat
+	pop hl
+	ret
+
 ShowPrinterTransmitting:
 	call SetSpriteAnimationsAsVBlankFunction
 	ld a, SCENE_GAMEBOY_PRINTER_TRANSMITTING
@@ -1013,8 +1006,7 @@ ShowPrinterTransmitting:
 	call LoadScene
 	ldtx hl, NowPrintingPleaseWaitText
 	call DrawWideTextBox_PrintText
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; compresses $28 tiles in sGfxBuffer5
 ; and writes it in sGfxBuffer5 + $28 tiles.
@@ -1166,10 +1158,6 @@ CheckDataCompression:
 	jr z, .same_consecutive_value
 	ld a, [hli]
 	jr .reset_same_value_count
-.no_carry
-	pop hl
-	or a
-	ret
 
 .same_consecutive_value
 	inc hl
@@ -1180,7 +1168,10 @@ CheckDataCompression:
 	dec e
 	dec e
 	dec e
-	jr .no_carry
+.no_carry
+	pop hl
+	or a
+	ret
 
 ;
 ;----------------------------------------
@@ -1204,6 +1195,7 @@ CheckDataCompression:
 ;	ld a, $04
 ;	jr .asm_1a15d
 ;	ld a, $05
+;	; fallthrough
 ;.asm_1a15d
 ;	ld [wce9d], a
 ;	scf

@@ -387,8 +387,7 @@ DrawDeckIcon:
 	lb hl, 0, 0
 	call BankswitchVRAM1
 	call FillRectangle
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0
 
 ; calculates the y coordinate of the currently selected deck
 ; and draws a deck box icon at that position
@@ -419,8 +418,7 @@ DrawDeckBoxTileAtDE:
 	lb hl, 0, 0
 	call BankswitchVRAM1
 	call FillRectangle
-	call BankswitchVRAM0
-	ret
+	jp BankswitchVRAM0
 
 ; handles user input when selecting a card filter
 ; when building a deck configuration

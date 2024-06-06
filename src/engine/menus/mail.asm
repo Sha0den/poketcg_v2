@@ -187,8 +187,7 @@ PCMailHandleAInput:
 	call DrawRegularTextBox
 	ld hl, MailScreenLabels
 	call PrintLabels
-	call DoFrameIfLCDEnabled
-	ret
+	jp DoFrameIfLCDEnabled
 
 PCMailTextPages:
 	; unused
@@ -275,11 +274,9 @@ TryOpenPCMailBoosterPack:
 	pop hl
 	ld a, [hl]
 	or a
-	jr z, .done
+	jp z, DisableLCD ; the mail didn't have a 2nd booster pack
 	call GiveBoosterPack
-.done
-	call DisableLCD
-	ret
+	jp DisableLCD
 
 .booster_already_open
 	call InitMenuScreen
@@ -287,7 +284,7 @@ TryOpenPCMailBoosterPack:
 	call SetupText
 	ldtx hl, MailBoosterPackAlreadyOpenedText
 	call PrintScrollableText_NoTextBoxLabel
-	jr .done
+	jp DisableLCD
 
 PCMailBoosterPacks:
 	table_width 2, PCMailBoosterPacks
@@ -327,8 +324,7 @@ DrawMailMenuCursor:
 	push af
 	call GePCPackSelectionCoordinates
 	pop af
-	call WriteByteToBGMap0
-	ret
+	jp WriteByteToBGMap0
 
 ; prints all the PC packs that player
 ; has already obtained

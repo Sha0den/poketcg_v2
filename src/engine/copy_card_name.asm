@@ -14,7 +14,7 @@ _CopyCardNameAndLevel::
 	pop hl
 	ld a, [hli]
 	cp TX_HALFWIDTH
-	jp z, _CopyCardNameAndLevel_HalfwidthText
+	jr z, _CopyCardNameAndLevel_HalfwidthText
 
 ; the name doesn't start with TX_HALFWIDTH
 ; this doesn't appear to be ever the case (unless caller manipulates wLoadedCard1Name)

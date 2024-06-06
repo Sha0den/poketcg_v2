@@ -65,7 +65,7 @@ LookForCardsInDeck:
 .search_table
 	dw .SearchDeckForCardID
 	dw .SearchDeckForBasicEnergy
-    dw .SearchDeckForTrainer
+	dw .SearchDeckForTrainer
 	dw .SearchDeckForPokemon
 	dw .SearchDeckForEvolution
 	dw .SearchDeckForBasicPokemon
@@ -102,17 +102,17 @@ LookForCardsInDeck:
 
 ; returns carry if no Trainer cards are found in the player's deck
 .SearchDeckForTrainer
-    ld hl, wDuelTempList
+	ld hl, wDuelTempList
 .loop_deck_trainer
-    ld a, [hli]
-    cp $ff
-    jr z, SetCarryEF2
-    call GetCardIDFromDeckIndex
-    call GetCardType
-    cp TYPE_TRAINER
-    jr nz, .loop_deck_trainer ; skip if not a Trainer
-    or a
-    ret
+	ld a, [hli]
+	cp $ff
+	jr z, SetCarryEF2
+	call GetCardIDFromDeckIndex
+	call GetCardType
+	cp TYPE_TRAINER
+	jr nz, .loop_deck_trainer ; skip if not a Trainer
+	or a
+	ret
 
 ; returns carry if no Pokemon are found in the player's deck
 .SearchDeckForPokemon

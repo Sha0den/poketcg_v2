@@ -8,7 +8,7 @@ _PauseMenu_Diary:
 	ld hl, DiaryScreenLabels
 	call PrintLabels
 	lb bc, 1, 3
-	call DrawPauseMenuPlayerPortrait
+	call DrawPlayerPortrait
 	lb bc, 12, 8
 	call PrintAlbumProgress
 	lb bc, 13, 10

@@ -145,8 +145,7 @@ PrintPlayTime_SkipUpdateTime:
 	call BCCoordToBGMap0Address
 	ld hl, wDecimalChars + 1
 	ld b, 2
-	call SafeCopyDataHLtoDE
-	ret
+	jp SafeCopyDataHLtoDE
 
 ; input:
 ; hl = value to convert
@@ -219,8 +218,7 @@ PrintAlbumProgress_SkipGetProgress:
 	call BCCoordToBGMap0Address
 	ld hl, wDecimalChars
 	ld b, 3
-	call SafeCopyDataHLtoDE
-	ret
+	jp SafeCopyDataHLtoDE
 
 ; prints the number of medals collected in bc
 PrintMedalCount:
@@ -235,10 +233,4 @@ PrintMedalCount:
 	call BCCoordToBGMap0Address
 	ld hl, wDecimalChars + 2
 	ld b, 1
-	call SafeCopyDataHLtoDE
-	ret
-
-; bc = coordinates
-DrawPauseMenuPlayerPortrait:
-	call DrawPlayerPortrait
-	ret
+	jp SafeCopyDataHLtoDE

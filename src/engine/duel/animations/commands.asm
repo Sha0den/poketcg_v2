@@ -254,7 +254,7 @@ Func_1910f:
 	call SetDuelAnimationScreen
 	ld a, [wDuelDisplayedScreen]
 	cp l
-	jr z, .skip_change_screen
+	jp z, DrawWideTextBox ; skip change screen
 	ld a, l
 	push af
 	ld l, PLAYER_TURN
@@ -267,9 +267,7 @@ Func_1910f:
 	call DrawYourOrOppPlayAreaScreen_Bank0
 	pop af
 	ld [wDuelDisplayedScreen], a
-.skip_change_screen
-	call DrawWideTextBox
-	ret
+	jp DrawWideTextBox
 
 ; prints text related to the damage received
 ; by card stored in wTempNonTurnDuelistCardID

@@ -7,8 +7,7 @@ LoadLinkConnectingScene:
 	call LoadScene
 	pop hl
 	call DrawWideTextBox_PrintText
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; shows Link Not Connected scene
 ; then asks the player whether they want to try again
@@ -68,8 +67,7 @@ InitIRCommunications:
 	inc de
 	dec c
 	jr nz, .loop
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 ; returns carry if communication was unsuccessful
 ; if a = 0, then it was a communication error

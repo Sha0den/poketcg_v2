@@ -42,9 +42,8 @@ _SetUpAndStartLinkDuel:
 	lb bc, 8, 6
 	call DrawRegularTextBox
 	lb de, 7, 4
-	call InitTextPrinting
 	ldtx hl, PrizesCardsText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ldtx hl, ChooseTheNumberOfPrizesText
 	call DrawWideTextBox_PrintText
 	call EnableLCD
@@ -87,8 +86,7 @@ _SetUpAndStartLinkDuel:
 	ldh [hWhoseTurn], a
 	call ExchangeRNG
 	bank1call StartDuel_VSLinkOpp
-	call SwitchToCGBDoubleSpeed
-	ret
+	jp SwitchToCGBDoubleSpeed
 
 .error
 	ld a, -1

@@ -4,7 +4,7 @@
 InitScreenAnimation:
 	ld a, [wAnimationsDisabled]
 	or a
-	jr nz, .skip
+	ret nz
 	ld a, [wTempAnimation]
 	ld [wActiveScreenAnim], a
 	sub DUEL_SCREEN_ANIMS
@@ -23,7 +23,6 @@ InitScreenAnimation:
 	ld a, [hl]
 	ld [wScreenAnimDuration], a
 	call CallBC
-.skip
 	ret
 
 ; for the following animations, these functions
@@ -104,11 +103,11 @@ ShakeScreenX:
 .Update
 	call DecrementScreenAnimDuration
 	call UpdateShakeOffset
-	jp nc, LoadDefaultScreenAnimationUpdateWhenFinished
+	jr nc, LoadDefaultScreenAnimationUpdateWhenFinished
 	ldh a, [hSCX]
 	add [hl]
 	ldh [hSCX], a
-	jp LoadDefaultScreenAnimationUpdateWhenFinished
+	jr LoadDefaultScreenAnimationUpdateWhenFinished
 
 ShakeScreenY_Small:
 	ld hl, SmallShakeOffsets
@@ -132,11 +131,11 @@ ShakeScreenY:
 .Update
 	call DecrementScreenAnimDuration
 	call UpdateShakeOffset
-	jp nc, LoadDefaultScreenAnimationUpdateWhenFinished
+	jr nc, LoadDefaultScreenAnimationUpdateWhenFinished
 	ldh a, [hSCY]
 	add [hl]
 	ldh [hSCY], a
-	jp LoadDefaultScreenAnimationUpdateWhenFinished
+	jr LoadDefaultScreenAnimationUpdateWhenFinished
 
 ; get the displacement of the current frame
 ; depending on the value of wScreenAnimDuration

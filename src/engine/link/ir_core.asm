@@ -28,6 +28,35 @@ TransmitIRBit:
 	nop
 	ret
 
+TransmitIRDataBuffer:
+	call Func_19705
+	jp c, ReturnZFlagUnsetAndCarryFlagSet
+	ld a, $49
+	call TransmitByteThroughIR
+	ld a, $52
+	call TransmitByteThroughIR
+	ld hl, wIRDataBuffer
+	ld c, 8
+;	fallthrough
+
+; hl = start of data to transmit
+; c = number of bytes to transmit
+TransmitNBytesFromHLThroughIR:
+	ld b, $0
+.loop_data_bytes
+	ld a, b
+	add [hl]
+	ld b, a
+	ld a, [hli]
+	call TransmitByteThroughIR
+	ret c
+	dec c
+	jr nz, .loop_data_bytes
+	ld a, b
+	cpl
+	inc a
+;	fallthrough
+
 ; input a = byte to transmit through IR
 TransmitByteThroughIR:
 	push hl
@@ -164,36 +193,6 @@ Func_1971e:
 	ld a, $33 ; acknowledge
 	call TransmitByteThroughIR
 	xor a
-	ret
-
-TransmitIRDataBuffer:
-	call Func_19705
-	jr c, ReturnZFlagUnsetAndCarryFlagSet
-	ld a, $49
-	call TransmitByteThroughIR
-	ld a, $52
-	call TransmitByteThroughIR
-	ld hl, wIRDataBuffer
-	ld c, 8
-;	fallthrough
-
-; hl = start of data to transmit
-; c = number of bytes to transmit
-TransmitNBytesFromHLThroughIR:
-	ld b, $0
-.loop_data_bytes
-	ld a, b
-	add [hl]
-	ld b, a
-	ld a, [hli]
-	call TransmitByteThroughIR
-	ret c
-	dec c
-	jr nz, .loop_data_bytes
-	ld a, b
-	cpl
-	inc a
-	call TransmitByteThroughIR
 	ret
 
 ReceiveIRDataBuffer:
@@ -340,10 +339,9 @@ ExecuteReceivedIRCommands:
 	ld l, e
 	ld h, d
 	call ReceiveNBytesToHLThroughIR
-	jr c, .asm_19812
+	ret c
 	sub b
 	call TransmitByteThroughIR
-.asm_19812
 	ret
 
 ; receives an address to call, then stores
@@ -351,7 +349,57 @@ ExecuteReceivedIRCommands:
 .CallFunction
 	call LoadRegistersFromIRDataBuffer
 	call .jp_hl
-	call StoreRegistersInIRDataBuffer
+;	fallthrough
+
+; stores af, hl, de and bc in wIRDataBuffer
+StoreRegistersInIRDataBuffer:
+	push de
+	push hl
+	push af
+	ld hl, wIRDataBuffer
+	pop de
+	ld [hl], e ; <- f
+	inc hl
+	ld [hl], d ; <- a
+	inc hl
+	pop de
+	ld [hl], e ; <- l
+	inc hl
+	ld [hl], d ; <- h
+	inc hl
+	pop de
+	ld [hl], e ; <- e
+	inc hl
+	ld [hl], d ; <- d
+	inc hl
+	ld [hl], c ; <- c
+	inc hl
+	ld [hl], b ; <- b
+	ret
+
+; loads all the registers that were stored
+; from StoreRegistersInIRDataBuffer
+LoadRegistersFromIRDataBuffer:
+	ld hl, wIRDataBuffer
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	inc hl
+	push de
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	inc hl
+	push de
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	inc hl
+	ld c, [hl]
+	inc hl
+	ld b, [hl]
+	pop hl
+	pop af
 	ret
 
 ; returns carry set if request sent was not acknowledged
@@ -474,54 +522,3 @@ TransmitRegistersThroughIR:
 	inc sp
 	inc sp
 	jr SafelyCloseIRCommunications
-
-; stores af, hl, de and bc in wIRDataBuffer
-StoreRegistersInIRDataBuffer:
-	push de
-	push hl
-	push af
-	ld hl, wIRDataBuffer
-	pop de
-	ld [hl], e ; <- f
-	inc hl
-	ld [hl], d ; <- a
-	inc hl
-	pop de
-	ld [hl], e ; <- l
-	inc hl
-	ld [hl], d ; <- h
-	inc hl
-	pop de
-	ld [hl], e ; <- e
-	inc hl
-	ld [hl], d ; <- d
-	inc hl
-	ld [hl], c ; <- c
-	inc hl
-	ld [hl], b ; <- b
-	ret
-
-; loads all the registers that were stored
-; from StoreRegistersInIRDataBuffer
-LoadRegistersFromIRDataBuffer:
-	ld hl, wIRDataBuffer
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	inc hl
-	push de
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	inc hl
-	push de
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	inc hl
-	ld c, [hl]
-	inc hl
-	ld b, [hl]
-	pop hl
-	pop af
-	ret

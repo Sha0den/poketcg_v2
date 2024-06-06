@@ -666,7 +666,7 @@ CardAlbum:
 	ld a, $ff
 	call PlaySFXConfirmOrCancel
 	ldh a, [hCurMenuItem]
-	jp .booster_pack_menu
+	jr .booster_pack_menu
 
 .asm_a968
 	call .GetNumCardEntries
@@ -860,8 +860,7 @@ CardAlbum:
 	lb de, 0, 2
 	lb bc, 20, 16
 	call DrawRegularTextBox
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 ; counts number of cards in wOwnedCardsCountList
 ; that is not set as CARD_NOT_OWNED
@@ -932,9 +931,8 @@ CardAlbum:
 	ld [wUnavailableAlbumCardSets + CARD_SET_PROMOTIONAL], a
 	ld e, 11
 	ld d, 5
-	call InitTextPrinting
 	ldtx hl, EmptyPromotionalCardText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	jr .has_promotional
 
 .set_has_promotional
@@ -945,8 +943,7 @@ CardAlbum:
 .has_promotional
 	ldtx hl, ViewWhichCardFileText
 	call DrawWideTextBox_PrintText
-	call EnableLCD
-	ret
+	jp EnableLCD
 
 .BoosterPacksMenuData
 	textitem 7,  1, BoosterPackText
