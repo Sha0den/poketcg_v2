@@ -30,7 +30,7 @@ MichaelFightingClubWantsToDuelText:
 	line "How about a rematch?"
 	done
 
-MichaelFightingClubWouldYouLikeToDuelText:
+MichaelWouldYouLikeToDuelText:
 	text "Would you like to duel Michael?"
 	done
 
@@ -65,7 +65,7 @@ JessicaFightingClubWantsToDuelText:
 	line "Do you want to duel me again?"
 	done
 
-JessicaFightingClubWouldYouLikeToDuelText:
+JessicaWouldYouLikeToDuelText:
 	text "Would you like to duel Jessica?"
 	done
 
@@ -399,7 +399,7 @@ DoubleColorlessEnergyBookText:
 	line "single card, you are able to"
 	line "attach 2 Energies at once."
 	line "But be careful because the"
-	line "energy is <COLORLESS>."
+	line "Energy is <COLORLESS>."
 	done
 
 RockPokemonBookName:

@@ -65,7 +65,7 @@
 
 
 ## Code Optimization
-- **June 6, 2024:** 40 Files Changed
+- **[June 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/043ab5b4aa51c1164b2745cd367bb38ab703197e):** 40 Files Changed
     - Eliminate most tail calls in the non-ai engine files (replacing a call ret with a fallthrough/jr/jp)
     - Rearrange some functions in the non-ai engine files to replace some jp's with jr's or fallthroughs
 
@@ -181,6 +181,11 @@
 
 
 ## Miscellaneous Changes
+- **June 7, 2024** 17 Files Changed
+    - Revise various texts and combine some texts that are identical
+
+<br/>
+
 - **[June 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/6efa226438dbbea8da455ef84f284525fd2b8306):** 10 Files Changed
     - Make small adjustments to the menu screens related to deck selection
     - Replace hand_cards icon with a deck_box icon I made (used to represent the active deck)

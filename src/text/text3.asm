@@ -377,7 +377,7 @@ SpecialConditions2DescriptionText:
 	text "<CONFUSED> Flip a coin before a Pokémon that"
 	line "   is Confused can attack or retreat"
 	line "   (after you pay any costs)."
-	line "   Tails: the retreat/attack fails"
+	line "   Tails: the attack/retreat fails"
 	line "   & 20 damage to self if attacking"
 	line ""
 	line "<PARALYZED> A Paralyzed Pokémon cannot"
@@ -1330,7 +1330,7 @@ LadNPCName:
 	done
 
 HostNPCName:
-	text "HOST"
+	text "Host"
 	done
 
 SpecsNPCName:

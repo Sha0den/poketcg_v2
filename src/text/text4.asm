@@ -186,7 +186,7 @@ Mail10Part1Text:
 	line "Give it a try!"
 	line "Mason Laboratory"
 	line "      Dr. Mason ;)"
-	line "p.s. Here's a deal - this time,"
+	line "P.S. Here's a deal - this time,"
 	line "     you get 2 booster packs!"
 	done
 
@@ -209,7 +209,7 @@ Mail11Part1Text:
 	line "in the Deck Machine for hints."
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
-	line "p.s."
+	line "P.S."
 	line "I'm sending 2 booster packs again!"
 	done
 
@@ -228,7 +228,7 @@ Mail12Part1Text:
 	line "accordingly."
 	line "Mason Laboratory"
 	line "      Dr. Mason ;)"
-	line "p.s. You're almost there."
+	line "P.S. You're almost there."
 	line "     Keep up the good work!"
 	done
 
@@ -251,7 +251,7 @@ Mail13Part1Text:
 	line "<RAMNAME>!!!"
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
-	line "p.s."
+	line "P.S."
 	line "3 more to go!"
 	done
 
@@ -293,7 +293,7 @@ Mail15Part1Text:
 	line "Be a part of the legend!"
 	line "Mason Laboratory"
 	line "      Dr. Mason  ;)"
-	line "p.s."
+	line "P.S."
 	line "This is my final gift for you."
 	done
 
@@ -421,10 +421,9 @@ Man2Text:
 	done
 
 Pappy2Text:
-	text "Sara and Amanda of the"
-	line "Water Club are twins."
-	line "No wonder they look"
-	line "so much alike!"
+	text "Sara and Amanda of the Water Club"
+	line "are twins."
+	line "No wonder they look so much alike!"
 	done
 
 SaraWantsToDuelText:
@@ -1034,7 +1033,7 @@ ChrisFightingClubWantsToDuelRepeatText:
 	line "again, I must defeat you first!"
 	done
 
-ChrisFightingClubWouldYouLikeToDuelText:
+ChrisWouldYouLikeToDuelText:
 	text "Would you like to duel Chris?"
 	done
 

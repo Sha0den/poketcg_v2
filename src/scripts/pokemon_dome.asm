@@ -403,7 +403,7 @@ Script_BeatCourtney:
 	zero_out_event_value EVENT_POKEMON_DOME_IN_MENU
 	set_dialog_npc NPC_ROD
 	print_npc_text Text057f
-	ask_question_jump_default_yes Text0580, .ows_f9af
+	ask_question_jump_default_yes PrepareForTheDuelText, .ows_f9af
 	print_npc_text Text0581
 	set_dialog_npc NPC_STEVE
 	print_npc_text Text0582
@@ -455,7 +455,7 @@ Script_BeatSteve:
 	zero_out_event_value EVENT_POKEMON_DOME_IN_MENU
 	set_dialog_npc NPC_ROD
 	print_npc_text Text058b
-	ask_question_jump_default_yes Text058c, .ows_fa1b
+	ask_question_jump_default_yes PrepareForTheDuelText, .ows_fa1b
 	print_npc_text Text058d
 	set_dialog_npc NPC_JACK
 	print_npc_text Text058e
@@ -510,7 +510,7 @@ Script_BeatJack:
 .ows_fa78
 	zero_out_event_value EVENT_POKEMON_DOME_IN_MENU
 	print_npc_text Text0598
-	ask_question_jump_default_yes Text0599, .ows_fa90
+	ask_question_jump_default_yes PrepareForTheDuelText, .ows_fa90
 	test_if_event_false EVENT_RECEIVED_LEGENDARY_CARDS
 	print_variable_npc_text Text059a, Text059b
 	start_duel PRIZES_6, LEGENDARY_DRAGONITE_DECK_ID, MUSIC_DUEL_THEME_3
@@ -589,7 +589,7 @@ Script_BeatRod:
 	zero_out_event_value EVENT_POKEMON_DOME_IN_MENU
 	set_dialog_npc NPC_ROD
 	print_npc_text Text05a9
-	ask_question_jump_default_yes Text05aa, .ows_fb40
+	ask_question_jump_default_yes PrepareForTheDuelText, .ows_fb40
 	print_npc_text Text05ab
 	set_dialog_npc NPC_RONALD1
 	print_npc_text Text05ac

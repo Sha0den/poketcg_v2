@@ -1570,7 +1570,7 @@ YellowFlashDescriptionText:
 	done
 
 ElectricShockDescriptionText:
-	text "A deck which Shocks and Paralyzes"
+	text "A deck which shocks and paralyzes"
 	line "opponents with its attacks."
 	done
 
@@ -1695,7 +1695,7 @@ BulbasaurAndFriendsDescriptionText:
 	done
 
 PsychicMachampDescriptionText:
-	text "Machamp, Hitmonlee, Hitmonchan"
+	text "Machamp, Hitmonlee, Hitmonchan,"
 	line "Gengar and Alakazam are furious!"
 	done
 

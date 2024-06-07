@@ -792,8 +792,8 @@ DuelistDeckText:
 	done
 
 PleaseSelectHandText:
-	text "Please select"
-	line "Hand."
+	text "Choose a card from"
+	line "your hand."
 	done
 
 PleaseSelectCardText:
@@ -1025,10 +1025,8 @@ PrintingWasInterruptedText:
 	done
 
 CardPopCannotBePlayedWithTheGameBoyText:
-	text "Card Pop! cannot be played"
-	line "with the Game Boy."
-	line "Please use a"
-	line "Game Boy Color."
+	text "Card Pop! cannot be done with a Game"
+	line "Boy. Please use a Game Boy Color."
 	done
 
 UnusedText00de: ; Unused
@@ -1122,8 +1120,8 @@ CardCheckIfHeads8CardsIfTails1CardText:
 	done
 
 IfHeadsNoDamageNextTurnText:
-	text "If heads, you will not receive"
-	line "damage during opponent's next turn!"
+	text "If heads, prevent all damage done to"
+	line "this Pokémon during the next turn!"
 	done
 
 UnusedText00f2: ; Unused
@@ -1185,7 +1183,7 @@ AttackUnsuccessfulText:
 	done
 
 UnableToRetreatDueToAcidText:
-	text "This Pokémon can't retreat"
+	text "This Pokémon cannot retreat"
 	line "until your next turn."
 	done
 
@@ -1200,11 +1198,13 @@ CannotUsePokemonFluteText:
 	done
 
 UnableToAttackThatPokemonText:
-	text "You can't attack that Pokémon."
+	text "You cannot attack that Pokémon"
+	line "until your next turn."
 	done
 
 UnableToAttackText:
-	text "This Pokémon can't attack this turn."
+	text "This Pokémon cannot attack"
+	line "until your next turn."
 	done
 
 UnableToUseAttackDueToAmnesiaText:
@@ -1366,7 +1366,7 @@ ChooseAKrabbyFromDeckText:
 
 ChooseDiscardEnergyCardFromOpponentText:
 	text "Choose and discard an Energy card"
-	line "from the opponent's Active Pokémon."
+	line "attached to the Defending Pokémon."
 	done
 
 ChooseAttackOpponentWillNotBeAbleToUseText:

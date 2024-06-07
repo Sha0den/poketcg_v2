@@ -6,7 +6,7 @@ HallOfHonorLoadMap:
 Script_fbe1:
 	start_script
 	print_text Text05b5
-	ask_question_jump_default_yes Text05b6, .ows_fbee
+	ask_question_jump_default_yes WouldYouLikeToBuildADeckText, .ows_fbee
 	print_text Text05b7
 	quit_script_fully
 

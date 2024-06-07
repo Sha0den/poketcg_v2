@@ -26,7 +26,7 @@ Script_Chris:
 	start_script
 	jump_if_event_greater_or_equal EVENT_PUPIL_CHRIS_STATE, PUPIL_DEFEATED, Script_de4b
 	print_npc_text Text077a
-	ask_question_jump Text077b, .ows_df04
+	ask_question_jump ChrisWouldYouLikeToDuelText, .ows_df04
 	print_npc_text Text077c
 	quit_script_fully
 

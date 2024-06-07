@@ -537,7 +537,7 @@ Text057f:
 	text "Is your deck ready, <RAMNAME>?"
 	done
 
-Text0580:
+PrepareForTheDuelText:
 	text "Prepare for the duel?"
 	done
 
@@ -604,8 +604,8 @@ Text058b:
 	line "have you readied your deck?"
 	done
 
-Text058c:
-	text "Prepare for the duel?"
+UnusedText058c: ; Unused
+	text "????"
 	done
 
 Text058d:
@@ -676,8 +676,8 @@ Text0598:
 	text "Is your deck ready, <RAMNAME>?"
 	done
 
-Text0599:
-	text "Prepare for the duel?"
+UnusedText0599: ; Unused
+	text "????"
 	done
 
 Text059a:
@@ -779,8 +779,8 @@ Text05a9:
 	text "Is your deck ready, <RAMNAME>?"
 	done
 
-Text05aa:
-	text "Prepare for the duel?"
+UnusedText05aa: ; Unused
+	text "????"
 	done
 
 Text05ab:
@@ -851,7 +851,7 @@ Text05b5:
 	line "has been turned on!"
 	done
 
-Text05b6:
+WouldYouLikeToBuildADeckText:
 	text "Would you like to build a deck?"
 	done
 

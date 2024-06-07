@@ -67,7 +67,7 @@ Script_Michael:
 	test_if_event_equal EVENT_PUPIL_MICHAEL_STATE, PUPIL_ACTIVE
 	print_variable_npc_text Text06d8, Text06d9
 	set_event EVENT_PUPIL_MICHAEL_STATE, PUPIL_TALKED
-	ask_question_jump Text06da, .ows_e58f
+	ask_question_jump MichaelWouldYouLikeToDuelText, .ows_e58f
 	print_npc_text Text06db
 	quit_script_fully
 

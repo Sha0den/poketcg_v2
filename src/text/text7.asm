@@ -331,8 +331,8 @@ Text0605:
 	text "It's an Auto Deck Machine."
 	done
 
-Text0606:
-	text "Would you like to build a deck?"
+UnusedText0606: ; Unused
+	text "????"
 	done
 
 Text0607:
@@ -354,8 +354,8 @@ Text060a:
 	line "has been activated!"
 	done
 
-Text060b:
-	text "Would you like to build a deck?"
+UnusedText060b: ; Unused
+	text "????"
 	done
 
 Text060c:
@@ -702,8 +702,9 @@ Text0645:
 	done
 
 Text0646:
-	text "What? It's you, <RAMNAME>! What"
-	line "are you doing? Huh? That's a deck!"
+	text "What? It's you, <RAMNAME>!"
+	line "What are you doing?"
+	line "Huh? That's a deck!"
 	line "Are you... trying to get the"
 	line "Legendary Pokémon Cards?"
 	done

@@ -1164,21 +1164,21 @@ TextOffsets::
 	textpointer MitchPlayerLostRepeatText                          ; 0x0488
 	textpointer ChrisFightingClubWantsToDuelInitialText            ; 0x0489
 	textpointer ChrisFightingClubWantsToDuelRepeatText             ; 0x048a
-	textpointer ChrisFightingClubWouldYouLikeToDuelText            ; 0x048b
+	textpointer ChrisWouldYouLikeToDuelText                        ; 0x048b
 	textpointer ChrisFightingClubDeclinedDuelText                  ; 0x048c
 	textpointer ChrisFightingClubDuelStartText                     ; 0x048d
 	textpointer ChrisFightingClubPlayerWon1Text                    ; 0x048e
 	textpointer ChrisFightingClubPlayerWon2Text                    ; 0x048f
 	textpointer ChrisFightingClubPlayerLostText                    ; 0x0490
 	textpointer MichaelFightingClubWantsToDuelText                 ; 0x0491
-	textpointer MichaelFightingClubWouldYouLikeToDuelText          ; 0x0492
+	textpointer MichaelWouldYouLikeToDuelText                      ; 0x0492
 	textpointer MichaelFightingClubDeclinedDuelText                ; 0x0493
 	textpointer MichaelFightingClubDuelStartText                   ; 0x0494
 	textpointer MichaelFightingClubPlayerWon1Text                  ; 0x0495
 	textpointer MichaelFightingClubPlayerWon2Text                  ; 0x0496
 	textpointer MichaelFightingClubPlayerLostText                  ; 0x0497
 	textpointer JessicaFightingClubWantsToDuelText                 ; 0x0498
-	textpointer JessicaFightingClubWouldYouLikeToDuelText          ; 0x0499
+	textpointer JessicaWouldYouLikeToDuelText                      ; 0x0499
 	textpointer JessicaFightingClubDeclinedDuelText                ; 0x049a
 	textpointer JessicaFightingClubDuelStartText                   ; 0x049b
 	textpointer JessicaFightingClubPlayerWon1Text                  ; 0x049c
@@ -1409,7 +1409,7 @@ TextOffsets::
 	textpointer Text057d                                           ; 0x057d
 	textpointer Text057e                                           ; 0x057e
 	textpointer Text057f                                           ; 0x057f
-	textpointer Text0580                                           ; 0x0580
+	textpointer PrepareForTheDuelText                              ; 0x0580
 	textpointer Text0581                                           ; 0x0581
 	textpointer Text0582                                           ; 0x0582
 	textpointer Text0583                                           ; 0x0583
@@ -1421,7 +1421,7 @@ TextOffsets::
 	textpointer Text0589                                           ; 0x0589
 	textpointer Text058a                                           ; 0x058a
 	textpointer Text058b                                           ; 0x058b
-	textpointer Text058c                                           ; 0x058c
+	textpointer UnusedText058c                                     ; 0x058c
 	textpointer Text058d                                           ; 0x058d
 	textpointer Text058e                                           ; 0x058e
 	textpointer Text058f                                           ; 0x058f
@@ -1434,7 +1434,7 @@ TextOffsets::
 	textpointer Text0596                                           ; 0x0596
 	textpointer Text0597                                           ; 0x0597
 	textpointer Text0598                                           ; 0x0598
-	textpointer Text0599                                           ; 0x0599
+	textpointer UnusedText0599                                     ; 0x0599
 	textpointer Text059a                                           ; 0x059a
 	textpointer Text059b                                           ; 0x059b
 	textpointer Text059c                                           ; 0x059c
@@ -1451,7 +1451,7 @@ TextOffsets::
 	textpointer Text05a7                                           ; 0x05a7
 	textpointer Text05a8                                           ; 0x05a8
 	textpointer Text05a9                                           ; 0x05a9
-	textpointer Text05aa                                           ; 0x05aa
+	textpointer UnusedText05aa                                     ; 0x05aa
 	textpointer Text05ab                                           ; 0x05ab
 	textpointer Text05ac                                           ; 0x05ac
 	textpointer Text05ad                                           ; 0x05ad
@@ -1463,7 +1463,7 @@ TextOffsets::
 	textpointer Text05b3                                           ; 0x05b3
 	textpointer Text05b4                                           ; 0x05b4
 	textpointer Text05b5                                           ; 0x05b5
-	textpointer Text05b6                                           ; 0x05b6
+	textpointer WouldYouLikeToBuildADeckText                       ; 0x05b6
 	textpointer Text05b7                                           ; 0x05b7
 	textpointer Text05b8                                           ; 0x05b8
 	textpointer Text05b9                                           ; 0x05b9
@@ -1543,12 +1543,12 @@ TextOffsets::
 	textpointer Text0603                                           ; 0x0603
 	textpointer Text0604                                           ; 0x0604
 	textpointer Text0605                                           ; 0x0605
-	textpointer Text0606                                           ; 0x0606
+	textpointer UnusedText0606                                     ; 0x0606
 	textpointer Text0607                                           ; 0x0607
 	textpointer Text0608                                           ; 0x0608
 	textpointer Text0609                                           ; 0x0609
 	textpointer Text060a                                           ; 0x060a
-	textpointer Text060b                                           ; 0x060b
+	textpointer UnusedText060b                                     ; 0x060b
 	textpointer Text060c                                           ; 0x060c
 	textpointer Text060d                                           ; 0x060d
 	textpointer Text060e                                           ; 0x060e
@@ -1680,7 +1680,7 @@ TextOffsets::
 	textpointer Text068c                                           ; 0x068c
 	textpointer Text068d                                           ; 0x068d
 	textpointer Text068e                                           ; 0x068e
-	textpointer Text068f                                           ; 0x068f
+	textpointer UnusedText068f                                     ; 0x068f
 	textpointer Text0690                                           ; 0x0690
 	textpointer Text0691                                           ; 0x0691
 	textpointer Text0692                                           ; 0x0692
@@ -1755,7 +1755,7 @@ TextOffsets::
 	textpointer Text06d7                                           ; 0x06d7
 	textpointer Text06d8                                           ; 0x06d8
 	textpointer Text06d9                                           ; 0x06d9
-	textpointer Text06da                                           ; 0x06da
+	textpointer UnusedText06da                                     ; 0x06da
 	textpointer Text06db                                           ; 0x06db
 	textpointer Text06dc                                           ; 0x06dc
 	textpointer Text06dd                                           ; 0x06dd
@@ -1916,7 +1916,7 @@ TextOffsets::
 	textpointer Text0778                                           ; 0x0778
 	textpointer Text0779                                           ; 0x0779
 	textpointer Text077a                                           ; 0x077a
-	textpointer Text077b                                           ; 0x077b
+	textpointer UnusedText077b                                     ; 0x077b
 	textpointer Text077c                                           ; 0x077c
 	textpointer Text077d                                           ; 0x077d
 	textpointer Text077e                                           ; 0x077e

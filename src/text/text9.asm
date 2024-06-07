@@ -368,8 +368,8 @@ Text077a:
 	line "here!"
 	done
 
-Text077b:
-	text "Would you like to duel Chris?"
+UnusedText077b: ; Unused
+	text "????"
 	done
 
 Text077c:

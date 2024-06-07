@@ -80,8 +80,8 @@ Text068e:
 	line "fun than training."
 	done
 
-Text068f:
-	text "Would you like to duel Jessica?"
+UnusedText068f: ; Unused
+	text "????"
 	done
 
 Text0690:
@@ -552,8 +552,8 @@ Text06d9:
 	line "Would you duel me?"
 	done
 
-Text06da:
-	text "Would you like to duel Michael?"
+UnusedText06da: ; Unused
+	text "????"
 	done
 
 Text06db:
