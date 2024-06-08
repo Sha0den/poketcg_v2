@@ -1,6 +1,7 @@
 ; refresh the cursor's position based on the currently selected map
 ; and refresh the player's position based on the starting map
 ; but only if the player is not being animated across the overworld
+; preserves bc, de, and hl
 OverworldMap_UpdatePlayerAndCursorSprites:
 	push hl
 	push bc
@@ -34,14 +35,12 @@ OverworldMap_Update:
 	ld [wWhichSprite], a
 	ld a, [wOverworldMapPlayerAnimationState]
 	or a
-	jr nz, .player_walking
-	call OverworldMap_HandleKeyPress
-	ret
-.player_walking
+	jr z, OverworldMap_HandleKeyPress ; player sprite isn't walking
 	cp 2
 	jp nz, OverworldMap_UpdatePlayerWalkingAnimation
 ;	fallthrough if player finished walking
 
+; preserves bc, de, and hl
 OverworldMap_LoadSelectedMap:
 	push hl
 	push bc
@@ -68,14 +67,34 @@ OverworldMap_LoadSelectedMap:
 
 ; update the map selection if the DPad is pressed
 ; or finalize the selection if the A button is pressed
+; preserves de
 OverworldMap_HandleKeyPress:
 	ldh a, [hKeysPressed]
 	and D_PAD
 	jr z, .no_d_pad
 	farcall GetDirectionFromDPad
 	ld [wPlayerDirection], a
-	call OverworldMap_HandleDPad
-	ret
+
+; update wOverworldMapSelection based on the pressed direction in wPlayerDirection
+; originally named OverworldMap_HandleDPad:
+	ld a, [wOverworldMapSelection]
+	rlca
+	rlca
+	ld c, a
+	ld a, [wPlayerDirection]
+	add c
+	ld c, a
+	ld b, 0
+	ld hl, OverworldMap_CursorTransitions
+	add hl, bc
+	ld a, [hl]
+	or a
+	ret z ; no transition
+	ld [wOverworldMapSelection], a
+	call OverworldMap_PrintMapName
+	ld a, SFX_CURSOR
+	jp PlaySFX
+
 .no_d_pad
 	ldh a, [hKeysPressed]
 	and A_BUTTON
@@ -87,6 +106,7 @@ OverworldMap_HandleKeyPress:
 
 ; begin walking the player across the overworld
 ; from wOverworldMapStartingPosition to wOverworldMapSelection
+; preserves de
 OverworldMap_BeginPlayerMovement:
 	ld a, SFX_PLAYER_WALK_MAP
 	call PlaySFX
@@ -126,39 +146,13 @@ OverworldMap_BeginPlayerMovement:
 	ld [wOverworldMapPlayerMovementCounter], a
 	ret
 
-; update wOverworldMapSelection based on the pressed direction in wPlayerDirection
-OverworldMap_HandleDPad:
-	push hl
-	pop hl
-	ld a, [wOverworldMapSelection]
-	rlca
-	rlca
-	ld c, a
-	ld a, [wPlayerDirection]
-	add c
-	ld c, a
-	ld b, 0
-	ld hl, OverworldMap_CursorTransitions
-	add hl, bc
-	ld a, [hl]
-	or a
-	jr z, .no_transition
-	ld [wOverworldMapSelection], a
-	call OverworldMap_PrintMapName
-	ld a, SFX_CURSOR
-	call PlaySFX
-.no_transition
-	pop bc
-	pop hl
-	ret
-
 INCLUDE "data/overworld_map/cursor_transitions.asm"
 
 ; set the active sprite (player or cursor) at the appropriate map position
 ; input:
-; a = OWMAP_* value
-; d = x offset
-; e = y offset
+;	a = OWMAP_* value
+;	d = x offset
+;	e = y offset
 OverworldMap_SetSpritePosition:
 	call OverworldMap_GetMapPosition
 	ld c, SPRITE_ANIM_COORD_X
@@ -169,13 +163,14 @@ OverworldMap_SetSpritePosition:
 	ld [hl], a
 	ret
 
+; preserves bc and hl
 ; input:
-; a = OWMAP_* value
-; d = x offset
-; e = y offset
+;	a = OWMAP_* value
+;	d = x offset
+;	e = y offset
 ; output:
-; d = x position
-; e = y position
+;	d = x position
+;	e = y position
 OverworldMap_GetMapPosition:
 	push hl
 	push de
@@ -198,6 +193,7 @@ OverworldMap_GetMapPosition:
 
 INCLUDE "data/overworld_map/map_positions.asm"
 
+; preserves bc, de, and hl
 OverworldMap_PrintMapName:
 	push hl
 	push de
@@ -217,9 +213,11 @@ OverworldMap_PrintMapName:
 	pop hl
 	ret
 
-; returns [wOverworldMapSelection] in a
-; or OWMAP_MYSTERY_HOUSE if [wOverworldMapSelection] == OWMAP_ISHIHARAS_HOUSE
-;   and EVENT_ISHIHARAS_HOUSE_MENTIONED == FALSE
+; preserves bc, de, and hl
+; output:
+;	a = [wOverworldMapSelection]
+;	a = OWMAP_MYSTERY_HOUSE (only if [wOverworldMapSelection] = OWMAP_ISHIHARAS_HOUSE
+;	                         and EVENT_ISHIHARAS_HOUSE_MENTIONED = FALSE)
 OverworldMap_GetOWMapID:
 	push bc
 	ld a, [wOverworldMapSelection]
@@ -238,9 +236,10 @@ OverworldMap_GetOWMapID:
 
 INCLUDE "data/overworld_map/overworld_warps.asm"
 
+; preserves de
 OverworldMap_InitVolcanoSprite:
 	ld a, SPRITE_OW_MAP_OAM
-	farcall CreateSpriteAndAnimBufferEntry
+	call CreateSpriteAndAnimBufferEntry
 	ld c, SPRITE_ANIM_COORD_X
 	call GetSpriteAnimBufferProperty
 	ld a, $80
@@ -254,9 +253,9 @@ OverworldMap_InitVolcanoSprite:
 	ld b, SPRITE_ANIM_CGB_VOLCANO_SMOKE
 .not_cgb
 	ld a, b
-	farcall StartNewSpriteAnimation
-	ret
+	jp StartNewSpriteAnimation
 
+; preserves de
 OverworldMap_InitCursorSprite:
 	ld a, [wOverworldMapSelection]
 	ld [wOverworldMapStartingPosition], a
@@ -367,8 +366,8 @@ OverworldMap_UpdatePlayerWalkingAnimation:
 ;	fallthrough
 
 ; input:
-; b = target x position
-; c = target y position
+;	b = target x position
+;	c = target y position
 OverworldMap_InitNextPlayerVelocity:
 	push hl
 	push bc
@@ -434,8 +433,8 @@ OverworldMap_InitNextPlayerVelocity:
 	ret
 
 ; input:
-; b = absolute value of horizontal movement distance
-; c = absolute value of vertical movement distance
+;	b = absolute value of horizontal movement distance
+;	c = absolute value of vertical movement distance
 OverworldMap_InitPlayerEastWestMovement:
 ; use horizontal distance for counter
 	ld a, b
@@ -485,8 +484,8 @@ OverworldMap_InitPlayerEastWestMovement:
 	ret
 
 ; input:
-; b = absolute value of horizontal movement distance
-; c = absolute value of vertical movement distance
+;	b = absolute value of horizontal movement distance
+;	c = absolute value of vertical movement distance
 OverworldMap_InitPlayerNorthSouthMovement:
 ; use vertical distance for counter
 	ld a, c
@@ -535,8 +534,9 @@ OverworldMap_InitPlayerNorthSouthMovement:
 	ld [wPlayerDirection], a
 	ret
 
+; preserves de and hl
 ; output:
-; bc = bc * -1
+;	bc = bc * -1
 OverworldMap_NegateBC:
 	ld a, c
 	cpl

@@ -65,6 +65,11 @@
 
 
 ## Code Optimization
+- **June 8, 2024:** 1 File Changed
+    - Revise/add code comments and perform minor code optimizations in engine/overworld_map.asm
+
+<br/>
+
 - **[June 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/043ab5b4aa51c1164b2745cd367bb38ab703197e):** 40 Files Changed
     - Eliminate most tail calls in the non-ai engine files (replacing a call ret with a fallthrough/jr/jp)
     - Rearrange some functions in the non-ai engine files to replace some jp's with jr's or fallthroughs
@@ -181,7 +186,7 @@
 
 
 ## Miscellaneous Changes
-- **June 7, 2024** 17 Files Changed
+- **[June 7, 2024](https://github.com/Sha0den/poketcg_v2/commit/2414fbf2b12b0fed4b4a3b5fb40cbde95f443ef0)** 17 Files Changed
     - Revise various texts and combine some texts that are identical
 
 <br/>
