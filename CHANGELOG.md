@@ -66,6 +66,11 @@
 
 ## Code Optimization
 - **June 8, 2024:** 1 File Changed
+    - Revise/add code comments and perform minor code optimizations in engine/save.asm
+
+<br/>
+
+- **[June 8, 2024](https://github.com/Sha0den/poketcg_v2/commit/4bd79c758a81be021487c9961d7873208009f5fd):** 1 File Changed
     - Revise/add code comments and perform minor code optimizations in engine/overworld_map.asm
 
 <br/>
