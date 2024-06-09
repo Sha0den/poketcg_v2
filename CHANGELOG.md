@@ -65,7 +65,7 @@
 
 
 ## Code Optimization
-- **June 9, 2024:** 6 File Changed
+- **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/d289b673ae0d6f90b464b754b03736d6769da9c1):** 6 File Changed
     - Remove some unnecessary farcalls and use "ldh" for "ld [hff__], a"
 
 <br/>
@@ -196,6 +196,11 @@
 
 
 ## Miscellaneous Changes
+- **June 9, 2024** 1 File Changed (technically 2 since I renamed the original sprite)
+    - Use JappaWakka's updated Double Colorless Energy sprite (with 2 Energy symbols)
+
+<br/>
+
 - **[June 7, 2024](https://github.com/Sha0den/poketcg_v2/commit/2414fbf2b12b0fed4b4a3b5fb40cbde95f443ef0)** 17 Files Changed
     - Revise various texts and combine some texts that are identical
 
