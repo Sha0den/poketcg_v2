@@ -65,7 +65,12 @@
 
 
 ## Code Optimization
-- **June 8, 2024:** 1 File Changed
+- **June 9, 2024:** 6 File Changed
+    - Remove some unnecessary farcalls and use "ldh" for "ld [hff__], a"
+
+<br/>
+
+- **[June 8, 2024](https://github.com/Sha0den/poketcg_v2/commit/6a516a2208165aa1f8296bfed4ce3b32033e2608):** 1 File Changed
     - Revise/add code comments and perform minor code optimizations in engine/save.asm
 
 <br/>

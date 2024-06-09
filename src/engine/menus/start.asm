@@ -402,7 +402,7 @@ DrawPlayerPortraitAndPrintNewGameText:
 	call SetDoFrameFunction
 	lb bc, 7, 3
 	call DrawPlayerPortrait
-	farcall $4, FadeScreenFromWhite
+	farcall FadeScreenFromWhite
 	call DoFrameIfLCDEnabled
 	ldtx hl, IsCrazyAboutPokemonAndPokemonCardCollectingText
 	call PrintScrollableText_NoTextBoxLabel

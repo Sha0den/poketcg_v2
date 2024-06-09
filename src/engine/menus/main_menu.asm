@@ -44,7 +44,7 @@ MainMenu_NewGame:
 	farcall DrawPlayerPortraitAndPrintNewGameText
 	ld a, GAME_EVENT_OVERWORLD
 	ld [wGameEvent], a
-	farcall $03, ExecuteGameEvent
+	call ExecuteGameEvent
 	or a
 	ret
 
@@ -61,7 +61,7 @@ MainMenu_ContinueFromDiary:
 	call DisableSRAM
 	ld a, GAME_EVENT_OVERWORLD
 	ld [wGameEvent], a
-	farcall $03, ExecuteGameEvent
+	call ExecuteGameEvent
 	or a
 	ret
 
@@ -80,10 +80,10 @@ MainMenu_ContinueDuel:
 	ld a, MUSIC_STOP
 	call PlaySong
 	farcall ClearEvents
-	farcall $04, LoadGeneralSaveData
+	call LoadGeneralSaveData
 	farcall SetMainSGBBorder
 	ld a, GAME_EVENT_CONTINUE_DUEL
 	ld [wGameEvent], a
-	farcall $03, ExecuteGameEvent
+	call ExecuteGameEvent
 	or a
 	ret

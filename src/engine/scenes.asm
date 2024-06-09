@@ -112,7 +112,7 @@ _LoadScene::
 	inc hl
 	ld [wSceneSpriteAnimation], a
 	ld a, [wSceneSprite]
-	farcall CreateSpriteAndAnimBufferEntry
+	call CreateSpriteAndAnimBufferEntry
 	ld a, [wWhichSprite]
 	ld [wSceneSpriteIndex], a
 	push hl
@@ -133,7 +133,7 @@ _LoadScene::
 	ld a, [wSceneSpriteAnimation]
 	cp $ff
 	jr z, .next_animation
-	farcall StartSpriteAnimation
+	call StartSpriteAnimation
 	jr .next_animation
 .done
 	pop af

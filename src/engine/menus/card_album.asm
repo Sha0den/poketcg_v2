@@ -622,8 +622,7 @@ GetFirstOwnedCardIndex:
 
 CardAlbum:
 	ld a, $01
-	ld [hffb4], a ; should be ldh
-
+	ldh [hffb4], a
 	xor a
 .booster_pack_menu
 	ld hl, .BoosterPackMenuParams
@@ -887,7 +886,7 @@ CardAlbum:
 	ldh a, [hffb4]
 	dec a
 	jr nz, .draw_box
-	ld [hffb4], a
+	ldh [hffb4], a
 	call Set_OBJ_8x8
 	call ZeroObjectPositions
 	ld a, $01

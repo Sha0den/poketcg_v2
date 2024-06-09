@@ -102,7 +102,7 @@ AddDeckToCollection:
 ; input:
 ;	a = DECK_* flags to pick which deck names to show
 DrawDecksScreen:
-	ld [hffb5], a
+	ldh [hffb5], a
 	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	lb de, 0,  0
 	lb bc, 20, 13
@@ -1619,7 +1619,7 @@ AddCardIDToVisibleList:
 ; wCardListHandlerFunction
 InitCardSelectionParams:
 	ld [wCardListCursorPos], a
-	ld [hffb3], a
+	ldh [hffb3], a
 	ld de, wCardListCursorXPos
 	ld b, $9
 .loop
@@ -1673,7 +1673,7 @@ HandleCardSelectionInput:
 
 .handle_ab_btns
 	ld a, [wCardListCursorPos]
-	ld [hffb3], a
+	ldh [hffb3], a
 	ldh a, [hKeysPressed]
 	and A_BUTTON | B_BUTTON
 	jr z, HandleCardSelectionCursorBlink
@@ -1681,7 +1681,7 @@ HandleCardSelectionInput:
 	jr nz, ConfirmSelectionAndReturnCarry
 	; B button was pressed
 	ld a, $ff
-	ld [hffb3], a
+	ldh [hffb3], a
 	call PlaySFXConfirmOrCancel
 	scf
 	ret
@@ -1841,7 +1841,7 @@ HandleDeckCardSelectionList:
 
 .asm_9bb9
 	ld a, [wCardListCursorPos]
-	ld [hffb3], a
+	ldh [hffb3], a
 	ld hl, wCardListHandlerFunction
 	ld a, [hli]
 	or [hl]
@@ -1873,7 +1873,7 @@ HandleDeckCardSelectionList:
 	and A_BUTTON
 	jr nz, .select_card
 	ld a, $ff
-	ld [hffb3], a
+	ldh [hffb3], a
 	call PlaySFXConfirmOrCancel
 	scf
 	ret
@@ -3218,7 +3218,7 @@ PrintFilteredCardSelectionList:
 ; input:
 ;	a = DECK_* flags for which decks to include in the collection
 CreateCardCollectionListWithDeckCards:
-	ld [hffb5], a
+	ldh [hffb5], a
 ; copies sCardCollection to wTempCardCollection
 	ld hl, sCardCollection
 	ld de, wTempCardCollection
