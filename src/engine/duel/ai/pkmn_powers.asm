@@ -460,7 +460,12 @@ HandleAIPkmnPowers:
 	ld a, e
 	push bc
 
-; check heal
+; step in
+	cp DRAGONITE_LV45
+	jr nz, .check_heal
+	call HandleAIStepIn
+	jr .next_1
+.check_heal
 	cp VILEPLUME
 	jr nz, .check_shift
 	call HandleAIHeal
@@ -497,6 +502,35 @@ HandleAIPkmnPowers:
 
 .done
 	pop bc
+	ret
+
+; checks whether AI uses Step In.
+; Step In is only activated if the AI's Active Pokemon is about to be KO'd
+; the Benched Dragonite must also have 4 Energy so that it can attack
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Dragonite.
+HandleAIStepIn:
+	ld a, c
+	ldh [hTemp_ffa0], a
+	xor a
+	ldh [hTempPlayAreaLocation_ff9d], a
+	call CheckIfDefendingPokemonCanKnockOut
+	ret nc ; Defending Pokemon cannot KO
+	ldh a, [hTemp_ffa0]
+	ld e, a
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wTotalAttachedEnergies]
+	cp 4
+	ccf
+	ret nc ; Dragonite doesn't have enough Energy to attack
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
 	ret
 
 ; checks whether AI uses Heal on Pokemon in Play Area.

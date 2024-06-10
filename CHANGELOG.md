@@ -12,6 +12,12 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **June 10, 2024:** 2 Files Changed
+    - Fix AI logic for using Dugtrio's Earthquake attack
+    - Add AI logic for using Dragonite's Step In Pokémon Power (taken from poketcg2)
+
+<br/>
+
 - **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/637b2675313f43498707565d050d9fcf825319db):** 3 Files Changed
     - Finish fixing the "Big Lightning" and "Dive Bomb" animations
     - Split "Gfx 12" and "Anims 1" into 2 banks
@@ -46,7 +52,7 @@
     - Fix Rick never playing Energy Search
     - Fix Rick using the wrong Pokédex AI subroutine
     - Fix Chris never using Revive on Kangaskhan
-    - Fix a flaw in the AI's Pokemon Trader logic for the PowerGenerator deck
+    - Fix a flaw in the AI's Pokémon Trader logic for the PowerGenerator deck
     - Fix various flaws in the AI's Full Heal logic
     - Prevent the AI from attacking with a Pokémon Power after playing PlusPower and then evolving
     - Fix the AI never using Energy Trans to retreat
@@ -169,7 +175,7 @@
 <br/>
 
 - **[April 30, 2024](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1):** 26 Files Changed
-    - Comment out many unreferenced functionsin the home bank
+    - Comment out many unreferenced functions in the home bank
     - Remove src/home/ai.asm and src/home/damage.asm and unlink them from src/home.asm
     - Transfer some functions out of the home banks
     - Eliminate some same bank tail calls (replacing a call ret with a fallthrough/jr/jp)
@@ -196,7 +202,7 @@
 
 
 ## Miscellaneous Changes
-- **June 9, 2024** 1 File Changed (technically 2 since I renamed the original sprite)
+- **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/dd9ea3eb13636a9e10f35340549c051dc2037248)** 1 File Changed (technically 2 since I renamed the original sprite)
     - Use JappaWakka's updated Double Colorless Energy sprite (with 2 Energy symbols)
 
 <br/>

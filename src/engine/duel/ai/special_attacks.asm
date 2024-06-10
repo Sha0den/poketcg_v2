@@ -345,9 +345,9 @@ HandleSpecialAIAttacks:
 	ld a, $80
 	ret
 
-; dismiss attack if number of own benched cards which would
-; be KOd is greater than or equal to the number
-; of prize cards left for player.
+; dismiss the attack if the number of Pokemon on the user's Bench
+; which would be KO'd after using Earthquake is greater than or equal to
+; the number of Prize cards that the Player has not yet drawn
 .Earthquake:
 	ld a, DUELVARS_BENCH
 	call GetTurnDuelistVariable
@@ -360,7 +360,9 @@ HandleSpecialAIAttacks:
 	jr z, .count_prizes
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
+	push hl
 	call GetTurnDuelistVariable
+	pop hl
 	cp 20
 	jr nc, .loop_earthquake
 	inc d
@@ -368,7 +370,9 @@ HandleSpecialAIAttacks:
 
 .count_prizes
 	push de
+	call SwapTurn
 	call CountPrizes
+	call SwapTurn
 	pop de
 	cp d
 	jp c, .zero_score
