@@ -629,8 +629,8 @@ HandleDestinyBondSubstatus::
 	ret z
 	ld [hl], 0
 	push hl
-	call DrawDuelMainScene
-	call DrawDuelHUDs
+	bank1call DrawDuelMainScene
+	bank1call DrawDuelHUDs
 	pop hl
 	ld l, DUELVARS_ARENA_CARD
 	ld a, [hl]
@@ -692,7 +692,7 @@ ApplyStrikesBack_AgainstResidualAttack::
 	call WaitForWideTextBoxInput
 	xor a
 	call PrintPlayAreaCardKnockedOutIfNoHP
-	call DrawDuelHUDs
+	bank1call DrawDuelHUDs
 	scf
 	ret
 

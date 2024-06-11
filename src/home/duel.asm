@@ -1228,7 +1228,7 @@ ProcessPlayedPokemonCard::
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
 	ret nz
-	call DisplayUsePokemonPowerScreen
+	bank1call DisplayUsePokemonPowerScreen
 	ldh a, [hTempCardIndex_ff98]
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld hl, wLoadedCard1Name
@@ -1245,7 +1245,7 @@ ProcessPlayedPokemonCard::
 	ld a, $01 ; check only Muk
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 	jr nc, .use_pokemon_power
-	call DisplayUsePokemonPowerScreen
+	bank1call DisplayUsePokemonPowerScreen
 	ldtx hl, UnableDueToToxicGasText
 	call DrawWideTextBox_WaitForInput
 	jp ExchangeRNG
@@ -1277,7 +1277,7 @@ ProcessPlayedPokemonCard::
 	ldtx hl, WillUseThePokemonPowerText
 	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
-	call Func_7415
+	bank1call Func_7415
 	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
 	jp TryExecuteEffectCommandFunction
 
@@ -1371,7 +1371,7 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 
 ; use Pokemon Power
 UsePokemonPower::
-	call Func_7415
+	bank1call Func_7415
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
 	jr c, DisplayUsePokemonPowerScreen_WaitForInput
@@ -1390,7 +1390,7 @@ UsePokemonPower::
 
 DisplayUsePokemonPowerScreen_WaitForInput::
 	push hl
-	call DisplayUsePokemonPowerScreen
+	bank1call DisplayUsePokemonPowerScreen
 	pop hl
 ;	fallthrough
 
@@ -1448,7 +1448,7 @@ UseAttackOrPokemonPower::
 ;	fallthrough
 
 PlayAttackAnimation_DealAttackDamage::
-	call Func_7415
+	bank1call Func_7415
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
 	jr nz, .deal_damage
@@ -1473,9 +1473,9 @@ PlayAttackAnimation_DealAttackDamage::
 	call GetNonTurnDuelistVariable
 	push de
 	push hl
-	call PlayAttackAnimation
-	call PlayStatusConditionQueueAnimations
-	call WaitAttackAnimation
+	bank1call PlayAttackAnimation
+	bank1call PlayStatusConditionQueueAnimations
+	bank1call WaitAttackAnimation
 	pop hl
 	pop de
 	call SubtractHP
@@ -1500,7 +1500,7 @@ HandleAfterDamageEffects::
 	bank1call ApplyStatusConditionQueue
 	call Func_1bb4
 	bank1call UpdateArenaCardLastTurnDamage
-	call Func_6e49
+	bank1call Func_6e49
 	or a
 	ret
 
@@ -1522,7 +1522,7 @@ HandleConfusionDamageToSelf::
 	ld a, 20 ; damage
 	call DealConfusionDamageToSelf
 	call Func_1bb4
-	call Func_6e49
+	bank1call Func_6e49
 	bank1call ClearNonTurnTemporaryDuelvars
 	or a
 	ret
@@ -1633,7 +1633,7 @@ PlayTrainerCard::
 	jr c, .done
 	ld a, OPPACTION_PLAY_TRAINER
 	call SetOppAction_SerialSendDuelData
-	call DisplayUsedTrainerCardDetailScreen
+	bank1call DisplayUsedTrainerCardDetailScreen
 	call ExchangeRNG
 	ld a, EFFECTCMDTYPE_DISCARD_ENERGY
 	call TryExecuteEffectCommandFunction
@@ -2087,7 +2087,7 @@ PrintPokemonsAttackText::
 Func_1bb4::
 	call FinishQueuedAnimations
 	bank1call DrawDuelMainScene
-	call DrawDuelHUDs
+	bank1call DrawDuelHUDs
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call PrintFailedEffectText
@@ -2124,7 +2124,7 @@ PrintFailedEffectText::
 	scf
 	ret
 .no_effect_from_status
-	call PrintThereWasNoEffectFromStatusText
+	bank1call PrintThereWasNoEffectFromStatusText
 	call DrawWideTextBox_PrintText
 	scf
 	ret

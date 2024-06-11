@@ -12,6 +12,11 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **June 11, 2024:** 2 Files Changed
+    - Change some mistaken calls to bank1calls
+
+<br/>
+
 - **[June 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/3996431c2ce63dd11d4743483eaa071a7e2fbba7):** 2 Files Changed
     - Fix AI logic for using Dugtrio's Earthquake attack
     - Add AI logic for using Dragonite's Step In Pokémon Power (taken from poketcg2)
@@ -361,7 +366,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **June 11, 2024:** 1 File Changed
+- **[June 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/0350841247da35c6b11c79f88f58ca5a1f1050bb):** 1 File Changed
     - Use "farcall" when CheckIfCanEvolveInto_BasicToStage2 is accessed by the AI Logic 2 bank
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2)*
 
