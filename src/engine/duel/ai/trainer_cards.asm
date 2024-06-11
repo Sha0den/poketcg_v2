@@ -1962,7 +1962,7 @@ AIDecide_PokemonBreeder:
 	push hl
 	push bc
 	push de
-	call CheckIfCanEvolveInto_BasicToStage2
+	farcall CheckIfCanEvolveInto_BasicToStage2
 	pop de
 	call nc, .can_evolve
 	pop bc
@@ -2086,7 +2086,7 @@ AIDecide_PokemonBreeder:
 ; check if evolution is possible
 	push bc
 	push de
-	call CheckIfCanEvolveInto_BasicToStage2
+	farcall CheckIfCanEvolveInto_BasicToStage2
 	pop de
 	call nc, .HandleDragoniteLv41Evolution
 	call nc, .can_evolve
