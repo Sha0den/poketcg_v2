@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **June 11, 2024:** 2 Files Changed
+- **[June 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/114f2463ef738e36f6cbdc36eaceb5a9676d6f69):** 2 Files Changed
     - Change some mistaken calls to bank1calls
 
 <br/>
@@ -207,6 +207,11 @@
 
 
 ## Miscellaneous Changes
+- **June 13, 2024** 1 File Changed
+    - Make the default player name (Mark) mixed case and have it be displayed with halfwidth font tiles to match the rest of the game's text
+
+<br/>
+
 - **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/dd9ea3eb13636a9e10f35340549c051dc2037248)** 1 File Changed (technically 2 since I renamed the original sprite)
     - Use JappaWakka's updated Double Colorless Energy sprite (with 2 Energy symbols)
 

@@ -33,10 +33,10 @@ DisplayPlayerNamingScreen:
 	ld [sPlayerName+$f], a
 	jp DisableSRAM
 
+; the default player name, only used if the player didn't type anything
 .default_name
-	; "MARK": default player name.
-	textfw "MARK"
-	db TX_END, TX_END, TX_END, TX_END
+	text "Mark"
+	done
 
 Unknown_128f7:
 	db  0,  0 ; start menu coords
