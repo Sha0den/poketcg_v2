@@ -6,7 +6,7 @@ AIDecideWhetherToRetreat:
 	jp nz, .no_carry
 	xor a
 	ld [wAIPlayEnergyCardForRetreat], a
-	call CheckCantRetreatDueToAcid
+	call CheckCantRetreatDueToAttackEffect
 	jr nc, .no_acid
 	; affected by acid, set retreat score to zero and return no carry
 	xor a

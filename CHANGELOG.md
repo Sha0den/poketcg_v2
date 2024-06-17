@@ -207,7 +207,12 @@
 
 
 ## Miscellaneous Changes
-- **June 17, 2024** 51 Files Changed
+- **June 17, 2024** 3 Files Changed
+    - Reorganize the functions in home/substatus.asm
+
+<br/>
+
+- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d)** 51 Files Changed
     - Try to standardize the function comments that are used in the home bank files
     - Also eliminate some redundant code and update a few more ld's to ldh's
 

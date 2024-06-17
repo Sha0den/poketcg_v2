@@ -8,7 +8,9 @@ HandleDoubleDamageSubstatus::
 	call GetTurnDuelistVariable
 	bit SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
 	ret z
-; double damage at de
+;	fallthrough
+
+DoubleDamage::
 	ld a, e
 	or d
 	ret z
@@ -32,20 +34,41 @@ HandleDamageReduction::
 	or a
 	ret z
 	cp SUBSTATUS2_REDUCE_BY_20
-	jr z, .reduce_damage_by_20
+	jr z, ReduceDamageBy20
 	cp SUBSTATUS2_REDUCE_BY_10
 	ret nz
-; reduce damage by 10
+;	fallthrough
+
+ReduceDamageBy10::
 	ld hl, -10
 	add hl, de
 	ld e, l
 	ld d, h
 	ret
-.reduce_damage_by_20
+
+ReduceDamageBy20::
 	ld hl, -20
 	add hl, de
 	ld e, l
 	ld d, h
+	ret
+
+
+PreventAllDamage_IfLessThan40::
+	ld bc, 40
+	call CompareDEtoBC
+	ret nc
+	ld de, 0
+	ret
+
+PreventAllDamage_IfMoreThan20::
+	ld bc, 30
+	call CompareDEtoBC
+	ret c
+;	fallthrough
+
+PreventAllDamage::
+	ld de, 0
 	ret
 
 
@@ -58,21 +81,21 @@ HandleDamageReduction::
 HandleDamageReductionExceptSubstatus2::
 	ld a, [wNoDamageOrEffect]
 	or a
-	jr nz, .no_damage
+	jr nz, PreventAllDamage
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
 	call GetTurnDuelistVariable
 	or a
 	jr z, .not_affected_by_substatus1
 	cp SUBSTATUS1_NO_DAMAGE
-	jr z, .no_damage
+	jr z, PreventAllDamage
 	cp SUBSTATUS1_REDUCE_BY_10
-	jr z, .reduce_damage_by_10
+	jr z, ReduceDamageBy10
 	cp SUBSTATUS1_REDUCE_BY_20
-	jr z, .reduce_damage_by_20
+	jr z, ReduceDamageBy20
 	cp SUBSTATUS1_HARDEN
-	jr z, .prevent_less_than_40_damage
+	jr z, PreventAllDamage_IfLessThan40
 	cp SUBSTATUS1_HALVE_DAMAGE
-	jr z, .halve_damage
+	jr z, HalveDamage_RoundedDown
 .not_affected_by_substatus1
 	call CheckCannotUseDueToStatus
 	ret c
@@ -82,10 +105,12 @@ HandleDamageReductionExceptSubstatus2::
 	ret z
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MR_MIME
-	jr z, .prevent_less_than_30_damage ; invisible wall
+	jr z, PreventAllDamage_IfMoreThan20 ; Invisible Wall
 	cp KABUTO
 	ret nz
-.halve_damage
+;	fallthrough
+
+HalveDamage_RoundedDown::
 	sla d
 	rr e
 	bit 0, e
@@ -94,36 +119,6 @@ HandleDamageReductionExceptSubstatus2::
 	add hl, de
 	ld e, l
 	ld d, h
-	ret
-.no_damage
-	ld de, 0
-	ret
-.reduce_damage_by_10
-	ld hl, -10
-	add hl, de
-	ld e, l
-	ld d, h
-	ret
-.reduce_damage_by_20
-	ld hl, -20
-	add hl, de
-	ld e, l
-	ld d, h
-	ret
-.prevent_less_than_40_damage
-	ld bc, 40
-	call CompareDEtoBC
-	ret nc
-	ld de, 0
-	ret
-.prevent_less_than_30_damage
-	ld a, [wLoadedAttackCategory]
-	cp POKEMON_POWER
-	ret z
-	ld bc, 30
-	call CompareDEtoBC
-	ret c
-	ld de, 0
 	ret
 
 
@@ -153,70 +148,123 @@ HandleDamageReductionOrNoDamageFromPkmnPowerEffects::
 	ret
 
 
-; used to bounce back a damaging attack.
-; when MACHAMP is damaged, if its Strikes Back is active, then
-; the Attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
-; ignore if damage taken at de is 0.
-; preserves de and hl
-HandleStrikesBack_AgainstDamagingAttack::
-	ld a, e
-	or d
-	ret z
-	ld a, [wIsDamageToSelf]
+; preserves bc
+; input:
+;	a = wNoDamageOrEffect ID (NO_DAMAGE_OR_EFFECT_* constant)
+; output:
+;	hl = text ID from NoDamageOrEffectTextIDTable (only if check succeeds)
+;	carry = set:  if the target has anything affecting it that would prevent
+;	              any damage or effect done to it during this turn
+CheckNoDamageOrEffect::
+	ld a, [wNoDamageOrEffect]
 	or a
-	ret nz
-	ld a, [wTempNonTurnDuelistCardID] ; ID of Defending Pokemon
-	cp MACHAMP
-	ret nz
-	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
-	ret c
-	ld a, [wLoadedAttackCategory] ; category of attack used
-	cp POKEMON_POWER
 	ret z
-	ld a, [wTempPlayAreaLocation_cceb] ; Defending Pokemon's PLAY_AREA_*
-	or a ; cp PLAY_AREA_ARENA
-	jr nz, .in_bench
-	call CheckCannotUseDueToStatus
-	ret c
-.in_bench
-	push hl
-	push de
-	; subtract 10 HP from Attacking Pokemon (turn holder's Active Pokemon)
-	call SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
-	push af
-	push hl
-	ld de, 10
-	call SubtractHP
-	ld a, [wLoadedCard2ID]
-	ld [wTempNonTurnDuelistCardID], a
-	ld hl, 10
-	call LoadTxRam3
-	ld hl, wLoadedCard2Name
+	bit 7, a
+	jr nz, .dont_print_text ; already been here so don't repeat the text
+	ld hl, wNoDamageOrEffect
+	set 7, [hl]
+	dec a
+	add a
+	ld e, a
+	ld d, $0
+	ld hl, NoDamageOrEffectTextIDTable
+	add hl, de
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call LoadTxRam2
-	ldtx hl, ReceivesDamageDueToStrikesBackText
-	call DrawWideTextBox_WaitForInput
-	pop hl
-	pop af
-	or a
-	jr z, .not_knocked_out
+	scf
+	ret
+
+.dont_print_text
+	ld hl, $0000
+	scf
+	ret
+
+NoDamageOrEffectTextIDTable::
+	tx NoDamageOrEffectDueToAttackText       ; NO_DAMAGE_OR_EFFECT_ATTACK
+	tx NoDamageOrEffectDueToTransparencyText ; NO_DAMAGE_OR_EFFECT_TRANSPARENCY
+	tx NoDamageOrEffectDueToNShieldText      ; NO_DAMAGE_OR_EFFECT_NSHIELD
+
+
+; preserves bc
+; output:
+;	carry = set:  if the Defending Pokemon (turn holder's Active Pokemon) is affected by
+;	              a substatus that prevents any damage or effect dealt to it for the turn.
+;	wNoDamageOrEffect = correct index (NO_DAMAGE_OR_EFFECT_* constant)
+HandleNoDamageOrEffectSubstatus::
 	xor a
-	call PrintPlayAreaCardKnockedOutIfNoHP
-.not_knocked_out
-	call SwapTurn
-	pop de
-	pop hl
+	ld [wNoDamageOrEffect], a
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	ret z
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+	call GetTurnDuelistVariable
+	ld e, NO_DAMAGE_OR_EFFECT_ATTACK
+	ldtx hl, NoDamageOrEffectDueToAttackText
+	cp SUBSTATUS1_IMMUNITY
+	jr z, .no_damage_or_effect
+	call CheckCannotUseDueToStatus
+	ccf
+	ret nc
+.pkmn_power
+	ld a, [wTempNonTurnDuelistCardID]
+	cp MEW_LV8
+	jr z, .neutralizing_shield
+	or a
+	ret
+.no_damage_or_effect
+	ld a, e
+	ld [wNoDamageOrEffect], a
+	scf
+	ret
+.neutralizing_shield
+	ld a, [wIsDamageToSelf]
+	or a
+	ret nz
+	; prevent damage if attacked by a non-Basic Pokemon
+	ld a, [wTempTurnDuelistCardID]
+	ld e, a
+	ld d, $0
+	call LoadCardDataToBuffer2_FromCardID
+	ld a, [wLoadedCard2Stage]
+	or a
+	ret z
+	ld e, NO_DAMAGE_OR_EFFECT_NSHIELD
+	ldtx hl, NoDamageOrEffectDueToNShieldText
+	jr .no_damage_or_effect
+
+
+; if the Pokemon being attacked is HAUNTER_LV17 and its Transparency is active,
+; there is a 50% chance that any damage or effect is prevented.
+; output:
+;	carry = set:  if Transparency successfully protected Haunter from the attack
+HandleTransparency::
+	ld a, [wTempNonTurnDuelistCardID]
+	cp HAUNTER_LV17
+	jr z, .transparency
+.done
+	or a
+	ret
+.transparency
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	jr z, .done ; Transparency has no effect against Pokemon Powers
+	ld a, [wTempPlayAreaLocation_cceb]
+	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	jr c, .done
+	xor a
+	ld [wDuelDisplayedScreen], a
+	ldtx de, TransparencyCheckText
+	call TossCoin
+	ret nc
+	ld a, NO_DAMAGE_OR_EFFECT_TRANSPARENCY
+	ld [wNoDamageOrEffect], a
+	ldtx hl, NoDamageOrEffectDueToTransparencyText
+	scf
 	ret
 
 
+; this is called to potentially negate a non-damaging attack, like Lure
 ; output:
 ;	carry = set:  if MEW_LV8 or HAUNTER_LV17 is the turn holder's Active Pokemon
 HandleNShieldAndTransparency::
@@ -344,120 +392,50 @@ CheckSmokescreenSubstatus::
 	ret
 
 
-; preserves bc
+; preserves bc and de
 ; output:
-;	carry = set:  if the Defending Pokemon (turn holder's Active Pokemon) is affected by
-;	              a substatus that prevents any damage or effect dealt to it for the turn.
-;	wNoDamageOrEffect = correct index (NO_DAMAGE_OR_EFFECT_* constant)
-HandleNoDamageOrEffectSubstatus::
-	xor a
-	ld [wNoDamageOrEffect], a
-	ld a, [wLoadedAttackCategory]
-	cp POKEMON_POWER
-	ret z
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
+CheckCantRetreatDueToAttackEffect::
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
-	ld e, NO_DAMAGE_OR_EFFECT_ATTACK
-	ldtx hl, NoDamageOrEffectDueToAttackText
-	cp SUBSTATUS1_IMMUNITY
-	jr z, .no_damage_or_effect
-	call CheckCannotUseDueToStatus
+	or a
+	ret z
+	cp SUBSTATUS2_UNABLE_RETREAT
+	jr z, .cant_retreat
+	or a
+	ret
+.cant_retreat
+	ldtx hl, UnableToRetreatDueToAcidText
+	scf
+	ret
+
+
+; preserves bc and de
+; output:
+;	carry = set:  if the turn holder can't play any Trainer cards because of Headache
+CheckCantUseTrainerDueToHeadache::
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
+	call GetTurnDuelistVariable
+	or a
+	bit SUBSTATUS3_HEADACHE_F, [hl]
+	ret z
+	ldtx hl, UnableToUseTrainerDueToHeadacheText
+	scf
+	ret
+
+
+; preserves bc and de
+; output:
+;	carry = set:  if there's an Aerodactyl in play with an active Prehistoric Power
+IsPrehistoricPowerActive::
+	ld a, AERODACTYL
+	call CountPokemonIDInBothPlayAreas
+	ret nc
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ldtx hl, UnableToEvolveDueToPrehistoricPowerText
 	ccf
-	ret nc
-.pkmn_power
-	ld a, [wTempNonTurnDuelistCardID]
-	cp MEW_LV8
-	jr z, .neutralizing_shield
-	or a
 	ret
-.no_damage_or_effect
-	ld a, e
-	ld [wNoDamageOrEffect], a
-	scf
-	ret
-.neutralizing_shield
-	ld a, [wIsDamageToSelf]
-	or a
-	ret nz
-	; prevent damage if attacked by a non-Basic Pokemon
-	ld a, [wTempTurnDuelistCardID]
-	ld e, a
-	ld d, $0
-	call LoadCardDataToBuffer2_FromCardID
-	ld a, [wLoadedCard2Stage]
-	or a
-	ret z
-	ld e, NO_DAMAGE_OR_EFFECT_NSHIELD
-	ldtx hl, NoDamageOrEffectDueToNShieldText
-	jr .no_damage_or_effect
-
-
-; if the Pokemon being attacked is HAUNTER_LV17 and its Transparency is active,
-; there is a 50% chance that any damage or effect is prevented.
-; output:
-;	carry = set:  if Transparency successfully protected Haunter from the attack
-HandleTransparency::
-	ld a, [wTempNonTurnDuelistCardID]
-	cp HAUNTER_LV17
-	jr z, .transparency
-.done
-	or a
-	ret
-.transparency
-	ld a, [wLoadedAttackCategory]
-	cp POKEMON_POWER
-	jr z, .done ; Transparency has no effect against Pokemon Powers
-	ld a, [wTempPlayAreaLocation_cceb]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	jr c, .done
-	xor a
-	ld [wDuelDisplayedScreen], a
-	ldtx de, TransparencyCheckText
-	call TossCoin
-	ret nc
-	ld a, NO_DAMAGE_OR_EFFECT_TRANSPARENCY
-	ld [wNoDamageOrEffect], a
-	ldtx hl, NoDamageOrEffectDueToTransparencyText
-	scf
-	ret
-
-
-; preserves bc
-; input:
-;	a = wNoDamageOrEffect ID (NO_DAMAGE_OR_EFFECT_* constant)
-; output:
-;	hl = text ID from NoDamageOrEffectTextIDTable (only if check succeeds)
-;	carry = set:  if the target has anything affecting it that would prevent
-;	              prevents any damage or effect done to it during this turn
-CheckNoDamageOrEffect::
-	ld a, [wNoDamageOrEffect]
-	or a
-	ret z
-	bit 7, a
-	jr nz, .dont_print_text ; already been here so don't repeat the text
-	ld hl, wNoDamageOrEffect
-	set 7, [hl]
-	dec a
-	add a
-	ld e, a
-	ld d, $0
-	ld hl, NoDamageOrEffectTextIDTable
-	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	scf
-	ret
-
-.dont_print_text
-	ld hl, $0000
-	scf
-	ret
-
-NoDamageOrEffectTextIDTable::
-	tx NoDamageOrEffectDueToAttackText       ; NO_DAMAGE_OR_EFFECT_ATTACK
-	tx NoDamageOrEffectDueToTransparencyText ; NO_DAMAGE_OR_EFFECT_TRANSPARENCY
-	tx NoDamageOrEffectDueToNShieldText      ; NO_DAMAGE_OR_EFFECT_NSHIELD
 
 
 ; preserves all registers except af
@@ -577,49 +555,27 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	ret
 
 
-; preserves bc and de
-; output:
-;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
-CheckCantRetreatDueToAcid::
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
+; if the ID of the card provided in register a as a deck index is MUK,
+; then clear the changed type of all Active and Benched Pokemon.
+; input:
+;	a = deck index (0-59) to check
+ClearChangedTypesIfMuk::
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp MUK
+	ret nz
+	call SwapTurn
+	call .zero_changed_types
+	call SwapTurn
+.zero_changed_types
+	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
 	call GetTurnDuelistVariable
-	or a
-	ret z
-	cp SUBSTATUS2_UNABLE_RETREAT
-	jr z, .cant_retreat
-	or a
-	ret
-.cant_retreat
-	ldtx hl, UnableToRetreatDueToAcidText
-	scf
-	ret
-
-
-; preserves bc and de
-; output:
-;	carry = set:  if the turn holder can't play any Trainer cards because of Headache
-CheckCantUseTrainerDueToHeadache::
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
-	call GetTurnDuelistVariable
-	or a
-	bit SUBSTATUS3_HEADACHE_F, [hl]
-	ret z
-	ldtx hl, UnableToUseTrainerDueToHeadacheText
-	scf
-	ret
-
-
-; preserves bc and de
-; output:
-;	carry = set:  if there's an Aerodactyl in play with an active Prehistoric Power
-IsPrehistoricPowerActive::
-	ld a, AERODACTYL
-	call CountPokemonIDInBothPlayAreas
-	ret nc
-	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
-	ldtx hl, UnableToEvolveDueToPrehistoricPowerText
-	ccf
+	ld c, MAX_PLAY_AREA_POKEMON
+.zero_changed_types_loop
+	xor a
+	ld [hli], a
+	dec c
+	jr nz, .zero_changed_types_loop
 	ret
 
 
@@ -718,6 +674,69 @@ HandleDestinyBondSubstatus::
 	jp DrawWideTextBox_WaitForInput
 
 
+; used to bounce back a damaging attack.
+; when MACHAMP is damaged, if its Strikes Back is active, then
+; the Attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
+; ignore if damage taken at de is 0.
+; preserves de and hl
+HandleStrikesBack_AgainstDamagingAttack::
+	ld a, e
+	or d
+	ret z
+	ld a, [wIsDamageToSelf]
+	or a
+	ret nz
+	ld a, [wTempNonTurnDuelistCardID] ; ID of Defending Pokemon
+	cp MACHAMP
+	ret nz
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ret c
+	ld a, [wLoadedAttackCategory] ; category of attack used
+	cp POKEMON_POWER
+	ret z
+	ld a, [wTempPlayAreaLocation_cceb] ; Defending Pokemon's PLAY_AREA_*
+	or a ; cp PLAY_AREA_ARENA
+	jr nz, .in_bench
+	call CheckCannotUseDueToStatus
+	ret c
+.in_bench
+	push hl
+	push de
+	; subtract 10 HP from Attacking Pokemon (turn holder's Active Pokemon)
+	call SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetTurnDuelistVariable
+	push af
+	push hl
+	ld de, 10
+	call SubtractHP
+	ld a, [wLoadedCard2ID]
+	ld [wTempNonTurnDuelistCardID], a
+	ld hl, 10
+	call LoadTxRam3
+	ld hl, wLoadedCard2Name
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ldtx hl, ReceivesDamageDueToStrikesBackText
+	call DrawWideTextBox_WaitForInput
+	pop hl
+	pop af
+	or a
+	jr z, .not_knocked_out
+	xor a
+	call PrintPlayAreaCardKnockedOutIfNoHP
+.not_knocked_out
+	pop de
+	pop hl
+	jp SwapTurn
+
+
 ; used to bounce back an attack of the RESIDUAL category.
 ; when MACHAMP is damaged, if its Strikes Back is active, the
 ; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
@@ -739,7 +758,6 @@ HandleStrikesBack_AgainstResidualAttack::
 	call ApplyStrikesBack_AgainstResidualAttack
 	jp nc, WaitForWideTextBoxInput
 	ret
-
 
 ApplyStrikesBack_AgainstResidualAttack::
 	push hl
@@ -770,28 +788,4 @@ ApplyStrikesBack_AgainstResidualAttack::
 	call PrintPlayAreaCardKnockedOutIfNoHP
 	bank1call DrawDuelHUDs
 	scf
-	ret
-
-
-; if the ID of the card provided in register a as a deck index is MUK,
-; then clear the changed type of all Active and Benched Pokemon.
-; input:
-;	a = deck index (0-59) to check
-ClearChangedTypesIfMuk::
-	call GetCardIDFromDeckIndex
-	ld a, e
-	cp MUK
-	ret nz
-	call SwapTurn
-	call .zero_changed_types
-	call SwapTurn
-.zero_changed_types
-	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
-	call GetTurnDuelistVariable
-	ld c, MAX_PLAY_AREA_POKEMON
-.zero_changed_types_loop
-	xor a
-	ld [hli], a
-	dec c
-	jr nz, .zero_changed_types_loop
 	ret

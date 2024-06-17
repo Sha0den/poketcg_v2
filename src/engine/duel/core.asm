@@ -789,7 +789,7 @@ CheckRainDanceScenario:
 ; some status condition or due the bench containing no alive Pokemon.
 ; return carry if unable, nc if able.
 CheckAbleToRetreat:
-	call CheckCantRetreatDueToAcid
+	call CheckCantRetreatDueToAttackEffect
 	ret c
 	call CheckIfActiveCardParalyzedOrAsleep
 	ret c
