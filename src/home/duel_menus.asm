@@ -7,6 +7,7 @@ OpenDuelCheckMenu::
 	pop af
 	jp BankswitchROM
 
+
 OpenInPlayAreaScreen_FromSelectButton::
 	ldh a, [hBankROM]
 	push af
@@ -19,12 +20,15 @@ OpenInPlayAreaScreen_FromSelectButton::
 	ld a, b
 	jp BankswitchROM
 
+
 ; loads tiles and icons to display Your Play Area / Opp. Play Area screen,
 ; and draws the screen according to the turn player
-; input: h -> [wCheckMenuPlayAreaWhichDuelist] and l -> [wCheckMenuPlayAreaWhichLayout]
 ; similar to DrawYourOrOppPlayArea (bank 2) except it also draws a wide text box.
 ; this is because bank 2's DrawYourOrOppPlayArea is supposed to come from the Check Menu,
 ; so the text box is always already there.
+; input:
+;	h = hWhoseTurn constant (for wCheckMenuPlayAreaWhichDuelist)
+;	l = hWhoseTurn constant (for wCheckMenuPlayAreaWhichLayout)
 DrawYourOrOppPlayAreaScreen_Bank0::
 	ld a, h
 	ld [wCheckMenuPlayAreaWhichDuelist], a
@@ -39,6 +43,7 @@ DrawYourOrOppPlayAreaScreen_Bank0::
 	pop af
 	jp BankswitchROM
 
+
 DrawPlayersPrizeAndBenchCards::
 	ldh a, [hBankROM]
 	push af
@@ -47,6 +52,7 @@ DrawPlayersPrizeAndBenchCards::
 	call _DrawPlayersPrizeAndBenchCards
 	pop af
 	jp BankswitchROM
+
 
 HandlePeekSelection::
 	ldh a, [hBankROM]
@@ -60,6 +66,7 @@ HandlePeekSelection::
 	ld a, b
 	ret
 
+
 DrawAIPeekScreen::
 	ld b, a
 	ldh a, [hBankROM]
@@ -70,7 +77,9 @@ DrawAIPeekScreen::
 	pop af
 	jp BankswitchROM
 
-; a = number of prize cards for player to select to take
+
+; input:
+;	a = number of prize cards that the player needs to select
 SelectPrizeCards::
 	ld [wNumberOfPrizeCardsToSelect], a
 	ldh a, [hBankROM]
@@ -80,6 +89,7 @@ SelectPrizeCards::
 	call _SelectPrizeCards
 	pop af
 	jp BankswitchROM
+
 
 DrawPlayAreaToPlacePrizeCards::
 	ldh a, [hBankROM]

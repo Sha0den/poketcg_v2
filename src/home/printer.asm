@@ -1,4 +1,5 @@
-; a = which sequence to execute
+; input:
+;	a = which sequence to execute
 ExecutePrinterPacketSequence::
 	ld hl, .SequencePointers
 	dec a
@@ -19,7 +20,7 @@ ExecutePrinterPacketSequence::
 	dw .GetDeviceNumber            ; 11
 	dw .GetStatusAndFinishSequence ; 12
 
-; send next byte and increment sequence
+; sends next byte and increments sequence
 .SendPreambleOrHeaderByte:
 	call SendNextPrinterPacketByte
 .increment_sequence
@@ -27,8 +28,8 @@ ExecutePrinterPacketSequence::
 	inc [hl]
 	ret
 
-; check if there is data to send
-; if so, then update serial data pointer
+; checks if there is data to send
+; if so, then updates the serial data pointer
 ; otherwise, skip sending data section
 .StartDataSection:
 	call .increment_sequence
@@ -51,7 +52,7 @@ ExecutePrinterPacketSequence::
 ;	fallthrough
 
 ; sends next byte in data section
-; only increment sequence when
+; only increments sequence when
 ; there are no more bytes to send
 .SendRestOfDataSection:
 	call SendNextPrinterPacketByte
@@ -100,9 +101,11 @@ ExecutePrinterPacketSequence::
 	ld [wPrinterPacketSequence], a
 	ret
 
-; sends byte pointed by wSerialDataPtr to printer
-; then increments this pointer to point to next byte
-; for next iteration, and adds byte value to checksum
+
+; sends byte pointed to by wSerialDataPtr to printer
+; then increments this pointer to point to the next byte
+; for the next iteration, and adds the byte value to the checksum
+; preserves bc
 SendNextPrinterPacketByte::
 	ld hl, wSerialDataPtr
 	ld e, [hl]
@@ -124,7 +127,9 @@ SendNextPrinterPacketByte::
 	ld a, e
 ;	fallthrough
 
-; a = byte to send through serial data transfer
+; preserves all registers except af
+; input:
+;	a = byte to send through serial data transfer
 SendByteThroughSerialData:
 	ldh [rSB], a
 	ld a, SC_INTERNAL

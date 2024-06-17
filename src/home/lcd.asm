@@ -1,4 +1,5 @@
-; wait for VBlankHandler to finish unless lcd is off
+; waits for VBlankHandler to finish, unless lcd is off
+; preserves all registers except af
 WaitForVBlank::
 	push hl
 	ld a, [wLCDC]
@@ -15,7 +16,9 @@ WaitForVBlank::
 	pop hl
 	ret
 
-; turn LCD on
+
+; turns on LCD
+; preserves all registers except af
 EnableLCD::
 	ld a, [wLCDC]        ;
 	bit LCDC_ENABLE_F, a ;
@@ -27,7 +30,9 @@ EnableLCD::
 	ld [wFlushPaletteFlags], a
 	ret
 
-; wait for vblank, then turn LCD off
+
+; waits for vblank, then turns off LCD
+; preserves all registers except af
 DisableLCD::
 	ldh a, [rLCDC]       ;
 	bit LCDC_ENABLE_F, a ;
@@ -54,28 +59,36 @@ DisableLCD::
 	ldh [rIE], a
 	ret
 
-; set OBJ size: 8x8
+
+; sets OBJ size: 8x8
+; preserves all registers except af
 Set_OBJ_8x8::
 	ld a, [wLCDC]
 	and LCDC_OBJ8
 	ld [wLCDC], a
 	ret
 
-; set OBJ size: 8x16
+
+; sets OBJ size: 8x16
+; preserves all registers except af
 Set_OBJ_8x16::
 	ld a, [wLCDC]
 	or LCDC_OBJ16
 	ld [wLCDC], a
 	ret
 
-; set Window Display on
+
+; sets Window Display to on
+; preserves all registers except af
 SetWindowOn::
 	ld a, [wLCDC]
 	or LCDC_WINON
 	ld [wLCDC], a
 	ret
 
-; set Window Display off
+
+; sets Window Display to off
+; preserves all registers except af
 SetWindowOff::
 	ld a, [wLCDC]
 	and LCDC_WINOFF

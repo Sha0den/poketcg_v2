@@ -1,4 +1,9 @@
-; copy b bytes of data from hl to de, but only during hblank
+; copies b bytes of data from hl to de, but only during hblank
+; preserves bc
+; input:
+;	b = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 HblankCopyDataHLtoDE::
 	push bc
 .loop
@@ -20,7 +25,13 @@ HblankCopyDataHLtoDE::
 	pop bc
 	ret
 
-; copy c bytes of data from de to hl, but only during hblank
+
+; copies c bytes of data from de to hl, but only during hblank
+; preserves bc
+; input:
+;	c = number of bytes to copy
+;	de = address from which to start copying the data
+;	hl = where to copy the data
 HblankCopyDataDEtoHL::
 	push bc
 .loop

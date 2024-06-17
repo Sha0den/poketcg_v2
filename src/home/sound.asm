@@ -2,36 +2,61 @@ SetupSound::
 	farcall _SetupSound
 	ret
 
+
+; preserves all registers except af
 StopMusic::
 	xor a ; MUSIC_STOP
+;	fallthrough
+
+; preserves all registers
+; input:
+;	a = music ID to play (MUSIC_* constant)
 PlaySong::
 	farcall _PlaySong
 	ret
 
-; return a = 0: song finished, a = 1: song not finished
+
+; preserves all registers except af
+; output:
+;	a = 0: song finished
+;	a = 1: song not finished
 AssertSongFinished::
 	farcall _AssertSongFinished
 	ret
 
-; return a = 0: SFX finished, a = 1: SFX not finished
+
+; preserves all registers except af
+; output:
+;	a = 0: SFX finished
+;	a = 1: SFX not finished
 AssertSFXFinished::
 	farcall _AssertSFXFinished
 	ret
 
+
 ; formerly Func_3794
+; preserves all registers except af
 PlaySFX_InvalidChoice::
 	ld a, SFX_DENIED
+;	fallthrough
+
+; preserves all registers except af
+; input:
+;	a = sound effect ID (SFX_* constant)
 PlaySFX::
 	farcall _PlaySFX
 	ret
+
 
 PauseSong::
 	farcall _PauseSong
 	ret
 
+
 ResumeSong::
 	farcall _ResumeSong
 	ret
+
 
 Func_37a5::
 	ldh a, [hBankROM]

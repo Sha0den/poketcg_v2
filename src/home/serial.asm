@@ -1,4 +1,5 @@
 ; called at roughly 240Hz by TimerHandler
+; preserves bc and de
 SerialTimerHandler::
 	ld a, [wSerialOp]
 	cp $29
@@ -35,6 +36,8 @@ SerialTimerHandler::
 	ld [hl], $0
 	ret
 
+
+; preserves all registers
 SerialHandler::
 	push af
 	push hl
@@ -87,8 +90,10 @@ SerialHandler::
 	pop af
 	reti
 
-; handles a byte read from serial transfer by decoding it and storing it into
-; the receive buffer
+
+; handles a byte read from serial transfer by decoding it
+; and storing it into the receive buffer
+; preserves bc
 SerialHandleRecv::
 	ld hl, wSerialLastReadCA
 	ld e, [hl]
@@ -149,8 +154,10 @@ SerialHandleRecv::
 	set 0, [hl]
 	ret
 
-; prepares a byte to send over serial transfer, either from the send-save byte
-; slot or the send buffer
+
+; prepares a byte to send over serial transfer,
+; either from the send-save byte slot or the send buffer
+; preserves bc
 SerialHandleSend::
 	ld hl, wSerialSendSave
 	ld a, [hl]
@@ -200,7 +207,11 @@ SerialHandleSend::
 	ld a, $ca
 	ret
 
-; store byte at a in wSerialSendBuf for sending
+
+; stores byte at a in wSerialSendBuf for sending
+; preserves all registers
+; input:
+;	a = byte to store
 SerialSendByte::
 	push hl
 	push de
@@ -230,7 +241,10 @@ SerialSendByte::
 	pop hl
 	ret
 
-; sets carry if [wSerialRecvCounter] nonzero
+
+; preserves all registers except af
+; output:
+;	carry = set:  if [wSerialRecvCounter] != 0
 Func_0e32::
 	ld a, [wSerialRecvCounter]
 	or a
@@ -238,7 +252,9 @@ Func_0e32::
 	scf
 	ret
 
-; receive byte in wSerialRecvBuf
+
+; receives byte in wSerialRecvBuf
+; preserves all registers except af
 SerialRecvByte::
 	push hl
 	ld hl, wSerialRecvCounter
@@ -271,7 +287,12 @@ SerialRecvByte::
 	or a
 	ret
 
-; exchange c bytes. send bytes at hl and store received bytes in de
+
+; exchanges c bytes: sends bytes at hl and stores received bytes in de
+; input:
+;	hl = address from which to send the bytes
+;	de = address at which to store the bytes
+;	c = number of bytes to exchange
 SerialExchangeBytes::
 	ld b, c
 .asm_e64
@@ -305,7 +326,9 @@ SerialExchangeBytes::
 	jr nz, .asm_e64
 	ret
 
-; go into slave mode (external clock) for serial transfer?
+
+; enters slave mode (external clock) for serial transfer?
+; preserves de
 Func_0e8e::
 	call ClearSerialData
 	ld a, $12
@@ -320,13 +343,12 @@ Func_0e8e::
 	ldh [rIE], a
 	ret
 
-; exchange RNG during a link duel between both games
+
+; exchanges RNG during a link duel between both games
 ExchangeRNG::
 	ld a, [wDuelType]
 	cp DUELTYPE_LINK
-	jr z, .link_duel
-	ret
-.link_duel
+	ret nz ; not a link duel
 	ld a, DUELVARS_DUELIST_TYPE
 	call GetTurnDuelistVariable
 	or a ; cp DUELIST_TYPE_PLAYER
@@ -344,8 +366,8 @@ ExchangeRNG::
 	ret nc
 ;	fallthrough
 
-; load the number at wSerialFlags (error code?) to TxRam3, print
-; TransmissionErrorText, exit the duel, and reset serial registers.
+; loads the number at wSerialFlags (error code?) to TxRam3,
+; prints TransmissionErrorText, exits the duel, and resets serial registers.
 DuelTransmissionError::
 	ld a, [wSerialFlags]
 	ld l, a
@@ -364,7 +386,8 @@ DuelTransmissionError::
 	call PlaySong
 ;	fallthrough
 
-; disable serial interrupt, and clear rSB, rSC, and serial registers in WRAM
+; disables serial interrupt, and clears rSB, rSC, and serial registers in WRAM
+; preserves de
 ResetSerial::
 	ldh a, [rIE]
 	and ~(1 << INT_SERIAL)
@@ -374,7 +397,8 @@ ResetSerial::
 	ldh [rSC], a
 ;	fallthrough
 
-; zero serial registers in WRAM
+; zeroes serial registers in WRAM
+; preserves de
 ClearSerialData::
 	ld hl, wSerialOp
 	ld bc, wSerialEnd - wSerialOp
@@ -387,7 +411,12 @@ ClearSerialData::
 	jr nz, .loop
 	ret
 
-; store bc bytes from hl in wSerialSendBuf for sending
+
+; stores bc bytes from hl in wSerialSendBuf for sending
+; preserves bc and de
+; input:
+;	bc = number of bytes to store
+;	hl = address from which to start copying the bytes
 SerialSendBytes::
 	push bc
 .send_loop
@@ -408,7 +437,12 @@ SerialSendBytes::
 	scf
 	ret
 
-; receive bc bytes in wSerialRecvBuf and save them to hl
+
+; receives bc bytes in wSerialRecvBuf and saves them to hl
+; preserves bc and de
+; input:
+;	bc = number of bytes
+;	hl = where to save them
 SerialRecvBytes::
 	push bc
 .recv_loop
@@ -434,6 +468,7 @@ SerialRecvBytes::
 	scf
 	ret
 
+
 ; frame function during Link Opponent's turn
 ; if opponent makes a decision, jump directly
 ; to the address in wLinkOpponentTurnReturnAddress
@@ -454,12 +489,16 @@ LinkOpponentTurnFrameFunction::
 	scf
 	ret
 
-; sets hOppActionTableIndex to an AI action specified in register a.
-; send 10 bytes of data to the other game from hOppActionTableIndex, hTempCardIndex_ff9f,
-; hTemp_ffa0, and hTempPlayAreaLocation_ffa1, and hTempRetreatCostCards.
-; finally exchange RNG data.
+
+; sets hOppActionTableIndex to an AI action specified in register a,
+; then sends 10 bytes of data to the other game from hOppActionTableIndex,
+; hTempCardIndex_ff9f, hTemp_ffa0, hTempPlayAreaLocation_ffa1, and hTempRetreatCostCards,
+; and then exchanges RNG data.
 ; the receiving side will use this data to read the OPPACTION_* value in
-; [hOppActionTableIndex] and match it by calling the corresponding OppAction* function
+; [hOppActionTableIndex] and match it by calling the corresponding OppAction* function.
+; preserves bc and hl
+; input:
+;	a = OPPACTION_* constant
 SetOppAction_SerialSendDuelData::
 	push hl
 	push bc
@@ -477,9 +516,12 @@ SetOppAction_SerialSendDuelData::
 	pop hl
 	ret
 
-; receive 10 bytes of data from wSerialRecvBuf and store them into hOppActionTableIndex,
-; hTempCardIndex_ff9f, hTemp_ffa0, and hTempPlayAreaLocation_ffa1,
-; and hTempRetreatCostCards. also exchange RNG data.
+
+; receives 10 bytes of data from wSerialRecvBuf and stores them into
+; hOppActionTableIndex, hTempCardIndex_ff9f, hTemp_ffa0,
+; hTempPlayAreaLocation_ffa1, and hTempRetreatCostCards.
+; also exchanges RNG data.
+; preserves bc and hl
 SerialRecvDuelData::
 	push hl
 	push bc
@@ -491,8 +533,10 @@ SerialRecvDuelData::
 	pop hl
 	ret
 
+
 ; serial send 8 bytes at f, a, l, h, e, d, c, b
 ; only during a duel against a link opponent
+; preserves all registers
 SerialSend8Bytes::
 	push hl
 	push af
@@ -543,6 +587,7 @@ SerialSend8Bytes::
 	pop af
 	ret
 
+
 ; serial recv 8 bytes to f, a, l, h, e, d, c, b
 SerialRecv8Bytes::
 	ld hl, wTempSerialBuf
@@ -572,7 +617,7 @@ SerialRecv8Bytes::
 	pop af
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

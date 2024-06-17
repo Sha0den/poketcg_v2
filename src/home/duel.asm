@@ -1,4 +1,6 @@
 ; copies the deck pointed to by de to wPlayerDeck or wOpponentDeck (depending on whose turn it is)
+; input:
+;	de = deck to copy
 CopyDeckData::
 	ld hl, wPlayerDeck
 	ldh a, [hWhoseTurn]
@@ -45,7 +47,10 @@ CopyDeckData::
 	scf
 	ret
 
-; return, in register a, the amount of prizes that the turn holder has not yet drawn
+
+; preserves all registers except af
+; output:
+;	a = how many Prize cards the turn holder has not yet drawn
 CountPrizes::
 	push hl
 	ld a, DUELVARS_PRIZES
@@ -61,9 +66,12 @@ CountPrizes::
 	pop hl
 	ret
 
-; draw a card from the turn holder's deck, saving its location as CARD_LOCATION_JUST_DRAWN.
-; returns carry if deck is empty, nc if a card was successfully drawn.
+
+; draws a card from the turn holder's deck, saving its location as CARD_LOCATION_JUST_DRAWN.
 ; AddCardToHand is meant to be called next (unless this function returned carry).
+; preserves all registers except af
+; output:
+;	carry = set:  if a card couldn't be drawn because the deck was empty
 DrawCardFromDeck::
 	push hl
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
@@ -74,7 +82,7 @@ DrawCardFromDeck::
 	ld [hl], a ; increment number of cards not in deck
 	add DUELVARS_DECK_CARDS - 1 ; point to top card in the deck
 	ld l, a
-	ld a, [hl] ; grab card number (0-59) from wPlayerDeckCards or wOpponentDeckCards array
+	ld a, [hl] ; grab card's deck index (0-59) from wPlayerDeckCards or wOpponentDeckCards array
 	ld l, a
 	ld [hl], CARD_LOCATION_JUST_DRAWN ; temporarily write to corresponding card location variable
 	pop hl
@@ -85,8 +93,11 @@ DrawCardFromDeck::
 	scf
 	ret
 
-; add a card to the top of the turn holder's deck
-; the card is identified by register a, which contains the deck index (0-59) of the card
+
+; adds a card to the top of the turn holder's deck
+; preserves all registers except af
+; input:
+;	a = deck index (0-59) of the card to return to the deck
 ReturnCardToDeck::
 	push hl
 	push af
@@ -104,9 +115,13 @@ ReturnCardToDeck::
 	pop hl
 	ret
 
-; search a card in the turn holder's deck, extract it, and set its location to
-; CARD_LOCATION_JUST_DRAWN. AddCardToHand is meant to be called next.
-; the card is identified by register a, which contains the deck index (0-59) of the card.
+
+; searches the turn holder's deck for a card, removes it,
+; and sets its location to CARD_LOCATION_JUST_DRAWN.
+; AddCardToHand is meant to be called next.
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to remove from the deck
 SearchCardInDeckAndAddToHand::
 	push af
 	push hl
@@ -141,8 +156,11 @@ SearchCardInDeckAndAddToHand::
 	pop af
 	ret
 
+
 ; adds a card to the turn holder's hand and increments the number of cards in the hand
-; the card is identified by register a, which contains the deck index (0-59) of the card
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to add to the hand
 AddCardToHand::
 	push af
 	push hl
@@ -166,8 +184,11 @@ AddCardToHand::
 	pop af
 	ret
 
+
 ; removes a card from the turn holder's hand and decrements the number of cards in the hand
-; the card is identified by register a, which contains the deck index (0-59) of the card
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to remove from the hand
 RemoveCardFromHand::
 	push af
 	push hl
@@ -204,8 +225,11 @@ RemoveCardFromHand::
 	pop af
 	ret
 
+
 ; moves a card to the turn holder's discard pile, as long as it is in the hand
-; the card is identified by register a, which contains the deck index (0-59) of the card
+; preserves bc and de
+; input:
+;	a = deck index (0-59) of the hand card to move to the discard pile
 MoveHandCardToDiscardPile::
 	call GetTurnDuelistVariable
 	ld a, [hl]
@@ -216,7 +240,10 @@ MoveHandCardToDiscardPile::
 	call RemoveCardFromHand
 ;	fallthrough
 
-; puts the turn holder's card with the deck index (0-59) given in a into the discard pile
+; puts the turn holder's card with deck index a into the discard pile
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to put in the discard pile
 PutCardInDiscardPile::
 	push af
 	push hl
@@ -235,9 +262,13 @@ PutCardInDiscardPile::
 	pop af
 	ret
 
-; search a card in the turn holder's discard pile, extract it, and set its location to
-; CARD_LOCATION_JUST_DRAWN. AddCardToHand is meant to be called next.
-; the card is identified by register a, which contains the deck index (0-59) of the card
+
+; searches the turn holder's discard pile for a card, removes it,
+; and set its location to CARD_LOCATION_JUST_DRAWN.
+; AddCardToHand is meant to be called next.
+; preserves all registers except af
+; input:
+;	a = deck index (0-59) of the card to move
 MoveDiscardPileCardToHand::
 	push hl
 	push de
@@ -270,11 +301,15 @@ MoveDiscardPileCardToHand::
 	pop hl
 	ret
 
+
 PowersOf2::
 	db $01, $02, $04, $08, $10, $20, $40, $80
 
-; fill wDuelTempList with the turn holder's discard pile cards (their 0-59 deck indexes)
-; return carry if the turn holder has no cards in the discard pile
+
+; fills wDuelTempList with the turn holder's discard pile cards (their 0-59 deck indices)
+; output:
+;	carry = set:  if there weren't any cards in the turn holder's discard pile
+;	[wDuelTempList] = deck indices of each card in the turn holder's discard pile
 CreateDiscardPileCardList::
 	ldh a, [hWhoseTurn]
 	ld h, a
@@ -302,8 +337,11 @@ CreateDiscardPileCardList::
 	scf
 	ret
 
-; fill wDuelTempList with the turn holder's remaining deck cards (their 0-59 deck indexes)
-; return carry if the turn holder has no cards left in the deck
+
+; fills wDuelTempList with the turn holder's remaining deck cards (their 0-59 deck indices)
+; output:
+;	carry = set:  if there weren't any cards in the turn holder's deck
+;	[wDuelTempList] = deck indices of each card still in the turn holder's deck
 CreateDeckCardList::
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
@@ -337,11 +375,14 @@ CreateDeckCardList::
 	scf
 	ret
 
-; fill wDuelTempList with the turn holder's energy cards
-; in the arena or in a bench slot (their 0-59 deck indexes).
-; if a == 0: search in CARD_LOCATION_ARENA
-; if a != 0: search in CARD_LOCATION_BENCH_[A]
-; return carry if no energy cards were found
+
+; fills wDuelTempList with every Energy card (their 0-59 deck indices)
+; that is attached to the turn holder's Pokemon in a specified location
+; input:
+;	a = play area location offset (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if there weren't any Energy cards in the location from input
+;	[wDuelTempList] = deck indices of all Energy cards in the location from input
 CreateArenaOrBenchEnergyCardList::
 	or CARD_LOCATION_PLAY_AREA
 	ld c, a
@@ -356,7 +397,7 @@ CreateArenaOrBenchEnergyCardList::
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	and 1 << TYPE_ENERGY_F
-	jr z, .skip_card ; jump if Pokemon or trainer card
+	jr z, .skip_card ; jump if Pokemon or Trainer card
 	ld a, l
 	ld [de], a ; add to wDuelTempList
 	inc de
@@ -370,13 +411,16 @@ CreateArenaOrBenchEnergyCardList::
 	ld [de], a
 	ld a, [wDuelTempList]
 	cp $ff
-	jp z, ReturnCarry ; no energies found
+	jp z, ReturnCarry ; no Energy cards were found
 	or a
 	ret
 
-; fill wDuelTempList with the turn holder's hand cards (their 0-59 deck indexes)
-; return carry if the turn holder has no cards in hand
-; and outputs in a number of cards.
+
+; fills wDuelTempList with the turn holder's hand cards (their 0-59 deck indices)
+; output:
+;	a = number of cards in the turn holder's hand
+;	carry = set:  if there weren't any cards in the turn holder's hand
+;	[wDuelTempList] = deck indices of each card in the turn holder's hand
 CreateHandCardList::
 	call FindLastCardInHand
 	inc b
@@ -404,7 +448,8 @@ CreateHandCardList::
 	scf
 	ret
 
-; sort the turn holder's hand cards by ID (highest to lowest ID)
+
+; sorts the turn holder's hand cards by ID (highest to lowest ID)
 ; makes use of wDuelTempList
 SortHandCardsByID::
 	call FindLastCardInHand
@@ -426,10 +471,11 @@ SortHandCardsByID::
 	jr nz, .loop2
 	ret
 
-; returns:
-; b = turn holder's number of cards in hand (DUELVARS_NUMBER_OF_CARDS_IN_HAND)
-; hl = pointer to turn holder's last (newest) card in DUELVARS_HAND
-; de = wDuelTempList
+
+; output:
+;	b = turn holder's number of cards in hand (DUELVARS_NUMBER_OF_CARDS_IN_HAND)
+;	hl = pointer to turn holder's last (newest) card in DUELVARS_HAND
+;	de = wDuelTempList
 FindLastCardInHand::
 	ldh a, [hWhoseTurn]
 	ld h, a
@@ -440,6 +486,7 @@ FindLastCardInHand::
 	ld l, a
 	ld de, wDuelTempList
 	ret
+
 
 ; shuffles the turn holder's deck
 ; if less than 60 cards remain in the deck, it makes sure that the rest are ignored
@@ -457,13 +504,15 @@ ShuffleDeck::
 	ld a, b ; a = number of cards in the deck
 ;	fallthrough
 
-; shuffles the deck by swapping the position of each card with the position of another random card
+; shuffles a list of cards by swapping the position of each card
+; with the position of another random card in the list
+; preserves all registers except af
 ; input:
-   ; a  = how many cards to shuffle
-   ; hl = DUELVARS_DECK_CARDS + [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK]
+;	a  = how many cards to shuffle
+;	hl = list of cards to shuffle
 ShuffleCards::
 	or a
-	ret z ; return if deck is empty
+	ret z ; return if the list is empty
 	push hl
 	push de
 	push bc
@@ -496,7 +545,8 @@ ShuffleCards::
 	pop hl
 	ret
 
-; sort a $ff-terminated list of deck index cards by ID (lowest to highest ID).
+
+; sorts an $ff-terminated list of deck index cards by ID (lowest to highest ID).
 ; the list is wDuelTempList.
 SortCardsInDuelTempListByID::
 	ld hl, hTempListPtr_ff99
@@ -505,10 +555,11 @@ SortCardsInDuelTempListByID::
 	ld [hl], HIGH(wDuelTempList)
 	jr SortCardsInListByID_CheckForListTerminator
 
-; sort a $ff-terminated list of deck index cards by ID (lowest to highest ID).
-; the pointer to the list is given in hTempListPtr_ff99.
+; sorts an $ff-terminated list of deck index cards by ID (lowest to highest ID).
 ; sorting by ID rather than deck index means that the order of equal (same ID) cards does not matter,
 ; even if they have a different deck index.
+; input:
+;	[hTempListPtr_ff99] = pointer to the list
 SortCardsInListByID::
 	; load [hTempListPtr_ff99] into hl and de
 	ld hl, hTempListPtr_ff99
@@ -579,8 +630,12 @@ SortCardsInListByID_CheckForListTerminator::
 	jr z, SortCardsInListByID
 	ret
 
-; returns, in register bc, the id of the card with the deck index specified in register a
-; preserves hl
+
+; preserves de and hl
+; input:
+;	a = deck index (0-59) of the card to identify
+; output:
+;	bc = ID of card with deck index from input
 GetCardIDFromDeckIndex_bc::
 	push hl
 	call _GetCardIDFromDeckIndex
@@ -589,7 +644,12 @@ GetCardIDFromDeckIndex_bc::
 	pop hl
 	ret
 
-; return [wDuelTempList + a] in a and in hTempCardIndex_ff98
+
+; preserves all registers except af
+; input:
+;	a = deck index (0-59) of the card to add to wDuelTempList
+; output:
+;	[hTempCardIndex_ff98] & a = [wDuelTempList + a]
 GetCardInDuelTempList_OnlyDeckIndex::
 	push hl
 	push de
@@ -603,9 +663,13 @@ GetCardInDuelTempList_OnlyDeckIndex::
 	pop hl
 	ret
 
-; given the deck index (0-59) of a card in [wDuelTempList + a], return:
-;  - the id of the card with that deck index in register de
-;  - [wDuelTempList + a] in hTempCardIndex_ff98 and in register a
+
+; preserves bc and hl
+; input:
+;	a = deck index (0-59) of the card to add to wDuelTempList
+; output::
+;	de = ID of card with deck index from input
+;	[hTempCardIndex_ff98] & a = [wDuelTempList + a]
 GetCardInDuelTempList::
 	push hl
 	ld e, a
@@ -619,8 +683,12 @@ GetCardInDuelTempList::
 	ldh a, [hTempCardIndex_ff98]
 	ret
 
-; returns, in register de, the id of the card with the deck index (0-59) specified by register a
-; preserves af and hl
+
+; preserves af, bc, and hl
+; input:
+;	a = deck index (0-59) of the card to identify
+; output:
+;	de = card ID from input deck index
 GetCardIDFromDeckIndex::
 	push af
 	push hl
@@ -631,8 +699,13 @@ GetCardIDFromDeckIndex::
 	pop af
 	ret
 
-; remove card c from wDuelTempList (it contains a $ff-terminated list of deck indexes)
-; returns carry if no matches were found.
+
+; tries to remove a specific card from wDuelTempList (it contains an $ff-terminated list of deck indices)
+; preserves all registers except af
+; input:
+;	a = deck index of the card to remove
+; output:
+;	carry = set:  if the card wasn't found in the list
 RemoveCardFromDuelTempList::
 	push hl
 	push de
@@ -665,7 +738,10 @@ RemoveCardFromDuelTempList::
 	pop hl
 	ret
 
-; return the number of cards in wDuelTempList in a
+
+; preserves all registers except af
+; output:
+;	a = number of cards in wDuelTempList
 CountCardsInDuelTempList::
 	push hl
 	push bc
@@ -681,7 +757,12 @@ CountCardsInDuelTempList::
 	pop hl
 	ret
 
-; returns, in register a, the id of the card with the deck index (0-59) specified in register a
+
+; preserves bc and de
+; input:
+;	a = deck index (0-59) of the card to identify
+; output:
+;	a = card ID from input deck index
 _GetCardIDFromDeckIndex::
 	push de
 	ld e, a
@@ -697,7 +778,11 @@ _GetCardIDFromDeckIndex::
 	pop de
 	ret
 
-; load data of card with deck index a (0-59) to wLoadedCard1
+
+; loads the data of a card to wLoadedCard1 by using its deck index
+; preserves all registers except af
+; input:
+;	a = card's deck index (0-59)
 LoadCardDataToBuffer1_FromDeckIndex::
 	push hl
 	push de
@@ -714,7 +799,11 @@ LoadCardDataToBuffer1_FromDeckIndex::
 	pop hl
 	ret
 
-; load data of card with deck index a (0-59) to wLoadedCard2
+
+; loads the data of a card to wLoadedCard2 by using its deck index
+; preserves all registers except af
+; input:
+;	a = card's deck index (0-59)
 LoadCardDataToBuffer2_FromDeckIndex::
 	push hl
 	push de
@@ -731,9 +820,13 @@ LoadCardDataToBuffer2_FromDeckIndex::
 	pop hl
 	ret
 
-; evolve a turn holder's Pokemon card in the play area slot determined by hTempPlayAreaLocation_ff9d
-; into another turn holder's Pokemon card identifier by its deck index (0-59) in hTempCardIndex_ff98.
-; return nc if evolution was successful.
+
+; tries to evolve a turn holder's in-play Pokemon
+; input:
+;	[hTempPlayAreaLocation_ff9d] = play area location offset of the card being evolved (PLAY_AREA_* constant)
+;	[hTempCardIndex_ff98] = deck index (0-59) of the evolution card
+; output:
+;	carry = set:  if the evolution wasn't possible
 EvolvePokemonCardIfPossible::
 	; first make sure the attempted evolution is viable
 	ldh a, [hTempCardIndex_ff98]
@@ -744,10 +837,12 @@ EvolvePokemonCardIfPossible::
 	ret c ; return if it's not capable of evolving into the selected Pokemon
 ;	fallthrough
 
-; evolve a turn holder's Pokemon card in the play area slot determined by hTempPlayAreaLocation_ff9d
-; into another turn holder's Pokemon card identifier by its deck index (0-59) in hTempCardIndex_ff98.
+; evolves a turn holder's in-play Pokemon
+; input:
+;	[hTempPlayAreaLocation_ff9d] = play area location offset of the card being evolved (PLAY_AREA_* constant)
+;	[hTempCardIndex_ff98] = deck index (0-59) of the evolution card
 EvolvePokemonCard::
-; place the evolved Pokemon card in the play area location of the pre-evolved Pokemon card
+; place the evolution card in the play area location of the pre-evolution
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	add DUELVARS_ARENA_CARD
@@ -770,7 +865,7 @@ EvolvePokemonCard::
 	sub c
 	add [hl]
 	ld [hl], a
-	; reset status (if in arena) and set the flag that prevents it from evolving again this turn
+	; reset status (if Active Pokemon) and set the flag that prevents it from evolving again this turn
 	ld a, e
 	add DUELVARS_ARENA_CARD_FLAGS
 	ld l, a
@@ -791,10 +886,15 @@ EvolvePokemonCard::
 	or a
 	ret
 
-; check if the turn holder's Pokemon card at e can evolve into the turn holder's Pokemon card d.
-; e is the play area location offset (PLAY_AREA_*) of the Pokemon trying to evolve.
-; d is the deck index (0-59) of the Pokemon card that was selected to be the evolution target.
-; return carry if can't evolve, plus nz if the reason for it is the card was played this turn.
+
+; checks if the Pokemon at location e can evolve into the Pokemon with deck index d.
+; also checks whether the Pokemon being evolved has been in play for a full turn
+; preserves bc and de
+; input:
+;	d = deck index (0-59) of the evolution card being considered
+;	e = play area location offset of the card being evolved (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the evolution wasn't possible
 CheckIfCanEvolveInto::
 	push de
 	ld a, e
@@ -833,9 +933,11 @@ CheckIfCanEvolveInto::
 	scf
 	ret
 
-; clear the status, all substatuses, and temporary duelvars of the turn holder's
-; arena Pokemon. called when sending a new Pokemon into the arena.
+
+; clears the status, all substatuses, and temporary duelvars of the turn holder's
+; Active Pokemon. called when sending a new Pokemon into the Arena.
 ; does not reset Headache, since it targets a player rather than a Pokemon.
+; preserves all registers except af
 ClearAllStatusConditions::
 	push hl
 	ldh a, [hWhoseTurn]
@@ -865,11 +967,15 @@ ClearAllStatusConditions::
 	pop hl
 	ret
 
-; Removes a Pokemon card from the hand and places it in the arena or first available bench slot.
-; If the Pokemon is placed in the arena, the status conditions of the player's arena card are zeroed.
+
+; Removes a Pokemon from the hand and places it in the Arena or else
+; the first available Bench slot. If the Pokemon is placed in the Arena,
+; then the status conditions affecting the player's Active Pokemon are cleared.
+; preserves bc
 ; input:
-   ; a = deck index of the card
-; return carry if there is no room for more Pokemon
+;	a = deck index of the Pokemon to put into play
+; output:
+;	carry = set:  if there wasn't space for the Pokemon (i.e. already 6 Pokemon in the play area)
 PutHandPokemonCardInPlayArea::
 	push af
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -915,7 +1021,7 @@ PutHandPokemonCardInPlayArea::
 	ld [hl], a ; set card's evolution stage
 	ld a, e
 	or a
-	call z, ClearAllStatusConditions ; only call if Pokemon is being placed in the arena
+	call z, ClearAllStatusConditions ; only call if Pokemon is being placed in the Arena
 	ld a, e
 	or a
 	ret
@@ -925,13 +1031,16 @@ PutHandPokemonCardInPlayArea::
 	scf
 	ret
 
-; Removes a card from the hand and changes its location to arena or bench. Given that
-; DUELVARS_ARENA_CARD or DUELVARS_BENCH aren't affected, this function is meant for energy and trainer cards.
+
+; Removes a card from the hand and changes its location to Arena or Bench.
+; Given that DUELVARS_ARENA_CARD or DUELVARS_BENCH aren't affected,
+; this function is only meant for Energy or Trainer cards.
+; preserves bc and de
 ; input:
-   ; a = deck index of the card
-   ; e = play area location offset (PLAY_AREA_*)
-; returns:
-   ; a = CARD_LOCATION_PLAY_AREA + e
+;	a = deck index of the card
+;	e = play area location offset (PLAY_AREA_* constant)
+; output:
+;	a = CARD_LOCATION_PLAY_AREA + e
 PutHandCardInPlayArea::
 	call RemoveCardFromHand
 	call GetTurnDuelistVariable
@@ -940,8 +1049,11 @@ PutHandCardInPlayArea::
 	ld [hl], a
 	ret
 
-; move the Pokemon card of the turn holder in the
-; PLAY_AREA_* location given in e to the discard pile
+
+; moves the turn holder's Pokemon in location e to the discard pile
+; preserves bc
+; input:
+;	e = play area location offset (PLAY_AREA_* constant)
 MovePlayAreaCardToDiscardPile::
 	call EmptyPlayAreaSlot
 	ld l, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -963,8 +1075,12 @@ MovePlayAreaCardToDiscardPile::
 	jr c, .next_card
 	ret
 
-; init a turn holder's play area slot to empty
-; which slot (arena or benchx) is determined by the play area location offset (PLAY_AREA_*) in e
+
+; initializes a turn holder's play area slot to empty
+; which slot (arena or benchx) is determined by the play area location offset in e
+; preserves bc
+; input:
+;	e = play area location offset (PLAY_AREA_* constant)
 EmptyPlayAreaSlot::
 	ldh a, [hWhoseTurn]
 	ld h, a
@@ -981,20 +1097,24 @@ EmptyPlayAreaSlot::
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
 	call .init_duelvar
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
+	; fallthrough
 .init_duelvar
 	add e
 	ld l, a
 	ld [hl], d
 	ret
 
-; shift play area Pokemon of both players to the first available play area (arena + benchx) slots
+
+; shifts play area Pokemon of both players to the first available play area (arena + benchx) slots
+; preserves bc
 ShiftAllPokemonToFirstPlayAreaSlots::
 	call SwapTurn
 	call ShiftTurnPokemonToFirstPlayAreaSlots
 	call SwapTurn
 ;	fallthrough
 
-; shift play area Pokemon of the turn holder to the first available play area (arena + benchx) slots
+; shifts play area Pokemon of the turn holder to the first available play area (arena + benchx) slots
+; preserves bc
 ShiftTurnPokemonToFirstPlayAreaSlots::
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -1012,18 +1132,24 @@ ShiftTurnPokemonToFirstPlayAreaSlots::
 	jr nz, .next_play_area_slot
 	ret
 
-; swap the data of the turn holder's arena Pokemon card with the
-; data of the turn holder's Pokemon card in play area e.
-; reset the status and all substatuses of the arena Pokemon before swapping.
-; e is the play area location offset of the bench Pokemon (PLAY_AREA_*).
+
+; swaps the data of the turn holder's Active Pokemon with the
+; data of the turn holder's Benched Pokemon in location e.
+; reset the status and all substatuses of the Active Pokemon before swapping.
+; preserves all registers except af
+; input:
+;	e = play area location offset of the Benched Pokemon (PLAY_AREA_* constant)
 SwapArenaWithBenchPokemon::
 	call ClearAllStatusConditions
 	ld d, PLAY_AREA_ARENA
 ;	fallthrough
 
-; swap the data of the turn holder's Pokemon card in play area d with the
-; data of the turn holder's Pokemon card in play area e.
-; d and e are play area location offsets (PLAY_AREA_*).
+; swaps the data of the turn holder's Pokemon in location d with the
+; data of the turn holder's Pokemon in location e.
+; preserves all registers except af
+; input:
+;	d = play area location offset of the first Pokemon (PLAY_AREA_* constant)
+;	e = play area location offset of the second Pokemon (PLAY_AREA_* constant)
 SwapPlayAreaPokemon::
 	push bc
 	push de
@@ -1090,10 +1216,15 @@ SwapPlayAreaPokemon::
 	ld [hl], a
 	ret
 
-; Find which and how many energy cards are attached to the turn holder's Pokemon card in the arena,
-; or a Pokemon card in the bench, depending on the value of register e.
-; input: e = location to check, i.e. PLAY_AREA_*
-; Feedback is returned in wAttachedEnergies and wTotalAttachedEnergies.
+
+; Finds which and how many Energy cards are attached to the turn holder's
+; Active or Benched Pokemon, depending on the value of register e.
+; preserves all registers except af
+; input:
+;	e = play area location offset (PLAY_AREA_* constant)
+; output:
+;	[wAttachedEnergies] = how many Energy of each type is attached to the Pokemon
+;	[wTotalAttachedEnergies] = total amount of Energy attached to the Pokemon
 GetPlayAreaCardAttachedEnergies::
 	push hl
 	push de
@@ -1130,10 +1261,10 @@ GetPlayAreaCardAttachedEnergies::
 	ld d, $0
 	ld hl, wAttachedEnergies
 	add hl, de
-	inc [hl] ; increment the number of energy cards of this type
+	inc [hl] ; increment the number of Energy cards of this type
 	cp COLORLESS
 	jr nz, .not_colorless
-	inc [hl] ; each colorless energy counts as two
+	inc [hl] ; each Colorless Energy counts as two
 .not_an_energy_card
 .not_colorless
 	pop bc
@@ -1159,10 +1290,14 @@ GetPlayAreaCardAttachedEnergies::
 	pop hl
 	ret
 
-; returns in a how many times card e can be found in location b
-; e = card id to search
-; b = location to consider (CARD_LOCATION_*)
-; h = PLAYER_TURN or OPPONENT_TURN
+
+; preserves bc and de
+; input:
+;	e = card ID to search
+;	b = location to consider (CARD_LOCATION_* constant)
+;	h = PLAYER_TURN or OPPONENT_TURN
+; output:
+;	a = how many of the given card exists in the given location
 CountCardIDInLocation::
 	push bc
 	ld l, DUELVARS_CARD_LOCATIONS
@@ -1187,8 +1322,12 @@ CountCardIDInLocation::
 	pop bc
 	ret
 
+
 ; returns [[hWhoseTurn] << 8 + a] in a and in [hl]
 ; i.e. duelvar a of the player whose turn it is
+; preserves bc and de
+; input:
+;	a = wPlayerDuelVariables constant
 GetTurnDuelistVariable::
 	ld l, a
 	ldh a, [hWhoseTurn]
@@ -1196,8 +1335,12 @@ GetTurnDuelistVariable::
 	ld a, [hl]
 	ret
 
+
 ; returns [([hWhoseTurn] ^ $1) << 8 + a] in a and in [hl]
 ; i.e. duelvar a of the player whose turn it is not
+; preserves bc and de
+; input:
+;	a = wOpponentDuelVariables constant
 GetNonTurnDuelistVariable::
 	ld l, a
 	ldh a, [hWhoseTurn]
@@ -1209,8 +1352,9 @@ GetNonTurnDuelistVariable::
 	ld a, [hl]
 	ret
 
+
 ; when playing a Pokemon card, initializes some variables according to the
-; card played, and checks if the played card has Pokemon Power to show it to
+; card being played and checks if the card has Pokemon Power, to show it to
 ; the player, and possibly to use it if it triggers when the card is played.
 ProcessPlayedPokemonCard::
 	ldh a, [hTempCardIndex_ff98]
@@ -1281,11 +1425,18 @@ ProcessPlayedPokemonCard::
 	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
 	jp TryExecuteEffectCommandFunction
 
-; copies, given a card identified by register a (card ID):
-; - e into wSelectedAttack and d into hTempCardIndex_ff9f
-; - Attack1 (if e == 0) or Attack2 (if e == 1) data into wLoadedAttack
-; - Also from that attack, its Damage field into wDamage
-; finally, clears wNoDamageOrEffect and wDealtDamage
+
+; input:
+;	a = card ID of the Pokemon with the information to copy
+;	e = 0: copy the first attack
+;	e = 1: copy the second attack
+; output:
+;	[wSelectedAttack] = e
+;	[hTempCardIndex_ff9f] = d
+;	[wLoadedAttack] = attack data from the card with deck index from input
+;	[wDamage] = attack's listed damage
+;	[wNoDamageOrEffect] = 0
+;	[wDealtDamage] = 0
 CopyAttackDataAndDamage_FromCardID::
 	push de
 	push af
@@ -1300,11 +1451,17 @@ CopyAttackDataAndDamage_FromCardID::
 	pop de
 	jr CopyAttackDataAndDamage
 
-; copies, given a card identified by register d (0-59 deck index):
-; - e into wSelectedAttack and d into hTempCardIndex_ff9f
-; - Attack1 (if e == 0) or Attack2 (if e == 1) data into wLoadedAttack
-; - Also from that attack, its Damage field into wDamage
-; finally, clears wNoDamageOrEffect and wDealtDamage
+; input:
+;	d = deck index of the Pokemon with the information to copy
+;	e = 0: copy the first attack
+;	e = 1: copy the second attack
+; output:
+;	[wSelectedAttack] = e
+;	[hTempCardIndex_ff9f] = d
+;	[wLoadedAttack] = attack data from the card with deck index from input
+;	[wDamage] = attack's listed damage
+;	[wNoDamageOrEffect] = 0
+;	[wDealtDamage] = 0
 CopyAttackDataAndDamage_FromDeckIndex::
 	ld a, e
 	ld [wSelectedAttack], a
@@ -1340,10 +1497,12 @@ CopyAttackDataAndDamage::
 	ld [hl], a
 	ret
 
-; inits hTempCardIndex_ff9f and wTempTurnDuelistCardID to the turn holder's arena card,
-; wTempNonTurnDuelistCardID to the non-turn holder's arena card, and zeroes other temp
-; variables that only last between each two-player turn.
-; this is called when a Pokemon card is played or when an attack is used
+
+; initializes hTempCardIndex_ff9f and wTempTurnDuelistCardID to the turn holder's
+; Active Pokemon, wTempNonTurnDuelistCardID to the non-turn holder's Active Pokemon,
+; and zeroes other temporary variables that only last between each two-player turn.
+; this is called when a Pokemon card is played or when an attack is used.
+; preserves bc and de
 UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -1369,7 +1528,8 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	bank1call ClearNonTurnTemporaryDuelvars_CopyStatus
 	ret
 
-; use Pokemon Power
+
+; uses a Pokemon Power
 UsePokemonPower::
 	bank1call Func_7415
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
@@ -1402,7 +1562,8 @@ ReturnCarry::
 	scf
 	ret
 
-; Use an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
+
+; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
 UseAttackOrPokemonPower::
 	ld a, [wSelectedAttack]
 	ld [wPlayerAttackingAttackIndex], a
@@ -1461,7 +1622,7 @@ PlayAttackAnimation_DealAttackDamage::
 	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
 	call TryExecuteEffectCommandFunction
 	call ApplyDamageModifiers_DamageToTarget
-	call Func_189d
+	call LastChanceToNegateFinalDamage
 	ld hl, wDealtDamage
 	ld [hl], e
 	inc hl
@@ -1504,13 +1665,16 @@ HandleAfterDamageEffects::
 	or a
 	ret
 
+
+; preserves bc and de
 ClearNonTurnTemporaryDuelvars_ResetCarry::
 	bank1call ClearNonTurnTemporaryDuelvars
 	or a
 	ret
 
-; called when attacker deals damage to itself due to confusion
-; display the corresponding animation and deal 20 damage to self
+
+; called when an Attacking Pokemon deals damage to itself due to confusion
+; displays the corresponding animation and deals 20 damage to the Attacking Pokemon
 HandleConfusionDamageToSelf::
 	bank1call DrawDuelMainScene
 	ld a, 1
@@ -1527,9 +1691,10 @@ HandleConfusionDamageToSelf::
 	or a
 	ret
 
-; called by UseAttackOrPokemonPower (on an attack only)
-; in a link duel, it's used to send the other game data about the
-; attack being in use, triggering a call to OppAction_BeginUseAttack in the receiver
+
+; called by UseAttackOrPokemonPower (on just an attack) in a link duel.
+; it's used to send the other game data about the attack being used,
+; triggering a call to OppAction_BeginUseAttack in the receiver.
 SendAttackDataToLinkOpponent::
 	ld a, [wccec]
 	or a
@@ -1553,7 +1718,13 @@ SendAttackDataToLinkOpponent::
 	ldh [hTemp_ffa0], a
 	ret
 
-Func_189d::
+
+; formerly Func_189d
+; checks for anything else that might prevent the attack's damage
+; damage is set to 0 if anything is found
+; input:
+;	de = damage being dealt by the attack
+LastChanceToNegateFinalDamage::
 	ld a, [wLoadedAttackCategory]
 	bit RESIDUAL_F, a
 	ret nz
@@ -1562,15 +1733,15 @@ Func_189d::
 	ret nz
 	ld a, e
 	or d
-	jr nz, .asm_18b9
+	jr nz, .attack_opponent
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetNonTurnDuelistVariable
 	or a
-	jr nz, .asm_18b9
+	jr nz, .attack_opponent
 	ld a, [wStatusConditionQueueIndex]
 	or a
 	ret z
-.asm_18b9
+.attack_opponent
 	push de
 	call SwapTurn
 	xor a
@@ -1586,7 +1757,12 @@ Func_189d::
 	ld de, 0
 	ret
 
-; return carry and 1 into wGotHeadsFromConfusionCheck if damage will be dealt to oneself due to confusion
+
+; flips a coin to see whether or not a Confused Pokemon will attack itself
+; output:
+;	carry = set:  if the coin was tails (Pokemon will attack itself)
+;	[wGotHeadsFromConfusionCheck] = 0:  if the coin was heads (Pokemon won't attack itself)
+;	[wGotHeadsFromConfusionCheck] = 1:  if the coin was tails (Pokemon will attack itself)
 CheckSelfConfusionDamage::
 	xor a
 	ld [wGotHeadsFromConfusionCheck], a
@@ -1609,9 +1785,13 @@ CheckSelfConfusionDamage::
 	or a
 	ret
 
-; play the trainer card with deck index at hTempCardIndex_ff98.
-; a trainer card is like an attack effect, with its own effect commands.
-; return nc if the card was played, carry if it wasn't.
+
+; plays the Trainer card with deck index (0-59) at hTempCardIndex_ff98.
+; a Trainer card is like an attack effect, with its own effect commands.
+; input:
+;	[hTempCardIndex_ff98] = Trainer card to play
+; output:
+;	carry = set:  if the Trainer card wasn't played
 PlayTrainerCard::
 	call CheckCantUseTrainerDueToHeadache
 	jr c, .cant_use
@@ -1650,8 +1830,13 @@ PlayTrainerCard::
 	or a
 	ret
 
-; loads the effect commands of a (trainer or energy) card with deck index (0-59) at hTempCardIndex_ff9f
-; into wLoadedAttackEffectCommands. in practice, only used for trainer cards
+
+; loads the effect commands of a (Trainer or Energy) card with deck index (0-59)
+; at hTempCardIndex_ff9f into wLoadedAttackEffectCommands.
+; this is only ever used for Trainer cards in the base game.
+; preserves bc
+; input:
+;	[hTempCardIndex_ff9f] = Trainer or Energy card to load
 LoadNonPokemonCardEffectCommands::
 	ldh a, [hTempCardIndex_ff9f]
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -1664,8 +1849,12 @@ LoadNonPokemonCardEffectCommands::
 	ld [de], a
 	ret
 
-; Make turn holder deal A damage to self due to recoil (e.g. Thrash, Selfdestruct)
-; display recoil animation
+
+; Have the turn holder's Active Pokemon deal A damage to itself
+; because of an attack effect (e.g. Thrash, Selfdestruct)
+; displays the recoil animation
+; input:
+;	a = damage to deal to self
 DealRecoilDamageToSelf::
 	push af
 	ld a, ATK_ANIM_RECOIL_HIT
@@ -1673,8 +1862,12 @@ DealRecoilDamageToSelf::
 	pop af
 ;	fallthrough
 
-; Make turn holder deal A damage to self due to confusion
-; display animation at wLoadedAttackAnimation
+; Have the turn holder's Active Pokemon deal A damage to itself
+; because of its Confused status 
+; displays animation at wLoadedAttackAnimation (e.g. ATK_ANIM_CONFUSION_HIT)
+; input:
+;	a = damage to deal to self
+;	[wLoadedAttackAnimation] = animation to play
 DealConfusionDamageToSelf::
 	ld hl, wDamage
 	ld [hli], a
@@ -1702,11 +1895,17 @@ DealConfusionDamageToSelf::
 	ld [wNoDamageOrEffect], a
 	ret
 
-; given a damage value at wDamage:
-; - if the non-turn holder's arena card is weak to the turn holder's arena card color: double damage
-; - if the non-turn holder's arena card resists the turn holder's arena card color: reduce damage by 30
-; - also apply Pluspower, Defender, and other kinds of damage reduction accordingly
-; return resulting damage in de
+
+; doubles wDamage if the non-turn holder's Active Pokemon
+; has Weakness to the type/color of the turn holder's Active Pokemon,
+; reduces wDamage by 30 if the non-turn holder's Active Pokemon
+; has Resistance to the type/color of the turn holder's Active Pokemon,
+; and applies Pluspower, Defender, or any other kinds of damage modifications.
+; sets the damage to 0 if reduction would result in a negative value.
+; input:
+;	[wDamage] = damage value to modify
+; output:
+;	de = updated damage value
 ApplyDamageModifiers_DamageToTarget::
 	xor a
 	ld [wDamageEffectiveness], a
@@ -1724,7 +1923,7 @@ ApplyDamageModifiers_DamageToTarget::
 	ld e, [hl]
 	bit 7, d
 	jr z, .safe
-	res 7, d ; cap at 2^15
+	res 7, d ; cap at 2^15 (65,536, or the maximum 16-bit value)
 	xor a
 	ld [wDamageEffectiveness], a
 	call HandleDoubleDamageSubstatus
@@ -1752,8 +1951,8 @@ ApplyDamageModifiers_DamageToTarget::
 	call GetArenaCardResistance
 	call SwapTurn
 	and b
-	jr z, .check_pluspower_and_defender ; jump if not resistant
-	ld hl, -30
+	jr z, .check_pluspower_and_defender ; jump if Pokemon has no Resistance
+	ld hl, -30 ; Resistance is always -30 in this game
 	add hl, de
 	ld e, l
 	ld d, h
@@ -1768,13 +1967,14 @@ ApplyDamageModifiers_DamageToTarget::
 	call HandleDamageReduction
 	bit 7, d
 	jr z, SwapTurn ; no underflow
-	ld de, 0
+	ld de, 0; caps damage to 0
 ;	fallthrough
 
 ; returns [hWhoseTurn] <-- ([hWhoseTurn] ^ $1)
 ;   As a side effect, this also returns a duelist variable in a similar manner to
-;   GetNonTurnDuelistVariable, but this function appears to be
-;   only called to swap the turn value.
+;   GetNonTurnDuelistVariable, but this function seems to only ever be called to
+;   swap the turn value.
+; preserves all registers
 SwapTurn::
 	push af
 	push hl
@@ -1785,7 +1985,9 @@ SwapTurn::
 	pop af
 	ret
 
-; convert a color to its equivalent WR_* (weakness/resistance) value
+
+; converts a color to its equivalent WR_* (weakness/resistance) value
+; preserves all registers except af
 TranslateColorToWR::
 	push hl
 	add LOW(InvertedPowersOf2)
@@ -1797,13 +1999,19 @@ TranslateColorToWR::
 	pop hl
 	ret
 
+
 InvertedPowersOf2::
 	db $80, $40, $20, $10, $08, $04, $02, $01
 
-; given a damage value at wDamage:
-; - if the turn holder's arena card is weak to its own color: double damage
-; - if the turn holder's arena card resists its own color: reduce damage by 30
-; return resulting damage in de
+
+; doubles wDamage if the turn holder's Active Pokemon has Weakness
+; to its own type/color and reduces wDamage by 30 if the turn holder's
+; Active Pokemon has Resistance to its own type/color.
+; sets the damage to 0 if reduction would result in a negative value.
+; input:
+;	[wDamage] = damage value to modify
+; output:
+;	de = updated damage value
 ApplyDamageModifiers_DamageToSelf::
 	xor a
 	ld [wDamageEffectiveness], a
@@ -1829,7 +2037,7 @@ ApplyDamageModifiers_DamageToSelf::
 	call GetArenaCardResistance
 	and b
 	jr z, .not_resistant
-	ld hl, -30
+	ld hl, -30 ; Resistance is always -30 in this game
 	add hl, de
 	ld e, l
 	ld d, h
@@ -1843,10 +2051,16 @@ ApplyDamageModifiers_DamageToSelf::
 	bit 7, d ; test for underflow
 	ret z
 .no_damage
-	ld de, 0
+	ld de, 0 ; caps damage to 0
 	ret
 
+
 ; increases de by 10 points for each Pluspower found in location b
+; preserves bc
+; input:
+;	b = location to consider (CARD_LOCATION_* constant)
+; output:
+;	de = updated damage
 ApplyAttachedPluspower::
 	push de
 	call GetTurnDuelistVariable
@@ -1861,7 +2075,13 @@ ApplyAttachedPluspower::
 	ld d, h
 	ret
 
+
 ; reduces de by 20 points for each Defender found in location b
+; preserves bc
+; input:
+;	b = location to consider (CARD_LOCATION_* constant)
+; output:
+;	de = updated damage
 ApplyAttachedDefender::
 	push de
 	call GetTurnDuelistVariable
@@ -1879,9 +2099,13 @@ ApplyAttachedDefender::
 	ld d, a
 	ret
 
-; hl: address to subtract HP from
-; de: how much HP to subtract (damage to deal)
-; returns carry if the HP does not become 0 as a result
+
+; preserves all registers except af
+; input:
+;	hl = address from which to subtract the HP
+;	de = how much HP to subtract (damage to deal)
+; output:
+;	carry = set:  if the HP value is still greater than 0
 SubtractHP::
 	push hl
 	push de
@@ -1903,14 +2127,19 @@ SubtractHP::
 	pop hl
 	ret
 
-; given a play area location offset in a, check if the turn holder's Pokemon card in
-; that location has no HP left, and, if so, print that it was knocked out.
+
+; given a play area location offset in a, checks if the turn holder's Pokemon
+; in that location has 0 HP, and if so, prints that it was Knocked Out.
+; input:
+;	a = play area location offset (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the Pokemon was Knocked Out
 PrintPlayAreaCardKnockedOutIfNoHP::
 	ld e, a
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	or a
-	ret nz ; return if arena card has non-0 HP
+	ret nz ; return if the Active Pokemon has more than 0 HP
 	ld a, [wTempNonTurnDuelistCardID]
 	push af
 	ld a, e
@@ -1925,14 +2154,21 @@ PrintPlayAreaCardKnockedOutIfNoHP::
 	scf
 	ret
 
+
+; input:
+;	hl = Pokemon's remaining HP value
+; output:
+;	carry = set:  if the Pokemon was Knocked Out
 PrintKnockedOutIfHLZero::
 	ld a, [hl] ; this is supposed to point to a remaining HP value after some form of damage calculation
 	or a
 	ret nz
 ;	fallthrough
 
-; print in a text box that the Pokemon card at wTempNonTurnDuelistCardID
-; was knocked out and wait 40 frames
+; prints in a 20x6 text box that the Pokemon at wTempNonTurnDuelistCardID
+; was Knocked Out and then waits 40 frames
+; output:
+;	carry = set
 PrintKnockedOut::
 	ld a, [wTempNonTurnDuelistCardID]
 	ld e, a
@@ -1952,20 +2188,27 @@ PrintKnockedOut::
 	scf
 	ret
 
-; deal damage to turn holder's Pokemon card at play area location at b (PLAY_AREA_*).
-; damage to deal is given in de.
-; shows the defending player's play area screen when dealing the damage
-; instead of the main duel interface with regular attack animation.
+
+; deals damage to the turn holder's Pokemon at a specified location.
+; plays the default attack animation on the defending player's play area screen
+; when dealing the damage, instead of the main duel interface.
+; preserves all registers except af
+; input:
+;	b = play area location offset of Pokemon being damaged (PLAY_AREA_* constant)
+;	de = amount of damage being dealt
 DealDamageToPlayAreaPokemon_RegularAnim::
 	ld a, ATK_ANIM_BENCH_HIT
 	ld [wLoadedAttackAnimation], a
 ;	fallthrough
 
-; deal damage to turn holder's Pokemon card at play area location at b (PLAY_AREA_*).
-; damage to deal is given in de.
-; shows the defending player's play area screen when dealing the damage
-; instead of the main duel interface.
-; plays animation that is loaded in wLoadedAttackAnimation.
+; deals damage to the turn holder's Pokemon at a specified location.
+; plays the loaded attack animation on the defending player's play area screen
+; when dealing the damage, instead of the main duel interface.
+; preserves all registers except af
+; input:
+;	b = play area location offset of Pokemon being damaged (PLAY_AREA_* constant)
+;	de = amount of damage being dealt
+;	[wLoadedAttackAnimation] = animation to play
 DealDamageToPlayAreaPokemon::
 	ld a, b
 	ld [wTempPlayAreaLocation_cceb], a
@@ -2028,7 +2271,7 @@ DealDamageToPlayAreaPokemon::
 	ld b, a
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .benched
-	; if arena Pokemon, add damage at de to [wDealtDamage]
+	; if it's the Active Pokemon, add damage at de to [wDealtDamage]
 	ld hl, wDealtDamage
 	ld a, e
 	add [hl]
@@ -2055,16 +2298,17 @@ DealDamageToPlayAreaPokemon::
 	pop hl
 	ret
 
-; draw duel main scene, then print the "<Pokemon Lvxx>'s <attack>" text
-; The Pokemon's name is the turn holder's arena Pokemon, and the
-; attack's name is taken from wLoadedAttackName.
+
+; draws the main duel screen, then prints the "<Pokemon Lvxx>'s <attack>" text
+; The Pokemon's name is the turn holder's Active Pokemon,
+; and the attack's name is taken from wLoadedAttackName.
 DrawDuelMainScene_PrintPokemonsAttackText::
 	bank1call DrawDuelMainScene
 ;	fallthrough
 
-; print the "<Pokemon Lvxx>'s <attack>" text
-; The Pokemon's name is the turn holder's arena Pokemon, and the
-; attack's name is taken from wLoadedAttackName.
+; prints the "<Pokemon Lvxx>'s <attack>" text
+; The Pokemon's name is the turn holder's Active Pokemon,
+; and the attack's name is taken from wLoadedAttackName.
 PrintPokemonsAttackText::
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -2084,6 +2328,7 @@ PrintPokemonsAttackText::
 	ldtx hl, PokemonsAttackText
 	jp DrawWideTextBox_PrintText
 
+
 Func_1bb4::
 	call FinishQueuedAnimations
 	bank1call DrawDuelMainScene
@@ -2093,6 +2338,7 @@ Func_1bb4::
 	call PrintFailedEffectText
 	call WaitForWideTextBoxInput
 	jp ExchangeRNG
+
 
 ; prints one of the ThereWasNoEffectFrom*Text if wEffectFailed contains EFFECT_FAILED_NO_EFFECT,
 ; and prints WasUnsuccessfulText if wEffectFailed contains EFFECT_FAILED_UNSUCCESSFUL
@@ -2129,8 +2375,13 @@ PrintFailedEffectText::
 	scf
 	ret
 
-; return in a the retreat cost of the turn holder's arena or bench Pokemon
-; given the PLAY_AREA_* value in hTempPlayAreaLocation_ff9d
+
+; finds the retreat cost of one of the turn holder's in-play Pokemon,
+; adjusting for any Retreat Aid Pokemon Power that is active.
+; input:
+;	[hTempPlayAreaLocation_ff9d] = play area location offset (PLAY_AREA_* constant)
+; output:
+;	a = retreat cost of the card from input (after applying modifiers)
 GetPlayAreaCardRetreatCost::
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
@@ -2138,8 +2389,9 @@ GetPlayAreaCardRetreatCost::
 	call LoadCardDataToBuffer1_FromDeckIndex
 ;	fallthrough
 
-; return, in a, the retreat cost of the card in wLoadedCard1,
-; adjusting for any Dodrio's Retreat Aid Pkmn Power that is active.
+; finds the retreat cost of the card in wLoadedCard1
+; output:
+;	a = retreat cost of the card from input (after applying modifiers)
 GetLoadedCard1RetreatCost::
 	ld c, 0
 	ld a, DUELVARS_BENCH
@@ -2160,24 +2412,26 @@ GetLoadedCard1RetreatCost::
 	or a
 	jr nz, .dodrio_found
 .muk_found
-	ld a, [wLoadedCard1RetreatCost] ; return regular retreat cost
+	ld a, [wLoadedCard1RetreatCost] ; use the regular retreat cost
 	ret
 .dodrio_found
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	jr c, .muk_found
 	ld a, [wLoadedCard1RetreatCost]
-	sub c ; apply Retreat Aid for each Pkmn Power-capable Dodrio
-	ret nc
-	xor a
+	sub c ; apply Retreat Aid for each Dodrio on the turn holder's Bench
+	ret nc ; the retreat cost isn't a negative number
+	xor a ; set the retreat cost to 0
 	ret
 
-; calculate damage and max HP of card at PLAY_AREA_* in e.
+
+; calculates the damage and maximum HP of the card at location e.
+; preserves de and hl
 ; input:
-;	e = PLAY_AREA_* of card;
+;	e = play area location offset (PLAY_AREA_* constant)
 ; output:
-;	a = damage;
-;	c = max HP.
+;	a = damage
+;	c = maximum HP value
 GetCardDamageAndMaxHP::
 	push hl
 	push de
@@ -2197,12 +2451,14 @@ GetCardDamageAndMaxHP::
 	pop hl
 	ret
 
-; check if a flag of wLoadedAttack is set
+
+; checks if a flag of wLoadedAttack is set
+; preserves all registers except af
 ; input:
-   ; a = %fffffbbb, where
-      ; fffff = flag address counting from wLoadedAttackFlag1
-      ; bbb = flag bit
-; return carry if the flag is set
+;	a = %fffffbbb (fffff = flag address counting from wLoadedAttackFlag1,
+;	               bbb = flag bit)
+; output:
+;	carry = set:  if the flag from input was set
 CheckLoadedAttackFlag::
 	push hl
 	push de
@@ -2232,7 +2488,13 @@ CheckLoadedAttackFlag::
 	pop hl
 	ret
 
-; returns carry if the card in a is a Basic Pokemon
+
+; uses a card's deck index to check whether or not it is a Basic Pokemon
+; preserves all registers except af
+; input:
+;	a = deck index (0-59) of the card being checked
+; output:
+;	carry = set:  if the card was a Basic Pokemon
 CheckDeckIndexForBasicPokemon::
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
@@ -2245,13 +2507,16 @@ CheckDeckIndexForBasicPokemon::
 	scf
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
 ; return in the z flag whether turn holder's prize a (0-7) has been drawn or not
 ; z: drawn, nz: not drawn
+; preserves bc
+; input:
+;	a = Prize card (0-7)
 ;CheckPrizeTaken::
 ;	ld e, a
 ;	ld d, 0

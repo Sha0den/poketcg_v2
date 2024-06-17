@@ -1,15 +1,18 @@
 ; calls DoFrame a times
+; preserves all registers except af
+; input:
+;	a = number of times to run the DoFrame function
 DoAFrames::
 .loop
-	push af
 	call DoFrame
-	pop af
 	dec a
 	jr nz, .loop
 	ret
 
+
 ; updates background, sprites and other game variables, halts until vblank, and reads user input
 ; if wDebugPauseAllowed is not 0, the game can be paused (and resumed) by pressing the SELECT button
+; preserves all registers
 DoFrame::
 	push af
 	push hl
@@ -40,8 +43,10 @@ DoFrame::
 	pop af
 	ret
 
-; handle D-pad repeat counter
+
+; handles D-pad repeat counter
 ; used to quickly scroll through menus when a relevant D-pad key is held
+; preserves bc and de
 HandleDPadRepeat::
 	ldh a, [hKeysHeld]
 	ldh [hDPadHeld], a

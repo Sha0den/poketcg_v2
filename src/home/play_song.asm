@@ -1,3 +1,4 @@
+; preserves all registers except af
 WaitForSongToFinish::
 	call DoFrameIfLCDEnabled
 	call AssertSongFinished
@@ -5,7 +6,7 @@ WaitForSongToFinish::
 	jr nz, WaitForSongToFinish
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

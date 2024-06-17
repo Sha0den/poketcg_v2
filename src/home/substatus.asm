@@ -1,5 +1,8 @@
-; doubles the damage at de if swords dance or focus energy was used
-; in the last turn by the turn holder's arena Pokemon
+; doubles the damage at de if Swords Dance or Focus Energy was used
+; in the last turn by the turn holder's Active Pokemon
+; preserves bc
+; input:
+;	de = damage to double
 HandleDoubleDamageSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	call GetTurnDuelistVariable
@@ -13,11 +16,15 @@ HandleDoubleDamageSubstatus::
 	rl d
 	ret
 
-; check if the attacking card (non-turn holder's arena card) has any substatus that
-; reduces the damage dealt this turn (SUBSTATUS2).
-; check if the defending card (turn holder's arena card) has any substatus that
-; reduces the damage dealt to it this turn (SUBSTATUS1 or Pkmn Powers).
-; damage is given in de as input and the possibly updated damage is also returned in de.
+
+; checks if the Defending Pokemon (turn holder's Active Pokemon) has anything
+; that reduces the damage dealt to it this turn (SUBSTATUS1 or Pokemon Powers).
+; also checks if the Attacking Pokemon (non-turn holder's Active Pokemon)
+; has any substatus that reduces the damage dealt this turn (SUBSTATUS2).
+; input:
+;	de = damage being dealt
+; output:
+;	de = updated damage
 HandleDamageReduction::
 	call HandleDamageReductionExceptSubstatus2
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
@@ -41,9 +48,13 @@ HandleDamageReduction::
 	ld d, h
 	ret
 
-; check if the defending card (turn holder's arena card) has any substatus that
-; reduces the damage dealt to it this turn. (SUBSTATUS1 or Pkmn Powers)
-; damage is given in de as input and the possibly updated damage is also returned in de.
+
+; checks if the Defending Pokemon (turn holder's Active Pokemon) has anything
+; that reduces the damage dealt to it this turn. (SUBSTATUS1 or Pokemon Powers)
+; input:
+;	de = damage being dealt
+; output:
+;	de = updated damage
 HandleDamageReductionExceptSubstatus2::
 	ld a, [wNoDamageOrEffect]
 	or a
@@ -115,8 +126,13 @@ HandleDamageReductionExceptSubstatus2::
 	ld de, 0
 	ret
 
-; check for Invisible Wall, Kabuto Armor, NShield, or Transparency, in order to
-; possibly reduce or make zero the damage at de.
+
+; checks for Invisible Wall, Kabuto Armor, Neutralizing Shield, or Transparency.
+; if found, then reduce or nullify the damage at de accordingly.
+; input:
+;	de = damage being dealt
+; output:
+;	de = updated damage
 HandleDamageReductionOrNoDamageFromPkmnPowerEffects::
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
@@ -132,14 +148,16 @@ HandleDamageReductionOrNoDamageFromPkmnPowerEffects::
 	call nc, HandleTransparency
 	pop de ; restore damage
 	ret nc
-	; if carry was set due to NShield or Transparency, damage is 0
+	; if carry was set due to Neutralizing Shield or Transparency, damage is 0
 	ld de, 0
 	ret
 
-; when MACHAMP is damaged, if its Strikes Back is active, the
-; attacking Pokemon (turn holder's arena Pokemon) takes 10 damage.
-; ignore if damage taken at de is 0.
+
 ; used to bounce back a damaging attack.
+; when MACHAMP is damaged, if its Strikes Back is active, then
+; the Attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
+; ignore if damage taken at de is 0.
+; preserves de and hl
 HandleStrikesBack_AgainstDamagingAttack::
 	ld a, e
 	or d
@@ -147,7 +165,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 	ld a, [wIsDamageToSelf]
 	or a
 	ret nz
-	ld a, [wTempNonTurnDuelistCardID] ; ID of defending Pokemon
+	ld a, [wTempNonTurnDuelistCardID] ; ID of Defending Pokemon
 	cp MACHAMP
 	ret nz
 	ld a, MUK
@@ -156,7 +174,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 	ld a, [wLoadedAttackCategory] ; category of attack used
 	cp POKEMON_POWER
 	ret z
-	ld a, [wTempPlayAreaLocation_cceb] ; defending Pokemon's PLAY_AREA_*
+	ld a, [wTempPlayAreaLocation_cceb] ; Defending Pokemon's PLAY_AREA_*
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .in_bench
 	call CheckCannotUseDueToStatus
@@ -164,7 +182,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 .in_bench
 	push hl
 	push de
-	; subtract 10 HP from attacking Pokemon (turn holder's arena Pokemon)
+	; subtract 10 HP from Attacking Pokemon (turn holder's Active Pokemon)
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
@@ -198,8 +216,9 @@ HandleStrikesBack_AgainstDamagingAttack::
 	pop hl
 	ret
 
-; return carry if NShield or Transparency activate (if MEW_LV8 or HAUNTER_LV17 is
-; the turn holder's arena Pokemon), and print their corresponding text if so
+
+; output:
+;	carry = set:  if MEW_LV8 or HAUNTER_LV17 is the turn holder's Active Pokemon
 HandleNShieldAndTransparency::
 	push de
 	ld a, DUELVARS_ARENA_CARD
@@ -239,8 +258,12 @@ HandleNShieldAndTransparency::
 	ldtx hl, NoDamageOrEffectDueToTransparencyText
 	jr .print_text
 
-; return carry if the turn holder's arena Pokemon is under a condition that makes
-; it unable to attack. also return in hl the text id to be displayed
+
+; preserves bc and de
+; output:
+;	hl = ID of text to display
+;	carry = set:  if the turn holder's Active Pokemon is affected by
+;	              an attack effect that makes it unable to attack
 HandleCantAttackSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
@@ -258,8 +281,11 @@ HandleCantAttackSubstatus::
 	scf
 	ret
 
-; return carry if the turn holder's arena Pokemon cannot use
-; selected attack at wSelectedAttack due to amnesia
+
+; preserves bc and de
+; ouput:
+;	carry = set:  if the turn holder's Active Pokemon cannot use the attack
+;	              at wSelectedAttack because it's affected by Amnesia
 HandleAmnesiaSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
@@ -281,7 +307,9 @@ HandleAmnesiaSubstatus::
 	scf
 	ret
 
-; return carry if the turn holder's attack was unsuccessful due to smokescreen
+
+; output:
+;	carry = set:  if the turn holder's attack was unsuccessful due to Smokescreen
 HandleSmokescreenSubstatus::
 	call CheckSmokescreenSubstatus
 	ret nc
@@ -294,7 +322,10 @@ HandleSmokescreenSubstatus::
 	scf
 	ret
 
-; return carry if the turn holder's arena card is under the effects of smokescreen
+
+; preserves bc
+; output:
+;	carry = set:  if the turn holder's Active Pokemon is affected by Smokescreen
 CheckSmokescreenSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
@@ -312,9 +343,12 @@ CheckSmokescreenSubstatus::
 	scf
 	ret
 
-; return carry if the defending card (turn holder's arena card) is under a substatus
-; that prevents any damage or effect dealt to it for a turn.
-; also return the cause of the substatus in wNoDamageOrEffect
+
+; preserves bc
+; output:
+;	carry = set:  if the Defending Pokemon (turn holder's Active Pokemon) is affected by
+;	              a substatus that prevents any damage or effect dealt to it for the turn.
+;	wNoDamageOrEffect = correct index (NO_DAMAGE_OR_EFFECT_* constant)
 HandleNoDamageOrEffectSubstatus::
 	xor a
 	ld [wNoDamageOrEffect], a
@@ -345,7 +379,7 @@ HandleNoDamageOrEffectSubstatus::
 	ld a, [wIsDamageToSelf]
 	or a
 	ret nz
-	; prevent damage if attacked by a non-basic Pokemon
+	; prevent damage if attacked by a non-Basic Pokemon
 	ld a, [wTempTurnDuelistCardID]
 	ld e, a
 	ld d, $0
@@ -357,9 +391,11 @@ HandleNoDamageOrEffectSubstatus::
 	ldtx hl, NoDamageOrEffectDueToNShieldText
 	jr .no_damage_or_effect
 
-; if the Pokemon being attacked is HAUNTER_LV17, and its Transparency is active,
-; there is a 50% chance that any damage or effect is prevented
-; return carry if damage is prevented
+
+; if the Pokemon being attacked is HAUNTER_LV17 and its Transparency is active,
+; there is a 50% chance that any damage or effect is prevented.
+; output:
+;	carry = set:  if Transparency successfully protected Haunter from the attack
 HandleTransparency::
 	ld a, [wTempNonTurnDuelistCardID]
 	cp HAUNTER_LV17
@@ -370,7 +406,7 @@ HandleTransparency::
 .transparency
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
-	jr z, .done ; Transparency has no effect against Pkmn Powers
+	jr z, .done ; Transparency has no effect against Pokemon Powers
 	ld a, [wTempPlayAreaLocation_cceb]
 	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
 	jr c, .done
@@ -385,9 +421,14 @@ HandleTransparency::
 	scf
 	ret
 
-; return carry and return the appropriate text id in hl if the target has an
-; special status or power that prevents any damage or effect done to it this turn
-; input: a = NO_DAMAGE_OR_EFFECT_*
+
+; preserves bc
+; input:
+;	a = wNoDamageOrEffect ID (NO_DAMAGE_OR_EFFECT_* constant)
+; output:
+;	hl = text ID from NoDamageOrEffectTextIDTable (only if check succeeds)
+;	carry = set:  if the target has anything affecting it that would prevent
+;	              prevents any damage or effect done to it during this turn
 CheckNoDamageOrEffect::
 	ld a, [wNoDamageOrEffect]
 	or a
@@ -418,7 +459,10 @@ NoDamageOrEffectTextIDTable::
 	tx NoDamageOrEffectDueToTransparencyText ; NO_DAMAGE_OR_EFFECT_TRANSPARENCY
 	tx NoDamageOrEffectDueToNShieldText      ; NO_DAMAGE_OR_EFFECT_NSHIELD
 
-; return carry if turn holder has Omanyte and its Clairvoyance Pkmn Power is active
+
+; preserves all registers except af
+; output:
+;	carry = set:  if the turn holder has an Omanyte with an active Clairvoyance Pokemon Power
 IsClairvoyanceActive::
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
@@ -427,10 +471,14 @@ IsClairvoyanceActive::
 	ld a, OMANYTE
 ;	fallthrough
 
-; return, in a, the amount of times that the Pokemon card with a given ID is found in the
-; turn holder's play area. Also return carry if the Pokemon card is at least found once.
-; if the arena Pokemon is asleep, confused, or paralyzed (Pkmn Power-incapable), it doesn't count.
-; input: a = Pokemon card ID to search
+; checks the turn holder's play area for a specific Pokemon, but the Active Pokemon
+; is ignored if it's Asleep, Confused, or Paralyzed (i.e. Pokemon Power-incapable).
+; preserves all registers except af
+; input:
+;	a = card ID of Pokemon to look for
+; output:
+;	a = number of Pokemon with the ID from input that are in the turn holder's play area
+;	carry = set:  if there's at least 1 of that Pokemon in the turn holder's play area
 CountPokemonIDInPlayArea::
 	push hl
 	push de
@@ -477,10 +525,15 @@ CountPokemonIDInPlayArea::
 	pop hl
 	ret
 
-; return, in a, the amount of times that the Pokemon card with a given ID is found in the
-; play area of both duelists. Also return carry if the Pokemon card is at least found once.
-; if the arena Pokemon is asleep, confused, or paralyzed (Pkmn Power-incapable), it doesn't count.
-; input: a = Pokemon card ID to search
+
+; checks both play areas for a specific Pokemon, but the Active Pokemon is
+; ignored if it's Asleep, Confused, or Paralyzed (i.e. Pokemon Power-incapable)
+; preserves all registers except af
+; input:
+;	a = card ID of Pokemon to look for
+; output:
+;	a = number of Pokemon with the ID from input that are in either play area
+;	carry = set:  if there's at least 1 of that Pokemon in either play area
 CountPokemonIDInBothPlayAreas::
 	push bc
 	ld [wTempPokemonID_ce7c], a
@@ -499,8 +552,11 @@ CountPokemonIDInBothPlayAreas::
 	pop bc
 	ret
 
-; returns carry if turn holder's arena card is paralyzed, asleep, confused,
-; and/or toxic gas in play, meaning that attack and/or pkmn power cannot be used
+
+; preserves bc and de
+; output:
+;	carry = set:  if the turn holder's Active Pokemon is Asleep, Confused, Paralyzed,
+;	              and/or Toxic Gas is active (i.e. its Pokemon Power cannot be used)
 CheckCannotUseDueToStatus::
 	xor a
 
@@ -520,7 +576,10 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	ldtx hl, UnableDueToToxicGasText
 	ret
 
-; return carry if the turn holder's arena Pokemon is affected by Acid and can't retreat
+
+; preserves bc and de
+; output:
+;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
 CheckCantRetreatDueToAcid::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
@@ -535,7 +594,10 @@ CheckCantRetreatDueToAcid::
 	scf
 	ret
 
-; return carry if the turn holder is affected by Headache and trainer cards can't be used
+
+; preserves bc and de
+; output:
+;	carry = set:  if the turn holder can't play any Trainer cards because of Headache
 CheckCantUseTrainerDueToHeadache::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	call GetTurnDuelistVariable
@@ -546,7 +608,10 @@ CheckCantUseTrainerDueToHeadache::
 	scf
 	ret
 
-; return carry if any duelist has Aerodactyl and its Prehistoric Power Pkmn Power is active
+
+; preserves bc and de
+; output:
+;	carry = set:  if there's an Aerodactyl in play with an active Prehistoric Power
 IsPrehistoricPowerActive::
 	ld a, AERODACTYL
 	call CountPokemonIDInBothPlayAreas
@@ -557,9 +622,11 @@ IsPrehistoricPowerActive::
 	ccf
 	ret
 
-; clears some SUBSTATUS2 conditions from the turn holder's active Pokemon.
+
+; clears some SUBSTATUS2 conditions from the turn holder's Active Pokemon.
 ; more specifically, those conditions that reduce the damage from an attack
 ; or prevent the opposing Pokemon from attacking the substatus condition inducer.
+; preserves bc and de
 ClearDamageReductionSubstatus2::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetTurnDuelistVariable
@@ -575,7 +642,10 @@ ClearDamageReductionSubstatus2::
 	ld [hl], 0
 	ret
 
-; clears the SUBSTATUS1 and updates the double damage condition of the player about to start his turn
+
+; clears the SUBSTATUS1 and updates the double damage condition
+; of the player whose turn is about to start
+; preserves bc and de
 UpdateSubstatusConditions_StartOfTurn::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
 	call GetTurnDuelistVariable
@@ -589,7 +659,10 @@ UpdateSubstatusConditions_StartOfTurn::
 	set SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
 	ret
 
-; clears the SUBSTATUS2, Headache, and updates the double damage condition of the player ending his turn
+
+; clears the SUBSTATUS2/Headache, and updates the double damage condition
+; of the player whose turn has ended
+; preserves bc and de
 UpdateSubstatusConditions_EndOfTurn::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	call GetTurnDuelistVariable
@@ -607,8 +680,9 @@ UpdateSubstatusConditions_EndOfTurn::
 	res SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
 	ret
 
-; if the defending (non-turn) card's HP is 0 and the attacking (turn) card's HP
-;  is not, the attacking card faints if it was affected by destiny bond
+
+; if the Defending Pokemon's HP is 0 and the Attacking Pokemon's HP is not,
+; then the Attacking Pokemon is Knocked Out if it was affected by Destiny Bond.
 HandleDestinyBondSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
 	call GetNonTurnDuelistVariable
@@ -643,9 +717,10 @@ HandleDestinyBondSubstatus::
 	ldtx hl, KnockedOutDueToDestinyBondText
 	jp DrawWideTextBox_WaitForInput
 
+
+; used to bounce back an attack of the RESIDUAL category.
 ; when MACHAMP is damaged, if its Strikes Back is active, the
-; attacking Pokemon (turn holder's arena Pokemon) takes 10 damage.
-; used to bounce back an attack of the RESIDUAL category
+; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
 HandleStrikesBack_AgainstResidualAttack::
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
@@ -660,10 +735,11 @@ HandleStrikesBack_AgainstResidualAttack::
 	call CheckCannotUseDueToStatus
 	call SwapTurn
 	ret c
-	ld hl, 10 ; damage to be dealt to attacker
+	ld hl, 10 ; amount of damage to give the Attacking Pokemon
 	call ApplyStrikesBack_AgainstResidualAttack
 	jp nc, WaitForWideTextBoxInput
 	ret
+
 
 ApplyStrikesBack_AgainstResidualAttack::
 	push hl
@@ -696,8 +772,11 @@ ApplyStrikesBack_AgainstResidualAttack::
 	scf
 	ret
 
-; if the id of the card provided in register a as a deck index is MUK,
-; clear the changed type of all arena and bench Pokemon
+
+; if the ID of the card provided in register a as a deck index is MUK,
+; then clear the changed type of all Active and Benched Pokemon.
+; input:
+;	a = deck index (0-59) to check
 ClearChangedTypesIfMuk::
 	call GetCardIDFromDeckIndex
 	ld a, e

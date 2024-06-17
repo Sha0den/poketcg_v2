@@ -1,4 +1,5 @@
-; set current dest VRAM bank to 0
+; sets current dest VRAM bank to 0
+; preserves all registers
 BankswitchVRAM0::
 	push af
 	xor a
@@ -7,7 +8,9 @@ BankswitchVRAM0::
 	pop af
 	ret
 
-; set current dest VRAM bank to 1
+
+; sets current dest VRAM bank to 1
+; preserves all registers
 BankswitchVRAM1::
 	push af
 	ld a, $1
@@ -16,7 +19,11 @@ BankswitchVRAM1::
 	pop af
 	ret
 
-; set current dest VRAM bank to a
+
+; sets current dest VRAM bank to a
+; preserves all registers
+; input:
+;	a = VRAM bank to use
 BankswitchVRAM::
 	ldh [hBankVRAM], a
 	ldh [rVBK], a

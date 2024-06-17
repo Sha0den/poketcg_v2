@@ -1,4 +1,4 @@
-; setup SNES memory $810-$867 and palette
+; sets up SNES memory $810-$867 and palette
 InitSGB::
 	ld hl, MaskEnPacket_Freeze
 	call SendSGB
@@ -24,6 +24,8 @@ InitSGB::
 ;	fallthrough
 
 ; send SGB packet at hl (or packets, if length > 1)
+; input:
+;	hl = SGB packet(s) to send
 SendSGB::
 	ld a, [hl]
 	and $7
@@ -171,7 +173,9 @@ AttrBlkPacket_0b10::
 	ds 2 ; data set 3
 
 ; SGB hardware detection
-; return carry if SGB detected and disable multi-controller mode before returning
+; if found, disable multi-controller mode
+; output:
+;	carry = set:  if SGB was detected
 DetectSGB::
 	ld bc, 60
 	call Wait
@@ -224,7 +228,7 @@ MltReq2Packet::
 	db MLT_REQ_2_PLAYERS
 	ds $0e
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

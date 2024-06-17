@@ -207,7 +207,13 @@
 
 
 ## Miscellaneous Changes
-- **June 13, 2024** 1 File Changed
+- **June 17, 2024** 51 Files Changed
+    - Try to standardize the function comments that are used in the home bank files
+    - Also eliminate some redundant code and update a few more ld's to ldh's
+
+<br/>
+
+- **[June 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/cbe3b8afba7bebd0cb490fdf7f8a81d6dd92390d)** 1 File Changed
     - Make the default player name (Mark) mixed case and have it be displayed with halfwidth font tiles to match the rest of the game's text
 
 <br/>

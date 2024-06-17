@@ -1,7 +1,13 @@
-; function that executes one or more consecutive coin tosses during a duel (a = number of coin tosses),
-; displaying each result ([O] or [X]) starting from the top left corner of the screen.
+; executes one or more consecutive coin tosses during a duel,
+; displaying each result ([O] or [X]), starting from the top left corner of the screen.
 ; text at de is printed in a text box during the coin toss.
-; returns: the number of heads in a and in wCoinTossNumHeads, and carry if at least one heads
+; preserves hl
+; input:
+;	a = number of coin tosses
+;	de = text ID for the relevant text to print
+; output:
+;	carry = set:  if there was at least one heads
+;	[wCoinTossNumHeads] & a = number of heads
 TossCoinATimes::
 	push hl
 	ld hl, wCoinTossScreenTextID
@@ -12,10 +18,16 @@ TossCoinATimes::
 	pop hl
 	ret
 
-; function that executes a single coin toss during a duel.
+
+; executes a single coin toss during a duel.
 ; text at de is printed in a text box during the coin toss.
-; returns: - carry, and 1 in a and in wCoinTossNumHeads if heads
-;          - nc, and 0 in a and in wCoinTossNumHeads if tails
+; preserves hl
+; input:
+;	de = text ID for the relevant text to print
+; output:
+;	carry = set: result was heads
+;	[wCoinTossNumHeads] & a = 1: result was heads
+;	[wCoinTossNumHeads] & a = 0: result was tails
 TossCoin::
 	push hl
 	ld hl, wCoinTossScreenTextID
@@ -29,7 +41,9 @@ TossCoin::
 	pop hl
 	ret
 
+
 ; cp de, bc
+; preserves all registers except af
 CompareDEtoBC::
 	ld a, d
 	cp b

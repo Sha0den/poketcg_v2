@@ -1,4 +1,6 @@
-; returns h * l in hl
+; preserves bc and de
+; output:
+;	hl = h * l
 HtimesL::
 	push de
 	ld a, h
@@ -19,7 +21,12 @@ HtimesL::
 	pop de
 	ret
 
-; return a random number between 0 and a (exclusive) in a
+
+; preserves all registers except af
+; input:
+;	a = highest possible number to consider
+; output:
+;	a = random number between 0 and a (exclusive)
 Random::
 	push hl
 	ld h, a
@@ -30,7 +37,9 @@ Random::
 	pop hl
 	ret
 
-; get the next random numbers of the wRNG1 and wRNG2 sequences
+
+; gets the next random numbers of the wRNG1 and wRNG2 sequences
+; preserves all registers except af
 UpdateRNGSources::
 	push hl
 	push de

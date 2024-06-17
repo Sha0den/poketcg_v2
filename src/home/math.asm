@@ -1,4 +1,6 @@
-; returns a *= 10
+; preserves all registers except af
+; output:
+;	a *= 10
 ATimes10::
 	push de
 	ld e, a
@@ -9,7 +11,10 @@ ATimes10::
 	pop de
 	ret
 
-; returns hl *= 10
+
+; preserves bc and de
+; output:
+;	hl *= 10
 HLTimes10::
 	push de
 	ld l, a
@@ -23,8 +28,11 @@ HLTimes10::
 	pop de
 	ret
 
-; returns a /= 10
-; returns carry if a % 10 >= 5
+
+; preserves all registers except af
+; output:
+;	a /= 10
+;	carry = set:  if a % 10 >= 5
 ADividedBy10::
 	push de
 	ld e, -1
@@ -37,19 +45,25 @@ ADividedBy10::
 	pop de
 	ret
 
-; returns a /= 2 rounded up
+
+; preserves all registers except af
+; output:
+;	a /= 2 (rounded up)
 HalfARoundedUp::
 	srl a
 	bit 0, a
-	ret z  ; rounded
+	ret z  ; no need for rounding
 	add 5  ; round up to nearest 10
 	ret
 
+
 ; unreferenced counterpart of HalfARoundedUp
-; returns a /= 2 rounded down
+; preserves all registers except af
+; output:
+;	a /= 2 (rounded down)
 ;HalfARoundedDown::
 ;	srl a
 ;	bit 0, a
-;	ret z  ; rounded
+;	ret z  ; no need for rounding
 ;	sub 5  ; round down to nearest 10
 ;	ret

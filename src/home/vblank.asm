@@ -1,4 +1,5 @@
 ; vblank interrupt handler
+; preserves all registers
 VBlankHandler::
 	push af
 	push bc

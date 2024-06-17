@@ -1,5 +1,10 @@
-; copy c bytes of data from hl to de, b times.
+; copies c bytes of data from hl to de, b times.
 ; used to copy gfx data with c = TILE_SIZE
+; input:
+;	b = number of times to copy
+;	c = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 CopyGfxData::
 	ld a, [wLCDC]
 	rla
@@ -34,7 +39,13 @@ CopyGfxData::
 	jr nz, .next_tile
 	ret
 
-; copy bc bytes from hl to de. preserves all registers except af
+
+; copies bc bytes from hl to de
+; preserves all registers except af
+; input:
+;	bc = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 CopyDataHLtoDE_SaveRegisters::
 	push hl
 	push de
@@ -45,7 +56,12 @@ CopyDataHLtoDE_SaveRegisters::
 	pop hl
 	ret
 
-; copy bc bytes from hl to de
+
+; copies bc bytes from hl to de
+; input:
+;	bc = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 CopyDataHLtoDE::
 	ld a, [hli]
 	ld [de], a

@@ -1,6 +1,9 @@
-
-; copy c bytes of data from de to hl
+; copies c bytes of data from de to hl
 ; if LCD on, copy during h-blank only
+; input:
+;	c = number of bytes to copy
+;	de = address from which to start copying the data
+;	hl = where to copy the data
 SafeCopyDataDEtoHL::
 	ld a, [wLCDC]        ;
 	bit LCDC_ENABLE_F, a ;
@@ -15,8 +18,13 @@ SafeCopyDataDEtoHL::
 .lcd_on
 	jp HblankCopyDataDEtoHL
 
-; returns v*BGMap0 + BG_MAP_WIDTH * e + d in hl.
-; used to map coordinates at de to a BGMap0 address.
+
+; maps coordinates at de to a BGMap0 address.
+; preserves bc and de
+; input:
+;	de = screen coordinates
+; output:
+;	hl = v*BGMap0 + BG_MAP_WIDTH * e + d
 DECoordToBGMap0Address::
 	ld l, e
 	ld h, $0
@@ -33,7 +41,11 @@ DECoordToBGMap0Address::
 	ld h, a
 	ret
 
-; Apply SCX and SCY correction to xy coordinates at de
+
+; Applies SCX and SCY correction to xy coordinates at de
+; preserves af, bc, and hl
+; input:
+;	de = screen coordinates to adjust
 AdjustCoordinatesForBGScroll::
 	push af
 	ldh a, [hSCX]
@@ -53,9 +65,14 @@ AdjustCoordinatesForBGScroll::
 	pop af
 	ret
 
+
 ; Draws a bxc text box at de printing a name in the left side of the top border.
-; The name's text id must be at hl when this function is called.
+; The name's text ID must be at hl when this function is called.
 ; Mostly used to print text boxes for talked-to NPCs, but occasionally used in duels as well.
+; input:
+;	bc = width and height of the text box being drawn
+;	de = screen coordinates at which to start drawing the text box
+;	hl = text ID of header name to print
 DrawLabeledTextBox::
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -147,9 +164,13 @@ DrawLabeledTextBox::
 	; top border done, draw the rest of the text box
 	jr ContinueDrawingTextBoxCGB
 
+
 ; Draws a bxc text box at de to print menu data in the overworld.
 ; Also used to print a text box during a duel.
 ; When talking to NPCs, DrawLabeledTextBox is used instead.
+; input:
+;	bc = width and height of the text box being drawn
+;	de = screen coordinates at which to start drawing the text box
 DrawRegularTextBox::
 	ld a, [wConsole]
 	cp CONSOLE_CGB
@@ -166,7 +187,7 @@ DrawRegularTextBoxDMG::
 	call CopyLine
 ;	fallthrough
 
-; continue drawing a labeled or regular textbox on DMG or SGB:
+; continues drawing a labeled or regular textbox on DMG or SGB:
 ; body and bottom line of either type of textbox
 ContinueDrawingTextBoxDMGorSGB::
 	dec c
@@ -183,10 +204,12 @@ ContinueDrawingTextBoxDMGorSGB::
 ;	fallthrough
 
 ; copies b bytes of data to sp-$1f and to hl, and returns hl += BG_MAP_WIDTH
-; d = value of byte 0
-; e = value of byte b
-; a = value of bytes [1, b-1]
 ; b is supposed to be BG_MAP_WIDTH or smaller, else the stack would get corrupted
+; preserves bc
+; input:
+;	d = ID of leftmost tile in the line
+;	e = ID of rightmost tile in the line
+;	a = ID of every other tile in the line
 CopyLine::
 	add sp, -BG_MAP_WIDTH
 	push hl
@@ -218,6 +241,7 @@ CopyLine::
 	add sp, BG_MAP_WIDTH
 	ret
 
+
 ; DrawRegularTextBox branches here on CGB console
 DrawRegularTextBoxCGB::
 	call DECoordToBGMap0Address
@@ -227,7 +251,7 @@ DrawRegularTextBoxCGB::
 	call CopyCurrentLineTilesAndAttrCGB
 ;	fallthrough
 
-; continue drawing a labeled or regular textbox on CGB:
+; continues drawing a labeled or regular textbox on CGB:
 ; body and bottom line of either type of textbox
 ContinueDrawingTextBoxCGB::
 	dec c
@@ -252,16 +276,19 @@ ContinueDrawingTextBoxCGB::
 	lb de, SYM_BOX_BTM_L, SYM_BOX_BTM_R
 ;	fallthrough
 
-; d = id of top left tile
-; e = id of top right tile
-; a = id of rest of tiles
 ; Assumes b = SCREEN_WIDTH and that VRAM bank 0 is loaded
+; preserves bc
+; input:
+;	d = ID of top left tile
+;	e = ID of top right tile
+;	a = ID of every other tile
 CopyCurrentLineTilesAndAttrCGB::
 	push hl
 	call CopyLine
 	pop hl
 ;	fallthrough
 
+; preserves bc
 CopyCurrentLineAttrCGB::
 	call BankswitchVRAM1
 	ld a, [wTextBoxFrameType] ; on CGB, wTextBoxFrameType determines the palette and the other attributes
@@ -269,6 +296,7 @@ CopyCurrentLineAttrCGB::
 	ld d, a
 	call CopyLine
 	jp BankswitchVRAM0
+
 
 ; DrawRegularTextBox branches here on SGB console
 DrawRegularTextBoxSGB::
@@ -331,8 +359,10 @@ AttrBlkPacket_TextBox::
 	ds 6 ; data set 2
 	ds 2 ; data set 3
 
+
 ; creates a subsection within a textbox (useful for making a header)
 ; by drawing a second bottom row at the specified coordinates
+; preserves bc
 ; input:
 ;	b = length of the row in tiles (usually SCREEN_WIDTH, i.e. 20)
 ;	de = coordinates to print line

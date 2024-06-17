@@ -1,4 +1,9 @@
 ; Save a pointer to a list, given at de, to wListPointer
+; preserves all registers
+; input:
+;	de = list that will be pointed to
+; output:
+;	[wListPointer] = location of the list from input
 SetListPointer::
 	push hl
 	ld hl, wListPointer
@@ -8,8 +13,12 @@ SetListPointer::
 	pop hl
 	ret
 
-; Return the current element of the list at wListPointer,
-; and advance the list to the next element
+
+; currently an unreferenced function
+; preserves all registers except af
+; output:
+;	a = item in list originally pointed to by wListPointer
+;	[wListPointer] = address of the next item in the list
 GetNextElementOfList::
 	push hl
 	push de
@@ -29,8 +38,13 @@ SetListToNextPosition::
 	pop hl
 	ret
 
-; Set the current element of the list at wListPointer to a,
-; and advance the list to the next element
+; Sets the current element of the list at wListPointer to a,
+; and advances the list to the next element
+; preserves all registers
+; input:
+;	a = the new current item in the list
+; output:
+;	[wListPointer] = address of the next item in the list
 SetNextElementOfList::
 	push hl
 	push de

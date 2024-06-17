@@ -1,7 +1,8 @@
 ; initializes variables used to decompress data in DecompressData
-; de = source of compressed data
-; b = HIGH byte of secondary buffer ($100 bytes of buffer space)
-; also clears this $100 byte space
+; preserves bc and de
+; input:
+;	de = source of compressed data
+;	b = HIGH byte of secondary buffer ($100 bytes of buffer space; this is cleared)
 InitDataDecompression::
 	ld hl, wDecompSourcePosPtr
 	ld [hl], e
@@ -30,12 +31,14 @@ InitDataDecompression::
 	jr nz, .loop
 	ret
 
+
 ; decompresses data
 ; uses values initialized by InitDataDecompression
 ; wDecompSourcePosPtr holds the pointer for compressed source
+; preserves de and hl
 ; input:
-; bc = buffer length
-; de = buffer to place decompressed data
+;	bc = buffer length
+;	de = buffer to place decompressed data
 DecompressData::
 	push hl
 	push de
@@ -62,13 +65,13 @@ DecompressData::
 ; - if command bit is not set, then decompression enters "repeat mode,"
 ; which means it stores 0xXX in memory as number of bytes to repeat
 ; from a given offset. This offset is in the next byte in the data,
-; 0xYZ, which tells the offset to start repeating. A toggle is switched
-; each time the algorithm hits "repeat mode":
-;  - if off -> on it reads 0xYZ and stores it,
-;  then repeats (0x0Y + 2) bytes from the offset starting at 0xXX;
-;  - if on -> off, then the data only provides the offset,
-;  and the previous byte read for number of bytes to repeat, 0xYZ, is reused
-;  in which case (0x0Z + 2) bytes are repeated starting from the offset.
+; 0xYZ, which tells the offset to start repeating.
+; A toggle is switched each time the algorithm hits "repeat mode":
+;	- if "off -> on", then it reads 0xYZ and stores it,
+;	  then repeats (0x0Y + 2) bytes from the offset starting at 0xXX;
+;	- if "on -> off", then the data only provides the offset,
+;	  and the previous byte read for number of bytes to repeat, 0xYZ, is reused
+;	  in which case (0x0Z + 2) bytes are repeated starting from the offset.
 .Decompress::
 	ld hl, wDecompNumBytesToRepeat
 	ld a, [hl]
@@ -132,8 +135,7 @@ DecompressData::
 	jr nz, .repeat_mode_toggle_on
 	set 0, [hl]
 	inc hl
-; read byte for num of bytes to read
-; and use its higher nybble
+; read byte for number of bytes to read and use its higher nybble
 	ld a, [bc]
 	inc bc
 	ld [hli], a ; wDecompRepeatLengths
@@ -151,7 +153,7 @@ DecompressData::
 	jr .repeat_byte
 
 .repeat_mode_toggle_on
-; get the previous byte (num of bytes to repeat)
+; get the previous byte (number of bytes to repeat)
 ; and use its lower nybble
 	res 0, [hl]
 	inc hl

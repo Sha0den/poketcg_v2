@@ -1,8 +1,9 @@
 ; decompresses data from a given bank
 ; uses values initialized by InitDataDecompression
+; preserves de and hl
 ; input:
-; bc = buffer length
-; de = buffer to place decompressed data
+;	bc = buffer length
+;	de = buffer to place decompressed data
 DecompressDataFromBank::
 	ldh a, [hBankROM]
 	push af
@@ -12,7 +13,13 @@ DecompressDataFromBank::
 	pop af
 	jp BankswitchROM
 
+
 ; Copies bc bytes from [wTempPointer] to de
+; preserves all registers except af
+; input:
+;	bc = number of bytes to copy
+;	[wTempPointer] = address from which to start copying the data
+;	de = where to copy the data
 CopyBankedDataToDE::
 	ldh a, [hBankROM]
 	push af
@@ -28,7 +35,13 @@ CopyBankedDataToDE::
 	pop af
 	jp BankswitchROM
 
-; fill bc bytes of data at hl with a
+
+; fills bc bytes of data at hl with a
+; preserves all registers except af
+; input:
+;	a = data to copy
+;	bc = how many times to copy the data
+;	hl = where to copy the data
 FillMemoryWithA::
 	push hl
 	push de
@@ -46,7 +59,13 @@ FillMemoryWithA::
 	pop hl
 	ret
 
-; fill 2*bc bytes of data at hl with d,e
+
+; fills 2*bc bytes of data at hl with d,e
+; preserves all registers except af
+; input:
+;	de = data to copy
+;	bc = how many times to copy the data
+;	hl = where to copy the data
 FillMemoryWithDE::
 	push hl
 	push bc
@@ -63,7 +82,11 @@ FillMemoryWithDE::
 	pop hl
 	ret
 
-; gets far byte a:hl, outputs value in a
+
+; gets far byte a:hl
+; preserves all registers
+; output:
+;	a = byte that was retrieved
 GetFarByte::
 	push hl
 	push af

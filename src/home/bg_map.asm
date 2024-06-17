@@ -10,15 +10,16 @@ WriteDataBlocksToBGMap0::
 	jr z, WriteDataBlocksToBGMap0
 	ret
 
-; reads struct:
-;   x (1 byte), y (1 byte), data (n bytes), $00
+
 ; writes data to BGMap0-translated x,y
+; reads struct:
+;	x (1 byte), y (1 byte), data (n bytes), $00
 WriteDataBlockToBGMap0::
 	ld b, [hl]
 	inc hl
 	ld c, [hl]
 	inc hl
-	push hl ; hl = addr of data
+	push hl ; hl = address containing the data
 	push bc ; b,c = x,y
 	ld b, -1
 .find_zero_loop
@@ -32,7 +33,7 @@ WriteDataBlockToBGMap0::
 	call BCCoordToBGMap0Address
 	pop af
 	ld b, a ; length of data
-	pop hl ; addr of data
+	pop hl ; address containing the data
 	or a
 	jr z, .move_to_next
 	push bc
@@ -48,7 +49,12 @@ WriteDataBlockToBGMap0::
 	add hl, bc ; point to next structure
 	ret
 
+
 ; writes a to [v*BGMap0 + BG_MAP_WIDTH * c + b]
+; preserves all registers except af (af is also preserved if lcd is off)
+; input:
+;	a = byte to draw
+;	bc = screen coordinates at which to draw the byte
 WriteByteToBGMap0::
 	push af
 	ld a, [wLCDC]
@@ -71,6 +77,10 @@ WriteByteToBGMap0::
 ;	fallthrough
 
 ; writes a to [v*BGMap0 + BG_MAP_WIDTH * c + b] during hblank
+; preserves all registers except af
+; input:
+;	a = byte to draw
+;	bc = screen coordinates at which to draw the byte
 HblankWriteByteToBGMap0::
 	push hl
 	push de
@@ -87,7 +97,13 @@ HblankWriteByteToBGMap0::
 	pop hl
 	ret
 
-; copy a bytes of data from hl to vBGMap0 address pointed to by coord at bc
+
+; copies a bytes of data from hl to vBGMap0 address pointed to by bc coordinates
+; preserves bc
+; input:
+;	a = number of bytes to copy
+;	hl = data to copy
+;	bc = screen coordinates at which to draw the data
 CopyDataToBGMap0::
 	push bc
 	push hl
@@ -100,8 +116,13 @@ CopyDataToBGMap0::
 	pop bc
 	ret
 
-; copy b bytes of data from hl to de
+
+; copies b bytes of data from hl to de
 ; if LCD on, copy during h-blank only
+; input:
+;	b = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 SafeCopyDataHLtoDE::
 	ld a, [wLCDC]
 	rla

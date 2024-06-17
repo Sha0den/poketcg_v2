@@ -1,5 +1,8 @@
-; return nc if wActiveScreenAnim, wd4c0, and wAnimationQueue[] are all equal to $ff
-; nc means no animation is playing (or animation(s) has/have ended)
+; preserves all registers except af
+; output:
+;	carry = not set:  if wActiveScreenAnim, wd4c0, and wAnimationQueue are all $ff,
+;	                  meaning that no animation is playing (or any animations have ended)
+;	carry = set:  if an animation is playing
 CheckAnyAnimationPlaying::
 	push hl
 	push bc
@@ -18,11 +21,13 @@ CheckAnyAnimationPlaying::
 	pop hl
 	ret
 
-; plays duel animation
+
+; plays a duel animation
 ; the animations are loaded to a buffer
 ; and played in order, so they can be stacked
+; preserves all registers except af
 ; input:
-; - a = animation index
+;	a = animation ID (DUEL_ANIM_* constant)
 PlayDuelAnimation::
 	ld [wTempAnimation], a ; hold an animation temporarily
 	ldh a, [hBankROM]
@@ -50,7 +55,7 @@ PlayDuelAnimation::
 	jr .done
 
 .play_anim
-	call PlayLoadedDuelAnimation
+	call PlayLoadedDuelAnimation ; this function is also in Bank $07
 
 .done
 	pop de
@@ -58,6 +63,7 @@ PlayDuelAnimation::
 	pop hl
 	pop af
 	jp BankswitchROM
+
 
 UpdateQueuedAnimations::
 	ldh a, [hBankROM]
@@ -68,7 +74,8 @@ UpdateQueuedAnimations::
 	call HandleAllSpriteAnimations
 	pop af
 	jp BankswitchROM
-	
+
+
 Func_3bb5::
 	xor a
 	ld [wd4c0], a
@@ -84,7 +91,13 @@ Func_3bb5::
 	ld [wd4c0], a
 	ret
 
+
 ; writes from hl the pointer to the function to be called by DoFrame
+; preserves all registers except af
+; input:
+;	hl = function to be called by DoFrame
+; output:
+;	[wDoFrameFunction] = hl
 SetDoFrameFunction::
 	ld a, l
 	ld [wDoFrameFunction], a
@@ -92,6 +105,8 @@ SetDoFrameFunction::
 	ld [wDoFrameFunction + 1], a
 	ret
 
+
+; preserves all registers except af
 ResetDoFrameFunction::
 	push hl
 	ld hl, NULL

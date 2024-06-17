@@ -1,4 +1,6 @@
-; load data of card with text id of name at de to wLoadedCard1
+; loads the data of a card to wLoadedCard1 by using the text ID of the card name
+; input:
+;	de = text ID for a card's name
 LoadCardDataToBuffer1_FromName::
 	ld hl, CardPointers + 2 ; skip first NULL pointer
 	ld a, BANK(CardPointers)
@@ -44,13 +46,20 @@ LoadCardDataToBuffer1_FromName::
 	call BankpopROM
 	ret
 
-; load data of card with id at e to wLoadedCard2
+
+; loads the data of a card to wLoadedCard2 by using the card ID from e
+; preserves all registers except af
+; input:
+;	e = card ID
 LoadCardDataToBuffer2_FromCardID::
 	push hl
 	ld hl, wLoadedCard2
 	jr LoadCardDataToHL_FromCardID
 
-; load data of card with id at e to wLoadedCard1
+; loads the data of a card to wLoadedCard1 by using the card ID from e
+; preserves all registers except af
+; input:
+;	e = card ID
 LoadCardDataToBuffer1_FromCardID::
 	push hl
 	ld hl, wLoadedCard1
@@ -80,7 +89,12 @@ LoadCardDataToHL_FromCardID::
 	pop hl
 	ret
 
-; return in a the type (TYPE_* constant) of the card with id at e
+
+; preserves bc and hl
+; input:
+;	e = card ID
+; output:
+;	a = type ID of the card from input (TYPE_* constant)
 GetCardType::
 	push hl
 	call GetCardPointer
@@ -95,7 +109,12 @@ GetCardType::
 	pop hl
 	ret
 
-; return in de the 2-byte text id of the name of the card with id at e
+
+; preserves all registers except af
+; input:
+;	e = card ID
+; output:
+;	de = 2-byte text ID of the name of the card from input
 GetCardName::
 	push hl
 	call GetCardPointer
@@ -113,8 +132,15 @@ GetCardName::
 	pop hl
 	ret
 
-; This function can only be used from the home bank. If moved, the game will crash.
-; from the card id in a, returns type into a, rarity into b, and set into c
+
+; Shaoden: this function can't be moved outside the home bank; it crashes the game.
+; preserves de and hl
+; input:
+;	a = card ID
+; output:
+;	a = type of card from input (CARD_DATA_TYPE)
+;	b = rarity of card from input (CARD_DATA_RARITY)
+;	c = set of card from input (CARD_DATA_SET)
 GetCardTypeRarityAndSet::
 	push hl
 	push de
@@ -138,8 +164,13 @@ GetCardTypeRarityAndSet::
 	pop hl
 	ret
 
-; return at hl the pointer to the data of the card with id at e
-; return carry if e was out of bounds, so no pointer was returned
+
+; preserves bc and de
+; input:
+;	e = card ID
+; output:
+;	hl = pointer to the data of the card from input
+;	carry = set: input e was out of bounds, so no pointer was returned
 GetCardPointer::
 	push de
 	push bc
@@ -168,12 +199,16 @@ GetCardPointer::
 	pop de
 	ret
 
-; input:
-; hl = card_gfx_index
-; de = where to load the card gfx to
-; bc are supposed to be $30 (number of tiles of a card gfx) and TILE_SIZE respectively
+
+; copies a card graphic to vram and its palette to wCardPalette
 ; card_gfx_index = (<Name>CardGfx - CardGraphics) / 8  (using absolute ROM addresses)
-; also copies the card's palette to wCardPalette
+; input:
+;	hl = card_gfx_index
+;	de = where to load the card gfx to
+;	b = number of tiles used for a card graphic (should always be $30)
+;	c = number of bytes in a tile (should always be TILE_SIZE, or 16)
+; output:
+;	[wCardPalette] = palette of the card being loaded
 LoadCardGfx::
 	ldh a, [hBankROM]
 	push af

@@ -1,6 +1,8 @@
 ; currently an unreferenced function
 ; set attributes for [hl] sprites starting from wOAM + [wOAMOffset] / 4
-; return carry if reached end of wOAM before finishing
+; preserves de
+; output:
+;	carry = set:  if the end of wOAM was reached before finishing
 SetManyObjectsAttributes::
 	push hl
 	ld a, [wOAMOffset]
@@ -42,8 +44,16 @@ SetManyObjectsAttributes::
 	scf
 	jr .done
 
+
 ; for the sprite at wOAM + [wOAMOffset] / 4, set its attributes from registers e, d, c, b
-; return carry if [wOAMOffset] > 40 * 4 (beyond the end of wOAM)
+; preserves all registers except af
+; input:
+;	b = Attributes/Flags
+;	c = Tile/Pattern Number
+;	d = X Position
+;	e = Y Position
+; output:
+;	carry = set:  if [wOAMOffset] > 40 * 4 (beyond the end of wOAM)
 SetOneObjectAttributes::
 	push hl
 	ld a, [wOAMOffset]
@@ -69,7 +79,9 @@ SetOneObjectAttributes::
 	scf
 	ret
 
-; set the Y Position and X Position of all sprites in wOAM to $00
+
+; sets the Y Position and X Position of all sprites in wOAM to $00
+; preserves de
 ZeroObjectPositions::
 	xor a
 	ld [wOAMOffset], a

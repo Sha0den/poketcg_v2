@@ -1,6 +1,10 @@
 ; currently an unreferenced function
 ; converts the one-byte number at a to text (ascii) format,
 ; and writes it to [wStringBuffer] and the BGMap0 address at bc
+; preserves bc and hl
+; input:
+;	a = number to covert to text
+;	bc = coordinates at which to begin printing the number
 WriteOneByteNumber::
 	push bc
 	push hl
@@ -24,9 +28,14 @@ WriteOneByteNumber::
 	pop bc
 	ret
 
+
 ; currently an unreferenced function
 ; converts the two-byte number at hl to text (ascii) format,
 ; and writes it to [wStringBuffer] and the BGMap0 address at bc
+; preserves bc
+; input:
+;	hl = number to covert to text
+;	bc = coordinates at which to begin printing the number
 WriteTwoByteNumber::
 	push bc
 	ld de, wStringBuffer
@@ -39,7 +48,12 @@ WriteTwoByteNumber::
 	pop bc
 	ret
 
-; convert the number at hl to text (ascii) format and write it to de
+
+; converts the number at hl to text (ascii) format and write it to de
+; preserves bc
+; input:
+;	hl = number to covert to text
+;	de = where to copy the text (wStringBuffer)
 TwoByteNumberToText::
 	push bc
 	ld bc, -10000
@@ -72,13 +86,17 @@ TwoByteNumberToText::
 	ld h, a
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
 ; converts the two-digit BCD number provided in a to text (ascii) format,
 ; writes them to [wStringBuffer] and [wStringBuffer + 1], and to the BGMap0 address at bc
+; preserves all registers except af
+; input:
+;	a = binary-coded decimal number to covert to text
+;	bc = coordinates at which to begin printing the number
 ;WriteTwoDigitBCDNumber::
 ;	push hl
 ;	push bc
@@ -100,6 +118,10 @@ TwoByteNumberToText::
 ;
 ; converts the one-digit BCD number provided in the lower nybble of a to text
 ; (ascii) format, and writes it to [wStringBuffer] and to the BGMap0 address at bc
+; preserves all registers except af
+; input:
+;	a = binary-coded decimal number to covert to text
+;	bc = coordinates at which to begin printing the number
 ;WriteOneDigitBCDNumber::
 ;	push hl
 ;	push bc
@@ -121,6 +143,10 @@ TwoByteNumberToText::
 ;
 ; converts the four-digit BCD number provided in h and l to text (ascii) format,
 ; writes them to [wStringBuffer] through [wStringBuffer + 3], and to the BGMap0 address at bc
+; preserves all registers except af
+; input:
+;	hl = binary-coded decimal number to covert to text
+;	bc = coordinates at which to begin printing the number
 ;WriteFourDigitBCDNumber::
 ;	push hl
 ;	push bc
@@ -146,8 +172,11 @@ TwoByteNumberToText::
 ;
 ;
 ; given two BCD digits in the two nybbles of register a,
-; write them in text (ascii) format to hl (most significant nybble first).
+; writes them in text (ascii) format to hl (most significant nybble first).
 ; numbers above 9 end up converted to half-width font tiles.
+; preserves bc and de
+; input:
+;	a = double-digit binary-coded decimal number to covert to text
 ;WriteBCDNumberInTextFormat::
 ;	push af
 ;	swap a
@@ -155,8 +184,11 @@ TwoByteNumberToText::
 ;	pop af
 ;	; fallthrough
 ;
-; given a BCD digit in the (lower nybble) of register a, write it in text (ascii)
-;  format to hl. numbers above 9 end up converted to half-width font tiles.
+; given a BCD digit in the (lower nybble) of register a, write it in text (ascii) format to hl.
+; numbers above 9 end up converted to half-width font tiles.
+; preserves bc and de
+; input:
+;	a = single-digit binary-coded decimal number to covert to text
 ;WriteBCDDigitInTextFormat::
 ;	and $0f
 ;	add "0"

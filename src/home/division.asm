@@ -1,4 +1,10 @@
 ; divides BC by DE. Stores result in BC and stores remainder in HL
+; input:
+;	bc = dividend
+;	de = divisor
+; output:
+;	bc = quotient
+;	hl = remainder from the division
 DivideBCbyDE::
 	ld hl, $0000
 	rl c

@@ -53,11 +53,14 @@ HandleMoveModeAPress::
 	pop af
 	call BankswitchROM
 	ld l, MAP_SCRIPT_PRESSED_A
-	jp CallMapScriptPointerIfExists
+	jp CallMapScriptPointerIfExists ; this function is in Bank $03
 
-; returns a map script pointer in hl given
-; current map in wCurMap and which sub-script in l
-; sets c if pointer is found
+
+; sets a map script pointer in hl given the current map in wCurMap and which sub-script is in l
+; preserves bc and de
+; output:
+;	hl = map script pointer
+;	carry = set:  if the pointer was found
 GetMapScriptPointer::
 	push bc
 	push hl
@@ -91,17 +94,21 @@ GetMapScriptPointer::
 	pop bc
 	ret
 
+
 ; loads some configurations for the duel against
-; the NPC whose deck ID is stored in wNPCDuelDeckID
-; this includes NPC portrait, his/her name text ID,
-; and the number of prize cards
+; the NPC whose deck ID is stored in wNPCDuelDeckID.
+; this includes NPC portrait, his/her name text ID, and the number of prize cards.
 ; this was used in testing since these configurations
-; are stored in the script-related NPC data for normal gameplay
-; returns carry if a duel configuration was found
-; for the given NPC deck ID
+; are stored in the script-related NPC data for normal gameplay.
+; preserves all registers except af
+; input:
+;	[wNPCDuelDeckID] = NPC's deck ID (*_DECK constant)
+; output:
+;	carry = set:  if a duel configuration was found for the given NPC deck ID
 GetNPCDuelConfigurations::
 	farcall _GetNPCDuelConfigurations
 	ret
+
 
 ; finds a Script from the first byte and puts the next two bytes (usually arguments?) into cb
 RunOverworldScript::
@@ -131,6 +138,8 @@ RunOverworldScript::
 	pop bc
 	jp hl
 
+
+; preserves all registers except af
 ResetAnimationQueue::
 	ldh a, [hBankROM]
 	push af
@@ -140,6 +149,8 @@ ResetAnimationQueue::
 	pop af
 	jp BankswitchROM
 
+
+; preserves de
 FinishQueuedAnimations::
 	ldh a, [hBankROM]
 	push af
@@ -157,7 +168,7 @@ FinishQueuedAnimations::
 	pop af
 	jp BankswitchROM
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

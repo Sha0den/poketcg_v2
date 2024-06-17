@@ -1,8 +1,15 @@
+; disables all sprite animations and clears memory related to sprites
+; preserves all registers except af
 EnableAndClearSpriteAnimations::
 	xor a
 	ld [wAllSpriteAnimationsDisabled], a
 ;	fallthrough
 
+; tries to disable all sprite animations and clear memory related to sprites
+; preserves all registers except af
+; input:
+;	[wAllSpriteAnimationsDisabled] = 0: clear all sprite animations
+;	[wAllSpriteAnimationsDisabled] > 0: return before clearing any sprite animations
 ClearSpriteAnimations::
 	ldh a, [hBankROM]
 	push af
@@ -12,6 +19,8 @@ ClearSpriteAnimations::
 	pop af
 	jp BankswitchROM
 
+
+; preserves all registers except af
 HandleAllSpriteAnimations::
 	ldh a, [hBankROM]
 	push af
@@ -21,8 +30,10 @@ HandleAllSpriteAnimations::
 	pop af
 	jp BankswitchROM
 
-; hl - pointer to animation frame
-; wCurrSpriteFrameBank - bank of animation frame
+
+; input:
+;	hl = pointer to animation frame
+;	[wCurrSpriteFrameBank] = bank of animation frame
 DrawSpriteAnimationFrame::
 	ldh a, [hBankROM]
 	push af
@@ -134,10 +145,13 @@ DrawSpriteAnimationFrame::
 	pop af
 	jp BankswitchROM
 
-; Loads a pointer to the current animation frame into SPRITE_ANIM_FRAME_DATA_POINTER using
-; the current frame's offset
-; [wd4ca] - current frame offset
-; wTempPointer* - Pointer to current Animation
+
+; Loads a pointer to the current animation frame into
+; SPRITE_ANIM_FRAME_DATA_POINTER using the current frame's offset
+; preserves hl
+; input:
+;	[wd4ca] = current frame offset
+;	[wTempPointer] = pointer to current animation
 GetAnimationFramePointer::
 	ldh a, [hBankROM]
 	push af
@@ -186,8 +200,12 @@ GetAnimationFramePointer::
 	pop af
 	jp BankswitchROM
 
-; return hl pointing to the start of a sprite in wSpriteAnimBuffer.
-; the sprite is identified by its index in wWhichSprite.
+
+; preserves bc and de
+; input:
+;	[wWhichSprite] = sprite ID (SPRITE_* constant)
+; output:
+;	hl = pointing to the start of the sprite from input in wSpriteAnimBuffer
 GetFirstSpriteAnimBufferProperty::
 	push bc
 	ld c, SPRITE_ANIM_ENABLED
@@ -195,12 +213,23 @@ GetFirstSpriteAnimBufferProperty::
 	pop bc
 	ret
 
-; return hl pointing to the property (byte) c of a sprite in wSpriteAnimBuffer.
-; the sprite is identified by its index in wWhichSprite.
+
+; preserves bc and de
+; input:
+;	[wWhichSprite] = sprite ID (SPRITE_* constant)
+;	c = property to apply (SPRITE_ANIM_* constant)
+; output:
+;	hl = pointing to the start of the sprite from input in wSpriteAnimBuffer
 GetSpriteAnimBufferProperty::
 	ld a, [wWhichSprite]
 ;	fallthrough
 
+; preserves bc and de
+; input:
+;	a = sprite ID (SPRITE_* constant)
+;	c = property to apply (SPRITE_ANIM_* constant)
+; output:
+;	hl = pointing to the start of the sprite from input in wSpriteAnimBuffer
 GetSpriteAnimBufferProperty_SpriteInA::
 	cp SPRITE_ANIM_BUFFER_CAPACITY
 	jr c, .got_sprite
@@ -221,6 +250,12 @@ GetSpriteAnimBufferProperty_SpriteInA::
 	pop bc
 	ret
 
+
+; preserves all registers except af
+; input:
+;	a = scene ID (SCENE_* constant)
+;	b = base X position of scene in tiles (usually 0)
+;	c = base Y position of scene in tiles (usually 0)
 LoadScene::
 	push af
 	ldh a, [hBankROM]
@@ -239,7 +274,11 @@ LoadScene::
 	ld a, [wSceneSpriteIndex]
 	ret
 
-; draws player's portrait at b,c
+
+; draws the player's portrait at b,c
+; preserves bc and de
+; input:
+;	bc = coordinates at which to begin drawing the portrait
 DrawPlayerPortrait::
 	ld a, PLAYER_PIC
 	ld [wCurPortrait], a
@@ -247,7 +286,8 @@ DrawPlayerPortrait::
 ;	fallthrough
 
 ; input:
-; a = TILEMAP_* constant
+;	a = tilemap ID (TILEMAP_* constant)
+;	[wCurPortrait] = portrait ID to draw (*_PIC constant)
 DrawPortrait::
 	ld [wCurTilemap], a
 	ldh a, [hBankROM]
@@ -258,12 +298,18 @@ DrawPortrait::
 	pop af
 	jp BankswitchROM
 
-; draws opponent's portrait given in a at b,c
+; draws the opponent's portrait given in a at b,c
+; preserves bc and de
+; input:
+;	a = portrait ID to draw (*_PIC constant), usually stored in wOpponentPortrait
+;	bc = coordinates at which to begin drawing the portrait
 DrawOpponentPortrait::
 	ld [wCurPortrait], a
 	ld a, TILEMAP_OPPONENT
 	jr DrawPortrait
 
+
+; preserves de and hl
 Func_3e31::
 	ldh a, [hBankROM]
 	push af
@@ -274,7 +320,7 @@ Func_3e31::
 	pop af
 	jp BankswitchROM
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

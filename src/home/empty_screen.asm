@@ -1,4 +1,5 @@
-; initialize the screen by emptying the tilemap. used during screen transitions
+; initializes the screen by emptying the tilemap.
+; used during screen transitions.
 EmptyScreen::
 	call DisableLCD
 	call FillTileMap
@@ -20,8 +21,12 @@ AttrBlkPacket_EmptyScreen::
 	ds 6 ; data set 2
 	ds 2 ; data set 3
 
-; returns v*BGMap0 + BG_MAP_WIDTH * c + b in de.
-; used to map coordinates at bc to a BGMap0 address.
+
+; maps coordinates at bc to a BGMap0 address.
+; input:
+;	bc = screen coordinates
+; output:
+;	de = v*BGMap0 + BG_MAP_WIDTH * c + b
 BCCoordToBGMap0Address::
 	ld l, c
 	ld h, $0

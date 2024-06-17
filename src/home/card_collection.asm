@@ -1,4 +1,6 @@
-; return, in hl, the total amount of cards owned anywhere, including duplicates
+; preserves bc and de
+; output:
+;	hl = total amount of cards owned anywhere, including duplicates
 GetAmountOfCardsOwned::
 	push de
 	push bc
@@ -23,7 +25,7 @@ GetAmountOfCardsOwned::
 	ld d, a ; de = sDeck*Cards[x]
 	dec c
 	jr nz, .next_deck
-	; hl = DECK_SIZE * (no. of non-empty decks)
+	; hl = DECK_SIZE * (number of non-empty decks)
 	ld de, sCardCollection
 .next_card
 	ld a, [de]
@@ -40,9 +42,14 @@ GetAmountOfCardsOwned::
 	pop de
 	ret
 
-; return carry if the count in sCardCollection plus the count in each deck (sDeck*)
-; of the card with id given in a is 0 (if card not owned).
-; also return the count (total owned amount) in a.
+
+; preserves all registers except af
+; input:
+;	a = card ID to check
+; output:
+;	a = total number of that card owned by the player
+;	carry = set: the count of the card with ID from input was 0,
+;	             in sCardCollection as well as all of the player's decks (sDeck*)
 GetCardCountInCollectionAndDecks::
 	push hl
 	push de
@@ -92,8 +99,13 @@ GetCardCountInCollectionAndDecks::
 	scf
 	ret
 
-; return carry if the count in sCardCollection of the card with id given in a is 0.
-; also return the count (amount owned outside of decks) in a.
+
+; preserves all registers except af
+; input:
+;	a = card ID to check
+; output:
+;	a = number of that card owned by the player (outside of decks)
+;	carry = set: sCardCollection count of the card with ID from input is 0
 GetCardCountInCollection::
 	push hl
 	call EnableSRAM
@@ -107,7 +119,9 @@ GetCardCountInCollection::
 	scf
 	ret
 
-; creates a list at wTempCardCollection of every card the player owns and how many
+
+; creates a list at wTempCardCollection of every card the player owns
+; along with how many of each card is owned
 CreateTempCardCollection::
 	call EnableSRAM
 	ld hl, sCardCollection
@@ -128,7 +142,7 @@ CreateTempCardCollection::
 .AddDeckCards:
 	ld a, [de]
 	or a
-	ret z ; return if empty name (empty deck)
+	ret z ; return if there isn't a deck name (assumes the deck is empty)
 	ld hl, sDeck1Cards - sDeck1Name
 	add hl, de
 	ld e, l
@@ -144,8 +158,12 @@ CreateTempCardCollection::
 	jr nz, .next_card_loop
 	ret
 
-; add card with id given in a to sCardCollection, provided that
+
+; adds card with id given in a to sCardCollection, provided that
 ; the player has less than MAX_AMOUNT_OF_CARD (99) of them
+; preserves all registers except af
+; input:
+;	a = ID of card to add
 AddCardToCollection::
 	push hl
 	push de
@@ -172,7 +190,11 @@ AddCardToCollection::
 	pop hl
 	ret
 
-; remove a card with id given in a from sCardCollection (decrement its count if non-0)
+
+; removes a card with ID given in a from sCardCollection (decrement its count if non-0)
+; preserves all registers except af
+; input:
+;	a = ID of card to remove
 RemoveCardFromCollection::
 	push hl
 	call EnableSRAM
@@ -188,8 +210,11 @@ RemoveCardFromCollection::
 	pop hl
 	ret
 
-; return the amount of different cards that the player has collected in d
-; return NUM_CARDS in e, minus 1 if VENUSAUR_LV64 or MEW_LV15 has not been collected (minus 2 if neither)
+
+; preserves bc and hl
+; output:
+;	d = number of different cards that the player has collected
+;	e = NUM_CARDS minus 1 if VENUSAUR_LV64 or MEW_LV15 has not been collected (minus 2 if neither)
 GetCardAlbumProgress::
 	push hl
 	call EnableSRAM
@@ -198,19 +223,19 @@ GetCardAlbumProgress::
 	ld l, VENUSAUR_LV64
 	bit CARD_NOT_OWNED_F, [hl]
 	jr z, .next1
-	dec e ; if VENUSAUR_LV64 not owned
+	dec e ; if VENUSAUR_LV64 isn't owned
 .next1
 	ld l, MEW_LV15
 	bit CARD_NOT_OWNED_F, [hl]
 	jr z, .next2
-	dec e ; if MEW_LV15 not owned
+	dec e ; if MEW_LV15 isn't owned
 .next2
 	ld d, LOW(sCardCollection)
 	ld l, d
 .next_card
 	bit CARD_NOT_OWNED_F, [hl]
 	jr nz, .skip
-	inc d ; if this card owned
+	inc d ; if this card is owned
 .skip
 	inc l
 	jr nz, .next_card ; assumes sCardCollection is $100 bytes long (CARD_COLLECTION_SIZE)
