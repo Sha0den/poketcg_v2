@@ -242,9 +242,9 @@ InitTextPrinting::
 ; depending upon the byte at hffb0
 ; preserves all registers except af
 ; input:
-;	[hffb0] = $0: generate and place text tile
-;	[hffb0] = $2 (bit 1 set): only generate text tile?
-;	[hffb0] = $1 (bit 0 set): not even generate it, but just update text buffers?
+;	[hffb0] = $0 (no bit set): generate and place text tile
+;	[hffb0] = $2 (bit 1 set):  only generate text tile?
+;	[hffb0] = $1 (bit 0 set):  not even generate it, but just update text buffers?
 Func_22ca::
 	push hl
 	push de
@@ -892,9 +892,9 @@ ClassifyTextCharacterPair::
 
 ; converts the full-width font tile number at de to the
 ; equivalent offset within the full-width font tile graphics.
-;   if d == TX_KATAKANA: get tile from the 0_0_katakana.1bpp font.
-;   if d == TX_HIRAGANA or d == $0: get tile from the 0_1_hiragana.1bpp or 0_2_digits_kanji1.1bpp font.
-;   if d >= TX_FULLWIDTH1 and d <= TX_FULLWIDTH4: get tile from one of the other full-width fonts.
+;   if d == TX_KATAKANA:  get tile from the 0_0_katakana.1bpp font.
+;   if d == TX_HIRAGANA or d == $0:  get tile from the 0_1_hiragana.1bpp or 0_2_digits_kanji1.1bpp font.
+;   if d >= TX_FULLWIDTH1 and d <= TX_FULLWIDTH4:  get tile from one of the other full-width fonts.
 ; input:
 ;	de = fullwidth font tile number
 ; output:

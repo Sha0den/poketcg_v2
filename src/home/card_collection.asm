@@ -139,7 +139,9 @@ CreateTempCardCollection::
 	jp DisableSRAM
 
 ; adds the cards from a deck to wTempCardCollection given de = sDeck*Name
-.AddDeckCards:
+; input:
+;	de = sDeck*Name
+.AddDeckCards
 	ld a, [de]
 	or a
 	ret z ; return if there isn't a deck name (assumes the deck is empty)

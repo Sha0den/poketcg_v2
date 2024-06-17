@@ -146,8 +146,8 @@ PrintScrollableText_WithTextBoxLabel_NoWait::
 ; if labeled, the text ID of the label is provided in wTextBoxLabel.
 ; PrintScrollableText is used mostly for overworld NPC text.
 ; input:
-;	a = 1: use a label for the text
-;	a = 0: don't use a label for the text box
+;	a = 1:  use a label for the text
+;	a = 0:  don't use a label for the text box
 PrintScrollableText::
 	ld [wIsTextBoxLabeled], a
 	ldh a, [hBankROM]
@@ -393,8 +393,8 @@ ProcessTextHeader::
 
 ; preserves bc
 ; input:
-;	de: wTxRam2 or wTxRam3
-;	hl: wWhichTxRam2 or wWhichTxRam3
+;	de = wTxRam2 or wTxRam3
+;	hl = wWhichTxRam2 or wWhichTxRam3
 ; output:
 ;	hl = wTxRam* buffer's current entry (also increments wWhichTxRam*)
 HandleTxRam2Or3::

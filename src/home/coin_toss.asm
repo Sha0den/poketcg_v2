@@ -25,9 +25,9 @@ TossCoinATimes::
 ; input:
 ;	de = text ID for the relevant text to print
 ; output:
-;	carry = set: result was heads
-;	[wCoinTossNumHeads] & a = 1: result was heads
-;	[wCoinTossNumHeads] & a = 0: result was tails
+;	carry = set:  if the result was heads
+;	[wCoinTossNumHeads] & a = 1:  if the result was heads
+;	[wCoinTossNumHeads] & a = 0:  if the result was tails
 TossCoin::
 	push hl
 	ld hl, wCoinTossScreenTextID

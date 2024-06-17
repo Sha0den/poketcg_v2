@@ -667,7 +667,7 @@ GetCardInDuelTempList_OnlyDeckIndex::
 ; preserves bc and hl
 ; input:
 ;	a = deck index (0-59) of the card to add to wDuelTempList
-; output::
+; output:
 ;	de = ID of card with deck index from input
 ;	[hTempCardIndex_ff98] & a = [wDuelTempList + a]
 GetCardInDuelTempList::
@@ -1428,8 +1428,8 @@ ProcessPlayedPokemonCard::
 
 ; input:
 ;	a = card ID of the Pokemon with the information to copy
-;	e = 0: copy the first attack
-;	e = 1: copy the second attack
+;	e = 0:  copy the first attack
+;	e = 1:  copy the second attack
 ; output:
 ;	[wSelectedAttack] = e
 ;	[hTempCardIndex_ff9f] = d
@@ -1453,8 +1453,8 @@ CopyAttackDataAndDamage_FromCardID::
 
 ; input:
 ;	d = deck index of the Pokemon with the information to copy
-;	e = 0: copy the first attack
-;	e = 1: copy the second attack
+;	e = 0:  copy the first attack
+;	e = 1:  copy the second attack
 ; output:
 ;	[wSelectedAttack] = e
 ;	[hTempCardIndex_ff9f] = d
@@ -2512,11 +2512,12 @@ CheckDeckIndexForBasicPokemon::
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; return in the z flag whether turn holder's prize a (0-7) has been drawn or not
-; z: drawn, nz: not drawn
+; returns in the z flag whether the turn holder's prize in a (0-7) has been drawn or not
 ; preserves bc
 ; input:
 ;	a = Prize card (0-7)
+; output:
+;	z = set:  the Prize card has already been drawn
 ;CheckPrizeTaken::
 ;	ld e, a
 ;	ld d, 0

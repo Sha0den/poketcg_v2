@@ -3,7 +3,7 @@
 ; input:
 ;	a = number of cards in the list
 ;	de = initial page scroll offset, initial item (in the visible page)
-;	hl: 9 bytes with the rest of the parameters
+;	hl = 9 bytes with the rest of the parameters
 InitializeCardListParameters::
 	ld [wNumListItems], a
 	ld a, d
@@ -339,7 +339,7 @@ DuelMenuCursorCoords::
 ;	wDuelTempList = card list source
 ;	a = number of cards in the list
 ;	de = initial page scroll offset, initial item (in the visible page)
-;	hl: 9 bytes with the rest of the parameters
+;	hl = 9 bytes with the rest of the parameters
 PrintCardListItems::
 	call InitializeCardListParameters
 	ld hl, wMenuUpdateFunc

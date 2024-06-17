@@ -170,7 +170,7 @@ GetCardTypeRarityAndSet::
 ;	e = card ID
 ; output:
 ;	hl = pointer to the data of the card from input
-;	carry = set: input e was out of bounds, so no pointer was returned
+;	carry = set:  if input e was out of bounds, so no pointer was returned
 GetCardPointer::
 	push de
 	push bc

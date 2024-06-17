@@ -10,6 +10,8 @@ HandleDoubleDamageSubstatus::
 	ret z
 ;	fallthrough
 
+; output:
+;	de *= 2
 DoubleDamage::
 	ld a, e
 	or d
@@ -39,6 +41,8 @@ HandleDamageReduction::
 	ret nz
 ;	fallthrough
 
+; output:
+;	de -= 10
 ReduceDamageBy10::
 	ld hl, -10
 	add hl, de
@@ -46,6 +50,8 @@ ReduceDamageBy10::
 	ld d, h
 	ret
 
+; output:
+;	de -= 20
 ReduceDamageBy20::
 	ld hl, -20
 	add hl, de
@@ -54,6 +60,8 @@ ReduceDamageBy20::
 	ret
 
 
+; output:
+;	de = 0:  if input de < 40
 PreventAllDamage_IfLessThan40::
 	ld bc, 40
 	call CompareDEtoBC
@@ -61,12 +69,17 @@ PreventAllDamage_IfLessThan40::
 	ld de, 0
 	ret
 
+
+; output:
+;	de = 0:  if input de ≥ 30
 PreventAllDamage_IfMoreThan20::
 	ld bc, 30
 	call CompareDEtoBC
 	ret c
 ;	fallthrough
 
+; output:
+;	de = 0
 PreventAllDamage::
 	ld de, 0
 	ret
@@ -110,6 +123,8 @@ HandleDamageReductionExceptSubstatus2::
 	ret nz
 ;	fallthrough
 
+; output:
+;	de /= 2 (rounded down to the nearest 10)
 HalveDamage_RoundedDown::
 	sla d
 	rr e

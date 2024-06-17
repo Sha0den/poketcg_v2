@@ -8,8 +8,8 @@ EnableAndClearSpriteAnimations::
 ; tries to disable all sprite animations and clear memory related to sprites
 ; preserves all registers except af
 ; input:
-;	[wAllSpriteAnimationsDisabled] = 0: clear all sprite animations
-;	[wAllSpriteAnimationsDisabled] > 0: return before clearing any sprite animations
+;	[wAllSpriteAnimationsDisabled] = 0:  clear all sprite animations
+;	[wAllSpriteAnimationsDisabled] > 0:  return before clearing any sprite animations
 ClearSpriteAnimations::
 	ldh a, [hBankROM]
 	push af

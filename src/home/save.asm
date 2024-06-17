@@ -31,8 +31,8 @@ AddCardToCollectionAndUpdateAlbumProgress::
 ; saves the player's progress
 ; preserves all registers
 ; input:
-;	c = 0: save the player at their current position
-;	c !=0: save the player in Mason's lab
+;	c = 0:  save the player at their current position
+;	c !=0:  save the player in Mason's lab
 SaveGame::
 	push af
 	push bc

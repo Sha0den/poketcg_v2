@@ -18,8 +18,8 @@ PlaySong::
 
 ; preserves all registers except af
 ; output:
-;	a = 0: song finished
-;	a = 1: song not finished
+;	a = 0:  if the song has finished
+;	a = 1:  if the song is still playing
 AssertSongFinished::
 	farcall _AssertSongFinished
 	ret
@@ -27,8 +27,8 @@ AssertSongFinished::
 
 ; preserves all registers except af
 ; output:
-;	a = 0: SFX finished
-;	a = 1: SFX not finished
+;	a = 0:  if the SFX has finished
+;	a = 1:  if the SFX is still playing
 AssertSFXFinished::
 	farcall _AssertSFXFinished
 	ret
