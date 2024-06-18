@@ -90,26 +90,3 @@ Func_3bb5::
 	ld a, $80
 	ld [wd4c0], a
 	ret
-
-
-; writes from hl the pointer to the function to be called by DoFrame
-; preserves all registers except af
-; input:
-;	hl = function to be called by DoFrame
-; output:
-;	[wDoFrameFunction] = hl
-SetDoFrameFunction::
-	ld a, l
-	ld [wDoFrameFunction], a
-	ld a, h
-	ld [wDoFrameFunction + 1], a
-	ret
-
-
-; preserves all registers except af
-ResetDoFrameFunction::
-	push hl
-	ld hl, NULL
-	call SetDoFrameFunction
-	pop hl
-	ret

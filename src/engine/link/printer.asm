@@ -1180,7 +1180,7 @@ CheckDataCompression:
 ;	hl = number to convert to symbol font
 ; output:
 ;	[wStringBuffer] = numerical text string
-TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank6:
+TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank6::
 	push de
 	push bc
 	ld de, wStringBuffer

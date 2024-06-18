@@ -58,7 +58,33 @@ GameEventPointerTable::
 	dw GameEvent_Overworld
 
 
-GameEvent_Overworld::
+GameEvent_Duel::
+	ld a, GAME_EVENT_DUEL
+	ld [wActiveGameEvent], a
+	xor a
+	ld [wSongOverride], a
+	call EnableSRAM
+	xor a
+	ld [sPlayerInChallengeMachine], a
+	call DisableSRAM
+	call SaveGeneralSaveData
+	bank1call StartDuel_VSAIOpp
+	scf
+	ret
+
+
+GameEvent_BattleCenter::
+	ld a, GAME_EVENT_BATTLE_CENTER
+	ld [wActiveGameEvent], a
+	xor a
+	ld [wSongOverride], a
+	ld a, -1
+	ld [wDuelResult], a
+	ld a, MUSIC_DUEL_THEME_1
+	ld [wDuelTheme], a
+	ld a, MUSIC_CARD_POP
+	call PlaySong
+	bank1call SetUpAndStartLinkDuel
 	scf
 	ret
 
@@ -85,33 +111,21 @@ GameEvent_GiftCenter::
 	ret
 
 
-GameEvent_BattleCenter::
-	ld a, GAME_EVENT_BATTLE_CENTER
-	ld [wActiveGameEvent], a
-	xor a
-	ld [wSongOverride], a
-	ld a, -1
-	ld [wDuelResult], a
-	ld a, MUSIC_DUEL_THEME_1
-	ld [wDuelTheme], a
-	ld a, MUSIC_CARD_POP
-	call PlaySong
-	bank1call SetUpAndStartLinkDuel
-	scf
+GameEvent_Credits::
+	farcall PlayCreditsSequence
+	or a
 	ret
 
 
-GameEvent_Duel::
-	ld a, GAME_EVENT_DUEL
-	ld [wActiveGameEvent], a
+GameEvent_ContinueDuel::
 	xor a
 	ld [wSongOverride], a
+	bank1call TryContinueDuel
 	call EnableSRAM
-	xor a
-	ld [sPlayerInChallengeMachine], a
+	ld a, [sPlayerInChallengeMachine]
 	call DisableSRAM
-	call SaveGeneralSaveData
-	bank1call StartDuel_VSAIOpp
+	cp $ff
+	jr z, GameEvent_ChallengeMachine.asm_38ed
 	scf
 	ret
 
@@ -129,26 +143,10 @@ GameEvent_ChallengeMachine::
 	ld a, MUSIC_OVERWORLD
 	ld [wDefaultSong], a
 	call PlayDefaultSong
+;	fallthrough
+
+GameEvent_Overworld::
 	scf
-	ret
-
-
-GameEvent_ContinueDuel::
-	xor a
-	ld [wSongOverride], a
-	bank1call TryContinueDuel
-	call EnableSRAM
-	ld a, [sPlayerInChallengeMachine]
-	call DisableSRAM
-	cp $ff
-	jr z, GameEvent_ChallengeMachine.asm_38ed
-	scf
-	ret
-
-
-GameEvent_Credits::
-	farcall PlayCreditsSequence
-	or a
 	ret
 
 
@@ -383,54 +381,4 @@ GetNextNPCMovementByte::
 	call BankswitchROM
 	ld a, c
 	pop bc
-	ret
-
-
-; preserves all registers except af
-PlayDefaultSong::
-	push hl
-	push bc
-	call AssertSongFinished
-	or a
-	push af
-	call GetDefaultSong
-	ld c, a
-	pop af
-	jr z, .asm_3a11
-	ld a, c
-	ld hl, wSongOverride
-	cp [hl]
-	jr z, .asm_3a1c
-.asm_3a11
-	ld a, c
-	cp NUM_SONGS
-	jr nc, .asm_3a1c
-	ld [wSongOverride], a
-	call PlaySong
-.asm_3a1c
-	pop bc
-	pop hl
-	ret
-
-
-; preserves all registers except af
-; output:
-;	a = [wDefaultSong] (if Ishihara's House, Challenge Hall, or Pokemon Dome)
-;	a = MUSIC_RONALD (if any other map)
-GetDefaultSong::
-	ld a, [wRonaldIsInMap]
-	or a
-	jr z, .default_song
-	; only set Ronald's theme if it's not in one of the following maps
-	ld a, [wOverworldMapSelection]
-	cp OWMAP_ISHIHARAS_HOUSE
-	jr z, .default_song
-	cp OWMAP_CHALLENGE_HALL
-	jr z, .default_song
-	cp OWMAP_POKEMON_DOME
-	jr z, .default_song
-	ld a, MUSIC_RONALD
-	ret
-.default_song
-	ld a, [wDefaultSong]
 	ret

@@ -23,7 +23,7 @@ WriteOneByteNumber::
 	call BCCoordToBGMap0Address
 	pop hl
 	ld b, 3
-	call JPHblankCopyDataHLtoDE
+	call HblankCopyDataHLtoDE
 	pop hl
 	pop bc
 	ret
@@ -44,7 +44,7 @@ WriteTwoByteNumber::
 	call BCCoordToBGMap0Address
 	pop hl
 	ld b, 5
-	call JPHblankCopyDataHLtoDE
+	call HblankCopyDataHLtoDE
 	pop bc
 	ret
 
@@ -198,7 +198,7 @@ TwoDigitNumberToTxSymbol_TrimLeadingZeroAndAlign::
 ;	call BCCoordToBGMap0Address
 ;	pop hl
 ;	ld b, 2
-;	call JPHblankCopyDataHLtoDE
+;	call HblankCopyDataHLtoDE
 ;	pop de
 ;	pop bc
 ;	pop hl
@@ -223,7 +223,7 @@ TwoDigitNumberToTxSymbol_TrimLeadingZeroAndAlign::
 ;	call BCCoordToBGMap0Address
 ;	pop hl
 ;	ld b, 1
-;	call JPHblankCopyDataHLtoDE
+;	call HblankCopyDataHLtoDE
 ;	pop de
 ;	pop bc
 ;	pop hl
@@ -253,7 +253,7 @@ TwoDigitNumberToTxSymbol_TrimLeadingZeroAndAlign::
 ;	call BCCoordToBGMap0Address
 ;	pop hl
 ;	ld b, 4
-;	call JPHblankCopyDataHLtoDE
+;	call HblankCopyDataHLtoDE
 ;	pop de
 ;	pop bc
 ;	pop hl

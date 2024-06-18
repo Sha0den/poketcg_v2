@@ -58,6 +58,65 @@ ResumeSong::
 	ret
 
 
+; preserves all registers except af
+PlayDefaultSong::
+	push hl
+	push bc
+	call AssertSongFinished
+	or a
+	push af
+	call GetDefaultSong
+	ld c, a
+	pop af
+	jr z, .asm_3a11
+	ld a, c
+	ld hl, wSongOverride
+	cp [hl]
+	jr z, .asm_3a1c
+.asm_3a11
+	ld a, c
+	cp NUM_SONGS
+	jr nc, .asm_3a1c
+	ld [wSongOverride], a
+	call PlaySong
+.asm_3a1c
+	pop bc
+	pop hl
+	ret
+
+
+; preserves all registers except af
+; output:
+;	a = [wDefaultSong] (if Ishihara's House, Challenge Hall, or Pokemon Dome)
+;	a = MUSIC_RONALD (if any other map)
+GetDefaultSong::
+	ld a, [wRonaldIsInMap]
+	or a
+	jr z, .default_song
+	; only set Ronald's theme if it's not in one of the following maps
+	ld a, [wOverworldMapSelection]
+	cp OWMAP_ISHIHARAS_HOUSE
+	jr z, .default_song
+	cp OWMAP_CHALLENGE_HALL
+	jr z, .default_song
+	cp OWMAP_POKEMON_DOME
+	jr z, .default_song
+	ld a, MUSIC_RONALD
+	ret
+.default_song
+	ld a, [wDefaultSong]
+	ret
+
+
+; preserves all registers except af
+WaitForSongToFinish::
+	call DoFrameIfLCDEnabled
+	call AssertSongFinished
+	or a
+	jr nz, WaitForSongToFinish
+	ret
+
+
 Func_37a5::
 	ldh a, [hBankROM]
 	push af
@@ -136,3 +195,16 @@ Func_37c5::
 	dec c
 	jr nz, .asm_37c7
 	ret
+
+
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+;Func_3c87::
+;	push af
+;	call PauseSong
+;	pop af
+;	call PlaySong
+;	call WaitForSongToFinish
+;	jp ResumeSong

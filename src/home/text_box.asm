@@ -1,47 +1,3 @@
-; copies c bytes of data from de to hl
-; if LCD on, copy during h-blank only
-; input:
-;	c = number of bytes to copy
-;	de = address from which to start copying the data
-;	hl = where to copy the data
-SafeCopyDataDEtoHL::
-	ld a, [wLCDC]        ;
-	bit LCDC_ENABLE_F, a ;
-	jr nz, .lcd_on       ; assert that LCD is on
-.lcd_off_loop
-	ld a, [de]
-	inc de
-	ld [hli], a
-	dec c
-	jr nz, .lcd_off_loop
-	ret
-.lcd_on
-	jp HblankCopyDataDEtoHL
-
-
-; maps coordinates at de to a BGMap0 address.
-; preserves bc and de
-; input:
-;	de = screen coordinates
-; output:
-;	hl = v*BGMap0 + BG_MAP_WIDTH * e + d
-DECoordToBGMap0Address::
-	ld l, e
-	ld h, $0
-	add hl, hl
-	add hl, hl
-	add hl, hl
-	add hl, hl
-	add hl, hl
-	ld a, l
-	add d
-	ld l, a
-	ld a, h
-	adc HIGH(v0BGMap0)
-	ld h, a
-	ret
-
-
 ; Applies SCX and SCY correction to xy coordinates at de
 ; preserves af, bc, and hl
 ; input:
@@ -164,6 +120,20 @@ DrawLabeledTextBox::
 	; top border done, draw the rest of the text box
 	jr ContinueDrawingTextBoxCGB
 
+
+; draws a 12x6 text box aligned to the bottom left of the screen
+DrawNarrowTextBox::
+	lb de, 0, 12
+	lb bc, 12, 6
+	call AdjustCoordinatesForBGScroll
+	jr DrawRegularTextBox
+
+; draws a 20x6 text box aligned to the bottom of the screen
+DrawWideTextBox::
+	lb de, 0, 12
+	lb bc, 20, 6
+	call AdjustCoordinatesForBGScroll
+;	fallthrough
 
 ; Draws a bxc text box at de to print menu data in the overworld.
 ; Also used to print a text box during a duel.

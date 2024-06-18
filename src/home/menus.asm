@@ -817,14 +817,6 @@ DrawWideTextBox_PrintText::
 	jp PrintText
 
 
-; draws a 12x6 text box aligned to the bottom left of the screen
-DrawNarrowTextBox::
-	lb de, 0, 12
-	lb bc, 12, 6
-	call AdjustCoordinatesForBGScroll
-	jp DrawRegularTextBox
-
-
 ; draws a 12x6 text box aligned to the bottom left of the screen,
 ; prints the text at hl without letter delay, and waits for A or B to be pressed
 ; input:
@@ -851,14 +843,6 @@ NarrowTextBoxMenuParameters::
 	db SYM_CURSOR_D ; cursor tile number
 	db SYM_BOX_BOTTOM ; tile behind cursor
 	dw NULL ; function pointer if non-0
-
-
-; draws a 20x6 text box aligned to the bottom of the screen
-DrawWideTextBox::
-	lb de, 0, 12
-	lb bc, 20, 6
-	call AdjustCoordinatesForBGScroll
-	jp DrawRegularTextBox
 
 
 ; draws a 20x6 text box aligned to the bottom of the screen,
@@ -1021,7 +1005,7 @@ ContinueDuel::
 ; draws the same tile across an entire line in BG Map
 ; if CGB, also fills the line with background palette 4 in VRAM1
 ; input:
-;	a = TX_SYMBOL (SYM_?)
+;	a = TX_SYMBOL (SYM_* constant)
 ;	bc = coordinates to print line
 FillBGMapLineWithA::
 	call BCCoordToBGMap0Address
@@ -1035,24 +1019,6 @@ FillBGMapLineWithA::
 	call BankswitchVRAM1
 	call FillDEWithA
 	jp BankswitchVRAM0
-
-
-; fills de with b bytes of the value in register a
-; preserves af and hl
-; input:
-;	a = byte to copy
-;	b = number of bytes to copy
-;	de = where to copy the data
-FillDEWithA:
-	push hl
-	ld l, e
-	ld h, d
-.loop
-	ld [hli], a
-	dec b
-	jr nz, .loop
-	pop hl
-	ret
 
 
 ;----------------------------------------

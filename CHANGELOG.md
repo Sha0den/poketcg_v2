@@ -207,7 +207,14 @@
 
 
 ## Miscellaneous Changes
-- **June 18, 2024** 5 Files Changed
+- **June 18, 2024** 21 Files Changed (4 of these were removed from the repository)
+    - Shuffle some functions in the home bank for better organization
+    - Delete the redundant JPHblankCopyDataHLtoDE function
+    - Add a missing colon to fix a build error from the commit below this one
+
+<br/>
+
+- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/f5c84e957054bc2548219821aa6a2ec4d196d3a6)** 5 Files Changed
     - Shuffle some functions in the home bank that are related to printing numbers (and use more accurate labels)
 
 <br/>

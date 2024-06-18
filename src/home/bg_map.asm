@@ -117,22 +117,45 @@ CopyDataToBGMap0::
 	ret
 
 
-; copies b bytes of data from hl to de
-; if LCD on, copy during h-blank only
+; maps coordinates at bc to a BGMap0 address.
 ; input:
-;	b = number of bytes to copy
-;	hl = address from which to start copying the data
-;	de = where to copy the data
-SafeCopyDataHLtoDE::
-	ld a, [wLCDC]
-	rla
-	jr c, JPHblankCopyDataHLtoDE
-.lcd_off_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .lcd_off_loop
+;	bc = screen coordinates
+; output:
+;	de = v*BGMap0 + BG_MAP_WIDTH * c + b
+BCCoordToBGMap0Address::
+	ld l, c
+	ld h, $0
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	ld c, b
+	ld b, HIGH(v0BGMap0)
+	add hl, bc
+	ld e, l
+	ld d, h
 	ret
-JPHblankCopyDataHLtoDE::
-	jp HblankCopyDataHLtoDE
+
+
+; maps coordinates at de to a BGMap0 address.
+; preserves bc and de
+; input:
+;	de = screen coordinates
+; output:
+;	hl = v*BGMap0 + BG_MAP_WIDTH * e + d
+DECoordToBGMap0Address::
+	ld l, e
+	ld h, $0
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	ld a, l
+	add d
+	ld l, a
+	ld a, h
+	adc HIGH(v0BGMap0)
+	ld h, a
+	ret

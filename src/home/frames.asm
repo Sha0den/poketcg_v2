@@ -1,3 +1,26 @@
+; writes from hl the pointer to the function to be called by DoFrame
+; preserves all registers except af
+; input:
+;	hl = function to be called by DoFrame
+; output:
+;	[wDoFrameFunction] = hl
+SetDoFrameFunction::
+	ld a, l
+	ld [wDoFrameFunction], a
+	ld a, h
+	ld [wDoFrameFunction + 1], a
+	ret
+
+
+; preserves all registers except af
+ResetDoFrameFunction::
+	push hl
+	ld hl, NULL
+	call SetDoFrameFunction
+	pop hl
+	ret
+
+
 ; calls DoFrame a times
 ; preserves all registers except af
 ; input:
@@ -7,6 +30,18 @@ DoAFrames::
 	call DoFrame
 	dec a
 	jr nz, .loop
+	ret
+
+
+; preserves all registers
+DoFrameIfLCDEnabled::
+	push af
+	ldh a, [rLCDC]
+	bit LCDC_ENABLE_F, a
+	jr z, .done
+	call DoFrame
+.done
+	pop af
 	ret
 
 

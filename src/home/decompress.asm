@@ -158,3 +158,19 @@ DecompressData::
 	inc hl
 	ld a, [hli] ; wDecompRepeatLengths
 	jr .get_sequence_len
+
+
+; decompresses data from a given bank
+; uses values initialized by InitDataDecompression
+; preserves de and hl
+; input:
+;	bc = buffer length
+;	de = buffer to place decompressed data
+DecompressDataFromBank::
+	ldh a, [hBankROM]
+	push af
+	ld a, [wTempPointerBank]
+	call BankswitchROM
+	call DecompressData
+	pop af
+	jp BankswitchROM
