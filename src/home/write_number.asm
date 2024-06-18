@@ -1,5 +1,5 @@
 ; currently an unreferenced function
-; converts the one-byte number at a to text (ascii) format,
+; converts the one-byte number at a to halfwidth text (ascii) format,
 ; and writes it to [wStringBuffer] and the BGMap0 address at bc
 ; preserves bc and hl
 ; input:
@@ -30,7 +30,7 @@ WriteOneByteNumber::
 
 
 ; currently an unreferenced function
-; converts the two-byte number at hl to text (ascii) format,
+; converts the two-byte number at hl to halfwidth text (ascii) format,
 ; and writes it to [wStringBuffer] and the BGMap0 address at bc
 ; preserves bc
 ; input:
@@ -49,11 +49,11 @@ WriteTwoByteNumber::
 	ret
 
 
-; converts the number at hl to text (ascii) format and write it to de
+; converts the number at hl to halfwidth text (ascii) format and write it to de
 ; preserves bc
 ; input:
 ;	hl = number to covert to text
-;	de = where to copy the text (wStringBuffer)
+;	de = where to copy the text (usually wStringBuffer)
 TwoByteNumberToText::
 	push bc
 	ld bc, -10000
@@ -84,6 +84,95 @@ TwoByteNumberToText::
 	ld a, h
 	sbc b
 	ld h, a
+	ret
+
+; if [wFontWidth] == HALF_WIDTH:
+;	converts the number at hl to halfwidth text (ascii) format and writes it to wStringBuffer,
+;	adjusting the hl pointer to skip over any leading zeros
+; if [wFontWidth] == FULL_WIDTH:
+;	converts the number at hl to TX_SYMBOL text format and writes it to wStringBuffer,
+;	replacing leading zeros with SYM_SPACE
+; input:
+;	hl = number to covert to text/symbol font
+; output:
+;	hl = wStringBuffer (if halfwidth: its wStringBuffer + the number of leading zeros)
+;	[wStringBuffer] = numerical text string (includes leading zeros if halfwidth)
+TwoByteNumberToText_TrimLeadingZeros::
+	ld a, [wFontWidth]
+	or a ; FULL_WIDTH
+	jr z, .fullwidth
+	ld de, wStringBuffer
+	call TwoByteNumberToText
+	ld hl, wStringBuffer
+	ld c, 4
+.digit_loop
+	ld a, [hl]
+	cp "0"
+	ret nz
+	inc hl
+	dec c
+	jr nz, .digit_loop
+	ret
+.fullwidth
+	farcall TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank6
+	ret
+
+
+; converts a number between 0 and 99 to the TX_SYMBOL text format
+; and writes it to wDefaultText
+; preserves bc
+; input:
+;	a = number to convert to symbol font
+; output:
+;	hl = wDefaultText
+;	[wDefaultText] = numerical text string
+TwoDigitNumberToTxSymbol::
+	ld hl, wDefaultText
+	push hl
+	ld e, SYM_0 - 1
+.first_digit_loop
+	inc e
+	sub 10
+	jr nc, .first_digit_loop
+	ld [hl], e ; first digit
+	inc hl
+	add SYM_0 + 10
+	ld [hli], a ; second digit
+	ld [hl], SYM_SPACE
+	pop hl
+	ret
+
+
+; same as TwoDigitNumberToTxSymbol above, except it
+; replaces the first leading zero with SYM_SPACE
+TwoDigitNumberToTxSymbol_TrimLeadingZero::
+	call TwoDigitNumberToTxSymbol
+	ld a, [hl]
+	cp SYM_0
+	ret nz
+	ld [hl], SYM_SPACE
+	ret
+
+
+; currently an unreferenced function
+; converts a number between 0 and 99 to the TX_SYMBOL text format
+; and writes it to wDefaultText. if the first digit is 0, then replace it
+; with the next digit and then replace that digit with SYM_SPACE.
+; preserves bc
+; input:
+;	a = number (0-99) to convert to symbol font
+; output:
+;	hl = wDefaultText
+;	[wDefaultText] = numerical text string
+TwoDigitNumberToTxSymbol_TrimLeadingZeroAndAlign::
+	call TwoDigitNumberToTxSymbol
+	ld a, [hli]
+	cp SYM_0
+	ret nz
+	; shift number one tile to the left
+	ld a, [hld]
+	ld [hli], a
+	ld [hl], SYM_SPACE
 	ret
 
 

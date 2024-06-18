@@ -560,7 +560,7 @@ CardListMenuFunction::
 	ld c, a
 	ld b, 16
 	ld a, [wNumListItems]
-	call OneByteNumberToTxSymbol
+	call TwoDigitNumberToTxSymbol
 	ld a, [hl]
 	cp SYM_0
 	jr nz, .two_digits
@@ -579,7 +579,7 @@ CardListMenuFunction::
 	dec b
 	ldh a, [hCurMenuItem]
 	inc a
-	call OneByteNumberToTxSymbol_TrimLeadingZeros
+	call TwoDigitNumberToTxSymbol_TrimLeadingZero
 	ld a, 2
 	call CopyDataToBGMap0
 .skip_printing_indicator
@@ -604,62 +604,6 @@ CardListMenuFunction::
 	ld a, $ff
 	ldh [hCurMenuItem], a
 	scf
-	ret
-
-
-; currently an unreferenced function
-; converts the number at a to TX_SYMBOL text format and writes it to wDefaultText
-; if the first digit is a 0, then replace it with the next digit,
-; and replace that with SYM_SPACE 
-; preserves bc
-; input:
-;	a = number to convert to symbol font
-; output:
-;	hl = wDefaultText
-;	[wDefaultText] = numerical text string
-OneByteNumberToTxSymbol_TrimLeadingZerosAndAlign::
-	call OneByteNumberToTxSymbol
-	ld a, [hli]
-	cp SYM_0
-	ret nz
-	; shift number one tile to the left
-	ld a, [hld]
-	ld [hli], a
-	ld [hl], SYM_SPACE
-	ret
-
-
-; same as function below except it replaces leading zeros with SYM_SPACE
-OneByteNumberToTxSymbol_TrimLeadingZeros::
-	call OneByteNumberToTxSymbol
-	ld a, [hl]
-	cp SYM_0
-	ret nz
-	ld [hl], SYM_SPACE
-	ret
-
-
-; converts the number at a to TX_SYMBOL text format and writes it to wDefaultText
-; preserves bc
-; input:
-;	a = number to convert to symbol font
-; output:
-;	hl = wDefaultText
-;	[wDefaultText] = numerical text string
-OneByteNumberToTxSymbol::
-	ld hl, wDefaultText
-	push hl
-	ld e, SYM_0 - 1
-.first_digit_loop
-	inc e
-	sub 10
-	jr nc, .first_digit_loop
-	ld [hl], e ; first digit
-	inc hl
-	add SYM_0 + 10
-	ld [hli], a ; second digit
-	ld [hl], SYM_SPACE
-	pop hl
 	ret
 
 

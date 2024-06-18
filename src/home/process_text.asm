@@ -620,69 +620,6 @@ CopyTextData::
 	ret
 
 
-; converts the number at hl to TX_SYMBOL text format and writes it to wStringBuffer,
-; replacing any leading zeros with SYM_SPACE
-; preserves bc and de
-; input:
-;	hl = number to convert to symbol font
-; output:
-;	[wStringBuffer] = numerical text string
-TwoByteNumberToTxSymbol_TrimLeadingZeros::
-	push de
-	push bc
-	ld de, wStringBuffer
-	push de
-	ld bc, -10000
-	call .get_digit
-	ld bc, -1000
-	call .get_digit
-	ld bc, -100
-	call .get_digit
-	ld bc, -10
-	call .get_digit
-	ld bc, -1
-	call .get_digit
-	xor a ; TX_END
-	ld [de], a
-	pop hl
-	ld e, 5
-.digit_loop
-	inc hl
-	ld a, [hl]
-	cp SYM_0
-	jr nz, .done ; jump if not zero
-	ld [hl], SYM_SPACE ; trim leading zero
-	inc hl
-	dec e
-	jr nz, .digit_loop
-	dec hl
-	ld [hl], SYM_0
-.done
-	dec hl
-	pop bc
-	pop de
-	ret
-
-.get_digit
-	ld a, TX_SYMBOL
-	ld [de], a
-	inc de
-	ld a, SYM_0 - 1
-.subtract_loop
-	inc a
-	add hl, bc
-	jr c, .subtract_loop
-	ld [de], a
-	inc de
-	ld a, l
-	sub c
-	ld l, a
-	ld a, h
-	sbc b
-	ld h, a
-	ret
-
-
 ; generates a text tile and copies it to VRAM
 ; preserves all registers except af
 ; input:

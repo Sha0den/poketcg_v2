@@ -375,7 +375,7 @@ ProcessTextHeader::
 	ld de, wTxRam3
 	ld hl, wWhichTxRam3
 	call HandleTxRam2Or3
-	call TwoByteNumberToText_CountLeadingZeros
+	call TwoByteNumberToText_TrimLeadingZeros
 	call WriteToTextHeader
 	jp ProcessTextHeader
 .tx_ram1
@@ -445,31 +445,6 @@ GetTextOffsetFromTextID::
 	ld l, e
 	ld h, d
 	pop de
-	ret
-
-
-; if [wFontWidth] == HALF_WIDTH:
-;	converts the number at hl to text (ascii) format and writes it to wStringBuffer,
-;	outputting (4 - the number of leading_zeros) to the c register
-; if [wFontWidth] == FULL_WIDTH:
-;	converts the number at hl to TX_SYMBOL text format and writes it to wStringBuffer,
-;	replacing leading zeros with SYM_SPACE
-TwoByteNumberToText_CountLeadingZeros::
-	ld a, [wFontWidth]
-	or a ; FULL_WIDTH
-	jp z, TwoByteNumberToTxSymbol_TrimLeadingZeros
-	ld de, wStringBuffer
-	push de
-	call TwoByteNumberToText
-	pop hl
-	ld c, 4
-.digit_loop
-	ld a, [hl]
-	cp "0"
-	ret nz
-	inc hl
-	dec c
-	jr nz, .digit_loop
 	ret
 
 
