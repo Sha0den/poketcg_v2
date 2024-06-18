@@ -6533,13 +6533,6 @@ PrintPokemonEvolvedIntoPokemon:
 	ldtx hl, PokemonEvolvedIntoPokemonText
 	jp DrawWideTextBox_WaitForInput
 
-ResetDoFrameFunction_Bank1:
-	xor a
-	ld hl, wDoFrameFunction
-	ld [hli], a
-	ld [hl], a
-	ret
-
 ; handle the opponent's turn in a link duel
 ; loop until either [wOpponentTurnEnded] or [wDuelFinished] is non-0
 DoLinkOpponentTurn:
@@ -6559,7 +6552,10 @@ DoLinkOpponentTurn:
 	lb de, $38, $9f
 	call SetupText
 .asm_6932
-	call ResetDoFrameFunction_Bank1
+	xor a
+	ld hl, wDoFrameFunction
+	ld [hli], a
+	ld [hl], a
 	call SerialRecvDuelData
 	ld a, OPPONENT_TURN
 	ldh [hWhoseTurn], a

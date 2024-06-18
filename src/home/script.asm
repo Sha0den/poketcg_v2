@@ -159,8 +159,9 @@ FinishQueuedAnimations::
 	call ClearAndDisableQueuedAnimations
 	jr c, .skip_clear_frame_func
 	xor a
-	ld [wDoFrameFunction + 0], a
-	ld [wDoFrameFunction + 1], a
+	ld hl, wDoFrameFunction
+	ld [hli], a
+	ld [hl], a
 .skip_clear_frame_func
 	call ZeroObjectPositions
 	ld a, 1

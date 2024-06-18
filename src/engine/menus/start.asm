@@ -75,7 +75,9 @@ HandleTitleScreen:
 	call ShowCardPopCGBDisclaimer
 	jr c, HandleTitleScreen
 .continue_duel
-	call ResetDoFrameFunction
+	xor a
+	ld [wDoFrameFunction + 0], a
+	ld [wDoFrameFunction + 1], a
 	call EnableAndClearSpriteAnimations
 	ret
 
@@ -406,6 +408,8 @@ DrawPlayerPortraitAndPrintNewGameText:
 	call DoFrameIfLCDEnabled
 	ldtx hl, IsCrazyAboutPokemonAndPokemonCardCollectingText
 	call PrintScrollableText_NoTextBoxLabel
-	call ResetDoFrameFunction
+	xor a
+	ld [wDoFrameFunction + 0], a
+	ld [wDoFrameFunction + 1], a
 	call EnableAndClearSpriteAnimations
 	ret

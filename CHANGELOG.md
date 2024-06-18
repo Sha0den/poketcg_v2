@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/d289b673ae0d6f90b464b754b03736d6769da9c1):** 6 File Changed
+- **June 18, 2024:** 6 Files Changed
+    - Delete ResetDoFrameFunction functions, and replace each call with the requisite lines of code
+
+<br/>
+
+- **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/d289b673ae0d6f90b464b754b03736d6769da9c1):** 6 Files Changed
     - Remove some unnecessary farcalls and use "ldh" for "ld [hff__], a"
 
 <br/>
@@ -207,41 +212,41 @@
 
 
 ## Miscellaneous Changes
-- **June 18, 2024** 21 Files Changed (4 of these were removed from the repository)
+- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a852ba61fb251f4076828524a41d14d2b2d616cd):** 21 Files Changed (4 of these were removed from the repository)
     - Shuffle some functions in the home bank for better organization
     - Delete the redundant JPHblankCopyDataHLtoDE function
     - Add a missing colon to fix a build error from the commit below this one
 
 <br/>
 
-- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/f5c84e957054bc2548219821aa6a2ec4d196d3a6)** 5 Files Changed
+- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/f5c84e957054bc2548219821aa6a2ec4d196d3a6):** 5 Files Changed
     - Shuffle some functions in the home bank that are related to printing numbers (and use more accurate labels)
 
 <br/>
 
-- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7b97cccbcd62933c6bd8ade0834cf9aca1fca6f)** 3 Files Changed
+- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7b97cccbcd62933c6bd8ade0834cf9aca1fca6f):** 3 Files Changed
     - Reorganize the functions in home/substatus.asm
 
 <br/>
 
-- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d)** 51 Files Changed
+- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d):** 51 Files Changed
     - Try to standardize the function comments that are used in the home bank files
     - Also eliminate some redundant code and update a few more ld's to ldh's
     - Further adjustments made in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/acf60372628574a3e4c5d03c47c1ee058f1fe5ec)
 
 <br/>
 
-- **[June 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/cbe3b8afba7bebd0cb490fdf7f8a81d6dd92390d)** 1 File Changed
+- **[June 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/cbe3b8afba7bebd0cb490fdf7f8a81d6dd92390d):** 1 File Changed
     - Make the default player name (Mark) mixed case and have it be displayed with halfwidth font tiles to match the rest of the game's text
 
 <br/>
 
-- **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/dd9ea3eb13636a9e10f35340549c051dc2037248)** 1 File Changed (technically 2 since I renamed the original sprite)
+- **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/dd9ea3eb13636a9e10f35340549c051dc2037248):** 1 File Changed (technically 2 since I renamed the original sprite)
     - Use JappaWakka's updated Double Colorless Energy sprite (with 2 Energy symbols)
 
 <br/>
 
-- **[June 7, 2024](https://github.com/Sha0den/poketcg_v2/commit/2414fbf2b12b0fed4b4a3b5fb40cbde95f443ef0)** 17 Files Changed
+- **[June 7, 2024](https://github.com/Sha0den/poketcg_v2/commit/2414fbf2b12b0fed4b4a3b5fb40cbde95f443ef0):** 17 Files Changed
     - Revise various texts and combine some texts that are identical
 
 <br/>
@@ -378,7 +383,7 @@
 
 <br/>
 
-- **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49)** 1 File Changed
+- **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49):** 1 File Changed
     - Replace damage counter display with "current HP/max HP"
     - The maximum HP value of a Pokémon is now 250 (was 120)
 

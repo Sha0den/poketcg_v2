@@ -12,15 +12,6 @@ SetDoFrameFunction::
 	ret
 
 
-; preserves all registers except af
-ResetDoFrameFunction::
-	push hl
-	ld hl, NULL
-	call SetDoFrameFunction
-	pop hl
-	ret
-
-
 ; calls DoFrame a times
 ; preserves all registers except af
 ; input:

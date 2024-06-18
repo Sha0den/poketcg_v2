@@ -30,7 +30,9 @@ PlayCreditsSequence::
 	call DisableLCD
 	ld hl, wLCDC
 	set 1, [hl]
-	call ResetDoFrameFunction
+	xor a
+	ld [wDoFrameFunction + 0], a
+	ld [wDoFrameFunction + 1], a
 	ret
 
 Func_1d705:

@@ -69,7 +69,9 @@ LoadMap::
 	jr .warp
 .no_warp
 	farcall FadeScreenToWhite
-	call ResetDoFrameFunction
+	xor a
+	ld [wDoFrameFunction + 0], a
+	ld [wDoFrameFunction + 1], a
 	ld a, [wMatchStartTheme]
 	or a
 	jr z, Func_c280 ; no duel
