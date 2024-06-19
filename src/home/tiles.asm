@@ -151,20 +151,6 @@ LoadDuelCardSymbolTiles::
 	jr CopyFontsOrDuelGraphicsTiles
 
 
-; loads the symbols for Stage 1 Pokemon, Stage 2 Pokemon, and Trainer cards.
-; unlike LoadDuelCardSymbolTiles, this excludes the Basic Pokemon symbol and all of the Energy symbols.
-LoadDuelCardSymbolTiles2::
-	ld hl, DuelDmgSgbSymbolGraphics + $4 tiles - $4000
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	jr nz, .copy
-	ld hl, DuelCgbSymbolGraphics + $4 tiles - $4000
-.copy
-	ld de, v0Tiles1 + $54 tiles
-	ld b, $c
-	jr CopyFontsOrDuelGraphicsTiles
-
-
 ; loads the face down Basic/Stage 1/Stage 2 card images shown in the check Pokemon screens
 LoadDuelFaceDownCardTiles::
 	ld b, $10
@@ -310,6 +296,20 @@ Copy1bppTiles::
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+; loads the symbols for Stage 1 Pokemon, Stage 2 Pokemon, and Trainer cards.
+; unlike LoadDuelCardSymbolTiles, this excludes the Basic Pokemon symbol and all of the Energy symbols.
+;LoadDuelCardSymbolTiles2::
+;	ld hl, DuelDmgSgbSymbolGraphics + $4 tiles - $4000
+;	ld a, [wConsole]
+;	cp CONSOLE_CGB
+;	jr nz, .copy
+;	ld hl, DuelCgbSymbolGraphics + $4 tiles - $4000
+;.copy
+;	ld de, v0Tiles1 + $54 tiles
+;	ld b, $c
+;	jr CopyFontsOrDuelGraphicsTiles
+;
 ;
 ;Func_1f96::
 ;	add sp, -10

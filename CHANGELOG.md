@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **June 19, 2024:** 1 File Changed
+- **[June 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b85afde883a2f142ba237b4077cc256d2d4b976):** 1 File Changed
     - Delete JPWriteByteToBGMap0 and add a slight optimization for PrintDuelResultStats
 
 <br/>
@@ -217,6 +217,13 @@
 
 
 ## Miscellaneous Changes
+- **June 19, 2024:** 7 Files Changed (Plus 5 Files Relocated)
+    - Comment out a few more unreferenced functions in the home bank
+    - Move debug_sprites, unused_copyright.asm, and unused_save_validation.asm from engine to engine/unused
+    - Move debug_main.asm and unknown.asm from engine/menus to engine/unused
+
+<br/>
+
 - **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a852ba61fb251f4076828524a41d14d2b2d616cd):** 21 Files Changed (4 of these were removed from the repository)
     - Shuffle some functions in the home bank for better organization
     - Delete the redundant JPHblankCopyDataHLtoDE function

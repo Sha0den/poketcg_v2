@@ -4597,7 +4597,6 @@ PrintAttackOrNonPokemonCardDescription:
 DisplayCardPage_PokemonDescription:
 	; print surrounding box, card name at 5,1, type, set 2, and rarity
 	call PrintPokemonCardPageGenericInformation
-	call LoadDuelCardSymbolTiles2
 	; print "LENGTH", "WEIGHT", "Lv", and "HP" where it corresponds in the page
 	ld hl, CardPageLengthWeightTextData
 	call PlaceTextItems

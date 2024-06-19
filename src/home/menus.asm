@@ -996,12 +996,6 @@ PrintYesOrNoItems::
 	jp InitTextPrinting_ProcessTextFromID
 
 
-ContinueDuel::
-	ld a, BANK(_ContinueDuel)
-	call BankswitchROM
-	jp _ContinueDuel
-
-
 ; draws the same tile across an entire line in BG Map
 ; if CGB, also fills the line with background palette 4 in VRAM1
 ; input:
@@ -1024,6 +1018,12 @@ FillBGMapLineWithA::
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+;ContinueDuel::
+;	ld a, BANK(_ContinueDuel)
+;	call BankswitchROM
+;	jp _ContinueDuel
+;
 ;
 ; reloads a list of cards, except don't print their names
 ;Func_2827::
