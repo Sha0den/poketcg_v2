@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **June 18, 2024:** 6 Files Changed
+- **June 19, 2024:** 1 File Changed
+    - Delete JPWriteByteToBGMap0 and add a slight optimization for PrintDuelResultStats
+
+<br/>
+
+- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/afee23873ee49f2ace256d0319fc28d8b95e0b96):** 6 Files Changed
     - Delete ResetDoFrameFunction functions, and replace each call with the requisite lines of code
 
 <br/>

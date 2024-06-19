@@ -1652,19 +1652,26 @@ DuelHorizontalSeparatorCGBPalData:
 	db 9, 7, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, $02, 0
 	db $ff
 
-; print the number of prizes left, of active Pokemon, and of cards left in the deck
-; of both duelists. this is called when the duel ends.
+
+; prints the number of remaining Prizes for each player,
+; whether or not there's an Active Pokemon in either play area,
+; and the number of cards left in each player's deck.
+; this is called when drawing the results screen at the end of a duel.
 PrintDuelResultStats:
-	lb de, 8, 8
-	call .PrintDuelistResultStats
 	call SwapTurn
 	lb de, 1, 1
 	call .PrintDuelistResultStats
-	jp SwapTurn
+	call SwapTurn
+	lb de, 8, 8
+;	fallthrough
 
-; print, at d,e, the number of prizes left, of active Pokemon, and of cards left in
-; the deck of the turn duelist. b,c are used throughout as input coords for
-; WriteTwoDigitNumberInTxSymbolFormat, and d,e for InitTextPrinting_ProcessTextFromID.
+; prints, at d,e, how many Prizes the turn duelist hasn't drawn,
+; whether the turn duelist still has an Active Pokemon,
+; and the number of cards left in the turn duelist's deck.
+; b,c are used throughout as input coordinates for WriteTwoDigitNumberInTxSymbolFormat,
+; and d,e is used for InitTextPrinting_ProcessTextFromID.
+; input:
+;	de = screen coordinates at which to begin printing the stats
 .PrintDuelistResultStats:
 	call SetNoLineSeparation
 	ldtx hl, PrizesLeftActivePokemonCardsInDeckText
@@ -1701,6 +1708,7 @@ PrintDuelResultStats:
 	call WriteTwoDigitNumberInTxSymbolFormat
 	ldtx hl, CardsText
 	jp InitTextPrinting_ProcessTextFromID
+
 
 ; display the animation of the player drawing the card at hTempCardIndex_ff98
 DisplayPlayerDrawCardScreen:
@@ -2550,7 +2558,7 @@ DrawDuelHUD:
 	call GetArenaCardColor
 	inc a ; TX_SYMBOL color tiles start at 1
 	dec b ; place the color symbol one tile to the left of the start of the card's name
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 
 	; print attached energies
 	ld hl, wHUDEnergyAndHPBarsX
@@ -4210,9 +4218,6 @@ Pal01Packet_Default:
 	rgb 28, 0, 0
 	rgb 0, 0, 0
 
-JPWriteByteToBGMap0:
-	jp WriteByteToBGMap0
-
 DisplayCardPage_PokemonOverview:
 	ld a, [wCardPageType]
 	or a ; CARDPAGETYPE_NOT_PLAY_AREA
@@ -4290,7 +4295,7 @@ DisplayCardPage_PokemonOverview:
 	dec e
 	jr z, .retreat_cost_done
 	ld a, SYM_COLORLESS
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 	inc b
 	jr .retreat_cost_loop
 .retreat_cost_done
@@ -4336,7 +4341,7 @@ PrintCardPageWeaknessesOrResistances:
 	rl d
 	jr nc, .loop
 	push af
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 	inc b
 	pop af
 	jr .loop
@@ -4437,7 +4442,7 @@ PrintEnergiesOfColor:
 	ld d, a
 .print_energies_loop
 	ld a, e
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 	inc b
 	dec d
 	jr nz, .print_energies_loop
@@ -4463,7 +4468,7 @@ PrintPokemonCardPageGenericInformation:
 .got_color
 	lb bc, 18, 1
 	inc a
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 ;	fallthrough
 
 ; prints the card's set 2 icon and the full width text character of the card's rarity
@@ -5384,7 +5389,7 @@ PrintPlayAreaCardHeader:
 	ld a, [wCurPlayAreaSlot]
 	call GetPlayAreaCardColor
 	inc a
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 	ld b, 14
 	ld a, SYM_Lv
 	call WriteByteToBGMap0
@@ -5575,7 +5580,7 @@ Func_6423:
 	ld e, $08
 .asm_6428
 	ld a, [hli]
-	call JPWriteByteToBGMap0
+	call WriteByteToBGMap0
 	inc b
 	dec e
 	jr nz, .asm_6428
