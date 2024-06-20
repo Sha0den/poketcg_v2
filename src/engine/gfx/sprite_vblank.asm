@@ -1,5 +1,4 @@
-; empties screen and replaces
-; wVBlankFunctionTrampoline with HandleAllSpriteAnimations
+; empties screen and replaces wVBlankFunctionTrampoline with HandleAllSpriteAnimations
 SetSpriteAnimationsAsVBlankFunction:
 	call EmptyScreen
 	call Set_OBJ_8x8
@@ -16,6 +15,7 @@ SetSpriteAnimationsAsVBlankFunction:
 	ei
 	ret
 
+
 ; sets backup VBlank function as wVBlankFunctionTrampoline
 RestoreVBlankFunction:
 	ld hl, wVBlankFunctionTrampolineBackup
@@ -25,9 +25,13 @@ RestoreVBlankFunction:
 	bank1call ZeroObjectPositionsAndToggleOAMCopy
 	ret
 
+
 ; copies 2 bytes from hl to de while interrupts are disabled
-; used to load or store wVBlankFunctionTrampoline
-; to wVBlankFunctionTrampolineBackup
+; used to load or store wVBlankFunctionTrampoline to wVBlankFunctionTrampolineBackup
+; preserves bc
+; input:
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 BackupVBlankFunctionTrampoline:
 	di
 	ld a, [hli]

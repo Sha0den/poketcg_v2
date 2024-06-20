@@ -217,7 +217,13 @@
 
 
 ## Miscellaneous Changes
-- **June 19, 2024:** 7 Files Changed (Plus 5 Files Relocated)
+- **June 20, 2024:** 4 Files Changed
+    - Try to standardize the function comments that are used in the engine/gfx files
+    - Remove several unnecessary push/pops in engine/gfx/sprite_animations.asm
+
+<br/>
+
+- **[June 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/45a08ab02dd879c4c6cc03672c4c3d7b8cde3957):** 7 Files Changed (Plus 5 Files Relocated)
     - Comment out a few more unreferenced functions in the home bank
     - Move debug_sprites, unused_copyright.asm, and unused_save_validation.asm from engine to engine/unused
     - Move debug_main.asm and unknown.asm from engine/menus to engine/unused

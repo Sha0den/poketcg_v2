@@ -1,5 +1,6 @@
-; loads wConsolePaletteData depending on console
+; loads wConsolePaletteData depending on the console
 ; every entry in the list is $00
+; preserves all registers except af
 LoadConsolePaletteData:
 	push hl
 	ld a, [wConsole]
@@ -19,6 +20,7 @@ LoadConsolePaletteData:
 	db $00 ; CONSOLE_DMG
 	db $00 ; CONSOLE_SGB
 	db $00 ; CONSOLE_CGB
+
 
 FadeScreenToWhite:
 	ld a, [wLCDC]
@@ -46,6 +48,7 @@ FadeScreenToWhite:
 	ld bc, NUM_BACKGROUND_PALETTES palettes
 	call FillMemoryWithDE
 	jp FlushAllPalettes
+
 
 FadeScreenFromWhite:
 	call BackupPalsAndSetWhite
@@ -78,6 +81,7 @@ FadeScreenToTempPals:
 	sub b
 	ret
 
+
 BackupPalsAndSetWhite:
 	ld a, [wBGP]
 	ld [wTempBGP], a
@@ -91,7 +95,7 @@ BackupPalsAndSetWhite:
 	call CopyDataHLtoDE_SaveRegisters
 ;	fallthrough
 
-; fills wBackgroundPalettesCGB with white pal
+; fills wBackgroundPalettesCGB with pure white palettes
 SetWhitePalettes:
 	ld a, [wConsolePaletteData]
 	ld [wBGP], a
@@ -102,8 +106,9 @@ SetWhitePalettes:
 	ld bc, NUM_BACKGROUND_PALETTES palettes
 	jp FillMemoryWithDE
 
-; gets from backup OB pals the first color
-; of each pal and writes them in wObjectPalettesCGB
+
+; gets the first color of each palette from backup OB palettes
+; and writes them in wObjectPalettesCGB
 RestoreFirstColorInOBPals:
 	ld hl, wTempObjectPalettesCGB
 	ld de, wObjectPalettesCGB
@@ -128,8 +133,10 @@ RestoreFirstColorInOBPals:
 	jr nz, .loop_pals
 	ret
 
+
 ; does something with wBGP given wTempBGP
 ; mixes them into a single value?
+; preserves bc
 Func_10b85:
 	push bc
 	ld c, $03
@@ -150,6 +157,7 @@ Func_10b85:
 	pop bc
 	ret
 
+; preserves all registers except af
 .Func_10b9e
 	push bc
 	push de
@@ -173,9 +181,9 @@ Func_10b85:
 	ret
 
 ; calculates ((b & %11) << 2) | (c & %11)
-; that is, %0000xxyy, where x and y are
-; the 2 lower bits of b and c respectively
+; that is, %0000xxyy, where x and y are the 2 lower bits of b and c respectively
 ; and outputs the entry from a table given that value
+; preserves all registers except af
 .Func_10bba
 	push hl
 	push bc
@@ -214,6 +222,9 @@ Func_10b85:
 	db %10 ; b = %11 | c = %10
 	db %11 ; b = %11 | c = %11
 
+
+; fades object palettes 0-3
+; preserves bc
 FadeOBPalIntoTemp:
 	push bc
 	ld c, 4 palettes
@@ -221,6 +232,8 @@ FadeOBPalIntoTemp:
 	ld de, wTempObjectPalettesCGB
 	jr FadePalIntoAnother
 
+; fades background palettes 0 and 1
+; preserves bc
 FadeBGPalIntoTemp1:
 	push bc
 	ld c, 2 palettes
@@ -228,6 +241,8 @@ FadeBGPalIntoTemp1:
 	ld de, wTempBackgroundPalettesCGB
 	jr FadePalIntoAnother
 
+; fades background palettes 4 and 5
+; preserves bc
 FadeBGPalIntoTemp2:
 	push bc
 	ld c, 2 palettes
@@ -235,6 +250,8 @@ FadeBGPalIntoTemp2:
 	ld de, wTempBackgroundPalettesCGB + 4 palettes
 	jr FadePalIntoAnother
 
+; fades background palettes 0-3
+; preserves bc
 FadeBGPalIntoTemp3:
 	push bc
 	ld c, 4 palettes
@@ -242,9 +259,10 @@ FadeBGPalIntoTemp3:
 	ld de, wTempBackgroundPalettesCGB
 ;	fallthrough
 
-; hl = input pal to modify
-; de = pal to fade into
-; c = number of colors to fade
+; input:
+;	c = number of palettes to fade
+;	hl = input palette(s) to modify
+;	de = palette to fade into
 FadePalIntoAnother:
 	push bc
 	ld a, [de]
@@ -272,8 +290,14 @@ FadePalIntoAnother:
 	pop bc
 	ret
 
-; fade pal bc to de
-; output resulting pal in a and c
+; fades palette bc to de
+; preserves de and hl
+; input:
+;	bc = first palette
+;	de = second palette
+; output:
+;	c = first half of resulting palette
+;	a = second half of resulting palette
 .GetFadedColor
 	push hl
 	ld a, c
@@ -345,12 +369,12 @@ FadePalIntoAnother:
 	pop hl
 	ret
 
-; compares color in a and in l
-; if a is smaller/greater than l, then
-; increase/decrease its value up to l
-; up to a maximum of 4
-; a = pal color (red, green or blue)
-; l = pal color (red, green or blue)
+; compares colors in a and in l.  if a is smaller/greater than l,
+; then increase/decrease its value up to l, up to a maximum of 4.
+; preserves all registers except af
+; input:
+;	a = palette color (red, green or blue)
+;	l = palette color (red, green or blue)
 .FadeColor
 	cp l
 	ret z ; same value
@@ -381,9 +405,8 @@ FadePalIntoAnother:
 	inc a
 	ret
 
-; fades screen to white then
-; if c == 0, fade back in
-; keep white otherwise
+
+; fades screen to white, then if c = 0, fade back in (otherwise keep white)
 FlashScreenToWhite:
 	ldh a, [hBankSRAM]
 	push af
@@ -404,9 +427,8 @@ FlashScreenToWhite:
 	call BankswitchSRAM
 	jp DisableSRAM
 
-; copies current BG and OP pals,
-; wBackgroundPalettesCGB and wObjectPalettesCGB
-; to sGfxBuffer2
+
+; copies current BG and OB palettes, wBackgroundPalettesCGB, and wObjectPalettesCGB into sGfxBuffer2
 CopyPalsToSRAMBuffer:
 	ldh a, [hBankSRAM]
 
@@ -434,9 +456,8 @@ CopyPalsToSRAMBuffer:
 	call BankswitchSRAM
 	jp DisableSRAM
 
-; loads BG and OP pals,
-; wBackgroundPalettesCGB and wObjectPalettesCGB
-; from sGfxBuffer2
+
+; loads BG and OB palettes, wBackgroundPalettesCGB, and wObjectPalettesCGB from sGfxBuffer2
 LoadPalsFromSRAMBuffer:
 	ldh a, [hBankSRAM]
 
@@ -462,8 +483,8 @@ LoadPalsFromSRAMBuffer:
 	call BankswitchSRAM
 	jp DisableSRAM
 
-; backs up all palettes
-; and writes 4 BG pals with white pal
+
+; backs up all palettes and overwrites 4 background palettes with a white palette
 Func_10d17:
 	ld a, [wBGP]
 	ld [wTempBGP], a
@@ -488,6 +509,7 @@ Func_10d17:
 	ld [wd317], a
 	ret
 
+
 Func_10d50:
 	ld a, [wConsolePaletteData]
 	ld [wTempBGP], a
@@ -503,13 +525,13 @@ Func_10d50:
 	ld [wd317], a
 	ret
 
-; does stuff according to bottom 2 bits from wd317:
-; - if equal to %01, modify wBGP
-; - if bottom bit not set, fade BG pals 0 and 1
-; - if bottom bit is set, fade BG pals 4 and 5
-;   and Flush Palettes
-; then decrements wd317
-; does nothing if wd317 is 0
+
+; returns without doing anything if wd317 = 0
+; if wd317 > 0, has different effects depending on the bottom 2 bits:
+;	- if equal to %01, modify wBGP
+;	- if bottom bit not set, fade BG palettes 0 and 1
+;	- if bottom bit is set, fade BG palettes 4 and 5 and then flush all palettes
+; after applying the variable effects, wd317 is decremented.
 Func_10d74:
 	ld a, [wd317]
 	or a

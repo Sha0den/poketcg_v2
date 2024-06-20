@@ -1,3 +1,4 @@
+; preserves de
 Func_12871:
 	call ZeroObjectPositions
 	ld a, $01
@@ -11,9 +12,10 @@ Func_12871:
 	ldh [hWY], a
 	jp SetWindowOff
 
-; same as SetDefaultConsolePalettes
-; but forces all wBGP, wOBP0 and wOBP1
-; to be the default
+
+; same as SetDefaultConsolePalettes but
+; forces all wBGP, wOBP0 and wOBP1 to be the default
+; preserves all registers except af
 SetDefaultPalettes:
 	push hl
 	push bc
