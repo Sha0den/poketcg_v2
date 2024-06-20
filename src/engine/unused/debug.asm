@@ -1,3 +1,7 @@
+;----------------------------------------
+;  THIS FILE WAS REMOVED FROM THE BUILD
+;----------------------------------------
+
 DebugLookAtSprite:
 	farcall Func_80cd7
 	scf
@@ -46,7 +50,7 @@ DebugCreateBoosterPack:
 	ld a, [hl]
 	add e
 	farcall GenerateBoosterPack
-	farcall OpenBoosterPack
+	bank1call OpenBoosterPack
 .cancel
 	scf
 	ret

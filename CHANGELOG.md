@@ -217,7 +217,12 @@
 
 
 ## Miscellaneous Changes
-- **June 20, 2024:** 4 Files Changed
+- **June 20, 2024:** 3 Files Changed
+    - Move debug.asm from engine/menus and debug_player_coordinates.asm from engine/overworld to engine/unused
+
+<br/>
+
+- **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0e5c4e7ac27f6c5fee1642ec227dc8edf24d5a11):** 4 Files Changed
     - Try to standardize the function comments that are used in the engine/gfx files
     - Remove several unnecessary push/pops in engine/gfx/sprite_animations.asm
 
