@@ -28,14 +28,18 @@ ExecuteIntroSequenceCmd:
 	jr c, ExecuteIntroSequenceCmd
 	ret
 
+
+; preserves all registers except af
 AdvanceIntroSequenceCmdPtrBy2:
 	ld a, 2
 	jr AdvanceIntroSequenceCmdPtr
 
+; preserves all registers except af
 AdvanceIntroSequenceCmdPtrBy3:
 	ld a, 3
 	jr AdvanceIntroSequenceCmdPtr
 
+; preserves all registers except af
 AdvanceIntroSequenceCmdPtrBy4:
 	ld a, 4
 ;	fallthrough
@@ -51,6 +55,10 @@ AdvanceIntroSequenceCmdPtr:
 	pop hl
 	ret
 
+
+; preserves hl
+; output:
+;	carry = set:  if SPRITE_ANIM_COUNTER = $ff 
 IntroSequenceCmd_WaitOrbsAnimation:
 	ld c, $7
 	ld de, wTitleScreenSprites
@@ -71,6 +79,12 @@ IntroSequenceCmd_WaitOrbsAnimation:
 	or a
 	ret
 
+
+; preserves all registers except af
+; input:
+;	c = new sequence delay
+; output:
+;	carry = set
 IntroSequenceCmd_Wait:
 	ld a, c
 	ld [wSequenceDelay], a
@@ -78,6 +92,11 @@ IntroSequenceCmd_Wait:
 	scf
 	ret
 
+
+; input:
+;	bc = location of sprite animation ID
+; output:
+;	carry = set
 IntroSequenceCmd_SetOrbsAnimations:
 	ld l, c
 	ld h, b
@@ -101,6 +120,11 @@ IntroSequenceCmd_SetOrbsAnimations:
 	scf
 	ret
 
+
+; input:
+;	bc = ?
+; output:
+;	carry = set
 IntroSequenceCmd_SetOrbsCoordinates:
 	ld l, c
 	ld h, b
@@ -135,6 +159,7 @@ IntroSequenceCmd_SetOrbsCoordinates:
 	scf
 	ret
 
+
 IntroOrbAnimations_CharizardScene:
 	db SPRITE_ANIM_192 ; GRASS
 	db SPRITE_ANIM_193 ; FIRE
@@ -153,6 +178,7 @@ IntroOrbCoordinates_CharizardScene:
 	db 160,  84 ; LIGHTNING
 	db 240, 100 ; PSYCHIC
 	db 160,  44 ; FIGHTING
+
 
 IntroOrbAnimations_ScytherScene:
 	db SPRITE_ANIM_193 ; GRASS
@@ -173,6 +199,7 @@ IntroOrbCoordinates_ScytherScene:
 	db 160, 100 ; PSYCHIC
 	db 240,  44 ; FIGHTING
 
+
 IntroOrbAnimations_AerodactylScene:
 	db SPRITE_ANIM_194 ; GRASS
 	db SPRITE_ANIM_197 ; FIRE
@@ -191,6 +218,7 @@ IntroOrbCoordinates_AerodactylScene:
 	db 160,  80 ; LIGHTNING
 	db 240,  96 ; PSYCHIC
 	db 160,  48 ; FIGHTING
+
 
 IntroOrbAnimations_InitialTitleScreen:
 	db SPRITE_ANIM_195 ; GRASS
@@ -211,6 +239,7 @@ IntroOrbCoordinates_InitialTitleScreen:
 	db 132, 144 ; PSYCHIC
 	db  72, 144 ; FIGHTING
 
+
 IntroOrbAnimations_InTitleScreen:
 	db SPRITE_ANIM_196 ; GRASS
 	db SPRITE_ANIM_199 ; FIRE
@@ -230,6 +259,10 @@ IntroOrbCoordinates_InTitleScreen:
 	db 144,  28 ; PSYCHIC
 	db  72,  76 ; FIGHTING
 
+
+; preserves all registers except af
+; output:
+;	carry = set
 IntroSequenceCmd_PlayTitleScreenMusic:
 	ld a, MUSIC_TITLESCREEN
 	call PlaySong
@@ -237,6 +270,10 @@ IntroSequenceCmd_PlayTitleScreenMusic:
 	scf
 	ret
 
+
+; preserves all registers except af
+; output:
+;	carry = set:  if the SFX has finished
 IntroSequenceCmd_WaitSFX:
 	call AssertSFXFinished
 	or a
@@ -249,6 +286,12 @@ IntroSequenceCmd_WaitSFX:
 	or a
 	ret
 
+
+; preserves all registers except af
+; input:
+;	c = sound effect ID (SFX_* constant)
+; output:
+;	carry = set
 IntroSequenceCmd_PlaySFX:
 	ld a, c
 	call PlaySFX
@@ -256,6 +299,16 @@ IntroSequenceCmd_PlaySFX:
 	scf
 	ret
 
+
+; output:
+;	carry = set
+IntroSequenceCmd_FadeOut:
+	farcall Func_10d50
+;	fallthrough
+
+; preserves all registers except af
+; output:
+;	carry = set
 IntroSequenceCmd_FadeIn:
 	ld a, TRUE
 	ld [wIntroSequencePalsNeedUpdate], a
@@ -263,29 +316,31 @@ IntroSequenceCmd_FadeIn:
 	scf
 	ret
 
-IntroSequenceCmd_FadeOut:
-	farcall Func_10d50
-	ld a, TRUE
-	ld [wIntroSequencePalsNeedUpdate], a
-	call AdvanceIntroSequenceCmdPtrBy2
-	scf
-	ret
 
+; output:
+;	carry = set
 IntroSequenceCmd_LoadCharizardScene:
 	lb bc, 6, 3
 	ld a, SCENE_CHARIZARD_INTRO
 	jr LoadOpeningSceneAndUpdateSGBBorder
 
+; output:
+;	carry = set
 IntroSequenceCmd_LoadScytherScene:
 	lb bc, 6, 3
 	ld a, SCENE_SCYTHER_INTRO
 	jr LoadOpeningSceneAndUpdateSGBBorder
 
+; output:
+;	carry = set
 IntroSequenceCmd_LoadAerodactylScene:
 	lb bc, 6, 3
 	ld a, SCENE_AERODACTYL_INTRO
 ;	fallthrough
 
+; input:
+;	a = scene ID (SCENE_* constant)
+;	bc = coordinates for scene
 LoadOpeningSceneAndUpdateSGBBorder:
 	call LoadOpeningScene
 	ld l, %001010
@@ -295,6 +350,9 @@ LoadOpeningSceneAndUpdateSGBBorder:
 	scf
 	ret
 
+
+; output:
+;	carry = set
 IntroSequenceCmd_LoadTitleScreenScene:
 	lb bc, 0, 0
 	ld a, SCENE_TITLE_SCREEN
@@ -302,8 +360,10 @@ IntroSequenceCmd_LoadTitleScreenScene:
 	scf
 	ret
 
-; a = scene ID
-; bc = coordinates for scene
+
+; input:
+;	a = scene ID (SCENE_* constant)
+;	bc = coordinates for scene
 LoadOpeningScene:
 	push af
 	push bc
@@ -319,7 +379,9 @@ LoadOpeningScene:
 	call AdvanceIntroSequenceCmdPtrBy2
 	jp EnableLCD
 
+
 INCLUDE "data/sequences/intro.asm"
+
 
 ; once every 63 frames randomly choose an orb sprite
 ; to animate, i.e. circle around the screen

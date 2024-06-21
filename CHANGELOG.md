@@ -217,7 +217,13 @@
 
 
 ## Miscellaneous Changes
-- **June 20, 2024:** 3 Files Changed
+- **June 21, 2024:** 3 Files Changed
+    - Try to standardize the function comments that are used in engine/bank20.asm and the engine/sequences files
+    - Remove some unnecessary code from the aforementioned files
+
+<br/>
+
+- **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/15bf474bae975ce662a989f5f4410f84b5a7906b):** 3 Files Changed
     - Move debug.asm from engine/menus and debug_player_coordinates.asm from engine/overworld to engine/unused
 
 <br/>
