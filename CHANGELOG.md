@@ -76,6 +76,15 @@
 
 
 ## Code Optimization
+- **June 22, 2024:** 19 Files Changed
+    - Delete "Func_7415", "SetNoLineSeparation", and "SetOneLineSeparation" from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
+    - Move "Func_61a1" to engine/duel/effect_functions.asm
+    - Move "ZeroObjectPositionsAndToggleOAMCopy" to home/objects.asm
+    - Move "WaitAttackAnimation" to home/duel.asm
+    - Move "SetCardListHeader" and "SetCardListInfoBoxText" to home/menus.asm
+
+<br/>
+
 - **[June 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b85afde883a2f142ba237b4077cc256d2d4b976):** 1 File Changed
     - Delete JPWriteByteToBGMap0 and add a slight optimization for PrintDuelResultStats
 
@@ -217,7 +226,7 @@
 
 
 ## Miscellaneous Changes
-- **June 22, 2024:** 9 Files Changed
+- **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/90115177c0340127d97cf4dba6724703c17b448b):** 9 Files Changed
     - Add comments related to setting the carry flag for a variety of home bank functions
     - Perform minor optimizations in home/duel.asm related to setting the carry flag
 

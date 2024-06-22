@@ -888,9 +888,7 @@ CardAlbum:
 	jr nz, .draw_box
 	ldh [hffb4], a
 	call Set_OBJ_8x8
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 
 	call LoadCursorTile
 	call LoadSymbolsFont

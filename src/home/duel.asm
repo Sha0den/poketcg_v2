@@ -1421,7 +1421,8 @@ ProcessPlayedPokemonCard::
 	ldtx hl, WillUseThePokemonPowerText
 	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
-	bank1call Func_7415
+	xor a
+	ld [wce7e], a
 	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
 	jp TryExecuteEffectCommandFunction
 
@@ -1531,7 +1532,8 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 
 ; uses a Pokemon Power
 UsePokemonPower::
-	bank1call Func_7415
+	xor a
+	ld [wce7e], a
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
 	jr c, DisplayUsePokemonPowerScreen_WaitForInput
@@ -1564,6 +1566,12 @@ DrawWideTextBox_WaitForInput_ReturnCarry::
 	ret
 
 
+; preserves bc and de
+ClearNonTurnTemporaryDuelvars_ResetCarry::
+	bank1call ClearNonTurnTemporaryDuelvars
+	or a
+	ret
+
 ; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
 ; output:
 ;	carry = set:  if the effect command returned with carry set
@@ -1591,7 +1599,7 @@ UseAttackOrPokemonPower::
 .sand_attack_smokescreen
 	call SendAttackDataToLinkOpponent
 	call HandleSmokescreenSubstatus
-	jp c, ClearNonTurnTemporaryDuelvars_ResetCarry
+	jr c, ClearNonTurnTemporaryDuelvars_ResetCarry
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
 	ret c
@@ -1612,7 +1620,8 @@ UseAttackOrPokemonPower::
 ;	fallthrough
 
 PlayAttackAnimation_DealAttackDamage::
-	bank1call Func_7415
+	xor a
+	ld [wce7e], a
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
 	jr nz, .deal_damage
@@ -1639,7 +1648,7 @@ PlayAttackAnimation_DealAttackDamage::
 	push hl
 	bank1call PlayAttackAnimation
 	bank1call PlayStatusConditionQueueAnimations
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 	pop hl
 	pop de
 	call SubtractHP
@@ -1669,10 +1678,16 @@ HandleAfterDamageEffects::
 	ret
 
 
-; preserves bc and de
-ClearNonTurnTemporaryDuelvars_ResetCarry::
-	bank1call ClearNonTurnTemporaryDuelvars
+; if [wLoadedAttackAnimation] != 0, wait until the animation is over
+; preserves all registers except af
+WaitAttackAnimation::
+	ld a, [wLoadedAttackAnimation]
 	or a
+	ret z
+.anim_loop
+	call DoFrame
+	call CheckAnyAnimationPlaying
+	jr c, .anim_loop
 	ret
 
 
@@ -1879,7 +1894,7 @@ DealConfusionDamageToSelf::
 	push af
 	xor a
 	ld [wNoDamageOrEffect], a
-	bank1call Func_7415
+	ld [wce7e], a
 	ld a, [wTempNonTurnDuelistCardID]
 	push af
 	ld a, [wTempTurnDuelistCardID]

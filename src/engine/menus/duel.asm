@@ -400,11 +400,7 @@ DrawYourOrOppPlayAreaScreen:
 _DrawYourOrOppPlayAreaScreen::
 	xor a
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
-
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
-
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call DoFrame
 	call EmptyScreen
 	call Set_OBJ_8x8
@@ -488,10 +484,7 @@ _DrawYourOrOppPlayAreaScreen::
 DrawInPlayAreaScreen:
 	xor a
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
-
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call DoFrame
 	call EmptyScreen
 
@@ -835,9 +828,7 @@ GetDuelInitialPrizesUpperBitsSet:
 _DrawPlayersPrizeAndBenchCards::
 	xor a
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call DoFrame
 	call EmptyScreen
 	call LoadSymbolsFont
@@ -1399,7 +1390,7 @@ _HandlePeekSelection::
 .selection_cancelled
 	cp -1
 	jr nz, .selection_made
-	call ZeroObjectPositionsWithCopyToggleOn
+	call ZeroObjectPositionsAndToggleOAMCopy
 	jr .check_swap
 .selection_made
 	ld hl, .SelectionFunctionTable
@@ -1804,7 +1795,7 @@ YourOrOppPlayAreaScreen_HandleInput:
 	and (1 << 4) - 1
 	ret nz
 	bit 4, [hl]
-	jr nz, ZeroObjectPositionsWithCopyToggleOn
+	jp nz, ZeroObjectPositionsAndToggleOAMCopy
 
 .draw_cursor
 	call ZeroObjectPositions
@@ -1827,13 +1818,6 @@ YourOrOppPlayAreaScreen_HandleInput:
 	ld c, $00
 	call SetOneObjectAttributes
 	or a
-	ret
-
-ZeroObjectPositionsWithCopyToggleOn:
-	call ZeroObjectPositions
-
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
 	ret
 
 ; handles the screen for Player to select prize card(s)
@@ -1890,7 +1874,7 @@ _SelectPrizeCards::
 	cp $ff
 	jr z, .loop_handle_input
 
-	call ZeroObjectPositionsWithCopyToggleOn
+	call ZeroObjectPositionsAndToggleOAMCopy
 
 ; get prize bit mask that corresponds
 ; to the one pointed by the cursor

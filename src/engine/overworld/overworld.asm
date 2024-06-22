@@ -366,9 +366,7 @@ Func_c2a3:
 	call SetupText
 	farcall Func_12ba7
 	call EnableAndClearSpriteAnimations
-	call ZeroObjectPositions
-	ld a, $1
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call EnableLCD
 	call DoFrameIfLCDEnabled
 	call DisableLCD

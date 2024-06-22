@@ -996,6 +996,28 @@ PrintYesOrNoItems::
 	jp InitTextPrinting_ProcessTextFromID
 
 
+; preserves all registers except af
+; input:
+;	de = text id for text box header
+;	hl = text id for text box contents
+SetCardListHeaderText::
+	ld a, e
+	ld [wCardListHeaderText], a
+	ld a, d
+	ld [wCardListHeaderText + 1], a
+;	fallthrough
+
+; preserves all registers except af
+; input:
+;	hl = text id for text box contents
+SetCardListInfoBoxText::
+	ld a, l
+	ld [wCardListInfoBoxText], a
+	ld a, h
+	ld [wCardListInfoBoxText + 1], a
+	ret
+
+
 ; draws the same tile across an entire line in BG Map
 ; if CGB, also fills the line with background palette 4 in VRAM1
 ; input:

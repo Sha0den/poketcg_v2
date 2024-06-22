@@ -1,8 +1,6 @@
 ; preserves de
 Func_12871:
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call Set_OBJ_8x8
 	call SetDefaultPalettes
 	xor a

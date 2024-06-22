@@ -90,21 +90,21 @@ OpenInPlayAreaScreen::
 	jr nz, .selection
 
 	; pressed b button.
-	call ZeroObjectPositionsAndToggleOAMCopy_Bank6
+	call ZeroObjectPositionsAndToggleOAMCopy
 	lb de, $38, $9f
 	call SetupText
 	scf
 	ret
 
 .skip_input
-	call ZeroObjectPositionsAndToggleOAMCopy_Bank6
+	call ZeroObjectPositionsAndToggleOAMCopy
 	lb de, $38, $9f
 	call SetupText
 	or a
 	ret
 
 .selection ; pressed a button or start button.
-	call ZeroObjectPositionsAndToggleOAMCopy_Bank6
+	call ZeroObjectPositionsAndToggleOAMCopy
 	lb de, $38, $9f
 	call SetupText
 	ld a, [wInPlayAreaCurPosition]
@@ -536,7 +536,7 @@ OpenInPlayAreaScreen_HandleInput:
 	ret nz
 
 	bit 4, [hl] ; = and $10
-	jr nz, ZeroObjectPositionsAndToggleOAMCopy_Bank6
+	jp nz, ZeroObjectPositionsAndToggleOAMCopy
 
 .draw_cursor
 	call ZeroObjectPositions
@@ -558,10 +558,4 @@ OpenInPlayAreaScreen_HandleInput:
 	ld c, $00
 	call SetOneObjectAttributes
 	or a
-	ret
-
-ZeroObjectPositionsAndToggleOAMCopy_Bank6:
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
 	ret

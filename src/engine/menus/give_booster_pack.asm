@@ -52,12 +52,10 @@ GiveBoosterPack:
 	call PrintScrollableText_NoTextBoxLabel
 	call DisableLCD
 	call SetDefaultPalettes
-	call ZeroObjectPositions
-	ld a, $1
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	ld a, $4
 	ld [wTextBoxFrameType], a
-	farcall OpenBoosterPack
+	bank1call OpenBoosterPack
 	farcall WhiteOutDMGPals
 	call DoFrameIfLCDEnabled
 	pop af

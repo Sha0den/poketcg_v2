@@ -27,13 +27,11 @@ OpenGlossaryScreen:
 
 	cp -1 ; b button
 	jr nz, .check_button
-
-	farcall ZeroObjectPositionsWithCopyToggleOn
-	ret
+	jp ZeroObjectPositionsAndToggleOAMCopy
 
 .check_button
 	push af
-	farcall ZeroObjectPositionsWithCopyToggleOn
+	call ZeroObjectPositionsAndToggleOAMCopy
 	pop af
 
 	cp $09 ; $09: next page or prev page
@@ -59,9 +57,7 @@ OpenGlossaryScreen:
 .display_menu
 	xor a
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call DoFrame
 	call EmptyScreen
 	call Set_OBJ_8x8
@@ -178,10 +174,10 @@ OpenGlossaryScreen:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld a, $01
+	ld a, $01 ; text isn't double-spaced
 	ld [wLineSeparation], a
 	call ProcessTextFromID
-	xor a
+	xor a ; text is double-spaced
 	ld [wLineSeparation], a
 	call EnableLCD
 .loop

@@ -1673,10 +1673,12 @@ PrintDuelResultStats:
 ; input:
 ;	de = screen coordinates at which to begin printing the stats
 .PrintDuelistResultStats:
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	ldtx hl, PrizesLeftActivePokemonCardsInDeckText
 	call InitTextPrinting_ProcessTextFromID
-	call SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
 	ld c, e
 	ld a, d
 	add 7
@@ -2868,14 +2870,16 @@ PrintPracticeDuelInstructions:
 	ld d, [hl]
 	inc hl
 	push hl
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	ld l, e
 	ld h, d
 	ld a, [wPracticeDuelTextY]
 	ld e, a
 	ld d, 1
 	call InitTextPrinting_ProcessTextFromID
-	call SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
 	pop hl
 	jr .print_instructions_loop
 
@@ -2907,9 +2911,11 @@ PrintPracticeDuelNumberedInstruction:
 	push hl
 	ld l, c
 	ld h, b
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	call InitTextPrinting_ProcessTextFromID
-	call SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
 	pop hl
 	ret
 
@@ -3141,21 +3147,7 @@ SetDiscardPileScreenTexts:
 	ldtx de, OpponentsDiscardPileText
 .got_header_text
 	ldtx hl, ChooseTheCardYouWishToExamineText
-;	fallthrough
-
-SetCardListHeaderText:
-	ld a, e
-	ld [wCardListHeaderText], a
-	ld a, d
-	ld [wCardListHeaderText + 1], a
-;	fallthrough
-
-SetCardListInfoBoxText:
-	ld a, l
-	ld [wCardListInfoBoxText], a
-	ld a, h
-	ld [wCardListInfoBoxText + 1], a
-	ret
+	jp SetCardListHeaderText
 
 Func_5591:
 	call InitAndDrawCardListScreenLayout
@@ -3579,11 +3571,13 @@ DrawWholeScreenTextBox:
 	ld a, 19
 	lb de, 1, 1
 	call InitTextPrintingInTextbox
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	pop hl
 	call ProcessTextFromID
 	call EnableLCD
-	call SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
 	jp WaitForWideTextBoxInput
 
 ; has turn duelist take amount of prizes that are in wNumberPrizeCardsToTake
@@ -3885,12 +3879,6 @@ CardPageSwitch_0c:
 CardPageSwitch_TrainerEnd:
 	ld a, CARDPAGE_TRAINER_1
 	scf
-	ret
-
-ZeroObjectPositionsAndToggleOAMCopy:
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
 	ret
 
 ; place OAM for a 8x6 image, using object size 8x16 and obj palette 1.
@@ -4636,7 +4624,8 @@ DisplayCardPage_PokemonDescription:
 	ldtx hl, LbsText
 	call InitTextPrinting_ProcessTextFromID
 	; print the card's description without line separation
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	ld hl, wLoadedCard1Description
 	ld a, [hli]
 	ld h, [hl]
@@ -4651,7 +4640,9 @@ DisplayCardPage_PokemonDescription:
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1Description
 	call ProcessTextFromPointerToID
-	jp SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
+	ret
 
 CardPageLengthWeightTextData:
 	textitem 1, 11, LengthText
@@ -5133,17 +5124,6 @@ Func_6194:
 	ld e, a
 	ld d, 0
 	jp SetCursorParametersForTextBox_Default
-
-Func_61a1:
-	xor a
-	ld [wExcludeArenaPokemon], a
-	ld a, [wDuelDisplayedScreen]
-	cp PLAY_AREA_CARD_LIST
-	ret z
-	call ZeroObjectPositionsAndToggleOAMCopy
-	call EmptyScreen
-	call LoadDuelCardSymbolTiles
-	jp LoadDuelCheckPokemonScreenTiles
 
 ; for each turn holder's play area Pokemon card, print the name, level,
 ; face down stage card, color symbol, status symbol (if any), pluspower/defender
@@ -5724,7 +5704,8 @@ DisplayUsePokemonPowerScreen::
 ; x,y coordinates of where to start printing the text are given at de
 ; don't separate lines of text
 PrintAttackOrCardDescription:
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -5736,19 +5717,7 @@ PrintAttackOrCardDescription:
 	ld a, 19
 	call InitTextPrintingInTextbox
 	call ProcessTextFromID
-;	fallthrough
-
-; separate lines of text by an empty line
-SetOneLineSeparation:
-	xor a
-	jr SetLineSeparation
-
-; print lines of text with no separation between them
-SetNoLineSeparation:
-	ld a, $01
-;	fallthrough
-
-SetLineSeparation:
+	xor a ; text is double-spaced
 	ld [wLineSeparation], a
 	ret
 
@@ -5976,7 +5945,8 @@ DisplayUsedTrainerCardDetailScreen::
 ; the information of a trainer card being used by the opponent.
 PrintUsedTrainerCardDescription:
 	call EmptyScreen
-	call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	lb de, 1, 1
 	call InitTextPrinting
 	ld hl, wLoadedCard1Name
@@ -5986,7 +5956,8 @@ PrintUsedTrainerCardDescription:
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1NonPokemonDescription
 	call ProcessTextFromPointerToID
-	call SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
 	ldtx hl, UsedText
 	jp DrawWideTextBox_WaitForInput
 
@@ -6814,7 +6785,8 @@ OppAction_UsePokemonPower:
 
 ; execute the EFFECTCMDTYPE_BEFORE_DAMAGE command of the used Pokemon Power
 OppAction_ExecutePokemonPowerEffect:
-	call Func_7415
+	xor a
+	ld [wce7e], a
 	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
 	call TryExecuteEffectCommandFunction
 	ld a, $01
@@ -8245,11 +8217,6 @@ SelectComputerOpponentData:
 	textitem  3, 14, SelectComputerOpponentText
 	db $ff
 
-Func_7415::
-	xor a
-	ld [wce7e], a
-	ret
-
 ; plays all animations that are queued in wStatusConditionQueue
 PlayStatusConditionQueueAnimations::
 	ld hl, wStatusConditionQueueIndex
@@ -8319,19 +8286,6 @@ PlayAttackAnimation_DealAttackDamageSimple::
 	call DrawDuelHUDs
 	pop de
 	pop hl
-	ret
-
-; if [wLoadedAttackAnimation] != 0, wait until the animation is over
-WaitAttackAnimation::
-	ld a, [wLoadedAttackAnimation]
-	or a
-	ret z
-	push de
-.anim_loop
-	call DoFrame
-	call CheckAnyAnimationPlaying
-	jr c, .anim_loop
-	pop de
 	ret
 
 ; play attack animation

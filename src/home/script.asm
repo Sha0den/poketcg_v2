@@ -165,9 +165,7 @@ FinishQueuedAnimations::
 	ld [hli], a
 	ld [hl], a
 .skip_clear_frame_func
-	call ZeroObjectPositions
-	ld a, 1
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	pop af
 	jp BankswitchROM
 

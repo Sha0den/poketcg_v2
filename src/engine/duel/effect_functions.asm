@@ -341,9 +341,20 @@ Serial_TossCoinATimes:
 	call SerialSend8Bytes
 	jp TossCoinATimes
 
+Func_61a1:
+	xor a
+	ld [wExcludeArenaPokemon], a
+	ld a, [wDuelDisplayedScreen]
+	cp PLAY_AREA_CARD_LIST
+	ret z
+	call ZeroObjectPositionsAndToggleOAMCopy
+	call EmptyScreen
+	call LoadDuelCardSymbolTiles
+	jp LoadDuelCheckPokemonScreenTiles
+
 Func_2c10b:
 	ldh [hTempPlayAreaLocation_ff9d], a
-	bank1call Func_61a1
+	call Func_61a1
 	bank1call PrintPlayAreaCardList_EnableLCD
 	bank1call Func_6194
 	ret
@@ -353,13 +364,13 @@ Func_2c10b:
 ;	a = attack animation to play
 PlayTrainerEffectAnimation:
 	ld [wLoadedAttackAnimation], a
-	bank1call Func_7415
+	xor a
+	ld [wce7e], a
 	ld bc, $0
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
-	ret
+	jp WaitAttackAnimation
 
 ; prompts the Player with a Yes/No question whether to quit the screen,
 ; even though they can select more cards from list.
@@ -502,7 +513,7 @@ ReorderCardsOnTopOfDeck:
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, ChooseTheOrderOfTheCardsText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call Func_5735
 
 .loop_selection
@@ -1023,8 +1034,7 @@ Func_2c12e:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
-	ret
+	jp WaitAttackAnimation
 
 ; returns in a and [hTempCardIndex_ff98] the deck index
 ; of random Basic Pokemon card in deck.
@@ -1280,7 +1290,7 @@ Scavenge_TrainerPlayerSelection:
 	bank1call Func_5591
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 .loop_input
 	bank1call DisplayCardList
 	jr c, .loop_input ; must choose, B button can't be used to exit
@@ -1316,7 +1326,7 @@ Choose2EnergyFromDiscardPile_PlayerSelection:
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, ChooseAnEnergyCardText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	jr nc, .selected
 
@@ -1602,8 +1612,7 @@ ApplyAndAnimateHPRecovery:
 
 .skip_cap
 	ld [hl], e ; apply new HP to the Active Pokemon
-	bank1call WaitAttackAnimation
-	ret
+	jp WaitAttackAnimation
 
 Recover_HealEffect:
 	ld e, PLAY_AREA_ARENA
@@ -3023,7 +3032,7 @@ DevolutionBeam_DevolveEffect:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 
 ; load selected card's data
 	ldh a, [hTempPlayAreaLocation_ffa1]
@@ -4302,7 +4311,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	xor a
 	ldh [hCurSelectionItem], a
 	ld [wCurGigashockItem], a
-	bank1call Func_61a1
+	call Func_61a1
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
@@ -5434,14 +5443,14 @@ EnergyTrans_TransferEffect:
 	cp DUELIST_TYPE_PLAYER
 	jr z, .player
 ; not player
-	bank1call Func_61a1
+	call Func_61a1
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
 .player
 	xor a
 	ldh [hCurSelectionItem], a
-	bank1call Func_61a1
+	call Func_61a1
 
 .draw_play_area
 	bank1call PrintPlayAreaCardList_EnableLCD
@@ -5580,14 +5589,15 @@ SolarPowerCheck:
 SolarPower_RemoveStatusEffect:
 	ld a, ATK_ANIM_HEAL_BOTH_SIDES
 	ld [wLoadedAttackAnimation], a
-	bank1call Func_7415
+	xor a
+	ld [wce7e], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld b, a
 	ld c, $00
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 
 	ldh a, [hTemp_ffa0]
 	add DUELVARS_ARENA_CARD_FLAGS
@@ -5820,7 +5830,7 @@ Firegiver_AddToHandEffect:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 
 ; load correct coordinates to update the number of cards
 ; in hand and deck during animation.
@@ -5952,7 +5962,7 @@ Quickfreeze_Paralysis50PercentEffect:
 	ld h, a
 	bank1call PlayAttackAnimation
 	bank1call PlayStatusConditionQueueAnimations
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 	bank1call ApplyStatusConditionQueue
 	bank1call DrawDuelHUDs
 	call PrintFailedEffectText
@@ -6038,7 +6048,7 @@ DamageSwap_SelectAndSwapEffect:
 	cp DUELIST_TYPE_PLAYER
 	jr z, .player
 ; not the Player
-	bank1call Func_61a1
+	call Func_61a1
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
@@ -6047,7 +6057,7 @@ DamageSwap_SelectAndSwapEffect:
 	bank1call DrawWholeScreenTextBox
 	xor a
 	ldh [hCurSelectionItem], a
-	bank1call Func_61a1
+	call Func_61a1
 
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
@@ -6178,7 +6188,7 @@ StrangeBehavior_SelectAndSwapEffect:
 	jr z, .player
 
 ; not the Player
-	bank1call Func_61a1
+	call Func_61a1
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
@@ -6188,7 +6198,7 @@ StrangeBehavior_SelectAndSwapEffect:
 
 	xor a
 	ldh [hCurSelectionItem], a
-	bank1call Func_61a1
+	call Func_61a1
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
@@ -6256,7 +6266,7 @@ Curse_PlayerSelection:
 	call SwapTurn
 	xor a
 	ldh [hCurSelectionItem], a
-	bank1call Func_61a1
+	call Func_61a1
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
@@ -6356,7 +6366,7 @@ Curse_TransferDamageEffect:
 	jr z, .vs_player
 
 ; vs. opponent
-	bank1call Func_61a1
+	call Func_61a1
 .vs_player
 ; transfer the damage counter to the targets that were selected.
 	ldh a, [hPlayAreaEffectTarget]
@@ -6414,7 +6424,7 @@ HealingWind_PlayAreaHealEffect:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
 	ld [wLoadedAttackAnimation], a
 
@@ -6451,7 +6461,7 @@ HealingWind_PlayAreaHealEffect:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 .next_pkmn
 	pop de
 	inc e
@@ -6497,7 +6507,7 @@ HandlePlayerSelection2HandCards:
 	push hl
 	bank1call Func_5591
 	pop hl
-	bank1call SetCardListInfoBoxText
+	call SetCardListInfoBoxText
 	push hl
 	bank1call DisplayCardList
 	pop hl
@@ -6555,7 +6565,7 @@ ComputerSearch_PlayerDeckSelection:
 	bank1call Func_5591
 	ldtx hl, ChooseCardToPlaceInHandText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 .loop_input
 	bank1call DisplayCardList
 	jr c, .loop_input ; must choose, B button can't be used to exit
@@ -7015,7 +7025,7 @@ EnergyRetrieval_PlayerDiscardPileSelection:
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	jr nc, .selected
 	; B button was pressed
@@ -7079,7 +7089,7 @@ SuperEnergyRetrieval_PlayerDiscardPileSelection:
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	jr nc, .store_selected_card
 	; B button was pressed
@@ -7183,7 +7193,7 @@ ItemFinder_PlayerSelection:
 	bank1call Func_5591
 	ldtx hl, ChooseCardToPlaceInHandText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	ldh [hTempList + 2], a ; placed after the 2 cards selected to discard
 	ret
@@ -7344,7 +7354,7 @@ LassEffect:
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, ChooseTheCardYouWishToExamineText
 	ldtx de, DuelistHandText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	ld a, A_BUTTON | START
 	ld [wNoItemSelectionMenuKeys], a
 	bank1call DisplayCardList
@@ -7492,7 +7502,7 @@ PokemonBreeder_PlayerSelection:
 ; handle the Player's selection of a Stage2 card
 	ldtx hl, PleaseSelectCardText
 	ldtx de, DuelistHandText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	ret c ; exit if the B button was pressed
 
@@ -7760,7 +7770,7 @@ PokemonFlute_PlayerSelection:
 	bank1call Func_5591
 	ldtx hl, ChoosePokemonToPlaceInPlayText
 	ldtx de, OpponentsDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	call SwapTurn
 	ldh a, [hTempCardIndex_ff98]
@@ -7809,7 +7819,7 @@ PokemonTrader_PlayerHandSelection:
 ; handle Player selection
 	ldtx hl, ChoosePokemonToReturnToTheDeckText
 	ldtx de, DuelistHandText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 	ldh [hTemp_ffa0], a
 	ret
@@ -7828,7 +7838,7 @@ PokemonTrader_PlayerDeckSelection:
 	bank1call Func_5591
 	ldtx hl, ChoosePokemonCardText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 ; handle Player selection
 .read_input
@@ -7940,7 +7950,8 @@ HealPlayAreaCardHP:
 
 ; play the heal animation
 	push de
-	bank1call Func_7415
+	xor a
+	ld [wce7e], a
 	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
 	ld [wLoadedAttackAnimation], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -7949,7 +7960,7 @@ HealPlayAreaCardHP:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	bank1call PlayAttackAnimation
-	bank1call WaitAttackAnimation
+	call WaitAttackAnimation
 	pop hl
 
 ; print the Pokemon's card name and damage that was healed
@@ -7985,7 +7996,7 @@ Recycle_PlayerSelection:
 	bank1call Func_5591
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 .read_input
 	bank1call DisplayCardList
 	jr c, .read_input ; must choose, B button can't be used to exit
@@ -8034,7 +8045,7 @@ Revive_PlayerSelection:
 ; display screen to select Pokemon
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	bank1call DisplayCardList
 
 ; store selection

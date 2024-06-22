@@ -22,7 +22,7 @@ RestoreVBlankFunction:
 	ld de, wVBlankFunctionTrampoline + 1
 	call BackupVBlankFunctionTrampoline
 	call ClearSpriteAnimations
-	bank1call ZeroObjectPositionsAndToggleOAMCopy
+	call ZeroObjectPositionsAndToggleOAMCopy
 	ret
 
 

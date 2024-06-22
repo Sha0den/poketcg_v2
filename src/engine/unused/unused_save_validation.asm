@@ -45,7 +45,7 @@ UnusedSaveDataValidation:
 	ld [hl], a
 	ldh [hSCX], a
 	ldh [hSCY], a
-	bank1call ZeroObjectPositionsAndToggleOAMCopy
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
 	call LoadSymbolsFont
 	bank1call SetDefaultConsolePalettes

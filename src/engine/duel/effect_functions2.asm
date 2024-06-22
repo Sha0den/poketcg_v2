@@ -201,7 +201,7 @@ FindBasicEnergy:
 	bank1call Func_5591
 	ldtx hl, ChooseBasicEnergyCardText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -266,7 +266,7 @@ FindBasicEnergyToAttach:
 	bank1call Func_5591
 	ldtx hl, ChooseBasicEnergyCardText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -351,7 +351,7 @@ FindTrainer:
 	bank1call Func_5591
 	ldtx hl, ChooseTrainerCardText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -420,7 +420,7 @@ FindAnyPokemon:
 	bank1call Func_5591
 	ldtx hl, ChoosePokemonCardText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -475,7 +475,7 @@ FindEvolution:
 	bank1call Func_5591
 	ldtx hl, ChooseEvolutionCardText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -551,7 +551,7 @@ FindBasicPokemon:
 	bank1call Func_5591
 	ldtx hl, ChooseBasicPokemonText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -614,7 +614,7 @@ FindBasicFightingPokemon:
 	bank1call Func_5591
 	ldtx hl, ChooseBasicFightingPokemonText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -692,7 +692,7 @@ FindNidoran:
 	bank1call Func_5591
 	ldtx hl, ChooseNidoranText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -768,7 +768,7 @@ FindOddish:
 	bank1call Func_5591
 	ldtx hl, ChooseAnOddishText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -837,7 +837,7 @@ FindBellsprout:
 	bank1call Func_5591
 	ldtx hl, ChooseABellsproutText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList
@@ -906,7 +906,7 @@ FindKrabby:
 	bank1call Func_5591
 	ldtx hl, ChooseAKrabbyText
 	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 
 .read_input
 	bank1call DisplayCardList

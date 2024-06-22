@@ -219,12 +219,14 @@ DrawBottomCardInfoInSRAMGfxBuffer0:
 	ret
 
 .not_pkmn_card
-	bank1call SetNoLineSeparation
+	ld a, $01 ; text isn't double-spaced
+	ld [wLineSeparation], a
 	lb de, 1, 66
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1NonPokemonDescription
 	call ProcessTextFromPointerToID
-	bank1call SetOneLineSeparation
+	xor a ; text is double-spaced
+	ld [wLineSeparation], a
 	ret
 
 RetreatWeakResistData:

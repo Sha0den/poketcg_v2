@@ -12,7 +12,7 @@ _OpenBoosterPack:
 	jr c, .loop_clear
 
 ; fills wDuelTempList with 0, 1, 2, 3, ...
-; up to the number of cards received in Boster Pack
+; up to the number of cards received in the booster pack
 	xor a
 	ld hl, wBoosterCardsDrawn
 	ld de, wDuelTempList
@@ -35,7 +35,7 @@ _OpenBoosterPack:
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, ChooseTheCardYouWishToExamineText
 	ldtx de, BoosterPackText
-	bank1call SetCardListHeaderText
+	call SetCardListHeaderText
 	ld a, A_BUTTON | START
 	ld [wNoItemSelectionMenuKeys], a
 	bank1call DisplayCardList
