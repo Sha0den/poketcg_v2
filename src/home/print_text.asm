@@ -307,6 +307,8 @@ DrawTextReadyLabeledOrRegularTextBox::
 ; then updates the current wTextHeader to point to the next character.
 ; a TX_RAM command causes a switch to a wTextHeader in the level below, and
 ; a TX_END command terminates the text unless there is a pending wTextHeader in the above level.
+; output:
+;	carry = set:  if TX_END command terminated the text
 ProcessTextHeader::
 	call ReadTextHeader
 	ld a, [hli]
@@ -333,7 +335,7 @@ ProcessTextHeader::
 	inc hl
 .not_tx_fullwidth
 	call Func_22ca
-	xor a
+	xor a ; TX_END
 	call ProcessSpecialTextCharacter
 .processed_char
 	call WriteToTextHeader

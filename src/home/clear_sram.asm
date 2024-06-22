@@ -1,5 +1,7 @@
 ; validates the saved data in SRAM
 ; it must contain with the sequence $04, $21, $05 at s0a000
+; output:
+;	carry = set:  if there was no save data
 ValidateSRAM::
 	xor a
 	call BankswitchSRAM

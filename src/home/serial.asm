@@ -255,6 +255,8 @@ Func_0e32::
 
 ; receives byte in wSerialRecvBuf
 ; preserves all registers except af
+; output:
+;	carry = set:  if [wSerialFlags] = 0
 SerialRecvByte::
 	push hl
 	ld hl, wSerialRecvCounter
@@ -265,6 +267,7 @@ SerialRecvByte::
 	ld a, [wSerialFlags]
 	or a
 	ret nz
+.set_carry
 	scf
 	ret
 .asm_e49
@@ -286,7 +289,6 @@ SerialRecvByte::
 	pop hl
 	or a
 	ret
-
 
 ; exchanges c bytes: sends bytes at hl and stores received bytes in de
 ; input:
@@ -320,7 +322,7 @@ SerialExchangeBytes::
 .asm_e81
 	ld a, [wSerialFlags]
 	or a
-	jp nz, ReturnCarry
+	jr nz, SerialRecvByte.set_carry
 	ld a, c
 	or b
 	jr nz, .asm_e64
@@ -417,6 +419,8 @@ ClearSerialData::
 ; input:
 ;	bc = number of bytes to store
 ;	hl = address from which to start copying the bytes
+; output:
+;	carry = set:  if [wSerialFlags] != 0
 SerialSendBytes::
 	push bc
 .send_loop
@@ -443,6 +447,8 @@ SerialSendBytes::
 ; input:
 ;	bc = number of bytes
 ;	hl = where to save them
+; output:
+;	carry = set:  if [wSerialFlags] != 0
 SerialRecvBytes::
 	push bc
 .recv_loop
@@ -472,6 +478,8 @@ SerialRecvBytes::
 ; frame function during Link Opponent's turn
 ; if opponent makes a decision, jump directly
 ; to the address in wLinkOpponentTurnReturnAddress
+; output:
+;	carry = set:  if [wSerialRecvCounter] = 0
 LinkOpponentTurnFrameFunction::
 	ld a, [wSerialFlags]
 	or a

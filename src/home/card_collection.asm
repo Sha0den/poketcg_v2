@@ -105,7 +105,7 @@ GetCardCountInCollectionAndDecks::
 ;	a = card ID to check
 ; output:
 ;	a = number of that card owned by the player (outside of decks)
-;	carry = set: sCardCollection count of the card with ID from input is 0
+;	carry = set:  if the card from input's sCardCollection count was 0
 GetCardCountInCollection::
 	push hl
 	call EnableSRAM

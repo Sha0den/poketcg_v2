@@ -58,6 +58,8 @@ GameEventPointerTable::
 	dw GameEvent_Overworld
 
 
+; output:
+;	carry = set
 GameEvent_Duel::
 	ld a, GAME_EVENT_DUEL
 	ld [wActiveGameEvent], a
@@ -73,6 +75,8 @@ GameEvent_Duel::
 	ret
 
 
+; output:
+;	carry = set
 GameEvent_BattleCenter::
 	ld a, GAME_EVENT_BATTLE_CENTER
 	ld [wActiveGameEvent], a
@@ -89,6 +93,8 @@ GameEvent_BattleCenter::
 	ret
 
 
+; output:
+;	carry = set
 GameEvent_GiftCenter::
 	ldh a, [hBankROM]
 	push af
@@ -117,6 +123,8 @@ GameEvent_Credits::
 	ret
 
 
+; output:
+;	carry = set
 GameEvent_ContinueDuel::
 	xor a
 	ld [wSongOverride], a
@@ -145,6 +153,8 @@ GameEvent_ChallengeMachine::
 	call PlayDefaultSong
 ;	fallthrough
 
+; output:
+;	carry = set
 GameEvent_Overworld::
 	scf
 	ret

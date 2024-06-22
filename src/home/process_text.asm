@@ -41,7 +41,7 @@ ProcessText::
 	inc hl
 .not_tx_fullwidth
 	call Func_22ca
-	xor a
+	xor a ; TX_END
 	call ProcessSpecialTextCharacter
 .next_char
 	ld a, [hli]
@@ -242,6 +242,7 @@ InitTextPrinting::
 ; depending upon the byte at hffb0
 ; preserves all registers except af
 ; input:
+;	de = text characters
 ;	[hffb0] = $0 (no bit set): generate and place text tile
 ;	[hffb0] = $2 (bit 1 set):  only generate text tile?
 ;	[hffb0] = $1 (bit 0 set):  not even generate it, but just update text buffers?
@@ -318,6 +319,10 @@ TerminateHalfWidthText::
 	ret
 
 
+; input:
+;	de = text characters
+; output:
+;	carry = set:  if the characters from input were found
 Func_2325::
 	call Func_235e
 	ret c
@@ -364,7 +369,7 @@ Func_2325::
 	ret
 
 
-; searches linked-list for text characters e/d (registers)
+; searches linked-list for text characters in e/d (registers)
 ; if found, hoist the result to head of list and return it.
 ; input:
 ;	de = text characters
@@ -411,7 +416,7 @@ Func_235e::
 .asm_238f
 	ldh a, [hffa9]
 	cp l
-	jr z, .asm_23af      ; assert at least one iteration
+	jr z, .set_carry     ; assert at least one iteration
 	ld c, a
 	ld b, $c9
 	ld a, l
@@ -429,10 +434,10 @@ Func_235e::
 	ld h, $c9
 	inc c
 	dec c
-	jr z, .asm_23af      ; if next[i] != NULL:
+	jr z, .set_carry     ; if next[i] != NULL:
 	ld l, c              ;   l ← next[i]
 	ld [hl], b           ;   prev[next[i]] ← prev[i]
-.asm_23af
+.set_carry
 	scf                  ; set carry to indicate success
 	ret                  ; (return new linked-list head in a)
 

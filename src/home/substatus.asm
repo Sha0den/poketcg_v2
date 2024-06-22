@@ -694,6 +694,8 @@ HandleDestinyBondSubstatus::
 ; the Attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
 ; ignore if damage taken at de is 0.
 ; preserves de and hl
+; output:
+;	carry = set:  if Machamp is unable to use its Pokemon Power
 HandleStrikesBack_AgainstDamagingAttack::
 	ld a, e
 	or d
@@ -755,6 +757,8 @@ HandleStrikesBack_AgainstDamagingAttack::
 ; used to bounce back an attack of the RESIDUAL category.
 ; when MACHAMP is damaged, if its Strikes Back is active, the
 ; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
+; output:
+;	carry = set:  if Machamp is unable to use its Pokemon Power
 HandleStrikesBack_AgainstResidualAttack::
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
@@ -774,6 +778,8 @@ HandleStrikesBack_AgainstResidualAttack::
 	jp nc, WaitForWideTextBoxInput
 	ret
 
+; output:
+;	carry = set:  if the Attacking Pokemon was Knocked Out
 ApplyStrikesBack_AgainstResidualAttack::
 	push hl
 	call LoadTxRam3
@@ -799,7 +805,7 @@ ApplyStrikesBack_AgainstResidualAttack::
 	or a
 	ret z
 	call WaitForWideTextBoxInput
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	call PrintPlayAreaCardKnockedOutIfNoHP
 	bank1call DrawDuelHUDs
 	scf

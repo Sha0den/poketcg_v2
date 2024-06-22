@@ -1,3 +1,5 @@
+; output:
+;	carry = set:  if ?
 HandleMoveModeAPress::
 	ldh a, [hBankROM]
 	push af

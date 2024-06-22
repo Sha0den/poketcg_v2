@@ -411,10 +411,9 @@ CreateArenaOrBenchEnergyCardList::
 	ld [de], a
 	ld a, [wDuelTempList]
 	cp $ff
-	jp z, ReturnCarry ; no Energy cards were found
+	jr z, CreateHandCardList.set_carry ; no Energy cards were found
 	or a
 	ret
-
 
 ; fills wDuelTempList with the turn holder's hand cards (their 0-59 deck indices)
 ; output:
@@ -445,6 +444,7 @@ CreateHandCardList::
 	ld a, [hl]
 	or a
 	ret nz
+.set_carry
 	scf
 	ret
 
@@ -1537,7 +1537,7 @@ UsePokemonPower::
 	jr c, DisplayUsePokemonPowerScreen_WaitForInput
 	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
 	call TryExecuteEffectCommandFunction
-	jr c, ReturnCarry
+	ret c
 	ld a, OPPACTION_USE_PKMN_POWER
 	call SetOppAction_SerialSendDuelData
 	call ExchangeRNG
@@ -1548,22 +1548,25 @@ UsePokemonPower::
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	jp SetOppAction_SerialSendDuelData
 
+; output:
+;	carry = set
 DisplayUsePokemonPowerScreen_WaitForInput::
 	push hl
 	bank1call DisplayUsePokemonPowerScreen
 	pop hl
 ;	fallthrough
 
+; output:
+;	carry = set
 DrawWideTextBox_WaitForInput_ReturnCarry::
 	call DrawWideTextBox_WaitForInput
-;	fallthrough
-
-ReturnCarry::
 	scf
 	ret
 
 
 ; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
+; output:
+;	carry = set:  if the effect command returned with carry set
 UseAttackOrPokemonPower::
 	ld a, [wSelectedAttack]
 	ld [wPlayerAttackingAttackIndex], a
@@ -1582,7 +1585,7 @@ UseAttackOrPokemonPower::
 	jr c, .sand_attack_smokescreen
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
-	jr c, ReturnCarry
+	ret c
 	call SendAttackDataToLinkOpponent
 	jr .next
 .sand_attack_smokescreen
@@ -1591,7 +1594,7 @@ UseAttackOrPokemonPower::
 	jp c, ClearNonTurnTemporaryDuelvars_ResetCarry
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
-	jr c, ReturnCarry
+	ret c
 .next
 	ld a, OPPACTION_USE_ATTACK
 	call SetOppAction_SerialSendDuelData
@@ -2342,6 +2345,8 @@ Func_1bb4::
 
 ; prints one of the ThereWasNoEffectFrom*Text if wEffectFailed contains EFFECT_FAILED_NO_EFFECT,
 ; and prints WasUnsuccessfulText if wEffectFailed contains EFFECT_FAILED_UNSUCCESSFUL
+; output:
+;	carry = set:  if a text was printed
 PrintFailedEffectText::
 	ld a, [wEffectFailed]
 	or a

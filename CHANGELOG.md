@@ -217,7 +217,13 @@
 
 
 ## Miscellaneous Changes
-- **June 21, 2024:** 3 Files Changed
+- **June 22, 2024:** 9 Files Changed
+    - Add comments related to setting the carry flag for a variety of home bank functions
+    - Perform minor optimizations in home/duel.asm related to setting the carry flag
+
+<br/>
+
+- **[June 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/9ffd656449cac8b8781dedc4a466900ef8af1928):** 3 Files Changed
     - Try to standardize the function comments that are used in engine/bank20.asm and the engine/sequences files
     - Remove some unnecessary code from the aforementioned files
 
