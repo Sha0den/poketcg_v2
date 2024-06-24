@@ -16,7 +16,7 @@ LoadMap::
 	ld [wTileMapFill], a
 	call LoadSymbolsFont
 	call Set_OBJ_8x8
-	xor a
+	xor a ; text is double-spaced
 	ld [wLineSeparation], a
 	xor a
 	ld [wd291], a
@@ -79,6 +79,7 @@ LoadMap::
 	farcall Duel_Init
 ;	fallthrough
 
+; preserves de
 Func_c280:
 	call BackupPlayerPosition
 	call EnableAndClearSpriteAnimations
@@ -90,6 +91,7 @@ Func_c280:
 	call DisableLCD
 	farcall Func_12871
 	ret
+
 
 HandleOverworldMode:
 	ld a, [wOverworldMode]
@@ -111,9 +113,15 @@ OverworldModePointers:
 	dw SetScriptData
 	dw EnterScript
 
+
+; refreshes the cursor's position based on the currently selected map
+; and refreshes the player's position based on the starting map
+; but only if the player is not being animated across the overworld
+; preserves all registers except af
 UpdateOverworldMap:
 	farcall OverworldMap_Update
 	ret
+
 
 HandlePlayerMoveMode:
 	ld a, [wPlayerSpriteIndex]
@@ -130,7 +138,7 @@ HandlePlayerMoveMode:
 	call nz, Func_c66c
 	ld a, [wPlayerCurrentlyMoving]
 	bit 1, a
-	call nz, Func_c6dc
+	jp nz, Func_c6dc
 	ret
 
 .not_moving
@@ -138,6 +146,7 @@ HandlePlayerMoveMode:
 	and START
 	call nz, OpenPauseMenu
 	ret
+
 
 SetScriptData:
 	ld a, [wScriptNPC]
@@ -158,7 +167,9 @@ EnterScript:
 	ld l, a
 	jp hl
 
+
 ; redraws the background and removes textbox control
+; preserves hl
 CloseTextBox:
 	push hl
 	farcall ReloadMapAfterTextClose
@@ -166,6 +177,7 @@ CloseTextBox:
 	res AUTO_CLOSE_TEXTBOX, [hl]
 	pop hl
 	ret
+
 
 Func_c141:
 	ld hl, wActiveGameEvent
@@ -185,6 +197,8 @@ PointerTable_c152:
 	dw Func_fc2b ; GAME_EVENT_BATTLE_CENTER
 	dw Func_fcad ; GAME_EVENT_GIFT_CENTER
 
+
+; preserves bc and de
 Func_c158:
 	ld a, [wActiveGameEvent]
 	cp GAME_EVENT_DUEL
@@ -193,7 +207,7 @@ Func_c158:
 	ld [wTempNPC], a
 	call FindLoadedNPC
 	ret c
-	ld a, [wLoadedNPCTempIndex]
+;	ld a, [wLoadedNPCTempIndex] ; unnecessary?
 	ld l, LOADED_NPC_DIRECTION
 	call GetItemInLoadedNPCIndex
 	ld a, [wNPCDuelistDirection]
@@ -201,12 +215,15 @@ Func_c158:
 	farcall UpdateNPCAnimation
 	ret
 
+
 Func_c17a:
 	ld a, [wOverworldMode]
 	cp OWMODE_SCRIPT
-	ret z
-	jp Func_c9b8
+	jp nz, Func_c9b8
+	ret
 
+
+; preserves all registers except af
 Func_c184:
 	push bc
 	ld c, OWMODE_MOVE
@@ -221,18 +238,22 @@ Func_c184:
 	pop bc
 	ret
 
+
+; preserves bc and de
 SetOverworldDoFrameFunction:
 	ld hl, OverworldDoFrameFunction
 	jp SetDoFrameFunction
 
+
+; preserves all registers except af
 WhiteOutDMGPals:
 	xor a
 	call SetBGP
 	xor a
 	call SetOBP0
 	xor a
-	call SetOBP1
-	ret
+	jp SetOBP1
+
 
 Func_c1b1:
 	ld a, OWMAP_POKEMON_DOME
@@ -258,11 +279,15 @@ Func_c1b1:
 	ld [wPlayTimeCounter + 4], a
 	ret
 
+
+; preserves de
 Func_c1ed:
 	call ClearEvents
 	farcall LoadBackupSaveData
 	jp DetermineImakuniAndChallengeHall
 
+
+; preserves all registers except af
 Func_c1f8:
 	xor a
 	ld [wSelectedPauseMenuItem], a
@@ -282,6 +307,8 @@ Func_c1f8:
 	farcall InitPCPacks
 	ret
 
+
+; preserves all registers except af
 BackupPlayerPosition:
 	ld a, [wCurMap]
 	ld [wTempMap], a
@@ -293,6 +320,8 @@ BackupPlayerPosition:
 	ld [wTempPlayerDirection], a
 	ret
 
+
+; preserves all registers except af
 Func_c241:
 	push hl
 	push bc
@@ -305,12 +334,15 @@ Func_c241:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 Func_c251:
 	ldh a, [hffb0]
 	push af
 	ld a, $1
 	jr Func_c258.asm_c25d
 
+; preserves all registers except af
 Func_c258:
 	ldh a, [hffb0]
 	push af
@@ -324,6 +356,8 @@ Func_c258:
 	ldh [hffb0], a
 	ret
 
+
+; preserves bc and de
 Func_c268:
 	ld hl, PauseMenuTextList
 .loop
@@ -346,6 +380,10 @@ PauseMenuTextList:
 	tx PauseMenuOptionsText
 	dw NULL
 
+
+; preserves all registers except af
+; input:
+;	a = adjustment for [wOverworldNPCFlags]
 SetOverworldNPCFlags:
 	push hl
 	ld hl, wOverworldNPCFlags
@@ -354,6 +392,8 @@ SetOverworldNPCFlags:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 Func_c2a3:
 	push hl
 	push bc
@@ -375,6 +415,8 @@ Func_c2a3:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 ReturnToOverworldNoCallback:
 	xor a
 	ld [wReloadOverworldCallbackPtr], a
@@ -420,12 +462,16 @@ ReturnToOverworld:
 	pop hl
 	ret
 
+; preserves all registers except af
+; input:
+;	hl = a display menu function
 ReturnToOverworldWithCallback:
 	ld a, l
 	ld [wReloadOverworldCallbackPtr], a
 	ld a, h
 	ld [wReloadOverworldCallbackPtr + 1], a
 	jr ReturnToOverworld
+
 
 BackupObjectPalettes:
 	ld a, [wOBP0]
@@ -436,6 +482,7 @@ BackupObjectPalettes:
 	ld de, wObjectPalettesCGBBackup
 	ld bc, 8 palettes
 	jp CopyDataHLtoDE_SaveRegisters
+
 
 RestoreObjectPalettes:
 	ld a, [wOBP0Backup]
@@ -448,6 +495,8 @@ RestoreObjectPalettes:
 	call CopyDataHLtoDE_SaveRegisters
 	jp FlushAllPalettes
 
+
+; preserves all registers except af
 Func_c36a:
 	xor a
 	ld [wOWMapEvents], a
@@ -458,9 +507,10 @@ Func_c36a:
 	ld [wOWMapEvents + 1], a
 	ret
 
-; loads in wPermissionMap the permissions
-; of the map, which has its compressed permission data
-; pointed by wBGMapPermissionDataPtr
+
+; loads in wPermissionMap the permissions of the map, which has
+; its compressed permission data pointed by wBGMapPermissionDataPtr
+; preserves bc and hl
 LoadPermissionMap:
 	push hl
 	push bc
@@ -478,8 +528,11 @@ LoadPermissionMap:
 	pop hl
 	ret
 
+
 ; decompresses permission data pointed by wBGMapPermissionDataPtr
-; hl = address to write to
+; preserves bc and hl
+; input:
+;	hl = address to write to
 DecompressPermissionMap:
 	push hl
 	push bc
@@ -490,9 +543,8 @@ DecompressPermissionMap:
 	or e
 	jr z, .skip
 
-; permissions are applied to 2x2 square tiles
-; so the data is half the width and height
-; of the actual tile map
+; permissions are applied to 2x2 square tiles,
+; so the data is half the width and height of the actual tile map
 	push hl
 	ld b, HIGH(wDecompressionSecondaryBuffer)
 	call InitDataDecompression
@@ -525,7 +577,10 @@ DecompressPermissionMap:
 	pop hl
 	ret
 
-; de = coordinates
+
+; preserves all registers except af
+; input:
+;	de = x and y coordinates for the current map
 Func_c3ca:
 	push hl
 	push bc
@@ -557,8 +612,10 @@ Func_c3ca:
 	pop hl
 	ret
 
+
 ; removes flag in whole wPermissionMap
-; most likely relate to menu and text boxes
+; most likely related to menu and text boxes
+; preserves all registers except af
 Func_c3ee:
 	push hl
 	push bc
@@ -574,6 +631,8 @@ Func_c3ee:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 Func_c3ff:
 	ld a, [wBGMapWidth]
 	sub SCREEN_WIDTH
@@ -586,6 +645,10 @@ Func_c3ff:
 	call SetScreenScrollWram
 ;	fallthrough
 
+; preserves all registers except af
+; output:
+;	[hSCX] = [wSCX]
+;	[hSCY] = [wSCY]
 SetScreenScroll:
 	ld a, [wSCX]
 	ldh [hSCX], a
@@ -593,6 +656,11 @@ SetScreenScroll:
 	ldh [hSCY], a
 	ret
 
+
+; preserves all registers except af
+; output:
+;	[wSCX] = [wSCXBuffer]
+;	[wSCY] = [wSCYBuffer]
 SetScreenScrollWram::
 	ld a, [wSCXBuffer]
 	ld [wSCX], a
@@ -600,6 +668,8 @@ SetScreenScrollWram::
 	ld [wSCY], a
 	ret
 
+
+; preserves all registers except af
 Func_c41c:
 	ld a, [wPlayerXCoordPixels]
 	sub $40
@@ -609,6 +679,10 @@ Func_c41c:
 	ld [wSCYBuffer], a
 ;	fallthrough
 
+; preserves all registers except af
+; input:
+;	[wd237] = used to find [wSCXBuffer]
+;	[wd238] = used to find [wSCYBuffer]
 Func_c430:
 ; update wSCXBuffer
 	push bc
@@ -649,6 +723,8 @@ Func_c430:
 	pop bc
 	ret
 
+
+; preserves all registers except af
 Func_c469:
 	ld a, [wSCXBuffer]
 	add $4
@@ -666,6 +742,8 @@ Func_c469:
 	ld [wd234], a
 	ret
 
+
+; preserves all registers except af
 Func_c49c:
 	ld a, [wPlayerXCoord]
 	and $1f
@@ -683,6 +761,8 @@ Func_c49c:
 	ld [wPlayerYCoordPixels], a
 	ret
 
+
+; preserves de
 Func_c4b9:
 	xor a
 	ld [wVRAMTileOffset], a
@@ -726,6 +806,8 @@ Func_c4b9:
 	farcall OverworldMap_InitCursorSprite
 	ret
 
+
+; preserves hl
 Func_c53d:
 	ld a, [wPlayerSpriteIndex]
 	ld [wWhichSprite], a
@@ -734,9 +816,11 @@ Func_c53d:
 	call nz, Func_c687
 	ld a, [wPlayerCurrentlyMoving]
 	bit 1, a
-	call nz, Func_c6dc
+	jp nz, Func_c6dc
 	ret
 
+
+; preserves all registers except af
 Func_c554::
 	ld a, [wPlayerSpriteIndex]
 	ld [wWhichSprite], a
@@ -770,6 +854,8 @@ Func_c554::
 	pop hl
 	ret
 
+
+; preserves de and hl
 Func_c58b:
 	push hl
 	ld a, [wPlayerXCoord]
@@ -793,6 +879,7 @@ Func_c58b:
 	pop hl
 	ret
 
+
 HandlePlayerMoveModeInput:
 	ldh a, [hKeysHeld]
 	and D_PAD
@@ -809,6 +896,8 @@ HandlePlayerMoveModeInput:
 ;	fallthrough
 
 ; Arrives here if A button is pressed when not moving + in map move state
+; output:
+;	carry = set:  if ?
 FindNPCOrObject:
 	ld a, $ff
 	ld [wScriptNPC], a
@@ -835,15 +924,25 @@ FindNPCOrObject:
 	or a
 	ret
 
+
+; preserves all registers except af
+; input:
+;	a = button input (e.g. [hDPadHeld], [hKeysHeld], [hKeysPressed], etc.) 
 UpdatePlayerDirectionFromDPad:
 	call GetDirectionFromDPad
 ;	fallthrough
 
+; preserves all registers except af
+; input:
+;	a = direction (0 = North, 1 = East, 2 = South, 3 = West)
 UpdatePlayerDirection:
 	ld [wPlayerDirection], a
 ;	fallthrough
 
 ; Updates sprite depending on direction
+; preserves all registers except af
+; input:
+;	[wPlayerDirection] = updated direction
 UpdatePlayerSprite:
 	push bc
 	ld a, [wPlayerSpriteIndex]
@@ -856,6 +955,12 @@ UpdatePlayerSprite:
 	pop bc
 	ret
 
+
+; preserves all registers except af
+; input:
+;	a = button input (e.g. hDPadHeld, hKeysHeld, hKeysPressed, etc.) 
+; output:
+;	a = direction (0 = North, 1 = East, 2 = South, 3 = West)
 GetDirectionFromDPad:
 	push hl
 	ld hl, KeypadDirectionMap
@@ -874,6 +979,8 @@ GetDirectionFromDPad:
 KeypadDirectionMap:
 	db SOUTH, NORTH, WEST, EAST
 
+
+; preserves all registers except af
 AttemptPlayerMovementFromDirection:
 	push bc
 	call FindPlayerMovementFromDirection
@@ -881,6 +988,10 @@ AttemptPlayerMovementFromDirection:
 	pop bc
 	ret
 
+
+; preserves all registers except af
+; input:
+;	[wd339] = player's direction
 StartScriptedMovement:
 	push bc
 	ld a, [wPlayerSpriteIndex]
@@ -891,7 +1002,10 @@ StartScriptedMovement:
 	pop bc
 	ret
 
-; bc is the location the player is being scripted to move towards.
+
+; preserves all registers except af
+; input:
+;	bc = location the player is being scripted to move towards.
 AttemptPlayerMovement:
 	push hl
 	push bc
@@ -925,9 +1039,17 @@ AttemptPlayerMovement:
 	pop hl
 	ret
 
+
+; preserves de and hl
 FindPlayerMovementFromDirection::
 	ld a, [wPlayerDirection]
+;	fallthrough
 
+; preserves de and hl
+; input:
+;	a = player's direction (index in PlayerMovementOffsetTable_Tiles)
+; output:
+;	bc = new coordinates
 FindPlayerMovementWithOffset:
 	rlca
 	ld c, a
@@ -945,6 +1067,10 @@ FindPlayerMovementWithOffset:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	[wd338] = used to help determine the c value for Func_c694
 Func_c66c:
 	push hl
 	push bc
@@ -963,6 +1089,11 @@ Func_c66c:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	[wd339] = player's direction (index in PlayerMovementOffsetTable)
+;	[wd33a] = number of times to loop .asm_c6a0 in Func_c694
 Func_c687:
 	push bc
 	ld a, [wd33a]
@@ -972,6 +1103,12 @@ Func_c687:
 	pop bc
 	ret
 
+
+; preserves all registers except af
+; input:
+;	a = player's direction (index in PlayerMovementOffsetTable)
+;	c = number of times to loop .asm_c6a0
+;	[wd338] = ?
 Func_c694:
 	push hl
 	push bc
@@ -1010,6 +1147,10 @@ Func_c694:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	a = number of pixels to adjust the player's x coordinate
 Func_c6cc:
 	push hl
 	ld hl, wPlayerXCoordPixels
@@ -1018,6 +1159,10 @@ Func_c6cc:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	a = number of pixels to adjust the player's y coordinate
 Func_c6d4:
 	push hl
 	ld hl, wPlayerYCoordPixels
@@ -1026,6 +1171,8 @@ Func_c6d4:
 	pop hl
 	ret
 
+
+; preserves hl
 Func_c6dc:
 	push hl
 	ld hl, wPlayerCurrentlyMoving
@@ -1040,6 +1187,8 @@ Func_c6dc:
 	pop hl
 	ret
 
+
+; preserves de
 Func_c6f7:
 	ld a, [wPlayerSpriteIndex]
 	ld [wWhichSprite], a
@@ -1052,18 +1201,22 @@ Func_c6f7:
 	ld [hl], a
 	ret
 
+
+; preserves all registers except af
 Func_c70d:
 	push hl
 	ld hl, wTempMap
 	ld a, [wCurMap]
 	cp [hl]
-	jr z, .asm_c71c
+	jr z, .done
 	ld hl, wOverworldTransition
 	set 4, [hl]
-.asm_c71c
+.done
 	pop hl
 	ret
 
+
+; preserves all registers except af
 OpenPauseMenu:
 	push hl
 	push bc
@@ -1074,6 +1227,7 @@ OpenPauseMenu:
 	pop bc
 	pop hl
 	ret
+
 
 PauseMenu:
 	call PauseSong
@@ -1102,6 +1256,7 @@ PauseMenu:
 	call ReturnToOverworldWithCallback
 	jr .loop
 
+; preserves bc and de
 DisplayPauseMenu:
 	ld a, [wSelectedPauseMenuItem]
 	ld hl, Unknown_10d98
@@ -1116,13 +1271,16 @@ PauseMenuPointerTable:
 	dw PauseMenu_Config
 	dw PauseMenu_Exit
 
+
 PauseMenu_Status:
 	farcall _PauseMenu_Status
 	ret
 
+
 PauseMenu_Diary:
 	farcall _PauseMenu_Diary
 	ret
+
 
 PauseMenu_Deck:
 	xor a
@@ -1133,6 +1291,7 @@ PauseMenu_Deck:
 	farcall DeckSelectionMenu
 	jp Set_OBJ_8x8
 
+
 PauseMenu_Card:
 	xor a
 	ldh [hSCX], a
@@ -1142,10 +1301,12 @@ PauseMenu_Card:
 	farcall HandlePlayersCardsScreen
 	jp Set_OBJ_8x8
 
+
 PauseMenu_Config:
 	farcall _PauseMenu_Config
 PauseMenu_Exit:
 	ret
+
 
 PCMenu:
 	ld a, MUSIC_PC_MAIN_MENU
@@ -1193,11 +1354,13 @@ PointerTable_c846:
 	dw PCMenu_Glossary
 	dw PCMenu_Print
 
+; preserves bc and de
 DisplayPCMenu:
 	ld a, [wSelectedPCMenuItem]
 	ld hl, Unknown_10da9
 	farcall InitAndPrintMenu
 	ret
+
 
 PCMenu_CardAlbum:
 	xor a
@@ -1208,13 +1371,16 @@ PCMenu_CardAlbum:
 	farcall CardAlbum
 	jp Set_OBJ_8x8
 
+
 PCMenu_ReadMail:
 	farcall _PCMenu_ReadMail
 	ret
 
+
 PCMenu_Glossary:
 	farcall _PCMenu_Glossary
 	ret
+
 
 PCMenu_Print:
 	xor a
@@ -1227,6 +1393,9 @@ PCMenu_Print:
 	call WhiteOutDMGPals
 	jp DoFrameIfLCDEnabled
 
+
+; input:
+;	hl = text ID
 Func_c891:
 	push hl
 	ld a, [wOverworldNPCFlags]
@@ -1250,6 +1419,10 @@ Func_c891:
 	call DoFrameIfLCDEnabled
 	jp PrintScrollableText_NoTextBoxLabel
 
+
+; preserves all registers except af
+; input:
+;	hl = ID of the text to print before yes/no
 Func_c8ed:
 	push hl
 	push bc
@@ -1281,6 +1454,8 @@ Func_c8ed:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 Func_c915:
 	push bc
 	push de

@@ -1,3 +1,4 @@
+; preserves all registers except af
 _HandleMapWarp::
 	push hl
 	push bc
@@ -20,10 +21,10 @@ _HandleMapWarp::
 	ld a, [hli]
 	or [hl]
 	jr z, .done ; end of warp data
-	ld a, [hld] ; y coord
+	ld a, [hld] ; y coordinate
 	cp e
 	jr nz, .next_warp
-	ld a, [hl] ; x coord
+	ld a, [hl] ; x coordinate
 	cp d
 	jr z, .warp_player
 .next_warp
@@ -45,5 +46,6 @@ _HandleMapWarp::
 	pop bc
 	pop hl
 	ret
+
 
 INCLUDE "data/warps.asm"

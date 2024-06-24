@@ -1,4 +1,5 @@
 ; loads data from the map header of wCurMap
+; preserves all registers except af
 LoadMapHeader:
 	push hl
 	push bc
@@ -39,5 +40,6 @@ LoadMapHeader:
 	pop bc
 	pop hl
 	ret
+
 
 INCLUDE "data/map_headers.asm"

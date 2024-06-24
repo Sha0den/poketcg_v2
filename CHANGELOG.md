@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **June 22, 2024:** 19 Files Changed
+- **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/fbbd4f3f7422ba5a9abcd6878e842c0aec178e02):** 19 Files Changed
     - Delete "Func_7415", "SetNoLineSeparation", and "SetOneLineSeparation" from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
     - Move "Func_61a1" to engine/duel/effect_functions.asm
     - Move "ZeroObjectPositionsAndToggleOAMCopy" to home/objects.asm
@@ -226,6 +226,12 @@
 
 
 ## Miscellaneous Changes
+- **June 24, 2024:** 6 Files Changed
+    - Try to standardize the function comments that are used in the engine/overworld files
+    - Also perform many small optimizations in the engine/overworld files
+
+<br/>
+
 - **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/90115177c0340127d97cf4dba6724703c17b448b):** 9 Files Changed
     - Add comments related to setting the carry flag for a variety of home bank functions
     - Perform minor optimizations in home/duel.asm related to setting the carry flag
