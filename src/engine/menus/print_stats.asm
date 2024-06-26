@@ -74,6 +74,7 @@ MedalCoordsAndTilemaps:
 	db 16, 14, TILEMAP_FIGHTING_MEDAL
 	assert_table_length NUM_MEDALS
 
+
 FlashReceivedMedal:
 	xor a
 	ld [wd291], a
@@ -95,9 +96,9 @@ FlashReceivedMedal:
 	jr z, .show
 ; hide
 	xor a
-	ld e, c
-	ld d, b
-	lb bc, 3, 3
+	ld e, c ; y coordinate
+	ld d, b ; x coordinate
+	lb bc, 3, 3 ; width and height of a medal icon
 	lb hl, 0, 0
 	call FillRectangle
 	ret
@@ -109,6 +110,7 @@ FlashReceivedMedal:
 	farcall LoadTilemap_ToVRAM
 	ret
 
+
 PrintPlayTime:
 	ld a, [wPlayTimeCounter + 2]
 	ld [wPlayTimeHourMinutes], a
@@ -118,6 +120,8 @@ PrintPlayTime:
 	ld [wPlayTimeHourMinutes + 2], a
 ;	fallthrough
 
+; input:
+;	bc = screen coordinates for printing text
 PrintPlayTime_SkipUpdateTime:
 	push bc
 	ld a, [wPlayTimeHourMinutes + 1]
@@ -147,8 +151,9 @@ PrintPlayTime_SkipUpdateTime:
 	ld b, 2
 	jp SafeCopyDataHLtoDE
 
+
 ; input:
-; hl = value to convert
+;	hl = number to convert to symbol font
 ConvertWordToNumericalDigits:
 	ld de, wDecimalChars
 	ld bc, -100 ; hundreds
@@ -188,13 +193,18 @@ ConvertWordToNumericalDigits:
 	ld h, a
 	ret
 
-; prints album progress in coords bc
+
+; prints album progress in coordinates bc
+; input:
+;	bc = screen coordinates for printing text
 PrintAlbumProgress:
 	push bc
 	call GetCardAlbumProgress
 	pop bc
 ;	fallthrough
 
+; input:
+;	bc = screen coordinates for printing text
 PrintAlbumProgress_SkipGetProgress:
 	push bc
 	push de
@@ -220,7 +230,10 @@ PrintAlbumProgress_SkipGetProgress:
 	ld b, 3
 	jp SafeCopyDataHLtoDE
 
+
 ; prints the number of medals collected in bc
+; input:
+;	bc = screen coordinates for printing text
 PrintMedalCount:
 	push bc
 	farcall TryGiveMedalPCPacks

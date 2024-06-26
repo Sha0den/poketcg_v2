@@ -1,7 +1,7 @@
 ; fills wFilteredCardList and wOwnedCardsCountList
-; with cards IDs and counts, respectively,
-; from given Card Set in register a
-; a = CARD_SET_* constant
+; with card IDs and counts, respectively, from a given Card Set
+; input:
+;	a = CARD_SET_* constant
 CreateCardSetList:
 	push af
 	ld a, DECK_SIZE
@@ -27,7 +27,7 @@ CreateCardSetList:
 	cp b
 	jr nz, .loop_all_cards
 
-; it's same set as input
+; it's the same set as the input, i.e. PROMOTIONAL
 	ld a, e
 	cp VENUSAUR_LV64
 	jp z, .SetVenusaurLv64OwnedFlag
@@ -55,22 +55,22 @@ CreateCardSetList:
 	jr .loop_all_cards
 
 .done_pkmn_cards
-; for the energy cards, put all basic energy cards in Colosseum
-; and Double Colorless energy in Mystery
+; for the Energy cards, put all Basic Energy cards in the Colosseum set
+; and Double Colorless Energy is put in the Mystery set
 	ld a, b
 	cp CARD_SET_MYSTERY
 	jr z, .mystery
 	or a
 	jr nz, .skip_energy_cards
 
-; colosseum
-; places all basic energy cards in wFilteredCardList
+; Colosseum
+; places all Basic Energy cards in wFilteredCardList
 	lb de, 0, 0
 .loop_basic_energy_cards
 	inc e
 	ld a, e
 	cp DOUBLE_COLORLESS_ENERGY
-	jr z, .skip_energy_cards
+	jr z, .skip_energy_cards ; no more Basic Energy cards to sort
 	push bc
 	push hl
 	ld bc, wFilteredCardList
@@ -90,7 +90,7 @@ CreateCardSetList:
 	jr .loop_basic_energy_cards
 
 .mystery
-; places double colorless energy card in wFilteredCardList
+; places Double Colorless Energy card in wFilteredCardList
 	lb de, 0, 0
 .loop_find_double_colorless
 	inc e
@@ -99,7 +99,7 @@ CreateCardSetList:
 	jr z, .skip_energy_cards
 	cp DOUBLE_COLORLESS_ENERGY
 	jr nz, .loop_find_double_colorless
-	; double colorless energy
+	; Double Colorless Energy
 	push bc
 	push hl
 	ld bc, wFilteredCardList
@@ -159,6 +159,8 @@ CreateCardSetList:
 	ld a, (1 << MEW_OWNED_PHANTOM_F)
 	; fallthrough
 
+; input:
+;	a = *_OWNED_PHANTOM_F constant
 .SetPhantomOwnedFlag
 	push hl
 	push bc
@@ -187,6 +189,8 @@ CreateCardSetList:
 	; fallthrough
 
 ; places card in register e directly in the list
+; input:
+;	e = card ID
 .PlaceCardInList
 	ld bc, wFilteredCardList
 	add hl, bc
@@ -207,7 +211,10 @@ CreateCardSetList:
 	ld e, MEW_LV15
 	jr .PlaceCardInList
 
-; a = CARD_SET_* constant
+
+; preserves af
+; input:
+;	a = CARD_SET_* constant
 CreateCardSetListAndInitListCoords:
 	push af
 	ld hl, sCardCollection
@@ -232,7 +239,9 @@ CreateCardSetListAndInitListCoords:
 	ret
 
 ; places in entry name the prefix associated with the selected Card Set
-; a = CARD_SET_* constant
+; preserves af and bc
+; input:
+;	a = CARD_SET_* constant
 .GetEntryPrefix
 	push af
 	cp CARD_SET_PROMOTIONAL
@@ -266,8 +275,10 @@ CreateCardSetListAndInitListCoords:
 	pop af
 	ret
 
+
 ; prints the cards being shown in the Card Album screen
 ; for the corresponding Card Set
+; preserves bc
 PrintCardSetListEntries:
 	push bc
 	ld hl, wCardListCoords
@@ -472,6 +483,7 @@ PrintCardSetListEntries:
 	pop bc
 	ret
 
+
 ; handles opening card page, and inputs when inside Card Album
 HandleCardAlbumCardPage:
 	ld a, [wCardListCursorPos]
@@ -606,6 +618,8 @@ HandleCardAlbumCardPage:
 	ld [wTempCardListCursorPos], a
 	ret
 
+
+; preserves de
 GetFirstOwnedCardIndex:
 	ld hl, wOwnedCardsCountList
 	ld b, 0
@@ -620,6 +634,8 @@ GetFirstOwnedCardIndex:
 	ld [wFirstOwnedCardIndex], a
 	ret
 
+
+; primary function which handles all of the card album menu screens
 CardAlbum:
 	ld a, $01
 	ldh [hffb4], a
@@ -753,8 +769,8 @@ CardAlbum:
 	dw NULL ; function pointer if non-0
 
 .BoosterPackCardsMenuParams:
-	db 1 ; x pos
-	db 4 ; y pos
+	db 1 ; x position
+	db 4 ; y position
 	db 2 ; y spacing
 	db 0 ; x spacing
 	db NUM_CARD_ALBUM_VISIBLE_CARDS ; num entries
@@ -795,7 +811,7 @@ CardAlbum:
 	lb de, 1, 1
 	call InitTextPrinting
 
-; print the total number of cards that are in the Card Set
+; prints the total number of cards that are in the Card Set
 	ld a, [wSelectedCardSet]
 	cp CARD_SET_PROMOTIONAL
 	jr nz, .check_laboratory
@@ -862,7 +878,7 @@ CardAlbum:
 	jp EnableLCD
 
 ; counts number of cards in wOwnedCardsCountList
-; that is not set as CARD_NOT_OWNED
+; that are not set as CARD_NOT_OWNED
 .CountOwnedCardsInSet
 	ld hl, wOwnedCardsCountList
 	ld b, 0
@@ -909,21 +925,21 @@ CardAlbum:
 	ld hl, wUnavailableAlbumCardSets
 	call ClearNBytesFromHL
 
-	; check whether player has had promotional cards
+	; check if the player has received any promotional cards
 	call EnableSRAM
 	ld a, [sHasPromotionalCards]
 	call DisableSRAM
 	or a
 	jr nz, .has_promotional
 
-	; doesn't have promotional, check if
-	; this is still the case by checking the collection
+	; doesn't have any promotional cards,
+	; double check by looking at the collection
 	ld a, CARD_SET_PROMOTIONAL
 	call CreateCardSetListAndInitListCoords
 	ld a, [wFilteredCardList]
 	or a
 	jr nz, .set_has_promotional
-	; still has no promotional, print empty Card Set name
+	; still didn't find any promotional cards, so print empty Card Set name
 	ld a, TRUE
 	ld [wUnavailableAlbumCardSets + CARD_SET_PROMOTIONAL], a
 	ld e, 11

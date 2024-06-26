@@ -5,7 +5,7 @@ _PauseMenu_Config:
 	push af
 	xor a
 	ld [wConfigExitSettingsCursorPos], a
-	ld a, 1
+	inc a ; text isn't double-spaced
 	ld [wLineSeparation], a
 	call InitMenuScreen
 	lb de,  0,  3
@@ -50,6 +50,7 @@ _PauseMenu_Config:
 	ld [wd291], a
 	ret
 
+
 ConfigScreenLabels:
 	db 1, 1
 	tx ConfigMenuTitleText
@@ -65,9 +66,11 @@ ConfigScreenLabels:
 
 	db $ff
 
+
 ; checks the current saved configuration settings
 ; and sets wConfigMessageSpeedCursorPos and wConfigDuelAnimationCursorPos
 ; to the right positions for those values
+; preserves de
 GetConfigCursorPositions:
 	call EnableSRAM
 	ld c, 0
@@ -99,7 +102,7 @@ GetConfigCursorPositions:
 	ld [wConfigDuelAnimationCursorPos], a
 	jp DisableSRAM
 
-; indexes into DuelAnimationSettings
+; indices into DuelAnimationSettings
 ; 0: show all
 ; 1: skip some
 ; 2: none
@@ -109,6 +112,8 @@ DuelAnimationSettingsIndices:
 	db 1 ; skip delay allowed = true, animations disabled = false
 	db 2 ; skip delay allowed = true, animations disabled = true
 
+
+; preserves de
 SaveConfigSettings:
 	call EnableSRAM
 	ld a, [wConfigDuelAnimationCursorPos]
@@ -147,6 +152,10 @@ TextDelaySettings:
 	; slow to fast
 	db TEXT_SPEED_1, TEXT_SPEED_2, TEXT_SPEED_3, TEXT_SPEED_4, TEXT_SPEED_5
 
+
+; preserves bc and de
+; input:
+;	a = used to find the cursor's y position (usually from wConfigCursorYPos)
 UpdateConfigMenuCursor:
 	push af
 	ld a, [wCursorBlinkTimer]
@@ -158,6 +167,9 @@ UpdateConfigMenuCursor:
 	pop af
 ;	fallthrough
 
+; preserves bc and de
+; input:
+;	a = used to find the cursor's y position (usually from wConfigCursorYPos)
 ShowConfigMenuCursor:
 	push bc
 	ld c, a
@@ -166,6 +178,9 @@ ShowConfigMenuCursor:
 	pop bc
 	ret
 
+; preserves bc and de
+; input:
+;	a = used to find the cursor's y coordinate
 HideConfigMenuCursor:
 	push bc
 	ld c, a
@@ -174,6 +189,12 @@ HideConfigMenuCursor:
 	pop bc
 	ret
 
+; preserves de
+; input:
+;	a = tile to draw (SYM_* constant)
+;	c = used to find the cursor's y position (usually from wConfigCursorYPos)
+; output:
+;	bc = screen coordinates for the drawn cursor
 DrawConfigMenuCursor:
 	push af
 	sla c
@@ -183,7 +204,6 @@ DrawConfigMenuCursor:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-
 	ld a, [hli]
 	ld c, a
 	ld a, [hli]
@@ -225,6 +245,7 @@ ExitSettingsCursorPosition:
 
 	db 0
 
+
 ConfigScreenHandleDPadInput:
 	ldh a, [hDPadHeld]
 	and D_PAD
@@ -239,10 +260,13 @@ ConfigScreenDPadHandlers:
 	dw ConfigScreenDPadDown ; down
 	dw ConfigScreenDPadLeft ; left
 
+
+; preserves de
 ConfigScreenDPadUp:
 	ld a, -1
 	jr ConfigScreenDPadDown.up_or_down
 
+; preserves de
 ConfigScreenDPadDown:
 	ld a, 1
 .up_or_down
@@ -286,6 +310,7 @@ Unknown_106ff:
 	db $18 ; duel animation, start hidden
 	db $8 ; exit settings, start visible
 
+
 ConfigScreenDPadRight:
 	ld a, 1
 	jr ConfigScreenDPadLeft.left_or_right
@@ -304,7 +329,9 @@ ConfigScreenDPadLeft:
 	ld [wCursorBlinkTimer], a
 	ret
 
-; a = 1 for right, -1 for left
+; input:
+;	a =  1:  move right
+;	a = -1:  move left
 .ApplyPosChange
 	push af
 	ld a, [wConfigCursorYPos]
@@ -323,7 +350,7 @@ ConfigScreenDPadLeft:
 	ld a, [de]
 	ld b, a
 	pop af
-	add b ; apply pos change
+	add b ; apply position change
 	cp c
 	jr c, .got_new_pos
 	jr z, .got_new_pos

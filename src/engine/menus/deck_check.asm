@@ -1,8 +1,9 @@
-; handle player input in check menu
+; handles player input in the check menu
 ; works out which cursor coordinate to go to
-; and sets carry flag if A or B are pressed
-; returns a =  $1 if A pressed
-; returns a = $ff if B pressed
+; output:
+;	a = $1:       if the A button was pressed
+;	a = $ff:      if the B button was pressed
+;	carry = set:  if either the A or the B button were pressed
 HandleCheckMenuInput:
 	xor a
 	ld [wMenuInputSFX], a
@@ -10,9 +11,7 @@ HandleCheckMenuInput:
 	ld d, a
 	ld a, [wCheckMenuCursorYPosition]
 	ld e, a
-
-; d = cursor x position
-; e = cursor y position
+	; d,e = x,y positions of the cursor sprite
 
 	ldh a, [hDPadHeld]
 	or a
@@ -22,7 +21,7 @@ HandleCheckMenuInput:
 	bit D_RIGHT_F, a
 	jr z, .check_vertical
 
-; handle horizontal input
+; handles horizontal input
 .horizontal
 	ld a, d
 	xor $1 ; flips x coordinate
@@ -34,7 +33,7 @@ HandleCheckMenuInput:
 	bit D_DOWN_F, a
 	jr z, .no_pad
 
-; handle vertical input
+; handles vertical input
 .vertical
 	ld a, e
 	xor $01 ; flips y coordinate
@@ -47,13 +46,13 @@ HandleCheckMenuInput:
 	call EraseCheckMenuCursor
 	pop de
 
-; update x and y cursor positions
+; updates x and y cursor positions
 	ld a, d
 	ld [wCheckMenuCursorXPosition], a
 	ld a, e
 	ld [wCheckMenuCursorYPosition], a
 
-; reset cursor blink
+; resets cursor blink
 	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
 .no_pad
@@ -90,6 +89,7 @@ HandleCheckMenuInput:
 	ld a, SYM_CURSOR_R ; cursor byte
 	bit 4, [hl] ; only draw cursor if blink counter's fourth bit is not set
 	jr z, DrawCheckMenuCursor
+;	fallthrough
 
 ; draws in the cursor position
 EraseCheckMenuCursor:
@@ -98,7 +98,7 @@ EraseCheckMenuCursor:
 
 ; draws in the cursor position
 ; input:
-; a = tile byte to draw
+;	a = tile byte to draw (SYM_* constant)
 DrawCheckMenuCursor:
 	ld e, a
 	ld a, 10
@@ -124,19 +124,21 @@ DisplayCheckMenuCursor:
 	ld a, SYM_CURSOR_R
 	jr DrawCheckMenuCursor
 
+
 ; plays sound depending on value in a
+; preserves all registers
 ; input:
-; a  = $ff: play cancel sound
-; a != $ff: play confirm sound
+;	a  = $ff:  play cancel sound effect
+;	a != $ff:  play confirm sound effect
 PlaySFXConfirmOrCancel:
 	push af
 	inc a
-	jr z, .asm_9103
-	ld a, SFX_CONFIRM ; confirmation sfx
-	jr .asm_9105
-.asm_9103
-	ld a, SFX_CANCEL ; cancellation sfx
-.asm_9105
+	jr z, .cancel_sfx
+	ld a, SFX_CONFIRM
+	jr .play_sfx
+.cancel_sfx
+	ld a, SFX_CANCEL
+.play_sfx
 	call PlaySFX
 	pop af
 	ret

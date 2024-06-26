@@ -5,8 +5,7 @@ DisplayPlayerNamingScreen:
 	ld a, TX_END
 	call FillMemoryWithA
 
-	; get player's name
-	; from the user into hl.
+	; get player's name from the user into hl
 	ld hl, wNameBuffer
 	farcall InputPlayerName
 
@@ -14,19 +13,19 @@ DisplayPlayerNamingScreen:
 	call DoFrameIfLCDEnabled
 	call DisableLCD
 	ld hl, wNameBuffer
-	; get the first byte of the name buffer.
+	; get the first byte of the name buffer
 	ld a, [hl]
 	or a
-	; check if anything typed.
+	; check if anything was typed
 	jr nz, .no_name
 	ld hl, .default_name
 .no_name
-	; set the default name.
+	; set the default name
 	ld de, sPlayerName
 	ld bc, NAME_BUFFER_LENGTH
 	call EnableSRAM
 	call CopyDataHLtoDE_SaveRegisters
-	; it seems for integrity checking.
+	; this seems to be for checking integrity
 	call UpdateRNGSources
 	ld [sPlayerName+$e], a
 	call UpdateRNGSources
@@ -38,8 +37,9 @@ DisplayPlayerNamingScreen:
 	text "Mark"
 	done
 
+
 Unknown_128f7:
-	db  0,  0 ; start menu coords
+	db  0,  0 ; start menu coordinates
 	db 16, 18 ; start menu text box dimensions
 
 	db  2, 2 ; text alignment for InitTextPrinting
@@ -54,7 +54,7 @@ Unknown_128f7:
 	dw NULL ; function pointer if non-0
 
 Unknown_12908:
-	db 10, 0 ; start menu coords
+	db 10, 0 ; start menu coordinates
 	db 10, 6 ; start menu text box dimensions
 
 	db 12, 2 ; text alignment for InitTextPrinting
@@ -69,7 +69,7 @@ Unknown_12908:
 	dw NULL ; function pointer if non-0
 
 Unknown_12919:
-	db  0,  0 ; start menu coords
+	db  0,  0 ; start menu coordinates
 	db 12, 12 ; start menu text box dimensions
 
 	db  2, 2 ; text alignment for InitTextPrinting
@@ -84,7 +84,7 @@ Unknown_12919:
 	dw NULL ; function pointer if non-0
 
 Unknown_1292a:
-	db 12,  0 ; start menu coords
+	db 12,  0 ; start menu coordinates
 	db  4, 16 ; start menu text box dimensions
 
 	db 14, 2 ; text alignment for InitTextPrinting
@@ -99,7 +99,7 @@ Unknown_1292a:
 	dw NULL ; function pointer if non-0
 
 Unknown_1293b:
-	db 12,  0 ; start menu coords
+	db 12,  0 ; start menu coordinates
 	db  4, 14 ; start menu text box dimensions
 
 	db 14, 2 ; text alignment for InitTextPrinting
@@ -114,7 +114,7 @@ Unknown_1293b:
 	dw NULL ; function pointer if non-0
 
 Unknown_1294c:
-	db 12,  0 ; start menu coords
+	db 12,  0 ; start menu coordinates
 	db  4, 12 ; start menu text box dimensions
 
 	db 14, 2 ; text alignment for InitTextPrinting
@@ -129,7 +129,7 @@ Unknown_1294c:
 	dw NULL ; function pointer if non-0
 
 Unknown_1295d:
-	db 12,  0 ; start menu coords
+	db 12,  0 ; start menu coordinates
 	db  4, 10 ; start menu text box dimensions
 
 	db 14, 2 ; text alignment for InitTextPrinting

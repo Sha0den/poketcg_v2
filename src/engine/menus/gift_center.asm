@@ -1,5 +1,5 @@
 Unknown_10d98:
-	db 12,  0 ; start menu coords
+	db 12,  0 ; start menu coordinates
 	db  8, 14 ; start menu text box dimensions
 
 	db 14, 2 ; text alignment for InitTextPrinting
@@ -13,8 +13,9 @@ Unknown_10d98:
 	db SYM_SPACE ; tile behind cursor
 	dw NULL ; function pointer if non-0
 
+
 Unknown_10da9:
-	db 10,  0 ; start menu coords
+	db 10,  0 ; start menu coordinates
 	db 10, 12 ; start menu text box dimensions
 
 	db 12, 2 ; text alignment for InitTextPrinting
@@ -28,12 +29,15 @@ Unknown_10da9:
 	db SYM_SPACE ; tile behind cursor
 	dw NULL ; function pointer if non-0
 
+
+; output:
+;	[wGiftCenterChoice] & a = GIFT_CENTER_MENU_* constant
 GiftCenterMenu:
 	ld a, 1 << AUTO_CLOSE_TEXTBOX
 	farcall SetOverworldNPCFlags
 	ld a, [wSelectedGiftCenterMenuItem]
 	ld hl, .GiftCenterMenuParams
-	farcall InitAndPrintMenu
+	call InitAndPrintMenu
 .loop_input
 	call DoFrameIfLCDEnabled
 	call HandleMenuInput
@@ -61,9 +65,6 @@ GiftCenterMenu:
 	dw .LoadChoiceTextPointer ; GIFT_CENTER_MENU_RECEIVE_DECK
 	dw .stub                  ; GIFT_CENTER_MENU_EXIT
 
-.stub
-	ret
-
 .LoadChoiceTextPointer:
 	ld a, [wGiftCenterChoice]
 	add a
@@ -75,6 +76,7 @@ GiftCenterMenu:
 	ld [wTxRam2], a
 	ld a, [hl]
 	ld [wTxRam2 + 1], a
+.stub
 	ret
 
 .GiftCenterTextPointers:
@@ -84,7 +86,7 @@ GiftCenterMenu:
 	tx ReceiveDeckConfigurationText ; GIFT_CENTER_MENU_RECEIVE_DECK
 
 .GiftCenterMenuParams:
-	db  4,  0 ; start menu coords
+	db  4,  0 ; start menu coordinates
 	db 16, 12 ; start menu text box dimensions
 
 	db  6, 2 ; text alignment for InitTextPrinting

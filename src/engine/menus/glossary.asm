@@ -5,7 +5,7 @@ OpenGlossaryScreen:
 
 	xor a
 	ld [wInPlayAreaCurPosition], a
-	ld de, OpenGlossaryScreen_TransitionTable ; this data is stored in bank 2.
+	ld de, OpenGlossaryScreen_TransitionTable ; this data is stored in bank $02.
 	ld hl, wMenuInputTablePointer
 	ld [hl], e
 	inc hl
@@ -25,7 +25,7 @@ OpenGlossaryScreen:
 	farcall YourOrOppPlayAreaScreen_HandleInput
 	jr nc, .next
 
-	cp -1 ; b button
+	cp -1 ; B button
 	jr nz, .check_button
 	jp ZeroObjectPositionsAndToggleOAMCopy
 
@@ -53,7 +53,7 @@ OpenGlossaryScreen:
 	call .print_menu
 	jr .next
 
-; display glossary menu.
+; displays the Glossary menu
 .display_menu
 	xor a
 	ld [wTileMapFill], a
@@ -66,7 +66,7 @@ OpenGlossaryScreen:
 	ldtx hl, ChooseWordAndPressAButtonText
 	jp DrawWideTextBox_PrintText
 
-; print texts in glossary menu.
+; prints texts in the Glossary menu
 .print_menu
 ; print Glossary at the top of the page and then draw the page borders
 	ld hl, GlossaryTextData
@@ -124,7 +124,7 @@ OpenGlossaryScreen:
 	ldtx hl, GlossaryMenuPage2RightText
 	jp InitTextPrinting_ProcessTextFromID
 
-; display glossary description.
+; draws the Glossary description screen and prints the description
 .print_description
 	push af
 	xor a

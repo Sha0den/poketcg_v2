@@ -32,7 +32,7 @@ PrinterMenu_PokemonCards:
 	ldh a, [hDPadHeld]
 	and D_DOWN
 	jr z, .asm_abca
-; d_down
+; dpad_down
 	call ConfirmSelectionAndReturnCarry
 	jr .asm_abd7
 .asm_abca
@@ -77,7 +77,7 @@ PrinterMenu_PokemonCards:
 	ldh a, [hDPadHeld]
 	and START
 	jr z, .loop_frame_2
-; start btn
+; start button
 	ld a, $01
 	call PlaySFXConfirmOrCancel
 	ld a, [wCardListNumCursorPositions]
@@ -85,8 +85,8 @@ PrinterMenu_PokemonCards:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 
-	; set wFilteredCardList as current card list
-	; and show card page screen
+	; set wFilteredCardList as the current card list
+	; and show the card page screen
 	ld de, wFilteredCardList
 	ld hl, wCurCardListPtr
 	ld [hl], e
@@ -186,14 +186,15 @@ PrinterMenu_PokemonCards:
 	jp BankswitchVRAM0
 
 Data_ad05:
-	db 3 ; x pos
-	db 3 ; y pos
+	db 3 ; x position
+	db 3 ; y position
 	db 0 ; y spacing
 	db 4 ; x spacing
-	db 2 ; num entries
+	db 2 ; number of entries
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
+
 
 PrinterMenu_CardList:
 	call WriteCardListsTerminatorBytes
@@ -223,6 +224,7 @@ PrinterMenu_CardList:
 	ret nz
 	bank1call PrintCardList
 	ret
+
 
 HandlePrinterMenu:
 	bank1call PreparePrinterConnection
@@ -254,10 +256,13 @@ HandlePrinterMenu:
 	ld a, [wSelectedPrinterMenuItem]
 	jr .loop
 
-PrinterMenu_QuitPrint:
-	add sp, $2 ; exit menu
-	ldtx hl, PleaseMakeSureToTurnGameBoyPrinterOffText
-	jp DrawWideTextBox_WaitForInput
+PrinterMenuParameters:
+	db 5, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 5 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
 
 PrinterMenuFunctionTable:
 	dw PrinterMenu_PokemonCards
@@ -266,13 +271,12 @@ PrinterMenuFunctionTable:
 	dw PrinterMenu_PrintQuality
 	dw PrinterMenu_QuitPrint
 
-PrinterMenuParameters:
-	db 5, 2 ; cursor x, cursor y
-	db 2 ; y displacement between items
-	db 5 ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
+
+PrinterMenu_QuitPrint:
+	add sp, $2 ; exit menu
+	ldtx hl, PleaseMakeSureToTurnGameBoyPrinterOffText
+	jp DrawWideTextBox_WaitForInput
+
 
 PrinterMenu_PrintQuality:
 	ldtx hl, PleaseSetTheContrastText
@@ -302,11 +306,11 @@ PrinterMenu_PrintQuality:
 	jr HandlePrinterMenu.loop_input
 
 Data_adf5:
-	db 5  ; x pos
-	db 16 ; y pos
+	db 5  ; x position
+	db 16 ; y position
 	db 0  ; y spacing
 	db 2  ; x spacing
-	db 5  ; num entries
+	db 5  ; number of entries
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction

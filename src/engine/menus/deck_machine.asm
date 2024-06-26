@@ -1,8 +1,8 @@
-; handles printing and player input
-; in the card confirmation list shown
-; when cards are missing for some deck configuration
-; hl = deck name
-; de = deck cards
+; handles printing and player input in the card confirmation list that
+; is shown when cards are missing for a deck configuration
+; input:
+;	hl = deck name
+;	de = deck cards
 HandleDeckMissingCardsList:
 ; read deck name from hl and cards from de
 	push de
@@ -44,7 +44,7 @@ HandleDeckMissingCardsList:
 	ld l, a
 	call DrawWideTextBox_PrintText
 
-; set card update function
+; set the card update function
 	ld hl, .CardListUpdateFunction
 	ld d, h
 	ld a, l
@@ -70,8 +70,8 @@ HandleDeckMissingCardsList:
 	ld a, [wCardListCursorPos]
 	ld [wced7], a
 
-	; set wOwnedCardsCountList as current card list
-	; and show card page screen
+	; set wOwnedCardsCountList as the current card list
+	; and then show the card page screen
 	ld de, wOwnedCardsCountList
 	ld hl, wCurCardListPtr
 	ld [hl], e
@@ -87,11 +87,11 @@ HandleDeckMissingCardsList:
 	jr .open_card_pge
 
 .DeckConfirmationCardSelectionParams
-	db 0 ; x pos
-	db 3 ; y pos
+	db 0 ; x position
+	db 3 ; y position
 	db 2 ; y spacing
 	db 0 ; x spacing
-	db 5 ; num entries
+	db 5 ; number of entries
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
@@ -125,7 +125,7 @@ HandleDeckMissingCardsList:
 	call .PrintDeckIndexAndName
 	jp EnableLCD
 
-; prints text in the form "X.<DECK NAME> deck"
+; prints text in the form "X.<DECK NAME> deck",
 ; where X is the deck index in the list
 .PrintDeckIndexAndName
 	ld a, [wCurDeckName]
@@ -160,6 +160,7 @@ HandleDeckMissingCardsList:
 	call InitTextPrinting
 	jp ProcessText
 
+
 GiftCenter_SendCard:
 	xor a
 	ld [wTileMapFill], a
@@ -178,10 +179,10 @@ GiftCenter_SendCard:
 	lb de, 1, 3
 	call InitTextPrinting
 	ldtx hl, CardSendingProceduresText
-	ld a, $01
+	ld a, $01 ; text isn't double-spaced
 	ld [wLineSeparation], a
 	call ProcessTextFromID
-	xor a
+	xor a ; text is double-spaced
 	ld [wLineSeparation], a
 	ldtx hl, PleaseReadTheProceduresForSendingCardsText
 	call DrawWideTextBox_WaitForInput
@@ -199,7 +200,7 @@ GiftCenter_SendCard:
 	call CopyListFromHLToDE
 	xor a
 	ld [wNameBuffer], a
-	call SendCard
+	bank1call SendCard
 	ret c
 	call EnableSRAM
 	ld hl, wCurDeckCards
@@ -212,11 +213,12 @@ GiftCenter_SendCard:
 	xor a
 	ret
 
+
 GiftCenter_ReceiveCard:
 	xor a
 	ld [wDuelTempList], a
 	ld [wNameBuffer], a
-	call ReceiveCard
+	bank1call ReceiveCard
 	ret c
 
 	call EnableSRAM
@@ -262,8 +264,8 @@ GiftCenter_ReceiveCard:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 
-	; set wFilteredCardList as current card list
-	; and show card page screen
+	; set wFilteredCardList as the current card list
+	; and then show the card page screen
 	ld de, wFilteredCardList
 	ld hl, wCurCardListPtr
 	ld [hl], e
@@ -299,14 +301,15 @@ GiftCenter_ReceiveCard:
 	ret
 
 Data_b04a:
-	db 1 ; x pos
-	db 3 ; y pos
+	db 1 ; x position
+	db 3 ; y position
 	db 2 ; y spacing
 	db 0 ; x spacing
-	db 5 ; num entries
+	db 5 ; number of entries
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
+
 
 ShowReceivedCardsList:
 	ld hl, hffb0
@@ -327,6 +330,7 @@ ShowReceivedCardsList:
 	ld hl, hffb0
 	ld [hl], $00
 	jp PrintCardSelectionList
+
 
 Func_b088:
 	ld a, CARD_COLLECTION_SIZE - 1
@@ -438,11 +442,13 @@ Func_b088:
 	pop af
 	ret
 
+
 PrintCardToSendText:
 	call EmptyScreenAndDrawTextBox
 	lb de, 1, 1
 	ldtx hl, CardToSendText
 	jp InitTextPrinting_ProcessTextFromID
+
 
 PrintReceivedTheseCardsText:
 	call EmptyScreenAndDrawTextBox
@@ -458,12 +464,14 @@ PrintReceivedTheseCardsText:
 	ldtx hl, ReceivedTheseCardsFromText
 	jp DrawWideTextBox_PrintText
 
+
 EmptyScreenAndDrawTextBox:
 	call Set_OBJ_8x8
 	call EmptyScreenAndLoadFontDuelAndDeckIcons
 	lb de, 0, 0
 	lb bc, 20, 13
 	jp DrawRegularTextBox
+
 
 Func_b177::
 	ld a, [wGiftCenterChoice]
@@ -487,6 +495,7 @@ Func_b177::
 	dw GiftCenter_ReceiveCard ; GIFT_CENTER_MENU_RECEIVE_CARD
 	dw GiftCenter_SendDeck    ; GIFT_CENTER_MENU_SEND_DECK
 	dw GiftCenter_ReceiveDeck ; GIFT_CENTER_MENU_RECEIVE_DECK
+
 
 HandleDeckSaveMachineMenu:
 	xor a
@@ -514,7 +523,7 @@ HandleDeckSaveMachineMenu:
 	jr c, .wait_input
 	cp $ff
 	ret z ; operation cancelled
-	; get the index of selected deck
+	; get the index of the selected deck
 	ld b, a
 	ld a, [wCardListVisibleOffset]
 	add b
@@ -605,10 +614,12 @@ HandleDeckSaveMachineMenu:
 	textitem 12, 16, CancelText
 	db $ff
 
-; sets the number of cursor positions for deck machine menu,
-; sets the text ID to show given by de
-; and sets DrawDeckMachineScreen as the update function
-; de = text ID
+
+; sets the number of cursor positions for the deck machine menu, sets the ID
+; for the text to print, and sets DrawDeckMachineScreen as the update function
+; preserves bc
+; input:
+;	de = text ID
 InitDeckMachineDrawingParams:
 	ld a, NUM_DECK_MACHINE_SLOTS
 	ld [wCardListNumCursorPositions], a
@@ -626,10 +637,13 @@ InitDeckMachineDrawingParams:
 	ld [wced2], a
 	ret
 
-; handles player input inside the Deck Machine screen
-; the Start button opens up the deck confirmation menu
-; and returns carry
-; otherwise, returns no carry and selection made in a
+
+; handles the player's input inside the Deck Machine screen.
+; the Start button opens up the deck confirmation menu and returns carry.
+; otherwise, returns no carry with the player's selection in a.
+; output:
+;	a = player's selection
+;	carry = set:  if the player used the START button to view a deck list
 HandleDeckMachineSelection:
 .start
 	call DoFrame
@@ -642,7 +656,7 @@ HandleDeckMachineSelection:
 	and START
 	jr z, .start
 
-; start btn
+; START button
 	ld a, [wCardListVisibleOffset]
 	ld [wTempCardListVisibleOffset], a
 	ld b, a
@@ -654,8 +668,8 @@ HandleDeckMachineSelection:
 	or $80
 	ld [wCurDeck], a
 
-	; get pointer to selected deck cards
-	; and if it's an empty deck, jump to start
+	; get pointer to the cards from the selected deck,
+	; and if it's an empty deck, jump back to the start
 	sla c
 	ld b, $0
 	ld hl, wMachineDeckPtrs
@@ -676,7 +690,7 @@ HandleDeckMachineSelection:
 	jr z, .start
 
 ; show deck confirmation screen with deck cards
-; and return carry set
+; and return with the carry flag set
 	ld a, $01
 	call PlaySFXConfirmOrCancel
 	call OpenDeckConfirmationMenu
@@ -701,7 +715,8 @@ HandleDeckMachineSelection:
 	ret
 
 ; handles right and left input for jumping several entries at once
-; returns carry if jump was made
+; output:
+;	carry = set:  if a jump was made
 .HandleListJumps
 	ld a, [wCardListVisibleOffset]
 	ld c, a
@@ -738,8 +753,7 @@ HandleDeckMachineSelection:
 	ld [wCardListVisibleOffset], a
 	cp c
 	jr z, .set_carry
-	; play SFX if jump was made
-	; and update UI
+	; play SFX if jump was made and update UI
 	ld a, SFX_CURSOR
 	call PlaySFX
 	call DrawDeckMachineScreen
@@ -748,8 +762,11 @@ HandleDeckMachineSelection:
 	scf
 	ret
 
-; returns carry if deck corresponding to the
-; entry selected in the Deck Machine menu is empty
+
+; preserves de
+; output:
+;	carry = set:  if the deck corresponding to the entry that was
+;	              selected in the Deck Machine menu is empty
 CheckIfSelectedDeckMachineEntryIsEmpty:
 	ld a, [wSelectedDeckMachineEntry]
 	sla a
@@ -769,6 +786,7 @@ CheckIfSelectedDeckMachineEntryIsEmpty:
 	ret nz ; is valid
 	scf
 	ret ; is empty
+
 
 ClearScreenAndDrawDeckMachineScreen:
 	call Set_OBJ_8x8
@@ -792,7 +810,9 @@ ClearScreenAndDrawDeckMachineScreen:
 	call GetSavedDeckCount
 	jp EnableLCD
 
-; prints wDeckMachineTitleText as title text
+
+; prints wDeckMachineTitleText as the title text
+; preserves bc
 SetDeckMachineTitleText:
 	lb de, 1, 0
 	call InitTextPrinting
@@ -802,7 +822,8 @@ SetDeckMachineTitleText:
 	ld l, a
 	jp ProcessTextFromID
 
-; save all sSavedDecks pointers in wMachineDeckPtrs
+
+; saves all sSavedDecks pointers in wMachineDeckPtrs
 GetSavedDeckPointers:
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	add NUM_DECK_SAVE_MACHINE_SLOTS ; add a is better
@@ -826,6 +847,7 @@ GetSavedDeckPointers:
 	jr nz, .loop_saved_decks
 	ret
 
+
 UpdateDeckMachineScrollArrowsAndEntries:
 	call DrawListScrollArrows
 	jr PrintVisibleDeckMachineEntries
@@ -846,7 +868,7 @@ DrawDeckMachineScreen:
 	ld [hl], $00
 ;	fallthrough
 
-; given the cursor position in the deck machine menu
+; given the cursor position in the deck machine menu,
 ; prints the deck names of all entries that are visible
 PrintVisibleDeckMachineEntries:
 	ld a, [wCardListVisibleOffset]
@@ -868,11 +890,13 @@ PrintVisibleDeckMachineEntries:
 	inc e
 	jr .loop
 
-; prints the deck name of the deck corresponding
-; to index in register a, from wMachineDeckPtrs
-; also checks whether the deck can be built
-; either by dismantling other decks or not,
-; and places the corresponding symbol next to the name
+
+; prints the deck name of the deck corresponding to the wMachineDeckPtrs index in register a,
+; also checks whether the deck can be built, either directly from the player's collection
+; or by dismantling other decks, and places the corresponding symbol next to the name.
+; input:
+;	a = wMachineDeckPtrs index
+;	de = screen coordinates for printing the text
 PrintDeckMachineEntry:
 	ld b, a
 	push bc
@@ -887,7 +911,7 @@ PrintDeckMachineEntry:
 	call ProcessText
 	pop af
 
-; get the deck corresponding to input index
+; get the deck corresponding to the index from input
 ; and append its name to wDefaultText
 	push af
 	sla a
@@ -925,8 +949,8 @@ PrintDeckMachineEntry:
 	ld d, 18
 	call InitTextPrinting
 
-; print the symbol that symbolizes whether the deck can
-; be built, or if another deck has to be dismantled to build it
+; print the symbol that represents whether the deck can be built,
+; or if another deck has to be dismantled to build it
 	ld a, $0 ; no decks dismantled
 	call CheckIfCanBuildSavedDeck
 	pop bc
@@ -992,9 +1016,10 @@ PrintDeckMachineEntry:
 	db "<SPACE><SPACE><SPACE><SPACE><SPACE><SPACE>"
 	done
 
-; outputs in a the number of cards that the player does not own
-; in order to build the deck entry from wMachineDeckPtrs
-; given in register b
+; input:
+;	b = index for wMachineDeckPtrs
+; output:
+;	a = how many cards the player still needs before being able to build the deck
 .GetNumCardsMissingToBuildDeck
 	push bc
 	call SafelySwitchToSRAM0
@@ -1043,8 +1068,9 @@ PrintDeckMachineEntry:
 	ld a, c
 	jp DisableSRAM
 
-; counts how many decks in sSavedDecks are not empty
-; stores value in wNumSavedDecks
+
+; output:
+;	[wNumSavedDecks] & a = number of decks in sSavedDecks that aren't empty
 GetSavedDeckCount:
 	call EnableSRAM
 	ld hl, sSavedDecks
@@ -1066,6 +1092,7 @@ GetSavedDeckCount:
 	ld [wNumSavedDecks], a
 	jp DisableSRAM
 
+
 ; prints "[wNumSavedDecks]/60"
 PrintNumSavedDecks:
 	ld a, [wNumSavedDecks]
@@ -1083,11 +1110,11 @@ PrintNumSavedDecks:
 	ld hl, wDefaultText
 	jp ProcessText
 
-; handles player choice in what deck to save
-; in the Deck Save Machine
-; assumes the slot to save was selected and
-; is stored in wSelectedDeckMachineEntry
-; if operation was successful, return carry
+
+; handles player choice in what deck to save in the Deck Save Machine.
+; assumes the slot to save was selected and is stored in wSelectedDeckMachineEntry.
+; output:
+;	carry = set:  if the deck was successfully saved
 SaveDeckInDeckSaveMachine:
 	ld a, ALL_DECKS
 	call DrawDecksScreen
@@ -1116,7 +1143,8 @@ SaveDeckInDeckSaveMachine:
 
 ; overwrites data in the selected deck in SRAM
 ; with the deck that was chosen, in wCurDeck
-; then returns carry
+; output:
+;	carry = set
 .SaveDeckInSelectedEntry
 	call GetPointerToDeckName
 	call GetSelectedSavedDeckPtr
@@ -1144,6 +1172,16 @@ SaveDeckInDeckSaveMachine:
 	scf
 	ret
 
+DeckMachineSelectionParams:
+	db 1 ; x position
+	db 2 ; y position
+	db 2 ; y spacing
+	db 0 ; x spacing
+	db 5 ; number of entries
+	db SYM_CURSOR_R ; visible cursor tile
+	db SYM_SPACE ; invisible cursor tile
+	dw NULL ; wCardListHandlerFunction
+
 DeckMachineMenuParameters:
 	db 1, 2 ; cursor x, cursor y
 	db 3 ; y displacement between items
@@ -1152,7 +1190,10 @@ DeckMachineMenuParameters:
 	db SYM_SPACE ; tile behind cursor
 	dw NULL ; function pointer if non-0
 
-; outputs in de pointer of saved deck
+
+; preserves af, bc, and hl
+; output:
+;	de = pointer for saved deck
 ; corresponding to index in wSelectedDeckMachineEntry
 GetSelectedSavedDeckPtr:
 	push af
@@ -1170,11 +1211,14 @@ GetSelectedSavedDeckPtr:
 	pop af
 	ret
 
+
 ; checks if it's possible to build saved deck with index b
 ; includes cards from already built decks from flags in a
-; returns carry if cannot build the deck with the given criteria
-; a = DECK_* flags for which decks to include in the collection
-; b = saved deck index
+; input:
+;	a = DECK_* flags for which decks to include in the collection
+;	b = saved deck index
+; output:
+;	carry = set:  if the deck cannot be built with the given criteria
 CheckIfCanBuildSavedDeck:
 	push bc
 	call SafelySwitchToSRAM0
@@ -1193,9 +1237,11 @@ CheckIfCanBuildSavedDeck:
 	add hl, bc
 ;	fallthrough
 
-; returns carry if wTempCardCollection does not
-; have enough cards to build deck pointed by hl
-; hl = pointer to cards of deck to check
+; input:
+;	hl = pointer to the deck list
+; output:
+;	carry = set:  if wTempCardCollection does not have enough cards
+;	              to build the deck from input
 CheckIfHasEnoughCardsToBuildDeck:
 	call EnableSRAM
 	ld de, wTempCardCollection
@@ -1231,8 +1277,10 @@ CheckIfHasEnoughCardsToBuildDeck:
 	or a
 	ret
 
+
 ; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM
-; skips if current SRAM bank is already 0
+; immediately returns if SRAM bank 0 is already the current SRAM bank
+; preserves all registers
 SafelySwitchToSRAM0:
 	push af
 	ldh a, [hBankSRAM]
@@ -1245,8 +1293,10 @@ SafelySwitchToSRAM0:
 	pop af
 	ret
 
+
 ; switches to SRAM bank 1 and stores current SRAM bank in wTempBankSRAM
-; skips if current SRAM bank is already 1
+; immediately returns if SRAM bank 1 is already the current SRAM bank
+; preserves all registers
 SafelySwitchToSRAM1:
 	push af
 	ldh a, [hBankSRAM]
@@ -1259,6 +1309,8 @@ SafelySwitchToSRAM1:
 	pop af
 	ret
 
+
+; preserves all registers
 SafelySwitchToTempSRAMBank:
 	push af
 	push bc
@@ -1273,8 +1325,11 @@ SafelySwitchToTempSRAMBank:
 	pop af
 	ret
 
-; outputs in a the first slot that is empty to build a deck
-; if no empty slot is found, return carry
+
+; preserves bc and de
+; output:
+;	a = first empty deck slot (0-3)
+;	carry = set:  if no empty slot was found
 FindFirstEmptyDeckSlot:
 	ld hl, sDeck1Cards
 	ld a, [hl]
@@ -1311,10 +1366,12 @@ FindFirstEmptyDeckSlot:
 	scf
 	ret
 
-; prompts the player whether to delete selected saved deck
-; if player selects yes, clears memory in SRAM
-; corresponding to that saved deck slot
-; if player selects no, return carry
+
+; prompts the player whether to delete the selected saved deck.
+; if the player selects "Yes", then clear the memory in SRAM
+; corresponding to that saved deck slot.
+; output:
+;	carry = set:  if the player selected "No"
 TryDeleteSavedDeck:
 	ldtx hl, DoYouReallyWishToDeleteText
 	call YesOrNoMenuWithText
@@ -1342,16 +1399,8 @@ TryDeleteSavedDeck:
 	scf
 	ret
 
-DeckMachineSelectionParams:
-	db 1 ; x pos
-	db 2 ; y pos
-	db 2 ; y spacing
-	db 0 ; x spacing
-	db 5 ; num entries
-	db SYM_CURSOR_R ; visible cursor tile
-	db SYM_SPACE ; invisible cursor tile
-	dw NULL ; wCardListHandlerFunction
 
+; preserves de and hl
 DrawListScrollArrows:
 	ld a, [wCardListVisibleOffset]
 	or a
@@ -1381,6 +1430,7 @@ DrawListScrollArrows:
 .got_tile_2
 	lb bc, 19, 11
 	jp WriteByteToBGMap0
+
 
 ; handles the deck menu for when the player
 ; needs to make space for new deck to build
@@ -1452,10 +1502,11 @@ HandleDismantleDeckToMakeSpace:
 	ld a, [wCurDeck]
 	ret
 
-; tries to build the deck in wSelectedDeckMachineEntry
-; will check if can be built with or without dismantling
-; prompts the player in case a deck has to be dismantled
-; or, if it's impossible to build deck, shows missing cards list
+
+; tries to build the deck in wSelectedDeckMachineEntry.
+; will check if can be built with or without dismantling.
+; prompts the player in case a deck has to be dismantled,
+; or, if it's impossible to build the deck, then show the list of missing cards.
 TryBuildDeckMachineDeck:
 	ld a, [wSelectedDeckMachineEntry]
 	ld b, a
@@ -1556,9 +1607,10 @@ TryBuildDeckMachineDeck:
 	ret
 
 ; asks the player for confirmation to dismantle decks
-; needed to build the selected deck from the Deck Save Machine
-; returns carry set if player selected "no"
-; if player selected "yes", dismantle decks
+; needed to build the selected deck from the Deck Save Machine.
+; if the player selected "Yes", then dismantle the decks.
+; output:
+;	carry = set:  if player selected "No"
 .DismantleDecksNeededToBuild
 ; shows Decks screen with the names
 ; of the decks to be dismantled
@@ -1611,7 +1663,8 @@ TryBuildDeckMachineDeck:
 
 ; dismantles built deck given by a
 ; and adds its cards to the collection
-; a = DECK_*_F to dismantle
+; input:
+;	a = DECK_*_F to dismantle
 .DismantleDeck
 	ld l, a
 	ld h, DECK_STRUCT_SIZE
@@ -1626,7 +1679,7 @@ TryBuildDeckMachineDeck:
 	ld a, DECK_STRUCT_SIZE
 	jp ClearNBytesFromHL
 
-; collects cards missing from player's collection
+; collects cards missing from the player's collection
 ; and shows its confirmation list
 .ShowMissingCardList
 ; copy saved deck card from SRAM to wCurDeckCards
@@ -1646,8 +1699,7 @@ TryBuildDeckMachineDeck:
 	call SortCurDeckCardsByID
 	call CreateCurDeckUniqueCardList
 
-; create collection card list, including
-; the cards from all built decks
+; create collection card list, including the cards from all built decks
 	ld a, ALL_DECKS
 	call SafelySwitchToSRAM0
 	call CreateCardCollectionListWithDeckCards
@@ -1701,11 +1753,17 @@ TryBuildDeckMachineDeck:
 	call HandleDeckMissingCardsList
 	jp .set_carry_and_return
 
+
 ; checks if player has enough cards with ID given in register a
-; in the collection to build the deck and, if not, returns
-; carry set and outputs in a the difference
-; a = card ID
-; hl = deck cards
+; in the collection to build the deck and, if not,
+; sets the carry flag and outputs in a the difference
+; preserves bc
+; input:
+;	a = card ID
+;	hl = list of deck cards (e.g. wCurDeckCards)
+; output:
+;	a = number of cards needed to build the deck (only if cannot build)
+;	carry = set:  if the player doesn't have enough cards to build the deck
 .CheckIfCardIsMissing
 	call .GetCardCountFromDeck
 	ld hl, wTempCardCollection
@@ -1721,19 +1779,20 @@ TryBuildDeckMachineDeck:
 	or a
 	ret
 
+; needs more cards than the player has in their in collection
 .not_enough
-; needs more cards than player owns in collection
-; return carry set and the number of cards needed
 	ld e, a
 	ld a, d
 	sub e
-	scf
+	scf ; not necessary since the carry flag is already set
 	ret z
 
-; returns in d the card count of card ID given in register a
-; that is found in the card list in hl
-; a = card ID
-; hl = deck cards
+; preserves af and bc
+; input:
+;	a = card ID
+;	hl = list of deck cards (e.g. wCurDeckCards)
+; output:
+;	d = how many cards with ID from input are in the deck from input
 .GetCardCountFromDeck
 	push af
 	ld e, a
@@ -1750,10 +1809,12 @@ TryBuildDeckMachineDeck:
 	pop af
 	ret
 
-; returns in e the card count of card ID given in register a
-; that is found in the card collection
-; a = card ID
-; hl = card collection
+; preserves af and bc
+; input:
+;	a = card ID
+;	hl = card collection
+; output:
+;	e = how many cards with ID from input are in the player's collection
 .GetCardCountFromCollection
 	push af
 	ld e, a
@@ -1764,6 +1825,7 @@ TryBuildDeckMachineDeck:
 	ld e, a
 	pop af
 	ret
+
 
 PrinterMenu_DeckConfiguration:
 	xor a
@@ -1817,6 +1879,7 @@ PrinterMenu_DeckConfiguration:
 	ld a, [wTempDeckMachineCursorPos]
 	ld [wCardListCursorPos], a
 	jr .start_selection
+
 
 HandleAutoDeckMenu:
 	ld a, [wCurAutoDeckMachine]
@@ -2042,8 +2105,8 @@ HandleAutoDeckMenu:
 	tx AutoMachineText
 	tx LegendaryMachineText
 
-; clears screen, loads the proper tiles
-; prints the Auto Deck title and deck entries
+; clears the screen, loads the proper tiles,
+; prints the Auto Deck title and deck entries,
 ; and creates the auto deck configurations
 .InitAutoDeckMenu
 	call Set_OBJ_8x8
@@ -2098,6 +2161,7 @@ HandleAutoDeckMenu:
 	dec a
 	jr nz, .loop
 	ret
+
 
 GiftCenter_SendDeck:
 	xor a
@@ -2159,6 +2223,7 @@ GiftCenter_SendDeck:
 	call DisableSRAM
 	or a
 	ret
+
 
 GiftCenter_ReceiveDeck:
 	xor a
@@ -2239,12 +2304,12 @@ GiftCenter_ReceiveDeck:
 	xor a
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; prints "X/Y" where X is the current list index
+; prints "X/Y", where X is the current list index
 ; and Y is the total number of saved decks
 ;Func_b568:
 ;	ld a, [wCardListCursorPos]

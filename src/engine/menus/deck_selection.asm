@@ -1,7 +1,11 @@
 INCLUDE "data/glossary_menu_transitions.asm"
 
-; copies DECK_SIZE number of cards from de to hl in SRAM
+
+; copies DECK_SIZE number of cards (60 cards) from de to hl in SRAM
 ; preserves bc
+; input:
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 CopyDeckFromSRAM:
 	push bc
 	call EnableSRAM
@@ -18,6 +22,7 @@ CopyDeckFromSRAM:
 	pop bc
 	ret
 
+
 ; clears some WRAM addresses to act as terminator bytes
 ; to wFilteredCardList and wCurDeckCards
 ; preserves de
@@ -33,7 +38,8 @@ WriteCardListsTerminatorBytes:
 	ld [hl], a ; terminator byte
 	ret
 
-; inits some SRAM addresses
+
+; initializes some SRAM addresses
 ; preserves bc and de
 InitPromotionalCardAndDeckCounterSaveData:
 	call EnableSRAM
@@ -47,12 +53,14 @@ InitPromotionalCardAndDeckCounterSaveData:
 	ld [sUnnamedDeckCounter], a
 	jp DisableSRAM
 
+
 ; loads the Deck icon to v0Tiles2
 LoadDeckIcon:
 	ld hl, DuelOtherGraphics + $29 tiles
 	ld de, v0Tiles1 + $48 tiles
 	ld b, $04
 	jp CopyFontsOrDuelGraphicsTiles
+
 
 ; loads the Deck Box icon gfx to v0Tiles2
 LoadDeckBoxIcon:
@@ -63,6 +71,7 @@ LoadDeckBoxIcon:
 
 DeckBoxGfx:
 	INCBIN "gfx/deck_box.2bpp"
+
 
 ; empties screen, zeroes object positions, loads cursor sprite,
 ; loads tiles for font symbols, card type symbols, and deck/deck box icons,
@@ -84,12 +93,15 @@ EmptyScreenAndLoadFontDuelAndDeckIcons:
 	call SetupText
 	ret
 
-; inits the following deck building params from hl:
-; wMaxNumCardsAllowed
-; wSameNameCardsLimit
-; wIncludeCardsInDeck
-; wDeckConfigurationMenuHandlerFunction
-; wDeckConfigurationMenuTransitionTable
+
+; initializes the following deck building parameters from hl:
+;	wMaxNumCardsAllowed
+;	wSameNameCardsLimit
+;	wIncludeCardsInDeck
+;	wDeckConfigurationMenuHandlerFunction
+;	wDeckConfigurationMenuTransitionTable
+; input:
+;	hl = parameters to use (e.g. DeckBuildingParams)
 InitDeckBuildingParams:
 	ld de, wMaxNumCardsAllowed
 	ld b, $7
@@ -101,12 +113,21 @@ InitDeckBuildingParams:
 	jr nz, .loop
 	ret
 
+
 DeckBuildingParams:
 	db DECK_CONFIG_BUFFER_SIZE ; max number of cards
 	db MAX_NUM_SAME_NAME_CARDS ; max number of same name cards
 	db TRUE ; whether to include deck cards
 	dw HandleDeckConfigurationMenu
 	dw DeckConfigurationMenu_TransitionTable
+
+DeckSelectionMenuParameters:
+	db 3, 2 ; cursor x, cursor y
+	db 3 ; y displacement between items
+	db 4 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
 
 DeckSelectionMenu:
 	ld hl, DeckBuildingParams
@@ -122,7 +143,7 @@ DeckSelectionMenu:
 	call DrawWideTextBox_PrintText
 .loop_input
 	call DoFrame
-	jr c, .init_menu_params ; reinit menu parameters
+	jr c, .init_menu_params ; reinitialize menu parameters
 	call HandleStartButtonInDeckSelectionMenu
 	jr c, .init_menu_params
 	call HandleMenuInput
@@ -232,18 +253,19 @@ DeckSelectionSubMenu:
 	ld a, [wCurDeck]
 	jp DeckSelectionMenu.init_menu_params
 
-DeckSelectionMenuParameters:
-	db 3, 2 ; cursor x, cursor y
-	db 3 ; y displacement between items
-	db 4 ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
+DeckSelectionData:
+	textitem  2, 14, ModifyDeckText
+	textitem 12, 14, SelectDeckText
+	textitem  2, 16, ChangeNameText
+	textitem 12, 16, CancelText
+	db $ff
 
-; handles START button press when in deck selection menu
-; does nothing if START button isn't pressed
-; if a press was handled, returns carry
-; prints "There is no deck here!" if the selected deck is empty
+
+; handles the START button being pressed when in the deck selection menu.
+; does nothing if the START button wasn't pressed.
+; prints "There is no deck here!" if the selected deck is empty.
+; output:
+;	carry = set:  if button press was handled
 HandleStartButtonInDeckSelectionMenu:
 	ldh a, [hDPadHeld]
 	and START
@@ -275,6 +297,7 @@ HandleStartButtonInDeckSelectionMenu:
 	ld a, [wCurDeck]
 	scf
 	ret
+
 
 ; gets current deck's name from user input
 InputCurDeckName:
@@ -367,9 +390,10 @@ InputCurDeckName:
 	ld [hl], e
 	jp DisableSRAM
 
-; handle deck selection sub-menu
-; the option is either "Select Deck" or "Cancel"
-; depending on the cursor Y pos
+
+; handles the deck selection sub-menu
+; the choices are either "Select Deck" or "Cancel",
+; depending on the cursor's Y position
 DeckSelectionSubMenu_SelectOrCancel:
 	ld a, [wCheckMenuCursorYPosition]
 	or a
@@ -421,14 +445,17 @@ DeckSelectionSubMenu_SelectOrCancel:
 	ld a, [wCurDeck]
 	jp DeckSelectionMenu.init_menu_params
 
+
 PrintThereIsNoDeckHereText:
 	ldtx hl, ThereIsNoDeckHereText
 	call DrawWideTextBox_WaitForInput
 	ld a, [wCurDeck]
 	ret
 
-; returns carry if the deck in wCurDeck is not a valid deck
+
 ; preserves de
+; output:
+;	carry = set:  if the deck in wCurDeck is not a valid deck
 CheckIfCurDeckIsValid:
 	ld a, [wCurDeck]
 	ld hl, wDecksValid
@@ -441,15 +468,10 @@ CheckIfCurDeckIsValid:
 	scf
 	ret ; is not valid
 
-DeckSelectionData:
-	textitem  2, 14, ModifyDeckText
-	textitem 12, 14, SelectDeckText
-	textitem  2, 16, ChangeNameText
-	textitem 12, 16, CancelText
-	db $ff
 
-; return, in hl, the pointer to sDeckXName where X is [wCurDeck] + 1
 ; preserves bc and de
+; output:
+;	hl = pointer for sDeckXName, where X is [wCurDeck] + 1
 GetPointerToDeckName:
 	ld a, [wCurDeck]
 	ld h, a
@@ -461,8 +483,10 @@ GetPointerToDeckName:
 	pop de
 	ret
 
-; return, in hl, the pointer to sDeckXCards where X is [wCurDeck] + 1
+
 ; preserves af, bc, and de
+; output:
+;	hl = pointer for sDeckXCards, where X is [wCurDeck] + 1
 GetPointerToDeckCards:
 	push af
 	ld a, [wCurDeck]
@@ -476,6 +500,7 @@ GetPointerToDeckCards:
 	pop af
 	ret
 
+
 ; preserves all registers except af
 ResetCheckMenuCursorPositionAndBlink:
 	xor a
@@ -484,13 +509,14 @@ ResetCheckMenuCursorPositionAndBlink:
 	ld [wCheckMenuCursorBlinkCounter], a
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; write to $d00a the decimal representation (number characters)
-; of the value in hl
+; writes to $d00a the decimal representation (symbol font characters) of the value in hl
+; input:
+;	hl = number to convert to symbol font
 ;Func_9001:
 ;	ld de, $d00a
 ;	ld bc, -100

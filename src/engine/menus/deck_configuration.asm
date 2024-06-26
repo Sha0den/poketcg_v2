@@ -3,6 +3,8 @@
 ; entry in sCardCollection and decrements its count
 ; assumes SRAM is enabled
 ; preserves hl
+; input:
+;	hl = list of cards in a deck (e.g. wCurDeckCards)
 DecrementDeckCardsInCollection:
 	push hl
 	ld b, $0
@@ -23,12 +25,11 @@ DecrementDeckCardsInCollection:
 	pop hl
 	ret
 
-; like AddDeckToCollection, but takes care to
-; check if increasing the collection count would
-; go over MAX_AMOUNT_OF_CARD and caps it
-; this is because it's used within Gift Center,
-; so we cannot assume that the deck configuration
-; won't make it go over MAX_AMOUNT_OF_CARD
+
+; like AddDeckToCollection, but takes care to check if increasing
+; the collection count would go over MAX_AMOUNT_OF_CARD and caps it.
+; this is because it's used within Gift Center, so we cannot assume that
+; the deck configuration won't make it go over MAX_AMOUNT_OF_CARD.
 ; preserves hl
 ; input:
 ;	hl = deck configuration with cards to add
@@ -73,11 +74,12 @@ AddGiftCenterDeckCardsToCollection:
 	pop hl
 	ret
 
-; adds all cards in deck in hl to player's collection
+
+; adds all cards in the deck at hl to the player's collection
 ; assumes SRAM is enabled
 ; preserves hl
 ; input:
-;	hl = pointer to deck cards
+;	hl = pointer to the deck list
 AddDeckToCollection:
 	push hl
 	ld b, $0
@@ -97,6 +99,7 @@ AddDeckToCollection:
 .done
 	pop hl
 	ret
+
 
 ; draws the screen which shows the player's current deck configurations
 ; input:
@@ -227,6 +230,7 @@ DeckNameMenuData:
 	textitem 4, 11, Deck4Text
 	db $ff
 
+
 ; copies text from hl to wDefaultText with " deck" appended to the end
 ; input:
 ;	hl = pointer to deck name
@@ -245,6 +249,9 @@ CopyDeckName:
 
 ; copies a $00-terminated list from hl to de
 ; preserves bc
+; input:
+;	hl = list to copy
+;	de = where to copy
 CopyListFromHLToDE:
 	ld a, [hli]
 	ld [de], a
@@ -254,18 +261,19 @@ CopyListFromHLToDE:
 	jr CopyListFromHLToDE
 
 ; same as CopyListFromHLToDE, but for SRAM copying
-; preserves bc
 CopyListFromHLToDEInSRAM:
 	call EnableSRAM
 	call CopyListFromHLToDE
 	jp DisableSRAM
 
-; appends text in hl to wDefaultText and adds " Deck" to the end before printing
-; if it's an empty deck, then print "No Deck" instead
-; returns carry if it's an empty deck
+
+; appends text in hl to wDefaultText and adds " Deck" to the end before printing.
+; if it's an empty deck, then print "No Deck" instead.
 ; input:
 ;	hl = deck name (sDeck1Name ~ sDeck4Name)
-;	de = coordinates to print text
+;	de = screen coordinates for printing the deck name
+; output:
+;	carry = set:  if the deck has no cards
 PrintDeckName:
 	push hl
 	call CheckIfDeckHasCards
@@ -306,10 +314,11 @@ DeckNameSuffix:
 
 ; appends text in hl to wDefaultText and adds " Deck" to the end before printing
 ; uses spaces to overwrite previously written deck names
-; returns carry if the deck has no cards
 ; input:
 ;	hl = text to append
-;	de = coordinates to print text
+;	de = screen coordinates for printing the text
+; output:
+;	carry = set:  if the deck has no cards
 PrintDeckNameForDeckMachine:
 	push hl
 	call CheckIfDeckHasCards
@@ -351,12 +360,14 @@ PrintDeckNameForDeckMachine:
 	db " Deck                       "
 .text_end
 
-; returns carry if the deck in hl is not valid, i.e. it has no cards
+
 ; alternatively, the direct address of the cards can be used,
 ; since DECK_SIZE > DECK_NAME_SIZE
 ; preserves de
 ; input:
-;	hl = deck name (sDeck#Name) or deck cards (sDeck#Cards)
+;	hl = deck name (sDeck*Name) or deck cards (sDeck*Cards)
+; output:
+;	carry = set:  if the deck in hl is not valid, i.e. it has no cards
 CheckIfDeckHasCards:
 	ld bc, DECK_NAME_SIZE
 	add hl, bc
@@ -372,8 +383,9 @@ CheckIfDeckHasCards:
 	or a
 	ret
 
+
 ; input:
-;	de = coordinates to draw rectangle
+;	de = screen coordinates for drawing the icon
 DrawDeckIcon:
 	ld a, $c8 ; location of first deck tile
 	lb hl, 1, 2
@@ -388,6 +400,7 @@ DrawDeckIcon:
 	call BankswitchVRAM1
 	call FillRectangle
 	jp BankswitchVRAM0
+
 
 ; calculates the y coordinate of the currently selected deck
 ; and draws a deck box icon at that position
@@ -404,7 +417,7 @@ DrawDeckBoxTileOnCurDeck:
 ;	fallthrough
 
 ; input:
-;	de = coordinates to draw rectangle
+;	de = screen coordinates for drawing the icon
 DrawDeckBoxTileAtDE:
 	ld a, $cc ; location of first deck box tile
 	lb hl, 1, 2
@@ -420,10 +433,15 @@ DrawDeckBoxTileAtDE:
 	call FillRectangle
 	jp BankswitchVRAM0
 
-; handles user input when selecting a card filter
-; when building a deck configuration
-; the handling of selecting cards from the list
-; to add to or remove from the deck is done in HandleDeckCardSelectionList
+
+ChangeDeckName:
+	call InputCurDeckName
+	add sp, $2
+	jr HandleDeckBuildScreen.skip_count
+
+; handles user input when selecting a card filter while building a deck.
+; the handling of selecting cards from the list, to add to or remove cards
+; from the deck, is done in HandleDeckCardSelectionList.
 HandleDeckBuildScreen:
 	call WriteCardListsTerminatorBytes
 	call CountNumberOfCardsForEachCardType
@@ -492,9 +510,8 @@ HandleDeckBuildScreen:
 	ld hl, wNumVisibleCardListEntries
 	cp [hl]
 	jr nc, .ok
-	; if total number of entries is greater than or equal to
-	; the number of visible entries, then set number of cursor positions
-	; as number of visible entries
+	; if total number of entries is greater than or equal to the number of visible entries,
+	; then set the number of cursor positions as the number of visible entries
 	ld [wCardListNumCursorPositions], a
 .ok
 	ld hl, PrintDeckBuildingCardList
@@ -514,8 +531,7 @@ HandleDeckBuildScreen:
 	ld a, $01
 	call PlaySFXConfirmOrCancel
 
-	; temporarily store current cursor position
-	; to retrieve it later
+	; temporarily store the current cursor position (to retrieve it later)
 	ld a, [wCardListCursorPos]
 	ld [wTempFilteredCardListNumCursorPositions], a
 	call ConfirmDeckConfiguration
@@ -537,8 +553,8 @@ HandleDeckBuildScreen:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 
-	; set wFilteredCardList as current card list
-	; and show card page screen
+	; set wFilteredCardList as the current card list
+	; and show the card page screen
 	ld de, wFilteredCardList
 	ld hl, wCurCardListPtr
 	ld [hl], e
@@ -575,7 +591,27 @@ HandleDeckBuildScreen:
 	ld [wTempCardTypeFilter], a
 	jp .wait_input
 
-; preserves bc
+FiltersCardSelectionParams:
+	db 1 ; x position
+	db 1 ; y position
+	db 0 ; y spacing
+	db 2 ; x spacing
+	db NUM_FILTERS ; number of entries
+	db SYM_CURSOR_D ; visible cursor tile
+	db SYM_SPACE ; invisible cursor tile
+	dw NULL ; wCardListHandlerFunction
+
+FilteredCardListSelectionParams:
+	db 0 ; x position
+	db 7 ; y position
+	db 2 ; y spacing
+	db 0 ; x spacing
+	db NUM_FILTERED_LIST_VISIBLE_CARDS ; number of entries
+	db SYM_CURSOR_R ; visible cursor tile
+	db SYM_SPACE ; invisible cursor tile
+	dw NULL ; wCardListHandlerFunction
+
+
 OpenDeckConfigurationMenu:
 	xor a
 	ld [wYourOrOppPlayAreaCurPosition], a
@@ -596,6 +632,7 @@ OpenDeckConfigurationMenu:
 	ld h, [hl]
 	ld l, a
 	jp hl
+
 
 HandleDeckConfigurationMenu:
 	lb de, 0, 0
@@ -639,6 +676,33 @@ HandleDeckConfigurationMenu:
 	dw DismantleDeck            ; Dismantle
 	dw CancelDeckModifications  ; Cancel
 
+DeckBuildMenuData:
+	; x, y, text ID
+	textitem  2, 2, ConfirmText
+	textitem  9, 2, ModifyText
+	textitem 16, 2, NameText
+	textitem  2, 4, SaveText
+	textitem  9, 4, DismantleText
+	textitem 16, 4, CancelText
+	db $ff
+
+; related to wMenuInputTablePointer
+; with this table, the cursor moves into the proper location based on the input.
+; x coordinate, y coordinate, , D-pad up, D-pad down, D-pad right, D-pad left
+DeckConfigurationMenu_TransitionTable:
+	cursor_transition $10, $20, $00, $03, $03, $01, $02 ; Confirm
+	cursor_transition $48, $20, $00, $04, $04, $02, $00 ; Modify
+	cursor_transition $80, $20, $00, $05, $05, $00, $01 ; Name
+	cursor_transition $10, $30, $00, $00, $00, $04, $05 ; Save
+	cursor_transition $48, $30, $00, $01, $01, $05, $03 ; Dismantle
+	cursor_transition $80, $30, $00, $02, $02, $03, $04 ; Cancel
+
+
+ModifyDeckConfiguration:
+	add sp, $2
+	jr HandleDeckConfigurationMenu.draw_icons
+
+
 ConfirmDeckConfiguration:
 	ld hl, wCardListVisibleOffset
 	ld a, [hl]
@@ -661,11 +725,9 @@ ConfirmDeckConfiguration:
 	ld [wCardListCursorPos], a
 	ret
 
-ModifyDeckConfiguration:
-	add sp, $2
-	jr HandleDeckConfigurationMenu.draw_icons
 
-; returns carry if the player chose to go back
+; output:
+;	carry =set:  if the player chose to go back
 CancelDeckModifications:
 ; if the deck wasn't changed, then allow immediate cancel
 	call CheckIfCurrentDeckWasChanged
@@ -678,6 +740,7 @@ CancelDeckModifications:
 	add sp, $2
 	or a
 	ret
+
 
 SaveDeckConfiguration:
 ; handle deck configuration size
@@ -759,13 +822,9 @@ DismantleDeck:
 	add sp, $2
 	ret
 
-ChangeDeckName:
-	call InputCurDeckName
-	add sp, $2
-	jp HandleDeckBuildScreen.skip_count
 
-; returns carry if the current deck was changed
-; either through its card configuration or its name
+; output:
+;	carry = set:  if the current deck was changed (name or configuration)
 CheckIfCurrentDeckWasChanged:
 	ld a, [wTotalCardCount]
 	or a
@@ -838,8 +897,10 @@ CheckIfCurrentDeckWasChanged:
 	scf
 	ret
 
-; returns carry if the only valid deck is the current deck
+
 ; preserves de
+; output:
+;	carry = set:  if the only valid deck is the current deck
 CheckIfHasOtherValidDecks:
 	ld hl, wDecksValid
 	lb bc, 0, 0
@@ -874,10 +935,12 @@ CheckIfHasOtherValidDecks:
 	scf
 	ret
 
-; returns carry if there's a Basic Pokemon in the list of cards
+
 ; preserves bc
 ; input:
 ;	hl = list of cards to check
+; output:
+;	carry = set:  if there's a Basic Pokemon in the list of cards
 CheckCardListForBasicPokemonUsingCardID:
 	ld a, [hli]
 	ld e, a
@@ -894,36 +957,6 @@ CheckCardListForBasicPokemonUsingCardID:
 	scf
 	ret
 
-FiltersCardSelectionParams:
-	db 1 ; x pos
-	db 1 ; y pos
-	db 0 ; y spacing
-	db 2 ; x spacing
-	db NUM_FILTERS ; num entries
-	db SYM_CURSOR_D ; visible cursor tile
-	db SYM_SPACE ; invisible cursor tile
-	dw NULL ; wCardListHandlerFunction
-
-FilteredCardListSelectionParams:
-	db 0 ; x pos
-	db 7 ; y pos
-	db 2 ; y spacing
-	db 0 ; x spacing
-	db NUM_FILTERED_LIST_VISIBLE_CARDS ; num entries
-	db SYM_CURSOR_R ; visible cursor tile
-	db SYM_SPACE ; invisible cursor tile
-	dw NULL ; wCardListHandlerFunction
-
-; related to wMenuInputTablePointer
-; with this table, the cursor moves into the proper location based on the input.
-; x coordinate, y coordinate, , D-pad up, D-pad down, D-pad right, D-pad left
-DeckConfigurationMenu_TransitionTable:
-	cursor_transition $10, $20, $00, $03, $03, $01, $02 ; Confirm
-	cursor_transition $48, $20, $00, $04, $04, $02, $00 ; Modify
-	cursor_transition $80, $20, $00, $05, $05, $00, $01 ; Name
-	cursor_transition $10, $30, $00, $00, $00, $04, $05 ; Save
-	cursor_transition $48, $30, $00, $01, $01, $05, $03 ; Dismantle
-	cursor_transition $80, $30, $00, $02, $02, $03, $04 ; Cancel
 
 ; draws each card type icon in a line
 ; the respective card counts underneath each icon
@@ -943,6 +976,7 @@ DrawCardTypeIconsAndPrintCardCounts:
 	call PrintSlashSixty
 	jp EnableLCD
 
+
 ; saves the count of each type of card that is in wCurDeckCards
 ; stores these values in wCardFilterCounts
 CountNumberOfCardsForEachCardType:
@@ -957,18 +991,11 @@ CountNumberOfCardsForEachCardType:
 	ld [hli], a
 	jr .loop
 
-DeckBuildMenuData:
-	; x, y, text id
-	textitem  2, 2, ConfirmText
-	textitem  9, 2, ModifyText
-	textitem 16, 2, NameText
-	textitem  2, 4, SaveText
-	textitem  9, 4, DismantleText
-	textitem 16, 4, CancelText
-	db $ff
 
-; prints "/60" to the coordinates given in de
+; prints "/60" at the coordinates given in de
 ; preserves bc and de
+; input:
+;	de = screen coordinates for printing the text
 PrintSlashSixty:
 	ld hl, wDefaultText
 	ld a, TX_SYMBOL
@@ -988,6 +1015,7 @@ PrintSlashSixty:
 	ld hl, wDefaultText
 	jp ProcessText
 
+
 ; creates two separate lists given the card type in register a
 ; if a card matches the card type given, then it's added to wFilteredCardList
 ; if a card has been owned by the player, and its card count is at least 1,
@@ -995,6 +1023,8 @@ PrintSlashSixty:
 ; then its collection count is also added to wOwnedCardsCountList
 ; if input a is $ff, then all card types are included
 ; preserves all registers
+; input:
+;	a = FILTER_* constant
 CreateFilteredCardList:
 	push af
 	push bc
@@ -1083,9 +1113,12 @@ CreateFilteredCardList:
 	pop af
 	ret
 
-; returns carry if card ID in register e is not
-; found in any of the decks saved in SRAM
+
 ; preserves af, de, and hl
+; input:
+;	e = card ID
+; output:
+;	carry = set:  if the given card was not found in any of the saved decks
 IsCardInAnyDeck:
 	push af
 	push hl
@@ -1111,8 +1144,11 @@ IsCardInAnyDeck:
 	or a
 	ret
 
-; returns carry if input card ID in register e
-; is not found in deck given by hl
+; input:
+;	e = card ID
+;	hl = deck to look through (sDeck*Cards)
+; output:
+;	carry = set:  if the given card was not found in the given deck
 .FindCardInDeck
 	call EnableSRAM
 	ld b, DECK_SIZE
@@ -1130,6 +1166,7 @@ IsCardInAnyDeck:
 	call DisableSRAM
 	or a
 	ret
+
 
 ; preserves all registers
 ; input:
@@ -1150,8 +1187,12 @@ ClearNBytesFromHL:
 	pop af
 	ret
 
-; returns the number of times that card e appears in wCurDeckCards
-; preserves bc
+
+; preserves bc and hl
+; input:
+;	e = card ID
+; output:
+;	a & d = number of cards in wCurDeckCards with the ID from input
 GetCountOfCardInCurDeck:
 	push hl
 	ld hl, wCurDeckCards
@@ -1169,11 +1210,15 @@ GetCountOfCardInCurDeck:
 	pop hl
 	ret
 
-; returns total count of card ID e
-; looks it up in wFilteredCardList
-; then uses the index to retrieve the count
-; value from wOwnedCardsCountList
+
+; finds out how many copies the player owns of a given card.
+; looks it up in wFilteredCardList, then uses the index
+; to retrieve the total value from wOwnedCardsCountList.
 ; preserves bc and hl
+; input:
+;	e = card ID
+; output:
+;	a = number of cards owned by the player matching the card ID from input
 GetOwnedCardCount:
 	push hl
 	ld hl, wFilteredCardList
@@ -1199,11 +1244,13 @@ GetOwnedCardCount:
 	pop hl
 	ret
 
+
 ; appends text "X/Y", where X is the number of included cards
 ; and Y is the total number of cards in storage of a given card ID
 ; preserves all registers
 ; input:
 ;	e = card ID
+;	hl = end of text string (in wDefaultText)
 AppendOwnedCardCountAndStorageCountNumbers:
 	push af
 	push bc
@@ -1234,12 +1281,13 @@ AppendOwnedCardCountAndStorageCountNumbers:
 	pop af
 	ret
 
+
 ; determines the ones and tens digits in a for printing
 ; the ones place is added $20 (SYM_0) so that it maps to a numerical character
 ; if the tens is 0, it maps to an empty character
 ; preserves all registers
 ; input:
-;	a = value to calculate digits
+;	a = number to convert to symbol font
 CalculateOnesAndTensDigits:
 	push af
 	push bc
@@ -1277,6 +1325,8 @@ CalculateOnesAndTensDigits:
 ; converts value in register a to numerical symbols for ProcessText
 ; places the symbols in hl
 ; preserves de
+; input:
+;	a = number to convert to symbol font
 ConvertToNumericalDigits:
 	call CalculateOnesAndTensDigits
 	push hl
@@ -1294,14 +1344,15 @@ ConvertToNumericalDigits:
 	ld [hli], a
 	ret
 
+
 ; counts the number of cards in wCurDeckCards
-; that are the same type as input in register a
-; if input is $20, counts all energy cards instead
+; that are the same type as the input in register a
+; if input is $20, counts all Energy cards instead
 ; preserves de and hl
 ; input:
-;	a = card type
+;	a = card type (FILTER_* constant)
 ; output:
-;	a = number of cards of same type
+;	a = number of cards with the same type
 CountNumberOfCardsOfType:
 	push de
 	push hl
@@ -1320,9 +1371,9 @@ CountNumberOfCardsOfType:
 	or a
 	jr z, .done ; end of card list
 
-; get card type and compare it with input type
-; if input is FILTER_ENERGY, run a separate comparison
-; if it's the same type, increase the count
+; gets card type and compares it with the type from input.
+; if it's the same type, then increase the count.
+; if the input was FILTER_ENERGY, then run a separate comparison.
 	ld e, a
 	call GetCardType
 	jr c, .done
@@ -1338,7 +1389,7 @@ CountNumberOfCardsOfType:
 	jr nz, .loop_cards
 	jr .incr_count
 
-; counts all energy cards as the same
+; counts all Energy cards as the same
 .check_energy
 	ld a, l
 	pop hl
@@ -1353,6 +1404,7 @@ CountNumberOfCardsOfType:
 	pop hl
 	pop de
 	ret
+
 
 ; prints the card count of each individual card type
 ; assumes CountNumberOfCardsForEachCardType was already called
@@ -1380,11 +1432,12 @@ PrintCardTypeCounts:
 	ld hl, wDefaultText
 	jp ProcessText
 
-; prints the list of cards, applying the filter from register a
-; the counts of each card displayed is taken from wCurDeck
+
+; prints the list of cards, applying the filter from register a.
+; the counts of each card displayed is taken from wCurDeck.
 ; preserves af
 ; input:
-;	a = card type filter
+;	a = index for CardTypeFilters
 PrintFilteredCardList:
 	push af
 	ld hl, CardTypeFilters
@@ -1435,12 +1488,14 @@ CardTypeFilters:
 	db FILTER_COLORLESS
 	db FILTER_TRAINER
 	db FILTER_ENERGY
-	db -1 ; end of list
+	db $ff ; end of list
 
-; counts all the cards from each card type
-; (stored in wCardFilterCounts) and store it in wTotalCardCount
-; also prints it in coordinates de
+
+; counts all the cards from each card type (stored in wCardFilterCounts)
+; and store it in wTotalCardCount, then print it at de
 ; preserves de
+; input:
+;	de = screen coordinates for printing the count
 PrintTotalCardCount:
 	push de
 	ld bc, $0
@@ -1465,17 +1520,18 @@ PrintTotalCardCount:
 	ld hl, wDefaultText
 	jp ProcessText
 
+
 ; prints the name, level and storage count of the cards
-; that are visible in the list window in the form: CARD NAME/LEVEL X/Y
-; where X is the current count of that card
-; and Y is the storage count of that card
+; that are visible in the list window in the form: CARD NAME/LEVEL X/Y,
+; where X is the current count of that card and Y is its storage count
+; preserves bc
 PrintDeckBuildingCardList:
 	push bc
 	ld hl, wCardListCoords
 	ld e, [hl]
 	inc hl
 	ld d, [hl]
-	ld b, 19 ; x coord
+	ld b, 19 ; x coordinate
 	ld c, e
 	dec c
 	ld a, [wCardListVisibleOffset]
@@ -1553,7 +1609,7 @@ PrintDeckBuildingCardList:
 	ld [wUnableToScrollDown], a
 	ld a, SYM_SPACE
 .draw_cursor
-	ld b, 19 ; x coord
+	ld b, 19 ; x coordinate
 	ld c, e
 	dec c
 	dec c
@@ -1585,6 +1641,7 @@ Text_9a36:
 	db "<SPACE>"
 	done
 
+
 ; writes the card ID in register e to wVisibleListCardIDs
 ; given its position in the list in register b
 ; preserves all registers
@@ -1608,15 +1665,18 @@ AddCardIDToVisibleList:
 	pop af
 	ret
 
+
 ; copies data from hl to:
-; wCardListCursorXPos
-; wCardListCursorYPos
-; wCardListYSpacing
-; wCardListXSpacing
-; wCardListNumCursorPositions
-; wVisibleCursorTile
-; wInvisibleCursorTile
-; wCardListHandlerFunction
+;	wCardListCursorXPos
+;	wCardListCursorYPos
+;	wCardListYSpacing
+;	wCardListXSpacing
+;	wCardListNumCursorPositions
+;	wVisibleCursorTile
+;	wInvisibleCursorTile
+;	wCardListHandlerFunction
+; input:
+;	hl = parameters to use
 InitCardSelectionParams:
 	ld [wCardListCursorPos], a
 	ldh [hffb3], a
@@ -1631,6 +1691,7 @@ InitCardSelectionParams:
 	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
 	ret
+
 
 HandleCardSelectionInput:
 	xor a ; FALSE
@@ -1649,7 +1710,7 @@ HandleCardSelectionInput:
 	dec a
 	bit 7, a
 	jr z, .got_cursor_pos
-	; if underflow, set to max cursor pos
+	; if underflow, set to max cursor position
 	ld a, [wCardListNumCursorPositions]
 	dec a
 	jr .got_cursor_pos
@@ -1659,7 +1720,7 @@ HandleCardSelectionInput:
 	inc a
 	cp c
 	jr c, .got_cursor_pos
-	; if over max pos, set to pos 0
+	; if over the max position, set to position 0
 	xor a
 .got_cursor_pos
 	push af
@@ -1689,6 +1750,7 @@ HandleCardSelectionInput:
 ; output:
 ;	a = selection
 ;	e = cursor position
+;	carry = set
 ConfirmSelectionAndReturnCarry:
 	call DrawHorizontalListCursor_Visible
 	ld a, $01
@@ -1698,6 +1760,7 @@ ConfirmSelectionAndReturnCarry:
 	ldh a, [hffb3]
 	scf
 	ret
+
 
 HandleCardSelectionCursorBlink:
 	ld a, [wMenuInputSFX]
@@ -1713,6 +1776,7 @@ HandleCardSelectionCursorBlink:
 	ld a, [wVisibleCursorTile]
 	bit 4, [hl]
 	jr z, DrawHorizontalListCursor
+;	fallthrough
 
 DrawHorizontalListCursor_Invisible:
 	ld a, [wInvisibleCursorTile]
@@ -1745,10 +1809,11 @@ DrawHorizontalListCursor_Visible:
 	ld a, [wVisibleCursorTile]
 	jr DrawHorizontalListCursor
 
+
 ; handles user input when selecting cards to add to a deck configuration
-; returns carry if a selection was made (either selected card or cancelled)
 ; output:
 ;	a = list index of selection ($ff if operation was cancelled)
+;	carry = set:  if a selection was made (either selected card or cancelled)
 HandleDeckCardSelectionList:
 	xor a ; FALSE
 	ld [wMenuInputSFX], a
@@ -1912,7 +1977,7 @@ DrawListCursor:
 	ld a, l
 	ld hl, wCardListCursorXPos
 	add [hl]
-	ld b, a ; x coord
+	ld b, a ; x coordinate
 	ld a, [wCardListYSpacing]
 	ld l, a
 	ld a, [wCardListCursorPos]
@@ -1921,7 +1986,7 @@ DrawListCursor:
 	ld a, l
 	ld hl, wCardListCursorYPos
 	add [hl]
-	ld c, a ; y coord
+	ld c, a ; y coordinate
 	ld a, e
 	call WriteByteToBGMap0
 	or a
@@ -1930,6 +1995,7 @@ DrawListCursor:
 DrawListCursor_Visible:
 	ld a, [wVisibleCursorTile]
 	jr DrawListCursor
+
 
 OpenCardPageFromCardList:
 ; get the card index that is selected and open its card page
@@ -2039,15 +2105,17 @@ OpenCardPageFromCardList:
 	ld [wTempCardListCursorPos], a
 	ret
 
-; tries to add card ID in register e to wCurDeckCards
-; fails to add card if one of the following conditions are met:
+
+; tries to add the card with ID in register e to wCurDeckCards
+; fails to add the card if one of the following conditions are met:
 ;	- total cards are equal to wMaxNumCardsAllowed
 ;	- cards with the same name as it reached the allowed limit
 ;	- player doesn't own more copies in the collection
-; returns carry if it fails to add the card
 ; otherwise, writes card ID to the first empty slot in wCurDeckCards
 ; input:
 ;	e = card ID
+; output:
+;	carry = set:  if the card was not added to the deck
 TryAddCardToDeck:
 	ld a, [wMaxNumCardsAllowed]
 	ld d, a
@@ -2098,6 +2166,8 @@ TryAddCardToDeck:
 
 ; finds first empty slot in wCurDeckCards
 ; then writes the value in e to it
+; input:
+;	e = ID of the card to add to the deck
 .AddCardToCurDeck
 	ld hl, wCurDeckCards
 .loop
@@ -2113,10 +2183,11 @@ TryAddCardToDeck:
 	ld [hl], a
 	ret
 
-; returns carry if the card ID in e cannot be added to the current deck
-; because the maximum number of cards with that name have already been added
 ; input:
-;	e = card id
+;	e = ID of the card to check
+; output:
+;	carry = set:  if the card with ID from input could not be added to the current deck
+;	              because the max number of cards with that name have already been added
 .CheckIfCanAddCardWithSameName
 	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
@@ -2166,8 +2237,9 @@ TryAddCardToDeck:
 	or a
 	ret
 
+
 ; gets the element in wVisibleListCardIDs
-; corresponding to index wCardListCursorPos
+; corresponding to the index in wCardListCursorPos
 ; preserves bc
 GetSelectedVisibleCardID:
 	ld hl, wVisibleListCardIDs
@@ -2178,7 +2250,8 @@ GetSelectedVisibleCardID:
 	ld e, [hl]
 	ret
 
-; adds card in register e to deck configuration
+
+; adds the card in register e to the deck configuration
 ; and updates the values shown for its count in the card selection list
 ; input:
 ;	e = card ID
@@ -2193,8 +2266,8 @@ AddCardToDeckAndUpdateCount:
 	call GetCountOfCardInCurDeck
 ;	fallthrough
 
-; appends the digits of value in register a to wDefaultText
-; then prints it in cursor's Y position
+; appends the digits of the value in register a to wDefaultText
+; then prints it in the cursor's Y position
 ; input:
 ;	a = value to convert to numerical digits
 PrintNumberValueInCursorYPos:
@@ -2215,7 +2288,7 @@ PrintNumberValueInCursorYPos:
 	ld hl, wDefaultText
 	jp ProcessText
 
-; removes card in register e from deck configuration
+; removes the card in register e from the deck configuration
 ; and updates the values shown for its count in the card selection list
 ; input:
 ;	e = card ID
@@ -2230,10 +2303,11 @@ RemoveCardFromDeckAndUpdateCount:
 	call GetCountOfCardInCurDeck
 	jr PrintNumberValueInCursorYPos
 
+
 ; removes the selected card from wCurDeckCards
 ; preserves de
 ; input:
-;	e = card ID
+;	e = ID of the card to remove from the deck
 RemoveCardFromDeck:
 	push de
 	call GetCountOfCardInCurDeck
@@ -2254,8 +2328,9 @@ RemoveCardFromDeck:
 	scf
 	ret
 
-; remove first card instance of card ID in e
-; and shift all elements up by one
+; removes the first card matching the ID in e and shifts all elements up by one
+; input:
+;	e = ID of the card to remove
 .RemoveCard
 	ld hl, wCurDeckCards
 .loop_1
@@ -2279,6 +2354,7 @@ RemoveCardFromDeck:
 	ld [bc], a
 	ret
 
+
 UpdateConfirmationCardScreen:
 	ld hl, hffb0
 	ld [hl], $01
@@ -2287,6 +2363,10 @@ UpdateConfirmationCardScreen:
 	ld [hl], $00
 	jp PrintConfirmationCardList
 
+
+; input:
+;	de = pointer for sDeckXCards, where X is [wCurDeck] + 1
+;	hl = pointer for sDeckXName, where X is [wCurDeck] + 1
 OpenDeckConfirmationMenu:
 ; copy deck name
 	push de
@@ -2313,7 +2393,7 @@ HandleDeckConfirmationMenu:
 	or a
 	jp z, ShowDeckInfoHeaderAndWaitForBButton
 
-; create list of all unique cards
+; create a list of all unique cards
 	call SortCurDeckCardsByID
 	call CreateCurDeckUniqueCardList
 
@@ -2357,8 +2437,8 @@ HandleDeckConfirmationMenu:
 	ld a, [wCardListCursorPos]
 	ld [wced7], a
 
-	; set wOwnedCardsCountList as current card list
-	; and show card page screen
+	; set wOwnedCardsCountList as the current card list
+	; and show the card page screen
 	ld de, wOwnedCardsCountList
 	ld hl, wCurCardListPtr
 	ld [hl], e
@@ -2374,19 +2454,21 @@ HandleDeckConfirmationMenu:
 	jr .selected_card
 
 .CardSelectionParams
-	db 0 ; x pos
-	db 5 ; y pos
+	db 0 ; x position
+	db 5 ; y position
 	db 2 ; y spacing
 	db 0 ; x spacing
-	db 7 ; num entries
+	db 7 ; number of entries
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
 
+
 ; handles pressing left/right in card lists
 ; scrolls up/down a number of wCardListNumCursorPositions entries
-; returns carry if scrolling occurred
 ; preserves hl
+; output:
+;	carry = set:  if scrolling occurred
 HandleLeftRightInCardList:
 	ld a, [wCardListNumCursorPositions]
 	ld d, a
@@ -2432,10 +2514,12 @@ HandleLeftRightInCardList:
 	scf
 	ret
 
+
 ; handles scrolling up and down with the SELECT button
 ; in this case, the cursor position goes up/down
 ; by wCardListNumCursorPositions entries respectively
-; returns carry if scrolling occurred
+; output:
+;	carry = set:  if scrolling occurred
 HandleSelectUpAndDownInList:
 	ld a, [wCardListNumCursorPositions]
 	ld d, a
@@ -2481,6 +2565,7 @@ HandleSelectUpAndDownInList:
 	scf
 	ret
 
+
 ; simply draws the deck info header
 ; then awaits a B button press to exit
 ShowDeckInfoHeaderAndWaitForBButton:
@@ -2493,26 +2578,6 @@ ShowDeckInfoHeaderAndWaitForBButton:
 	ld a, $ff
 	jp PlaySFXConfirmOrCancel
 
-; this function is no longer referenced
-; counts all values stored in wCardFilterCounts
-; if the total count is 0, then prints "No cards chosen."
-;TallyCardsInCardFilterLists:
-;	lb bc, 0, 0
-;	ld hl, wCardFilterCounts
-;.loop
-;	ld a, [hli]
-;	add b
-;	ld b, a
-;	inc c
-;	ld a, NUM_FILTERS
-;	cp c
-;	jr nz, .loop
-;	ld a, b
-;	or a
-;	ret nz
-;	lb de, 11, 1
-;	ldtx hl, NoCardsChosenText
-;	jp InitTextPrinting_ProcessTextFromID
 
 ; draws a box at the top of the screen with wCurDeck's name and card count
 ; also draws a deck/deck box icon beside the name
@@ -2612,6 +2677,7 @@ PrintCurDeckNumberAndName:
 	call InitTextPrinting
 	jp ProcessText
 
+
 ; sorts wCurDeckCards by ID
 SortCurDeckCardsByID:
 ; wOpponentDeck is used to temporarily store deck's cards
@@ -2648,10 +2714,9 @@ SortCurDeckCardsByID:
 	pop af
 	ldh [hWhoseTurn], a
 
-; given the ordered cards in wOpponentDeck,
-; each entry in it corresponds to its deck index
-; (first ordered card is deck index 0, second is deck index 1, etc)
-; place these in this order in wCurDeckCards
+; given the ordered cards in wOpponentDeck, with each entry corresponding to
+; its deck index (first ordered card is deck index 0, second is deck index 1, etc.),
+; copy these entries in this order in wCurDeckCards
 	ld hl, wCurDeckCards
 	ld de, wDuelTempList
 .loop_order_by_deck_index
@@ -2674,9 +2739,10 @@ SortCurDeckCardsByID:
 	ld [hl], a
 	ret
 
-; goes through list in wCurDeckCards, and for each card in it
-; creates list in wUniqueDeckCardList of all unique cards
-; it finds (assuming wCurDeckCards is sorted by ID)
+
+; goes through the list in wCurDeckCards, and for each card in it,
+; create a list in wUniqueDeckCardList of all unique cards that are found
+; (assuming wCurDeckCards is sorted by ID)
 ; also counts the total number of the different cards
 CreateCurDeckUniqueCardList:
 	ld b, 0
@@ -2699,6 +2765,7 @@ CreateCurDeckUniqueCardList:
 	ld [wNumUniqueCards], a
 	ret
 
+
 ShowConfirmationCardScreen:
 	call ShowDeckInfoHeader
 	lb de, 3, 5
@@ -2710,6 +2777,7 @@ ShowConfirmationCardScreen:
 
 ; prints the list of cards visible in the window of the confirmation screen
 ; card info is presented with name, level and its count preceded by "x"
+; preserves bc
 PrintConfirmationCardList:
 	push bc
 	ld hl, wCardListCoords
@@ -2798,6 +2866,7 @@ PrintConfirmationCardList:
 	ret
 
 ; prints the card count preceded by a cross, e.g. "x42"
+; preserves all registers
 .PrintCardCount
 	push af
 	push bc
@@ -2827,6 +2896,7 @@ PrintConfirmationCardList:
 ; Grass/Fire/Water/Lightning/Fighting/Psychic/Colorless Symbol for Energy cards,
 ; Stage Symbol for Pokemon cards, and Trainer Symbol for Trainer cards
 ; draws it 2 tiles to the left and 1 up to the current coordinate in de
+; preserves all registers except af
 .DrawCardTypeIcon
 	push hl
 	push de
@@ -2835,7 +2905,7 @@ PrintConfirmationCardList:
 	cp TYPE_ENERGY
 	jr nc, .not_pkmn_card
 
-; pokemon card
+; Pokemon card
 ; switch each of the commented lines with the line that precedes it
 ; if you prefer to show the Pokemon's type instead of its Stage
 	ld a, [wLoadedCard1Stage]
@@ -2852,7 +2922,7 @@ PrintConfirmationCardList:
 	cp TYPE_TRAINER
 	jr nc, .trainer_card
 
-; energy card
+; Energy card
 ; switch the commented line with the preceding 6 lines
 ; if you prefer to use the Energy Symbol for all Energy cards
 	sub TYPE_ENERGY
@@ -2893,10 +2963,13 @@ PrintConfirmationCardList:
 	pop hl
 	ret
 
-; returns in a the BG Pal corresponding to the
-; card type icon in input register a
-; if not found, returns $00
-; preserves bc, de, and hl
+
+; preserves all registers except af
+; input:
+;	a = ICON_TILE_* constant
+; output:
+;	a = background palette corresponding to the card type icon from input a
+;	a = 0:  if the palette wasn't found
 GetCardTypeIconPalette:
 	push bc
 	push hl
@@ -2932,7 +3005,8 @@ GetCardTypeIconPalette:
 	db ICON_TILE_TRAINER,         2
 	db $00, $ff
 
-; inits WRAM vars to start creating deck configuration to send
+
+; initializes WRAM variables to start creating a deck configuration to send
 PrepareToBuildDeckConfigurationToSend:
 	ld hl, wCurDeckCards
 	ld a, wCurDeckCardsEnd - wCurDeckCards
@@ -2964,6 +3038,7 @@ SendDeckConfigurationMenu_TransitionTable:
 	cursor_transition $10, $20, $00, $00, $00, $01, $02 ; Confirm
 	cursor_transition $48, $20, $00, $01, $01, $02, $00 ; Send
 	cursor_transition $80, $20, $00, $02, $02, $00, $01 ; Cancel
+
 
 SendDeckConfigurationMenuData:
 	textitem  2, 2, ConfirmText
@@ -3033,7 +3108,12 @@ HandleSendDeckConfigurationMenu:
 	or a
 	ret
 
+
 ; copies b bytes from hl to de
+; input:
+;	b = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
 CopyNBytesFromHLToDE:
 	ld a, [hli]
 	ld [de], a
@@ -3041,6 +3121,7 @@ CopyNBytesFromHLToDE:
 	dec b
 	jr nz, CopyNBytesFromHLToDE
 	ret
+
 
 ; handles the screen showing all the player's cards
 HandlePlayersCardsScreen:
@@ -3131,8 +3212,8 @@ HandlePlayersCardsScreen:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 
-	; set wFilteredCardList as the current card list
-	; and show card page screen
+	; sets wFilteredCardList as the current card list
+	; and shows the card page screen
 	ld de, wFilteredCardList
 	ld hl, wCurCardListPtr
 	ld [hl], e
@@ -3175,18 +3256,19 @@ HandlePlayersCardsScreen:
 	jp .wait_input
 
 Data_a396:
-	db 1 ; x pos
-	db 5 ; y pos
+	db 1 ; x position
+	db 5 ; y position
 	db 2 ; y spacing
 	db 0 ; x spacing
-	db 7 ; num entries
+	db 7 ; number of entries
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
 
+
 ; preserves af
 ; input:
-;	a = which card type filter
+;	a = index for CardTypeFilters
 PrintFilteredCardSelectionList:
 	push af
 	ld hl, CardTypeFilters
@@ -3212,6 +3294,7 @@ PrintFilteredCardSelectionList:
 	call PrintCardSelectionList
 	pop af
 	ret
+
 
 ; outputs in wTempCardCollection all the cards in sCardCollection
 ; plus the cards that are being used in built decks
@@ -3254,6 +3337,8 @@ CreateCardCollectionListWithDeckCards:
 
 ; goes through the cards of the deck in de and for each card ID,
 ; increments its corresponding entry in wTempCardCollection
+; input:
+;	de = sDeck*Cards
 IncrementDeckCardsInTempCollection:
 	call EnableSRAM
 	ld bc, wTempCardCollection
@@ -3273,6 +3358,7 @@ IncrementDeckCardsInTempCollection:
 	jr nz, .loop
 .done
 	jp DisableSRAM
+
 
 ; prints the name, level and storage count of the cards
 ; that are visible in the list window in the form: CARD NAME/LEVEL X
@@ -3316,8 +3402,7 @@ PrintCardSelectionList:
 	call AddCardIDToVisibleList
 	call LoadCardDataToBuffer1_FromCardID
 	; places in wDefaultText the card's name and level
-	; then appends at the end the count of that card
-	; in the card storage
+	; then appends at the end the count of that card in the card storage
 	ld a, 14
 	push bc
 	push hl
@@ -3371,10 +3456,13 @@ PrintCardSelectionList:
 	pop bc
 	ret
 
-; appends the card count given in register e
-; to the list in hl, in numerical form
-; (i.e. its numeric symbol representation)
+
+; appends the card count given in register e to the list in hl
+; in numerical form (i.e. its symbol font representation)
 ; preserves all registers
+; input:
+;	hl = list to use (wFilteredCardList)
+;	e = number to append
 AppendOwnedCardCountNumber:
 	push af
 	push bc
@@ -3397,7 +3485,8 @@ AppendOwnedCardCountNumber:
 	pop af
 	ret
 
-; print header info (card count and player name)
+
+; prints header info (card count and player name)
 PrintPlayersCardsHeaderInfo:
 	call Set_OBJ_8x8
 	call EmptyScreenAndLoadFontDuelAndDeckIcons
@@ -3423,8 +3512,9 @@ DrawCardTypeIcons:
 	call .DrawIcon
 	jr .loop
 
+; preserves de
 ; input:
-;	de = coordinates to draw the icon
+;	de = screen coordinates for drawing the icon
 .DrawIcon
 	push hl
 	push af
@@ -3448,7 +3538,7 @@ DrawCardTypeIcons:
 	ret
 
 .CardTypeIcons
-; icon tile, x coord, y coord
+; icon tile, x coordinate, y coordinate
 	db ICON_TILE_GRASS,      1, 2
 	db ICON_TILE_FIRE,       3, 2
 	db ICON_TILE_WATER,      5, 2
@@ -3459,6 +3549,7 @@ DrawCardTypeIcons:
 	db ICON_TILE_TRAINER,   15, 2
 	db ICON_TILE_ENERGY,    17, 2
 	db $00
+
 
 ; prints "<PLAYER>'s cards"
 PrintPlayersCardsText:
@@ -3475,6 +3566,7 @@ PrintPlayersCardsText:
 	ld e, 0
 	ldtx hl, SCardsText
 	jp InitTextPrinting_ProcessTextFromID
+
 
 PrintTotalNumberOfCardsInCollection:
 	ld a, ALL_DECKS
@@ -3519,6 +3611,11 @@ PrintTotalNumberOfCardsInCollection:
 ; places a numerical character in hl from de
 ; doesn't place a 0 if no non-0 numerical character has been placed before
 ; this makes it so that there are no 0s in more significant digits
+; input:
+;	b = 0:  check for a leading zero (to replace with SYM_SPACE)
+;	b > 0:  simply copy value from de to hl
+;	de = address from which to read the symbol font character (wDecimalDigitsSymbols)
+;	hl = where to store the symbol font character (wTempCardCollection)
 .PlaceNumericalChar
 	ld [hl], TX_SYMBOL
 	inc hl
@@ -3536,7 +3633,7 @@ PrintTotalNumberOfCardsInCollection:
 	cp SYM_0
 	jr z, .space_char
 	ld [hli], a
-	ld b, $01 ; at least one non-0 char was placed
+	ld b, $01 ; at least one non-0 character was placed
 	ret
 .space_char
 	xor a ; SYM_SPACE
@@ -3545,6 +3642,8 @@ PrintTotalNumberOfCardsInCollection:
 
 ; gets the digits in decimal form of value stored in hl
 ; stores the result in wDecimalDigitsSymbols
+; input:
+;	hl = number to convert to symbol font
 .GetTotalCountDigits
 	ld de, wDecimalDigitsSymbols
 	ld bc, -10000
@@ -3558,6 +3657,9 @@ PrintTotalNumberOfCardsInCollection:
 	ld bc, -1
 ;	fallthrough
 
+; input:
+;	bc = digit offset
+;	hl = number to convert to symbol font
 .GetDigit
 	ld a, SYM_0 - 1
 .loop
@@ -3574,10 +3676,31 @@ PrintTotalNumberOfCardsInCollection:
 	ld h, a
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+; counts all values stored in wCardFilterCounts
+; if the total count is 0, then prints "No cards chosen."
+;TallyCardsInCardFilterLists:
+;	lb bc, 0, 0
+;	ld hl, wCardFilterCounts
+;.loop
+;	ld a, [hli]
+;	add b
+;	ld b, a
+;	inc c
+;	ld a, NUM_FILTERS
+;	cp c
+;	jr nz, .loop
+;	ld a, b
+;	or a
+;	ret nz
+;	lb de, 11, 1
+;	ldtx hl, NoCardsChosenText
+;	jp InitTextPrinting_ProcessTextFromID
+;
 ;
 ; opens card page from the card list
 ;Func_9ced:

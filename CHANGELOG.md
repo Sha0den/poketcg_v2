@@ -226,7 +226,13 @@
 
 
 ## Miscellaneous Changes
-- **June 24, 2024:** 6 Files Changed
+- **June 26, 2024:** 17 Files Changed
+    - Try to standardize the function comments that are used in the engine/menus files
+    - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
+- **(June 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/9b47a3046ecab3e451a1b68aae396dd837712634):** 6 Files Changed
     - Try to standardize the function comments that are used in the engine/overworld files
     - Also perform many small optimizations in the engine/overworld files
 

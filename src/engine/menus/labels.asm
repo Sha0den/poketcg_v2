@@ -1,5 +1,7 @@
 ; prints $ff-terminated list of text to text box
 ; given 2 bytes for text alignment and 2 bytes for text ID
+; input:
+;	hl = list of labels to print
 PrintLabels:
 	ldh a, [hffb0]
 	push af
@@ -44,6 +46,11 @@ PrintLabels:
 	inc hl
 	jr .loop_text_print_2
 
+
+; preserves all registers except af
+; input:
+;	hl = menu parameters
+;	a = current menu item
 InitAndPrintMenu:
 	push hl
 	push bc
