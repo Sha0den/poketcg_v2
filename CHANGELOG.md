@@ -226,7 +226,12 @@
 
 
 ## Miscellaneous Changes
-- **June 26, 2024:** 17 Files Changed
+- **June 26, 2024:** 8 Files Changed
+    - Remove some now unreferenced material and put it where it belongs (in debug files)
+
+<br/>
+
+- **[June 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/32960c5081f9c5c653b2552b04b1fd21b8883016):** 17 Files Changed
     - Try to standardize the function comments that are used in the engine/menus files
     - Plus some corrections/optimizations/shuffling of functions in said files
 

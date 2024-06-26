@@ -40,11 +40,9 @@ Func_1c003:
 .skip_load_scene
 	ldh a, [hKeysHeld]
 	and A_BUTTON
-	jr z, .set_wd_on
+	jp z, SetWindowOn
 	ld a, $67
 	ldh [hWX], a
 	ld a, $68
 	ldh [hWY], a
-.set_wd_on
-	call SetWindowOn
-	ret
+	jp SetWindowOn

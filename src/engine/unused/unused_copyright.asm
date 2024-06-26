@@ -2,7 +2,6 @@
 ;  THIS FILE WAS REMOVED FROM THE BUILD
 ;----------------------------------------
 
-; unreferenced function
 ; shows Copyright information for 300 frames
 ; or until Start button is pressed
 UnusedCopyrightScreen:

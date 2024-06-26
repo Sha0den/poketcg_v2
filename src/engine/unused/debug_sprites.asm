@@ -6,7 +6,7 @@
 Func_1c865:
 	ret
 
-; unreferenced debug function
+
 ; adjusts hSCX and hSCY by using the arrow keys
 ; pressing B makes it scroll faster
 Func_1c866:
@@ -41,7 +41,7 @@ Func_1c866:
 	ldh [hSCY], a
 	ret
 
-; unreferenced debug function
+
 ; sets some flags on a given sprite
 Func_1c890:
 	ld a, [wVBlankCounter]

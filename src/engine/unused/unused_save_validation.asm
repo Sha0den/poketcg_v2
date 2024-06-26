@@ -10,7 +10,7 @@
 StubbedUnusedSaveDataValidation:
 	ret
 
-; unreferenced function
+
 UnusedSaveDataValidation:
 	ldh a, [hBankSRAM]
 	or a
@@ -71,9 +71,7 @@ UnusedSaveDataValidation:
 	ld [MBC3SRamEnable], a
 	jp Reset
 
-	ret
 
-; unreferenced function
 UnusedCalculateSaveDataValidationByte:
 	ldh a, [hBankSRAM]
 	or a

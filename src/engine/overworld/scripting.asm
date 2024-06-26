@@ -2143,10 +2143,6 @@ ScriptCommand_GiveStarterDeck:
 	jp IncreaseScriptPointerBy1
 
 
-Unknown_d3dd:
-	db $03, $05, $07
-
-
 ScriptCommand_WalkPlayerToMasonLaboratory:
 	ld a, OWMAP_MASON_LABORATORY
 	ld [wOverworldMapSelection], a

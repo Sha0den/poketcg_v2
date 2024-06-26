@@ -7,10 +7,12 @@ DebugLookAtSprite:
 	scf
 	ret
 
+
 DebugVEffect:
 ;	farcall Func_80cd6 ; this function was commented out by the developers
 	scf
 	ret
+
 
 DebugCreateBoosterPack:
 .go_back
@@ -55,12 +57,94 @@ DebugCreateBoosterPack:
 	scf
 	ret
 
+
+Unknown_12919:
+	db  0,  0 ; start menu coordinates
+	db 12, 12 ; start menu text box dimensions
+
+	db  2, 2 ; text alignment for InitTextPrinting
+	tx DebugBoosterPackMenuText
+	db $ff
+
+	db 1, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 5 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+
 Unknown_127f1:
 	dw Unknown_1292a
 	dw Unknown_1292a
 	dw Unknown_1293b
 	dw Unknown_1294c
 	dw Unknown_1295d
+
+
+Unknown_1292a:
+	db 12,  0 ; start menu coordinates
+	db  4, 16 ; start menu text box dimensions
+
+	db 14, 2 ; text alignment for InitTextPrinting
+	tx DebugBoosterPackColosseumEvolutionMenuText
+	db $ff
+
+	db 13, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 7 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+
+Unknown_1293b:
+	db 12,  0 ; start menu coordinates
+	db  4, 14 ; start menu text box dimensions
+
+	db 14, 2 ; text alignment for InitTextPrinting
+	tx DebugBoosterPackMysteryMenuText
+	db $ff
+
+	db 13, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 6 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+
+Unknown_1294c:
+	db 12,  0 ; start menu coordinates
+	db  4, 12 ; start menu text box dimensions
+
+	db 14, 2 ; text alignment for InitTextPrinting
+	tx DebugBoosterPackLaboratoryMenuText
+	db $ff
+
+	db 13, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 5 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+
+Unknown_1295d:
+	db 12,  0 ; start menu coordinates
+	db  4, 10 ; start menu text box dimensions
+
+	db 14, 2 ; text alignment for InitTextPrinting
+	tx DebugBoosterPackEnergyMenuText
+	db $ff
+
+	db 13, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 4 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
 
 Unknown_127fb:
 	db BOOSTER_COLOSSEUM_NEUTRAL
@@ -69,15 +153,18 @@ Unknown_127fb:
 	db BOOSTER_LABORATORY_NEUTRAL
 	db BOOSTER_ENERGY_LIGHTNING_FIRE
 
+
 DebugCredits:
 	farcall PlayCreditsSequence
 	scf
 	ret
 
+
 DebugCGBTest:
 ;	farcall Func_1c865 ; this function was commented out by the developers
 	scf
 	ret
+
 
 DebugSGBFrame:
 	call DisableLCD
@@ -92,6 +179,7 @@ DebugSGBFrame:
 	ld [wDebugSGBBorder], a
 	scf
 	ret
+
 
 DebugDuelMode:
 	call EnableSRAM
@@ -113,6 +201,22 @@ DebugDuelMode:
 	scf
 	ret
 
+Unknown_12908:
+	db 10, 0 ; start menu coordinates
+	db 10, 6 ; start menu text box dimensions
+
+	db 12, 2 ; text alignment for InitTextPrinting
+	tx DebugDuelModeMenuText
+	db $ff
+
+	db 11, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 2 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+
 DebugStandardBGCharacter:
 	ld a, $80
 	ld de, $0
@@ -123,6 +227,7 @@ DebugStandardBGCharacter:
 	call WaitUntilKeysArePressed
 	scf
 	ret
+
 
 DebugQuit:
 	or a

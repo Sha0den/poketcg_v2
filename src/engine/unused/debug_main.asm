@@ -1,7 +1,7 @@
 ;----------------------------------------
 ;  THIS FILE WAS REMOVED FROM THE BUILD
 ;----------------------------------------
-; unreferenced debug menu
+
 Func_12661:
 	xor a
 	ld [wDebugMenuSelection], a
@@ -38,10 +38,27 @@ Func_12661:
 	jr c, .asm_1266d
 	ret
 
+Unknown_128f7:
+	db  0,  0 ; start menu coordinates
+	db 16, 18 ; start menu text box dimensions
+
+	db  2, 2 ; text alignment for InitTextPrinting
+	tx DebugMenuText
+	db $ff
+
+	db 1, 2 ; cursor x, cursor y
+	db 1 ; y displacement between items
+	db 11 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+
 Func_126b3:
 	ldh a, [hCurMenuItem]
 	ld hl, Unknown_126bb
 	jp JumpToFunctionInTable
+
 
 Unknown_126bb:
 	dw _GameLoop

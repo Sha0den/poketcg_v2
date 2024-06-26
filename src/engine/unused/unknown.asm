@@ -2,7 +2,6 @@
 ;  THIS FILE WAS REMOVED FROM THE BUILD
 ;----------------------------------------
 
-; unreferenced function
 Func_18661:
 	xor a
 	ld [wMenuInputSFX], a
@@ -53,13 +52,13 @@ Func_18661:
 	and A_BUTTON
 	jr nz, .a_button
 
-; b button
+; B button
 	ld a, -1
 	call Func_190fb
 	scf
 	ret
 
-; a button
+; A button
 .a_button
 	call .draw_cursor
 	ld a, 1
