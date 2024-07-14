@@ -226,7 +226,12 @@
 
 
 ## Miscellaneous Changes
-- **June 26, 2024:** 8 Files Changed
+- **July 14, 2024:** 1 File Changed
+    - Add some more comments to home/substatus.asm
+
+<br/>
+
+- **[June 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/a05fc6a1988ee931da2ba9e8cef6a197d77f5ef3):** 9 Files Changed
     - Remove some now unreferenced material and put it where it belongs (in debug files)
 
 <br/>

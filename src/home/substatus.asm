@@ -65,7 +65,7 @@ ReduceDamageBy20::
 PreventAllDamage_IfLessThan40::
 	ld bc, 40
 	call CompareDEtoBC
-	ret nc
+	ret nc ; return if damage is at least 40
 	ld de, 0
 	ret
 
@@ -75,7 +75,7 @@ PreventAllDamage_IfLessThan40::
 PreventAllDamage_IfMoreThan20::
 	ld bc, 30
 	call CompareDEtoBC
-	ret c
+	ret c ; return if damage is less than 30
 ;	fallthrough
 
 ; output:
@@ -111,7 +111,7 @@ HandleDamageReductionExceptSubstatus2::
 	jr z, HalveDamage_RoundedDown
 .not_affected_by_substatus1
 	call CheckCannotUseDueToStatus
-	ret c
+	ret c ; return if Pokemon Powers can't be used because of status or Toxic Gas
 .pkmn_power
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
@@ -149,7 +149,7 @@ HandleDamageReductionOrNoDamageFromPkmnPowerEffects::
 	ret z
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
-	ret c
+	ret c ; return if there's a Muk in play
 	ld a, [wTempPlayAreaLocation_cceb]
 	or a
 	call nz, HandleDamageReductionExceptSubstatus2.pkmn_power
@@ -203,6 +203,7 @@ NoDamageOrEffectTextIDTable::
 
 ; preserves bc
 ; output:
+;	hl = ID for notification text
 ;	carry = set:  if the Defending Pokemon (turn holder's Active Pokemon) is affected by
 ;	              a substatus that prevents any damage or effect dealt to it for the turn.
 ;	wNoDamageOrEffect = correct index (NO_DAMAGE_OR_EFFECT_* constant)
@@ -220,7 +221,7 @@ HandleNoDamageOrEffectSubstatus::
 	jr z, .no_damage_or_effect
 	call CheckCannotUseDueToStatus
 	ccf
-	ret nc
+	ret nc ; return if Pokemon Power can't be used because of status or Toxic Gas
 .pkmn_power
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MEW_LV8
@@ -252,6 +253,7 @@ HandleNoDamageOrEffectSubstatus::
 ; if the Pokemon being attacked is HAUNTER_LV17 and its Transparency is active,
 ; there is a 50% chance that any damage or effect is prevented.
 ; output:
+;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if Transparency successfully protected Haunter from the attack
 HandleTransparency::
 	ld a, [wTempNonTurnDuelistCardID]
@@ -271,7 +273,7 @@ HandleTransparency::
 	ld [wDuelDisplayedScreen], a
 	ldtx de, TransparencyCheckText
 	call TossCoin
-	ret nc
+	ret nc ; return if tails
 	ld a, NO_DAMAGE_OR_EFFECT_TRANSPARENCY
 	ld [wNoDamageOrEffect], a
 	ldtx hl, NoDamageOrEffectDueToTransparencyText
@@ -324,7 +326,7 @@ HandleNShieldAndTransparency::
 
 ; preserves bc and de
 ; output:
-;	hl = ID of text to display
+;	hl = ID for notification text:  if the Active Pokemon is affected by a Substatus2
 ;	carry = set:  if the turn holder's Active Pokemon is affected by
 ;	              an attack effect that makes it unable to attack
 HandleCantAttackSubstatus::
@@ -347,6 +349,7 @@ HandleCantAttackSubstatus::
 
 ; preserves bc and de
 ; ouput:
+;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the turn holder's Active Pokemon cannot use the attack
 ;	              at wSelectedAttack because it's affected by Amnesia
 HandleAmnesiaSubstatus::
@@ -375,11 +378,11 @@ HandleAmnesiaSubstatus::
 ;	carry = set:  if the turn holder's attack was unsuccessful due to Smokescreen
 HandleSmokescreenSubstatus::
 	call CheckSmokescreenSubstatus
-	ret nc
+	ret nc ; return if the Active Pokemon isn't affected by Smokescreen
 	call TossCoin
 	ld [wGotHeadsFromSmokescreenCheck], a
 	ccf
-	ret nc
+	ret nc ; return if heads
 	ldtx hl, AttackUnsuccessfulText
 	call DrawWideTextBox_WaitForInput
 	scf
@@ -388,6 +391,7 @@ HandleSmokescreenSubstatus::
 
 ; preserves bc
 ; output:
+;	de = ID for TossCoin notification text
 ;	carry = set:  if the turn holder's Active Pokemon is affected by Smokescreen
 CheckSmokescreenSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
@@ -409,6 +413,7 @@ CheckSmokescreenSubstatus::
 
 ; preserves bc and de
 ; output:
+;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
 CheckCantRetreatDueToAttackEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
@@ -427,6 +432,7 @@ CheckCantRetreatDueToAttackEffect::
 
 ; preserves bc and de
 ; output:
+;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the turn holder can't play any Trainer cards because of Headache
 CheckCantUseTrainerDueToHeadache::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
@@ -441,11 +447,12 @@ CheckCantUseTrainerDueToHeadache::
 
 ; preserves bc and de
 ; output:
+;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if there's an Aerodactyl in play with an active Prehistoric Power
 IsPrehistoricPowerActive::
 	ld a, AERODACTYL
 	call CountPokemonIDInBothPlayAreas
-	ret nc
+	ret nc ; return if there isn't an Aerodactyl in play
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	ldtx hl, UnableToEvolveDueToPrehistoricPowerText
@@ -460,7 +467,7 @@ IsClairvoyanceActive::
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	ccf
-	ret nc
+	ret nc ; return if there's a Muk in play
 	ld a, OMANYTE
 ;	fallthrough
 
@@ -548,6 +555,7 @@ CountPokemonIDInBothPlayAreas::
 
 ; preserves bc and de
 ; output:
+;	hl = ID for notification text
 ;	carry = set:  if the turn holder's Active Pokemon is Asleep, Confused, Paralyzed,
 ;	              and/or Toxic Gas is active (i.e. its Pokemon Power cannot be used)
 CheckCannotUseDueToStatus::
@@ -578,7 +586,7 @@ ClearChangedTypesIfMuk::
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MUK
-	ret nz
+	ret nz ; return if the Pokemon isn't a Muk
 	call SwapTurn
 	call .zero_changed_types
 	call SwapTurn
@@ -695,6 +703,7 @@ HandleDestinyBondSubstatus::
 ; ignore if damage taken at de is 0.
 ; preserves de and hl
 ; output:
+;	de = amount of damage being dealt
 ;	carry = set:  if Machamp is unable to use its Pokemon Power
 HandleStrikesBack_AgainstDamagingAttack::
 	ld a, e
@@ -705,10 +714,10 @@ HandleStrikesBack_AgainstDamagingAttack::
 	ret nz
 	ld a, [wTempNonTurnDuelistCardID] ; ID of Defending Pokemon
 	cp MACHAMP
-	ret nz
+	ret nz ; return if the Defending Pokemon isn't a Machamp
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
-	ret c
+	ret c ; return if there's a Muk in play
 	ld a, [wLoadedAttackCategory] ; category of attack used
 	cp POKEMON_POWER
 	ret z
@@ -716,7 +725,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .in_bench
 	call CheckCannotUseDueToStatus
-	ret c
+	ret c ; return if Pokemon Power can't be used because of status or Toxic Gas
 .in_bench
 	push hl
 	push de
@@ -762,7 +771,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 HandleStrikesBack_AgainstResidualAttack::
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
-	ret nz
+	ret nz ; return if the Defending Pokemon isn't a Machamp
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
 	ret nz
@@ -772,7 +781,7 @@ HandleStrikesBack_AgainstResidualAttack::
 	call SwapTurn
 	call CheckCannotUseDueToStatus
 	call SwapTurn
-	ret c
+	ret c  ; return if Pokemon Power can't be used because of status or Toxic Gas
 	ld hl, 10 ; amount of damage to give the Attacking Pokemon
 	call ApplyStrikesBack_AgainstResidualAttack
 	jp nc, WaitForWideTextBoxInput
