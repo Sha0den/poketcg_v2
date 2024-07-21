@@ -226,7 +226,13 @@
 
 
 ## Miscellaneous Changes
-- **July 14, 2024:** 1 File Changed
+- **July 21, 2024:** 3 Files Changed
+    - Try to standardize the function comments that are used in the effect functions files
+    - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
+- **[July 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/b070252710fa41169a8ef69c36b2757ec928537e):** 1 File Changed
     - Add some more comments to home/substatus.asm
 
 <br/>

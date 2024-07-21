@@ -32,10 +32,11 @@
 ;	SEARCHEFFECT_NIDORAN = search for either NidoranM or NidoranF
 ; input:
 ;	d = SEARCHEFFECT_* constant
-;	e = (optional) card ID to search for in deck
-;	hl = text to print if the deck has the card(s)
+;	e = (optional) card ID to search for in deck (e = 0 if not using SEARCHEFFECT_CARD_ID)
+;	hl = ID of the text to print if the deck has the card(s)
+;	bc = ID of the text to store in RAM for ThereIsNoInTheDeckText 
 ; output:
-;	carry set if refused to look at deck
+;	carry = set:  if no cards were found and the player refused to check the deck
 LookForCardsInDeck:
 	push hl
 	push bc
@@ -59,8 +60,7 @@ LookForCardsInDeck:
 	ldtx hl, ThereIsNoInTheDeckText
 	call DrawWideTextBox_WaitForInput
 	ldtx hl, WouldYouLikeToCheckTheDeckText
-	call YesOrNoMenuWithText_SetCursorToYes
-	ret
+	jp YesOrNoMenuWithText_SetCursorToYes
 
 .search_table
 	dw .SearchDeckForCardID
@@ -72,41 +72,50 @@ LookForCardsInDeck:
 	dw .SearchDeckForBasicFighting
 	dw .SearchDeckForNidoran
 
-; returns carry if no card with same card ID as e is found in the player's deck
+.set_carry
+	scf
+	ret
+
+; input:
+;	e = card ID to check
+; output:
+;	carry = set:  if no cards with the ID from input were found in the player's deck
 .SearchDeckForCardID
 	ld hl, wDuelTempList
 .loop_deck_e
 	ld a, [hli]
 	cp $ff
-	jp z, SetCarryEF2
+	jr z, .set_carry
 	push de
 	call GetCardIDFromDeckIndex
 	ld a, e
 	pop de
 	cp e
-	jr nz, .loop_deck_e ; skip if wrong card id
+	jr nz, .loop_deck_e ; skip if wrong card ID
 	or a
 	ret
 
-; returns carry if no Basic Energy cards are found in the player's deck
+; output:
+;	carry = set:  if no Basic Energy cards were found in the player's deck
 .SearchDeckForBasicEnergy
 	ld hl, wDuelTempList
 .loop_deck_energy
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jr z, .set_carry
 	call CheckDeckIndexForBasicEnergy
-	jr nc, .loop_deck_energy ; skip if not a basic energy
+	jr nc, .loop_deck_energy ; skip if not a Basic Energy
 	or a
 	ret
 
-; returns carry if no Trainer cards are found in the player's deck
+; output:
+;	carry = set:  if no Trainer cards were found in the player's deck
 .SearchDeckForTrainer
 	ld hl, wDuelTempList
 .loop_deck_trainer
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jr z, .set_carry
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_TRAINER
@@ -114,13 +123,14 @@ LookForCardsInDeck:
 	or a
 	ret
 
-; returns carry if no Pokemon are found in the player's deck
+; output:
+;	carry = set:  if no Pokemon were found in the player's deck
 .SearchDeckForPokemon
 	ld hl, wDuelTempList
 .loop_deck_pkmn
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jr z, .set_carry
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_ENERGY
@@ -128,37 +138,40 @@ LookForCardsInDeck:
 	or a
 	ret
 
-; returns carry if no Evolution cards are found in the player's deck
+; output:
+;	carry = set:  if no Evolution cards were found in the player's deck
 .SearchDeckForEvolution
 	ld hl, wDuelTempList
 .loop_deck_evolution
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jr z, .set_carry
 	call CheckDeckIndexForStage1OrStage2Pokemon
 	jr nc, .loop_deck_evolution ; skip if not a Stage 1/2 Pokemon
 	or a
 	ret
 
-; returns carry if no Basic Pokemon are found in the player's deck
+; output:
+;	carry = set:  if no Basic Pokemon cards were found in the player's deck
 .SearchDeckForBasicPokemon
 	ld hl, wDuelTempList
 .loop_deck_bscpkmn
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jr z, .set_carry
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_deck_bscpkmn ; skip if not a Basic Pokemon
 	or a
 	ret
 
-; returns carry if no Basic Fighting Pokemon are found in the player's deck
+; output:
+;	carry = set:  if no Basic Fighting Pokemon cards were found in the player's deck
 .SearchDeckForBasicFighting
 	ld hl, wDuelTempList
 .loop_deck_fighting
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jr z, .set_carry
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_PKMN_FIGHTING
@@ -168,13 +181,14 @@ LookForCardsInDeck:
 	jr nz, .loop_deck_fighting ; skip if stage isn't Basic
 	ret
 
-; returns carry if no NidoranM or NidoranF are found in the player's deck
+; output:
+;	carry = set:  if no NidoranM or NidoranF cards were found in the player's deck
 .SearchDeckForNidoran
 	ld hl, wDuelTempList
 .loop_deck_nidoran
 	ld a, [hli]
 	cp $ff
-	jr z, SetCarryEF2
+	jp z, .set_carry
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp NIDORANF
@@ -185,10 +199,9 @@ LookForCardsInDeck:
 	or a
 	ret
 
-SetCarryEF2:
-	scf
-	ret
 
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindBasicEnergy:
 	call CreateDeckCardList
 	ldtx hl, Choose1BasicEnergyCardFromDeckText
@@ -239,7 +252,13 @@ FindBasicEnergy:
 	or a
 	ret
 
-; returns carry if the card in a is a Basic Energy card
+
+; uses a card's deck index to check whether or not it is a Basic Energy card
+; preserves all registers except af
+; input:
+;	a = deck index (0-59) of the card being checked
+; output:
+;	carry = set:  if the card is a Basic Energy card
 CheckDeckIndexForBasicEnergy:
 ;	call LoadCardDataToBuffer2_FromDeckIndex
 ;	ld a, [wLoadedCard2Type]
@@ -254,6 +273,10 @@ CheckDeckIndexForBasicEnergy:
 	or a
 	ret
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen Basic Energy ($ff if none was chosen)
+;	[hTempPlayAreaLocation_ffa1] = play area location offset of the chosen Pokemon (PLAY_AREA_* constant)
 FindBasicEnergyToAttach:
 	call CreateDeckCardList
 	ldtx hl, Choose1BasicEnergyCardFromDeckText
@@ -286,7 +309,6 @@ FindBasicEnergyToAttach:
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
 	jr c, .loop_input ; must choose, B button can't be used to exit
-	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret
 
@@ -314,7 +336,10 @@ FindBasicEnergyToAttach:
 	or a
 	ret
 
+
 ; Broken, AI doesn't select any card
+; output:
+;	[hTemp_ffa0] = $ff (no card was chosen)
 AIFindBasicEnergyToAttach:
 	ld a, $ff
 	ldh [hTemp_ffa0], a
@@ -324,6 +349,8 @@ AIFindBasicEnergyToAttach:
 ; I'm not entirely sure; more code might be needed.
 ; finds the first basic energy in the deck
 ; and attaches it to the Active Pokemon
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 ;AIFindBasicEnergyToAttach:
 ;	call CreateDeckCardList
 ;	ld hl, wDuelTempList
@@ -339,6 +366,9 @@ AIFindBasicEnergyToAttach:
 ;	ldh [hTempPlayAreaLocation_ffa1], a
 ;	ret
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindTrainer:
 	call CreateDeckCardList
 	ldtx hl, ChooseTrainerCardFromDeckText
@@ -393,7 +423,10 @@ FindTrainer:
 	or a
 	ret
 
+
 ; finds the first Trainer card in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindTrainer:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -408,6 +441,9 @@ AIFindTrainer:
 	jr nz, .loop_deck ; card isn't a Trainer card
 	ret ; Trainer card found
 
+
+; output:
+;	[hTempList + 1] = deck index of the chosen card ($ff if no card was chosen)
 FindAnyPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChoosePokemonFromDeckText
@@ -463,6 +499,9 @@ FindAnyPokemon:
 	or a
 	ret
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindEvolution:
 	call CreateDeckCardList
 	ldtx hl, ChooseEvolutionCardFromDeckText
@@ -513,7 +552,13 @@ FindEvolution:
 	or a
 	ret
 
-; returns carry if the card in a is an Evolution card
+
+; uses a card's deck index to check whether or not it is an Evolution card
+; preserves all registers except af
+; input:
+;	a = deck index (0-59) of the card being checked
+; output:
+;	carry = set:  if the card is an Evolution card
 CheckDeckIndexForStage1OrStage2Pokemon:
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
@@ -526,7 +571,10 @@ CheckDeckIndexForStage1OrStage2Pokemon:
 	scf
 	ret
 
+
 ; finds the first Evolution card in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindEvolution:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -539,6 +587,9 @@ AIFindEvolution:
 	jr nc, .loop_deck ; card isn't an Evolution card
 	ret ; Evolution card found
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindBasicPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicPokemonFromDeckText
@@ -589,7 +640,10 @@ FindBasicPokemon:
 	or a
 	ret
 
+
 ; finds the first Basic Pokemon in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindBasicPokemon:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -602,6 +656,9 @@ AIFindBasicPokemon:
 	jr nc, .loop_deck ; card isn't a Basic Pokemon
 	ret ; Basic Pokemon found
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindBasicFightingPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicFightingPokemonFromDeckText
@@ -662,7 +719,10 @@ FindBasicFightingPokemon:
 	or a
 	ret
 
+
 ; finds the first Basic Fighting Pokemon in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindBasicFighting:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -680,6 +740,9 @@ AIFindBasicFighting:
 	jr nz, .loop_deck ; card isn't a Basic Pokemon
 	ret ; Fighting Pokemon found
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindNidoran:
 	call CreateDeckCardList
 	ldtx hl, ChooseNidoranFromDeckText
@@ -739,7 +802,10 @@ FindNidoran:
 	or a
 	ret
 
+
 ; finds the first Nidoran in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindNidoran:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -756,6 +822,9 @@ AIFindNidoran:
 	jr nz, .loop_deck ; card isn't a Nidoran
 	ret ; Nidoran found
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindOddish:
 	call CreateDeckCardList
 	ldtx hl, ChooseAnOddishFromDeckText
@@ -810,7 +879,10 @@ FindOddish:
 	or a
 	ret
 
+
 ; finds the first Oddish in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindOddish:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -825,6 +897,9 @@ AIFindOddish:
 	jr nz, .loop_deck ; card isn't an Oddish
 	ret ; Oddish found
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindBellsprout:
 	call CreateDeckCardList
 	ldtx hl, ChooseABellsproutFromDeckText
@@ -879,7 +954,10 @@ FindBellsprout:
 	or a
 	ret
 
+
 ; finds the first Bellsprout in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindBellsprout:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -894,6 +972,9 @@ AIFindBellsprout:
 	jr nz, .loop_deck ; card isn't a Bellsprout
 	ret ; Bellsprout found
 
+
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindKrabby:
 	call CreateDeckCardList
 	ldtx hl, ChooseAKrabbyFromDeckText
@@ -948,7 +1029,10 @@ FindKrabby:
 	or a
 	ret
 
+
 ; finds the first Krabby in the deck
+; output:
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindKrabby:
 	call CreateDeckCardList
 	ld hl, wDuelTempList

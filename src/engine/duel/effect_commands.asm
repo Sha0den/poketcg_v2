@@ -37,17 +37,12 @@ EffectCommands::
 ; The Trainer effect commands are found next, sorted alphabetically
 ; Last are the Energy effects commands
 
+
 ProphecyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BothPlayers_DeckCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Prophecy_ReorderEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Prophecy_PlayerSelection
 	dbw EFFECTCMDTYPE_AI_SELECTION, Prophecy_AISelection
-	db  $00
-
-PokedexEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Pokedex_ReorderEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Pokedex_PlayerSelection
 	db  $00
 
 MayDrawCardEffectCommands:
@@ -60,12 +55,6 @@ DrawCardEffectCommands:
 
 Draw2EffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Draw2CardsEffect
-	db  $00
-
-EnergySearchEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AddCardFromDeckToHandEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergySearch_PlayerSelection
 	db  $00
 
 EnergySpikeEffectCommands:
@@ -431,12 +420,6 @@ SwitchDefendingPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_AI_SELECTION, ChooseWeakestBenchedPokemon_AISelection
 	db  $00
 
-GustOfWindEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, GustOfWind_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GustOfWind_SwitchEffect
-	db  $00
-
 DevolutionBeamEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EitherPlayArea_EvolvedPokemonCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DevolutionBeam_PlayerSelection
@@ -661,7 +644,7 @@ FlamesOfRageEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_DoubleFireEnergyCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Discard2AttachedFireEnergy_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Rage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Discard2AttachedFireEnergy_DiscardEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Discard2AttachedEnergyCards_DiscardEffect
 	dbw EFFECTCMDTYPE_AI_SELECTION, Discard2AttachedFireEnergy_AISelection
 	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
 	db  $00
@@ -785,8 +768,11 @@ MirrorMoveEffectCommands:
 	dbw EFFECTCMDTYPE_AI, MirrorMove_AIEffect
 	db  $00
 
-;
-; POKEMON POWER EFFECT COMMANDS START HERE (ONLY 14/26 HAVE AN ACTUAL EFFECT FUNCTION)
+
+;---------------------------------------------------------------------------------
+; POKEMON POWER EFFECT COMMANDS START HERE
+; only 14/26 have an actual effect function
+;---------------------------------------------------------------------------------
 
 VenusaurEnergyTransEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyTransCheck
@@ -805,19 +791,19 @@ VileplumeHealEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Heal_RemoveDamageEffect
 	db  $00
 
-; also handled in home\card_color.asm
+; also handled in home/card_color.asm
 VenomothShiftEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, OncePerTurnPokePowerCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Shift_ChangeColorEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Shift_PlayerSelection
 	db  $00
 
-; actual effect handled in substatus.asm and in other Pokemon Power effects
+; actual effect handled in home/substatus.asm and in other Pokemon Power effects
 MukToxicGasEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in home\card_color.asm
+; actual effect handled in home/card_color.asm
 CharizardEnergyBurnEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -827,7 +813,7 @@ MoltresFiregiverEffectCommands:
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Firegiver_AddToHandEffect
 	db  $00
 
-; actual effect handled in engine\duel\core.asm
+; actual effect handled in engine/duel/core.asm
 BlastoiseRainDanceEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -835,11 +821,11 @@ BlastoiseRainDanceEffectCommands:
 TentacoolCowardiceEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, CowardiceCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Cowardice_RemoveFromPlayAreaEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Cowardice_PlayerSelection
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PossibleSwitch_PlayerSelection
 	db  $00
 
-; actual effect handled in engine\duel\core.asm, engine\menus\duel.asm,
-; engine\menus\play_area.asm, and substatus.asm
+; actual effect handled in engine/duel/core.asm, engine/menus/duel.asm,
+; engine/menus/play_area.asm, and home/substatus.asm
 OmanyteClairvoyanceEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -859,17 +845,17 @@ MankeyPeekEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Peek_SelectEffect
 	db  $00
 
-; actual effect handled in home\duel.asm & substatus.asm
+; actual effect handled in home/duel.asm & home/substatus.asm
 MachampStrikesBackEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in substatus.asm
+; actual effect handled in home/substatus.asm
 KabutoKabutoArmorEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in engine\duel\core.asm & substatus.asm
+; actual effect handled in engine/duel/core.asm & home/substatus.asm
 AerodactylPrehistoricPowerEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -886,7 +872,7 @@ SlowbroStrangeBehaviorEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StrangeBehavior_SwapEffect
 	db  $00
 
-; actual effect handled in substatus.asm
+; actual effect handled in home/substatus.asm
 HaunterTransparencyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -897,17 +883,17 @@ GengarCurseEffectCommands:
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Curse_PlayerSelection
 	db  $00
 
-; actual effect handled in substatus.asm
+; actual effect handled in home/substatus.asm
 MrMimeInvisibleWallEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in substatus.asm
+; actual effect handled in home/substatus.asm
 MewNeutralizingShieldEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in substatus.asm
+; actual effect handled in home/duel.asm
 DodrioRetreatAidEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -927,14 +913,15 @@ DragoniteHealingWindEffectCommands:
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, HealingWind_PlayAreaHealEffect
 	db  $00
 
-;
-; TRAINER CARD EFFECT COMMANDS START HERE.
-; except for Bill/Draw2, Energy Search, Gust of Wind, and Pokedex, which are listed with attacks
+
+;---------------------------------------------------------------------------------
+; TRAINER CARD EFFECT COMMANDS START HERE
+;---------------------------------------------------------------------------------
 
 TrainerCardAsPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, TrainerCardAsPokemon_BenchCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TrainerCardAsPokemon_DiscardEffect
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, TrainerCardAsPokemon_PlayerSelectSwitch
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PossibleSwitch_PlayerSelection
 	db  $00
 
 BillEffectCommands:
@@ -978,6 +965,12 @@ EnergyRetrievalEffectCommands:
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyRetrieval_PlayerDiscardPileSelection
 	db  $00
 
+EnergySearchEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AddCardFromDeckToHandEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergySearch_PlayerSelection
+	db  $00
+
 FullHealEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_StatusCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RemoveSpecialConditionsEffect
@@ -985,6 +978,12 @@ FullHealEffectCommands:
 
 GamblerEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GamblerEffect
+	db  $00
+
+GustOfWindEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, GustOfWind_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GustOfWind_SwitchEffect
 	db  $00
 
 ImakuniEffectCommands:
@@ -1030,6 +1029,12 @@ PokeBallEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokeBall_AddToHandEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PokeBall_PlayerSelection
+	db  $00
+
+PokedexEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Pokedex_ReorderEffect
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Pokedex_PlayerSelection
 	db  $00
 
 PokemonBreederEffectCommands:
@@ -1109,9 +1114,11 @@ SwitchEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SwitchEffect
 	db  $00
 
-;
+
+;---------------------------------------------------------------------------------
 ; ENERGY CARD EFFECT COMMANDS START HERE.
-; actual effects are handled in home\duel.asm & engine\duel\core.asm (possibly elsewhere too)
+; actual effects are handled in home/duel.asm & engine/duel/core.asm (possibly elsewhere too)
+;---------------------------------------------------------------------------------
 
 GrassEnergyEffectCommands:
 	db  $00
