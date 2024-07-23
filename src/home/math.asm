@@ -1,4 +1,6 @@
 ; preserves all registers except af
+; input:
+;	a = number to multiply by 10
 ; output:
 ;	a *= 10
 ATimes10::
@@ -12,48 +14,9 @@ ATimes10::
 	ret
 
 
-; preserves bc and de
-; output:
-;	hl *= 10
-HLTimes10::
-	push de
-	ld l, a
-	ld e, a
-	ld h, $00
-	ld d, h
-	add hl, hl
-	add hl, hl
-	add hl, de
-	add hl, hl
-	pop de
-	ret
-
-
-; preserves bc and de
-; output:
-;	hl = h * l
-HtimesL::
-	push de
-	ld a, h
-	ld e, l
-	ld d, $0
-	ld l, d
-	ld h, d
-	jr .asm_887
-.asm_882
-	add hl, de
-.asm_883
-	sla e
-	rl d
-.asm_887
-	srl a
-	jr c, .asm_882
-	jr nz, .asm_883
-	pop de
-	ret
-
-
 ; preserves all registers except af
+; input:
+;	a = number to divide by 10
 ; output:
 ;	a /= 10
 ;	carry = set:  if a % 10 >= 5
@@ -71,6 +34,8 @@ ADividedBy10::
 
 
 ; preserves all registers except af
+; input:
+;	a = number to divide by 2
 ; output:
 ;	a /= 2 (rounded up)
 HalfARoundedUp::
@@ -81,19 +46,7 @@ HalfARoundedUp::
 	ret
 
 
-; unreferenced counterpart of HalfARoundedUp
-; preserves all registers except af
-; output:
-;	a /= 2 (rounded down)
-;HalfARoundedDown::
-;	srl a
-;	bit 0, a
-;	ret z  ; no need for rounding
-;	sub 5  ; round down to nearest 10
-;	ret
-
-
-; divides BC by DE. Stores result in BC and stores remainder in HL
+; divides BC by DE. Stores result in BC and remainder in HL
 ; input:
 ;	bc = dividend
 ;	de = divisor
@@ -141,3 +94,67 @@ CompareDEtoBC::
 	ld a, e
 	cp c
 	ret
+
+
+; preserves bc and de
+; input:
+;	h & l = factors
+; output:
+;	hl = h * l
+HtimesL::
+	push de
+	ld a, h
+	ld e, l
+	ld d, $0
+	ld l, d
+	ld h, d
+	jr .asm_887
+.asm_882
+	add hl, de
+.asm_883
+	sla e
+	rl d
+.asm_887
+	srl a
+	jr c, .asm_882
+	jr nz, .asm_883
+	pop de
+	ret
+
+
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; unreferenced counterpart of ATimes10 that would be used if
+; the product could exceed 255, thus requiring 2 bytes/registers
+; preserves bc and de
+; input:
+;	a = number to multiply by 10
+; output:
+;	hl = a*10
+;HLTimes10::
+;	push de
+;	ld l, a
+;	ld e, a
+;	ld h, $00
+;	ld d, h
+;	add hl, hl
+;	add hl, hl
+;	add hl, de
+;	add hl, hl
+;	pop de
+;	ret
+;
+;
+; unreferenced counterpart of HalfARoundedUp
+; preserves all registers except af
+; output:
+;	a /= 2 (rounded down)
+;HalfARoundedDown::
+;	srl a
+;	bit 0, a
+;	ret z  ; no need for rounding
+;	sub 5  ; round down to nearest 10
+;	ret
+

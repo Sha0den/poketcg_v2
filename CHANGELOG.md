@@ -226,7 +226,12 @@
 
 
 ## Miscellaneous Changes
-- **July 21, 2024:** 3 Files Changed
+- **July 23, 2024:** 1 File Changed
+    - Restructure home/math.asm
+
+<br/>
+
+- **[July 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/b96a8555722cb16b35f7eb082f695f283dd28805):** 3 Files Changed
     - Try to standardize the function comments that are used in the effect functions files
     - Plus some corrections/optimizations/shuffling of functions in said files
 
