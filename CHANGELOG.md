@@ -76,6 +76,12 @@
 
 
 ## Code Optimization
+- **July 24, 2024:** 2 Files Changed
+    - Eliminate some redundant code in home/duel.asm and home/serial.asm
+    - Revise a lot of function comments in home/duel.asm
+
+<br/>
+
 - **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/fbbd4f3f7422ba5a9abcd6878e842c0aec178e02):** 19 Files Changed
     - Delete "Func_7415", "SetNoLineSeparation", and "SetOneLineSeparation" from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
     - Move "Func_61a1" to engine/duel/effect_functions.asm
@@ -226,7 +232,7 @@
 
 
 ## Miscellaneous Changes
-- **July 23, 2024:** 1 File Changed
+- **[July 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/87cc896a64a7a987321b9fd94c8773aa509a6108):** 1 File Changed
     - Restructure home/math.asm
 
 <br/>

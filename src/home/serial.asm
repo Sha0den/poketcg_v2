@@ -461,17 +461,13 @@ SerialRecvBytes::
 	ld [hli], a
 	ld a, [wSerialFlags]
 	or a
-	jr nz, .done
+	jr nz, SerialSendBytes.done
 	dec bc
 	ld a, c
 	or b
 	jr nz, .recv_loop
 	pop bc
 	or a
-	ret
-.done
-	pop bc
-	scf
 	ret
 
 
