@@ -139,12 +139,10 @@ AIDecideEvolution:
 	ld c, a
 	ld b, 0
 .next_bench_pokemon
-	push bc
 	ld e, b
 	ld a, [wTempAIPokemonCard]
 	ld d, a
 	call CheckIfCanEvolveInto
-	pop bc
 	push bc
 	jp c, .done_bench_pokemon
 

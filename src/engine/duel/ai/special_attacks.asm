@@ -292,11 +292,9 @@ HandleSpecialAIAttacks:
 	ld a, [hli]
 	cp $ff
 	jr z, .tally_basic_cards
-	push bc
 	call SwapTurn
 	call LoadCardDataToBuffer2_FromDeckIndex
 	call SwapTurn
-	pop bc
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
 	jr nc, .loop_mix_up_hand
@@ -468,10 +466,8 @@ CheckIfAnyBasicPokemonInDeck:
 	call GetTurnDuelistVariable
 	cp CARD_LOCATION_DECK
 	jr nz, .next
-	push de
 	ld a, e
 	call LoadCardDataToBuffer2_FromDeckIndex
-	pop de
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
 	jr nc, .next

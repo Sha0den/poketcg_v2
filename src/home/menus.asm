@@ -401,8 +401,6 @@ ReloadCardListItems::
 	cp $ff
 	ret z ; done
 	push hl
-	push bc
-	push de
 	call LoadCardDataToBuffer1_FromDeckIndex
 	call DrawCardSymbol
 	call InitTextPrinting
@@ -410,8 +408,6 @@ ReloadCardListItems::
 	call CopyCardNameAndLevel
 	ld hl, wDefaultText
 	call ProcessText
-	pop de
-	pop bc
 	pop hl
 	inc hl
 	ld a, [wNumListItems]

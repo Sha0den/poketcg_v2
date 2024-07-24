@@ -6,9 +6,7 @@ CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 	ld e, 0
 .loop_deck
 	ld a, e
-	push de
 	call LoadCardDataToBuffer2_FromDeckIndex
-	pop de
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
 	jr nc, .next
@@ -101,9 +99,7 @@ FindBasicEnergyCardsInLocation:
 ; is in the card location we're looking for
 	ld a, e
 	push de
-	push hl
 	call GetCardIDFromDeckIndex
-	pop hl
 	ld a, e
 	pop de
 	cp DOUBLE_COLORLESS_ENERGY
@@ -234,11 +230,9 @@ PickAttachedEnergyCardToRemove:
 	ld a, [hl]
 	cp $ff
 	jr z, .check_useful
-	push hl
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp DOUBLE_COLORLESS_ENERGY
-	pop hl
 	jr z, .found
 	inc hl
 	jr .loop_1
@@ -315,11 +309,9 @@ PickTwoAttachedEnergyCards:
 	ld a, [hl]
 	cp $ff
 	jr z, .check_useful
-	push hl
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp DOUBLE_COLORLESS_ENERGY
-	pop hl
 	jr z, .found_double_colorless
 	inc hl
 	jr .loop_1

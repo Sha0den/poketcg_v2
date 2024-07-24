@@ -1217,10 +1217,8 @@ HandleAIDamageSwap:
 
 	ld d, c ; store damage
 	push de
-	push bc
 	ld e, c
 	farcall CountNumberOfEnergyCardsAttached
-	pop bc
 	pop de
 	or a
 	jr nz, .next_play_area ; ignore cards with attached energy

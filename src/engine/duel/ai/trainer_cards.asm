@@ -3077,11 +3077,8 @@ AIDecide_PokemonCenter:
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, e ; useless instruction
-	pop de
 
 ; get this Pokemon's current HP in number of counters
 ; and add it to the total.
@@ -3862,10 +3859,8 @@ AIDecide_MrFuji:
 .loop_bench
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 	call GetTurnDuelistVariable
 	call LoadCardDataToBuffer1_FromDeckIndex
-	pop de
 
 	ld a, [wLoadedCard1HP]
 	ld b, a

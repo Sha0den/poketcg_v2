@@ -175,11 +175,9 @@ AIDecideWhetherToRetreat:
 	ld a, [hli]
 	cp $ff
 	jr z, .check_resistance_3
-	push de
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	call TranslateColorToWR
-	pop de
 	and b
 	jr z, .loop_weakness_2
 	ld a, 2
@@ -372,12 +370,8 @@ AIDecideWhetherToRetreat:
 	ld a, [hli]
 	cp $ff
 	jr z, .exit_loop_ko
-	push de
-	push hl
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2ID]
-	pop hl
-	pop de
 	cp MYSTERIOUS_FOSSIL
 	jr z, .loop_ko_2
 	cp CLEFAIRY_DOLL

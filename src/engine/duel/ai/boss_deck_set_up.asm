@@ -111,9 +111,7 @@ SetUpBossStartingHandAndDeck:
 
 .Loop_Deck
 	ld a, [hli]
-	push bc
 	call LoadCardDataToBuffer1_FromDeckIndex
-	pop bc
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
 	jr c, .pokemon_card

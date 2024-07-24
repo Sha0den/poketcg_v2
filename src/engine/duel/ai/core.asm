@@ -570,12 +570,10 @@ CheckIfCardCanBePlayed:
 	ld c, a
 	ld b, 0
 .loop
-	push bc
 	ld e, b
 	ldh a, [hTempCardIndex_ff9f]
 	ld d, a
 	call CheckIfCanEvolveInto
-	pop bc
 	ret nc
 	inc b
 	dec c
@@ -961,6 +959,7 @@ CalculateBDividedByA_Bank5:
 ; to Pokémon in location held by e
 ; this assumes that colorless are paired so
 ; that one colorless energy card provides 2 colorless energy
+; preserves all registers except af
 ; input:
 ;	e = location to check, i.e. PLAY_AREA_*
 ; output:
@@ -1412,12 +1411,10 @@ SortTempHandByIDList:
 	ldh [hTempCardIndex_ff98], a
 	cp -1
 	jr z, .loop_list_id
-	push bc
 	push de
 	call GetCardIDFromDeckIndex
 	ld a, e
 	pop de
-	pop bc
 	cp b
 	jr nz, .not_same
 
@@ -1613,11 +1610,9 @@ CheckForEvolutionInList:
 	jr z, .no_carry
 	ld d, a
 	ld e, PLAY_AREA_ARENA
-	push de
 	push hl
 	call CheckIfCanEvolveInto
 	pop hl
-	pop de
 	jr c, .loop
 
 	ld a, DUELVARS_ARENA_CARD
@@ -1720,9 +1715,7 @@ LookForCardThatIsKnockedOutOnDevolution:
 	; is not a basic card
 	; compare its HP with current damage
 	ld a, d
-	push bc
 	call LoadCardDataToBuffer2_FromDeckIndex
-	pop bc
 	ld a, [wLoadedCard2HP]
 	ld [wTempAI], a
 	ld e, c
@@ -1826,9 +1819,7 @@ CountNumberOfSetUpBenchPokemon:
 
 	ld d, a
 	push de
-	push bc
 	call LoadCardDataToBuffer1_FromDeckIndex
-	pop bc
 
 ; compares card's current HP with max HP
 	ld a, c
@@ -2391,9 +2382,7 @@ CheckForBenchIDAtHalfHPAndCanUseSecondAttack:
 	jr z, .done
 	ld d, a
 	push de
-	push bc
 	call LoadCardDataToBuffer1_FromDeckIndex
-	pop bc
 	ld a, c
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
@@ -2595,9 +2584,7 @@ Func_17583:
 	call GetCardDamageAndMaxHP
 	call CalculateByteTensDigit
 	ld b, a
-	push bc
 	call CountNumberOfEnergyCardsAttached
-	pop bc
 	sla a
 	add $80
 	sub b
@@ -2692,9 +2679,7 @@ HandleLegendaryArticunoEnergyScoring:
 ;	call LookForCardIDInPlayArea_Bank5
 ;	jr nc, .next_2
 ;	ld e, a
-;	push de
 ;	call CountNumberOfEnergyCardsAttached
-;	pop de
 ;	pop hl
 ;	ld b, [hl]
 ;	cp b
@@ -2730,9 +2715,7 @@ HandleLegendaryArticunoEnergyScoring:
 ; with less than the number of energy cards corresponding to its entry
 ; then have AI try to play an energy card from the hand to it
 ;Func_15886:
-;	push hl
 ;	call CreateEnergyCardListFromHand
-;	pop hl
 ;	ret c ; quit if no energy cards in hand
 ;
 ;.loop_energy_cards
@@ -2745,9 +2728,7 @@ HandleLegendaryArticunoEnergyScoring:
 ;	call LookForCardIDInPlayArea_Bank5
 ;	jr nc, .next ; skip if not found in Play Area
 ;	ld e, a
-;	push de
 ;	call CountNumberOfEnergyCardsAttached
-;	pop de
 ;	pop hl
 ;	cp [hl]
 ;	inc hl

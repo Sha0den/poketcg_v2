@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **July 24, 2024:** 2 Files Changed
+- **July 24, 2024:** 9 Files Changed
+    - Eliminate some redundant pushes and pops (mostly in ai files)
+
+<br/>
+
+- **[July 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/6f75e46422f3daa45fc5ae3860f19aad84e0a958):** 2 Files Changed
     - Eliminate some redundant code in home/duel.asm and home/serial.asm
     - Revise a lot of function comments in home/duel.asm
 
