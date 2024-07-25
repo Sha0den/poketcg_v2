@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **July 24, 2024:** 9 Files Changed
+- **July 25, 2024:** 2 Files Changed
+    - Delete BankswitchVRAM function and replace every bank20 call/jp with the inlined code
+
+<br/>
+
+- **[July 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/a796362f634cac719181ae8cfb6ba055db1d1344):** 9 Files Changed
     - Eliminate some redundant pushes and pops (mostly in ai files)
 
 <br/>

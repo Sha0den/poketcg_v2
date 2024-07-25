@@ -515,7 +515,9 @@ GetTileOffsetPointerAndSwitchVRAM:
 ; if bottom bit in wd4cb is set     = VRAM1
 	ld a, [wd4cb]
 	and $1
-	jp BankswitchVRAM
+	ldh [hBankVRAM], a
+	ldh [rVBK], a
+	ret
 
 
 ; converts wVRAMTileOffset to address in VRAM and stores it in wVRAMPointer.
@@ -657,10 +659,12 @@ LoadTilesetGfx:
 	push af
 	ld a, [wd4cb]
 	and $01
-	call BankswitchVRAM
+	ldh [hBankVRAM], a
+	ldh [rVBK], a
 	call CopyGfxDataFromTempBank
 	pop af
-	call BankswitchVRAM
+	ldh [hBankVRAM], a
+	ldh [rVBK], a
 	pop de
 	pop bc
 
@@ -1055,7 +1059,8 @@ LoadOWFrameTiles:
 
 ; get tile offset of register e and load its address in de
 	push hl
-	call BankswitchVRAM
+	ldh [hBankVRAM], a
+	ldh [rVBK], a
 	ld h, $00
 	ld l, e
 	add hl, hl ; *2
@@ -1087,7 +1092,8 @@ LoadOWFrameTiles:
 	lb bc, 1, TILE_SIZE
 	call CopyGfxDataFromTempBank
 	pop af
-	call BankswitchVRAM
+	ldh [hBankVRAM], a
+	ldh [rVBK], a
 	pop bc
 	pop hl
 	ret

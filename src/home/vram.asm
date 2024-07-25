@@ -18,13 +18,3 @@ BankswitchVRAM1::
 	ldh [rVBK], a
 	pop af
 	ret
-
-
-; sets current dest VRAM bank to a
-; preserves all registers
-; input:
-;	a = VRAM bank to use
-BankswitchVRAM::
-	ldh [hBankVRAM], a
-	ldh [rVBK], a
-	ret
