@@ -1,5 +1,7 @@
 ; reads the animation commands from PointerTable_AttackAnimation
 ; of attack in wLoadedAttackAnimation and plays them
+; input:
+;	[wLoadedAttackAnimation] = which attack animation to play (ATK_ANIM_* constant)
 PlayAttackAnimationCommands:
 	ld a, [wLoadedAttackAnimation]
 	or a
@@ -38,15 +40,30 @@ PlayAttackAnimationCommands:
 	pop de
 ;	fallthrough
 
+; input:
+;	de = AttackAnimation_* (from PointerTable_AttackAnimation)
 PlayAttackAnimationCommands_NextCommand:
 	ld a, [de]
 	inc de
 	ld hl, AnimationCommandPointerTable
 	jp JumpToFunctionInTable
 
+AnimationCommandPointerTable:
+	dw AnimationCommand_AnimEnd      ; anim_end
+	dw AnimationCommand_AnimNormal   ; anim_normal
+	dw AnimationCommand_AnimPlayer   ; anim_player
+	dw AnimationCommand_AnimOpponent ; anim_opponent
+	dw AnimationCommand_AnimScreen   ; anim_screen
+	dw AnimationCommand_AnimPlayArea ; anim_play_area
+	dw AnimationCommand_AnimEnd2     ; anim_end2 (unused)
+
+
 AnimationCommand_AnimEnd:
 	ret
 
+
+; input:
+;	de = AttackAnimation_* (from PointerTable_AttackAnimation)
 AnimationCommand_AnimPlayer:
 	ldh a, [hWhoseTurn]
 	ld [wDuelAnimDuelistSide], a
@@ -57,6 +74,9 @@ AnimationCommand_AnimPlayer:
 	ld [wDuelAnimDuelistSide], a
 	jr AnimationCommand_AnimNormal
 
+
+; input:
+;	de = AttackAnimation_* (from PointerTable_AttackAnimation)
 AnimationCommand_AnimOpponent:
 	call SwapTurn
 	ldh a, [hWhoseTurn]
@@ -69,15 +89,17 @@ AnimationCommand_AnimOpponent:
 	ld [wDuelAnimDuelistSide], a
 	jr AnimationCommand_AnimNormal
 
-AnimationCommand_AnimEnd2:
-	ret
 
+; input:
+;	de = AttackAnimation_* (from PointerTable_AttackAnimation)
 AnimationCommand_AnimPlayArea:
 	ld a, [wDamageAnimPlayAreaLocation]
 	and $7f
 	ld [wDuelAnimLocationParam], a
 ;	fallthrough
 
+; input:
+;	de = AttackAnimation_* (from PointerTable_AttackAnimation)
 AnimationCommand_AnimNormal:
 	ld a, [de]
 	inc de
@@ -135,6 +157,7 @@ AnimationCommand_AnimNormal:
 .shake_3
 	ld c, DUEL_ANIM_SMALL_SHAKE_Y
 	ld b, DUEL_ANIM_SMALL_SHAKE_X
+;	fallthrough
 
 .check_duelist
 	ldh a, [hWhoseTurn]
@@ -148,6 +171,9 @@ AnimationCommand_AnimNormal:
 	ld a, b
 	jr .play_anim
 
+
+; input:
+;	de = AttackAnimation_* (from PointerTable_AttackAnimation)
 AnimationCommand_AnimScreen:
 	ld a, [de]
 	inc de
@@ -159,18 +185,17 @@ AnimationCommand_AnimScreen:
 	call PlayDuelAnimation
 	jp PlayAttackAnimationCommands_NextCommand
 
-AnimationCommandPointerTable:
-	dw AnimationCommand_AnimEnd      ; anim_end
-	dw AnimationCommand_AnimNormal   ; anim_normal
-	dw AnimationCommand_AnimPlayer   ; anim_player
-	dw AnimationCommand_AnimOpponent ; anim_opponent
-	dw AnimationCommand_AnimScreen   ; anim_screen
-	dw AnimationCommand_AnimPlayArea ; anim_play_area
-	dw AnimationCommand_AnimEnd2     ; anim_end2 (unused)
+
+AnimationCommand_AnimEnd2:
+	ret
+
 
 ; sets wDuelAnimationScreen according to wDuelAnimSetScreen
-; if SET_ANIM_SCREEN_MAIN,      set it to Main Scene
-; if SET_ANIM_SCREEN_PLAY_AREA, set it to Play Area scene
+; preserves bc and de
+; input:
+;	[wDuelAnimSetScreen] = SET_ANIM_SCREEN_MAIN:      use DUEL_ANIM_SCREEN_MAIN_SCENE
+;	[wDuelAnimSetScreen] = SET_ANIM_SCREEN_PLAY_AREA: use DUEL_ANIM_SCREEN_PLAYER_PLAY_AREA
+;	                                                   or DUEL_ANIM_SCREEN_OPP_PLAY_AREA
 SetDuelAnimationScreen:
 	ld a, [wDuelAnimSetScreen]
 	cp SET_ANIM_SCREEN_PLAY_AREA
@@ -228,10 +253,12 @@ SetDuelAnimationScreen:
 	ld l, UNKNOWN_SCREEN_5
 	ld h, PLAYER_TURN
 	ld a, DUEL_ANIM_SCREEN_OPP_PLAY_AREA
+;	fallthrough
 
 .ok
 	ld [wDuelAnimationScreen], a
 	ret
+
 
 Func_190f4:
 	ld a, [wDuelAnimSetScreen]
@@ -239,6 +266,8 @@ Func_190f4:
 	jr z, Func_1910f
 ;	fallthrough
 
+; input:
+;	a = SET_ANIM_SCREEN_* constant
 Func_190fb:
 	cp SET_ANIM_SCREEN_MAIN
 	ret nz
@@ -249,6 +278,7 @@ Func_190fb:
 	ret z
 	bank1call DrawDuelMainScene
 	ret
+
 
 Func_1910f:
 	call SetDuelAnimationScreen
@@ -269,9 +299,12 @@ Func_1910f:
 	ld [wDuelDisplayedScreen], a
 	jp DrawWideTextBox
 
-; prints text related to the damage received
-; by card stored in wTempNonTurnDuelistCardID
+
+; prints text related to the damage received by Pokemon with card ID in wTempNonTurnDuelistCardID.
 ; takes into account type effectiveness
+; preserves all registers except af
+; input:
+;	[wTempNonTurnDuelistCardID] = card ID of the Pokemon causing the damage
 PrintDamageText:
 	push hl
 	push bc
@@ -307,8 +340,12 @@ PrintDamageText:
 	pop hl
 	ret
 
-; returns in hl the text id associated with
-; the damage in hl and its effectiveness
+
+; preserves bc
+; input:
+;	hl = amount of damage
+; output:
+;	hl = text id associated with the damage in hl and its effectiveness
 GetDamageText:
 	ld a, l
 	or h
@@ -337,14 +374,14 @@ GetDamageText:
 	ldtx hl, ResistanceNoDamageText
 	ret ; resistant
 
+
 UpdateMainSceneHUD:
 	ld a, [wDuelDisplayedScreen]
 	cp DUEL_MAIN_SCENE
 	ret nz
 	bank1call DrawDuelHUDs
-	ret
-
 Func_191a3:
 	ret
+
 
 INCLUDE "data/duel/animations/attack_animations.asm"

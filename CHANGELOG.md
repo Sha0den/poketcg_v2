@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **July 25, 2024:** 2 Files Changed
+- **[July 25, 2024](https://github.com/Sha0den/poketcg_v2/commit/64e64318ae0c40f6aa22eea5b8f3b4c7a7931a9a):** 2 Files Changed
     - Delete BankswitchVRAM function and replace every bank20 call/jp with the inlined code
 
 <br/>
@@ -242,6 +242,12 @@
 
 
 ## Miscellaneous Changes
+- **July 30, 2024:** 3 Files Changed
+    - Try to standardize the function comments that are used in the engine/duel/animations files
+    - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
 - **[July 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/87cc896a64a7a987321b9fd94c8773aa509a6108):** 1 File Changed
     - Restructure home/math.asm
 

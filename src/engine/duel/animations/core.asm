@@ -1,3 +1,4 @@
+; preserves all registers except af
 _ResetAnimationQueue::
 	push hl
 	push bc
@@ -24,6 +25,7 @@ _ResetAnimationQueue::
 	pop bc
 	pop hl
 	ret
+
 
 PlayLoadedDuelAnimation::
 	ld a, [wDoFrameFunction + 0]
@@ -143,8 +145,11 @@ PlayLoadedDuelAnimation::
 	scf
 	ret
 
-; loads the correct coordinates/flags for
-; sprite animation in wAnimationQueue
+
+; loads the correct coordinates/flags for the sprite animation in wAnimationQueue
+; preserves all registers except af
+; input:
+;	[wAnimationQueue] = sprite ID (SPRITE_* constant)
 LoadAnimCoordsAndFlags:
 	push hl
 	push bc
@@ -164,7 +169,6 @@ LoadAnimCoordsAndFlags:
 
 	ld bc, SPRITE_ANIM_FLAGS - SPRITE_ANIM_COORD_Y
 	add hl, bc
-	ld c, a ; useless
 	and (1 << SPRITE_ANIM_FLAG_Y_SUBTRACT) | (1 << SPRITE_ANIM_FLAG_X_SUBTRACT)
 	or [hl]
 	ld [hl], a
@@ -172,14 +176,16 @@ LoadAnimCoordsAndFlags:
 	pop hl
 	ret
 
-; outputs x and y coordinates for the sprite animation
+
+; outputs x and y coordinates for the sprite animation,
 ; taking into account who the turn duelist is.
 ; also returns in a the allowed animation flags of
 ; the configuration that is selected.
+; preserves de and hl
 ; output:
-; a = anim flags
-; b = x coordinate
-; c = y coordinate
+;	a = animation flags
+;	b = x coordinate
+;	c = y coordinate
 GetAnimCoordsAndFlags:
 	push hl
 	ld c, 0
@@ -219,14 +225,15 @@ GetAnimCoordsAndFlags:
 	ld b, 0
 	ld hl, AnimationCoordinates
 	add hl, bc
-	ld b, [hl] ; x coord
+	ld b, [hl] ; x coordinate
 	inc hl
-	ld c, [hl] ; y coord
+	ld c, [hl] ; y coordinate
 	inc hl
 	ld a, [wAnimFlags]
 	and [hl] ; flags
 	pop hl
 	ret
+
 
 AnimationCoordinatesIndex:
 ; animations in the Duel Main Scene
@@ -240,6 +247,7 @@ AnimationCoordinatesIndex:
 ; animations in the Opponent's Play Area, for each Play Area Pokemon
 	db $09, $0a, $0b, $0c, $0d, $0e ; player
 	db $09, $0a, $0b, $0c, $0d, $0e ; opponent
+
 
 MACRO anim_coords
 	db \1
@@ -271,8 +279,9 @@ AnimationCoordinates:
 	anim_coords 56,  40, $00
 	anim_coords 24,  40, $00
 
-; appends to end of wDuelAnimBuffer
-; the current duel animation
+
+; appends the current duel animation to the end of wDuelAnimBuffer
+; preserves all registers except af
 LoadDuelAnimationToBuffer::
 	push hl
 	push bc
@@ -312,8 +321,10 @@ LoadDuelAnimationToBuffer::
 	pop hl
 	ret
 
-; loads the animations from wDuelAnimBuffer
-; in ascending order, starting at wDuelAnimBufferCurPos
+
+; loads the animations from wDuelAnimBuffer in ascending order,
+; starting at wDuelAnimBufferCurPos
+; preserves bc and hl
 PlayBufferedDuelAnimations:
 	push hl
 	push bc
@@ -358,8 +369,13 @@ PlayBufferedDuelAnimations:
 	pop hl
 	ret
 
-; gets data from Animations for anim ID in a
-; outputs the pointer to the data in hl
+
+; gets data from Animations table for the anim ID in a
+; preserves bc and de
+; input:
+;	[wTempAnimation] = animation ID (DUEL_ANIM_* constant)
+; output:
+;	hl = pointer to the animation data
 GetAnimationData:
 	push bc
 	ld a, [wTempAnimation]
@@ -375,6 +391,7 @@ GetAnimationData:
 	pop bc
 	ret
 
+
 _UpdateQueuedAnimations::
 	ld a, [wActiveScreenAnim]
 	cp $ff
@@ -385,9 +402,9 @@ _UpdateQueuedAnimations::
 	cp $80
 	jr z, .asm_1cb11
 
-; iterate through all animations
-; if there is a sprite animation that has finished
-; then disable it and clear its slot in the queue
+; iterate through all animations, and
+; if there is a sprite animation that has finished,
+; then disable it and clear its slot in the queue.
 	ld hl, wAnimationQueue
 	ld c, ANIMATION_QUEUE_LENGTH
 .loop_queue
@@ -416,8 +433,7 @@ _UpdateQueuedAnimations::
 	; if a is $ff, then play buffered animations
 	cp $ff
 	ret nz
-	call PlayBufferedDuelAnimations
-	ret
+	jp PlayBufferedDuelAnimations
 
 .screen_anim
 	ld hl, wScreenAnimUpdatePtr
@@ -433,6 +449,10 @@ _UpdateQueuedAnimations::
 	ld [wd4c0], a
 	jr .asm_1cafb ; will play buffered animations
 
+
+; preserves all registers except af
+; output:
+;	carry = set:  if wDoFrameFunction != UpdateQueuedAnimations
 ClearAndDisableQueuedAnimations::
 	push hl
 	push bc
@@ -484,9 +504,46 @@ ClearAndDisableQueuedAnimations::
 	scf
 	jr .done
 
+
+; input:
+;	a = DUEL_ANIM_* constant
+Func_1ce03:
+	cp DUEL_ANIM_158
+	jr z, .asm_1ce17
+	sub $96
+	add a
+	ld c, a
+	ld b, $00
+	ld hl, .pointer_table
+	add hl, bc
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp Func_3bb5
+
+.asm_1ce17
+	ld a, [wDuelAnimDamage]
+	ld l, a
+	ld a, [wDuelAnimDamage + 1]
+	ld h, a
+	jp Func_3bb5
+
+.pointer_table
+	dw Func_190f4         ; DUEL_ANIM_150
+	dw PrintDamageText    ; DUEL_ANIM_PRINT_DAMAGE
+	dw UpdateMainSceneHUD ; DUEL_ANIM_UPDATE_HUD
+	dw Func_191a3         ; DUEL_ANIM_153
+	dw Func_191a3         ; DUEL_ANIM_154
+	dw Func_191a3         ; DUEL_ANIM_155
+	dw Func_191a3         ; DUEL_ANIM_156
+	dw Func_191a3         ; DUEL_ANIM_157
+
+
+; input:
+;	a = DUEL_ANIM_* constant
 Func_1cb5e:
 	cp $96
-	jp nc, Func_1ce03
+	jr nc, Func_1ce03
 	cp $8c
 	jp nz, InitScreenAnimation
 .damage
@@ -521,6 +578,9 @@ Func_1cb5e:
 	ld [wDuelAnimEffectiveness], a
 	ret
 
+
+; input:
+;	[wDuelAnimDamage] = amount of damage to display
 DrawDamageAnimationNumbers:
 	call GetDamageNumberChars
 	xor a
@@ -546,12 +606,15 @@ DrawDamageAnimationNumbers:
 	jr c, .loop_num_chars
 	ret
 
+
 ; creates a character sprite
 ; given index in wDamageCharIndex
 ; the relative x-positions for each index are:
-; index:  0   1   2   3   4   5
-; rel x: -16 -8   0   8  -8  -16
+;	index:  0   1   2   3   4   5
+;	rel x: -16 -8   0   8  -8  -16
 ; indices 0, 1 and 2 are for number chars
+; input:
+;	a = sprite animation ID (SPRITE_ANIM_* constant)
 CreateDamageCharSprite:
 	push af
 	ld a, SPRITE_DUEL_DAMAGE
@@ -583,6 +646,9 @@ CreateDamageCharSprite:
 .RelativeXPos:
 	db -16, -8, 0, 8, -8, -16
 
+
+; input:
+;	[wDuelAnimDamage] = number to convert to graphic tiles
 GetDamageNumberChars:
 	ld a, [wDuelAnimDamage]
 	ld l, a
@@ -628,6 +694,8 @@ GetDamageNumberChars:
 	ld h, a
 	ret
 
+
+; preserves hl
 DrawDamageAnimationWeak:
 	push hl
 	ld a, 3
@@ -638,6 +706,8 @@ DrawDamageAnimationWeak:
 	pop hl
 	ret
 
+
+; preserves hl
 DrawDamageAnimationResist:
 	push hl
 	ld a, 4
@@ -651,6 +721,8 @@ DrawDamageAnimationResist:
 	pop hl
 	ret
 
+
+; preserves hl
 DrawDamageAnimationArrow:
 	push hl
 	ld a, 5
