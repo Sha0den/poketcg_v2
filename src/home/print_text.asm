@@ -12,9 +12,8 @@ PlaceTextItems::
 	ret nz ; return if no more items of text
 	ld e, [hl] ; y coordinate
 	inc hl ; hl = text ID
-	call InitTextPrinting
 	push hl
-	call ProcessTextFromPointerToID
+	call InitTextPrinting_ProcessTextFromPointerToID
 	pop hl
 	inc hl
 	inc hl
