@@ -242,7 +242,13 @@
 
 
 ## Miscellaneous Changes
-- **July 30, 2024:** 3 Files Changed
+- **August 1, 2024:** 2 Files Changed
+    - Try to standardize the function comments that are used in engine/duel/core.asm
+    - Plus some corrections/optimizations/shuffling of functions in said file
+
+<br/>
+
+- **[July 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/a9b7e3235658e1dd0817372a9f0b2fc048e27385):** 3 Files Changed
     - Try to standardize the function comments that are used in the engine/duel/animations files
     - Plus some corrections/optimizations/shuffling of functions in said files
 

@@ -130,7 +130,7 @@ SafeCopyDataDEtoHL::
 	ld a, [wLCDC]
 	bit LCDC_ENABLE_F, a
 	jr nz, HblankCopyDataDEtoHL  ; LCD is on
-.lcd_off_loop
+.lcd_off_loop::
 	ld a, [de]
 	inc de
 	ld [hli], a
