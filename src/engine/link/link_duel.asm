@@ -16,7 +16,7 @@ _SetUpAndStartLinkDuel:
 
 	bank1call LoadPlayerDeck
 	call SwitchToCGBNormalSpeed
-	bank1call DecideLinkDuelVariables
+	call DecideLinkDuelVariables
 	push af
 	call RestoreVBlankFunction
 	pop af
@@ -105,9 +105,8 @@ _SetUpAndStartLinkDuel:
 
 .ExchangeNamesAndDecks
 	ld de, wDefaultText
-	push de
 	call CopyPlayerName
-	pop hl
+	ld hl, wDefaultText
 	ld de, wNameBuffer
 	ld c, NAME_BUFFER_LENGTH
 	call SerialExchangeBytes
@@ -174,4 +173,119 @@ _SetUpAndStartLinkDuel:
 .check_a_btn
 	bit A_BUTTON_F, b
 	jr z, .loop_input
+	ret
+
+
+; seems to communicate with another device for starting a duel
+; output:
+;	hl = wPlayerDuelVariables:   if [wSerialOp] = $29
+;	hl = wOpponentDuelVariables: if [wSerialOp] = $12
+;	carry = set:  if the link transfer was cancelled
+DecideLinkDuelVariables:
+	call Func_0e8e
+	ldtx hl, PressStartWhenReadyText
+	call DrawWideTextBox_PrintText
+	call EnableLCD
+.input_loop
+	call DoFrame
+	ldh a, [hKeysPressed]
+	bit B_BUTTON_F, a
+	jr nz, .link_cancel
+	and START
+	call Func_0cc5
+	jr nc, .input_loop
+	ld hl, wPlayerDuelVariables
+	ld a, [wSerialOp]
+	cp $29
+	jr z, .link_continue
+	ld hl, wOpponentDuelVariables
+	cp $12
+	jr z, .link_continue
+.link_cancel
+	call ResetSerial
+	scf
+	ret
+.link_continue
+	or a
+	ret
+
+
+; output:
+;	carry = set:  if ???
+Func_0cc5:
+	ld hl, wSerialRecvCounter
+	or a
+	jr nz, .asm_cdc
+	ld a, [hl]
+	or a
+	ret z
+	ld [hl], $00
+	ld a, [wSerialRecvBuf]
+	ld e, $12
+	cp $29
+	jr z, .asm_cfa
+	xor a
+	scf
+	ret
+
+.asm_cdc
+	ld a, $29
+	ldh [rSB], a
+	ld a, SC_INTERNAL
+	ldh [rSC], a
+	ld a, SC_START | SC_INTERNAL
+	ldh [rSC], a
+.asm_ce8
+	ld a, [hl]
+	or a
+	jr z, .asm_ce8
+	ld [hl], $00
+	ld a, [wSerialRecvBuf]
+	ld e, $29
+	cp $12
+	jr z, .asm_cfa
+	xor a
+	scf
+	ret
+
+.asm_cfa
+	xor a
+	ld [wSerialSendBufIndex], a
+	ld [wcb80], a
+	ld [wSerialSendBufToggle], a
+	ld [wSerialSendSave], a
+	ld [wcba3], a
+	ld [wSerialRecvIndex], a
+	ld [wSerialRecvCounter], a
+	ld [wSerialLastReadCA], a
+	ld a, e
+	cp $29
+	jr nz, .asm_d21
+	ld bc, $800
+.asm_d1b
+	dec bc
+	ld a, c
+	or b
+	jr nz, .asm_d1b
+	ld a, e
+.asm_d21
+	ld [wSerialOp], a
+	scf
+	ret
+
+
+; enters slave mode (external clock) for serial transfer?
+; preserves de
+Func_0e8e::
+	call ClearSerialData
+	ld a, $12
+	ldh [rSB], a         ; send $12
+	ld a, SC_START | SC_EXTERNAL
+	ldh [rSC], a         ; use external clock, set transfer start flag
+	ldh a, [rIF]
+	and ~(1 << INT_SERIAL)
+	ldh [rIF], a         ; clear serial interrupt flag
+	ldh a, [rIE]
+	or 1 << INT_SERIAL   ; enable serial interrupt
+	ldh [rIE], a
 	ret

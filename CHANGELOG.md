@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 1, 2024:** 2 Files Changed
+- **August 2, 2024:** 3 Files Changed
+    - Move a few functions from banks 0/1 to bank 6 (engine/link/link_duel.asm)
+
+<br/>
+
+- **[August 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/8f11d7eeea33e822b14a4cf76b0af9a22ed1153f):** 2 Files Changed
     - Restructure TossCoin functions in home/coin_toss.asm
     - Eliminate a redundant call in home/print_text.asm
 

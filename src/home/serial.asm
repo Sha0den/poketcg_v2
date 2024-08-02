@@ -329,23 +329,6 @@ SerialExchangeBytes::
 	ret
 
 
-; enters slave mode (external clock) for serial transfer?
-; preserves de
-Func_0e8e::
-	call ClearSerialData
-	ld a, $12
-	ldh [rSB], a         ; send $12
-	ld a, SC_START | SC_EXTERNAL
-	ldh [rSC], a         ; use external clock, set transfer start flag
-	ldh a, [rIF]
-	and ~(1 << INT_SERIAL)
-	ldh [rIF], a         ; clear serial interrupt flag
-	ldh a, [rIE]
-	or 1 << INT_SERIAL   ; enable serial interrupt
-	ldh [rIE], a
-	ret
-
-
 ; exchanges RNG during a link duel between both games
 ExchangeRNG::
 	ld a, [wDuelType]
