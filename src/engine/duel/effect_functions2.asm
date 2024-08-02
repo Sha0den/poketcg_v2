@@ -211,7 +211,7 @@ FindBasicEnergy:
 	jr c, .exit ; no Basic Energy cards in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseBasicEnergyCardText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -286,7 +286,7 @@ FindBasicEnergyToAttach:
 	jr c, .exit ; no Basic Energy cards in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseBasicEnergyCardText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -378,7 +378,7 @@ FindTrainer:
 	jr c, .exit ; no Trainer cards in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseTrainerCardText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -453,7 +453,7 @@ FindAnyPokemon:
 	jr c, .exit ; no Pokemon in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChoosePokemonCardText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -511,7 +511,7 @@ FindEvolution:
 	jr c, .exit ; no Evolution cards in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseEvolutionCardText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -599,7 +599,7 @@ FindBasicPokemon:
 	jr c, .exit ; no Basic Pokemon in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseBasicPokemonText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -668,7 +668,7 @@ FindBasicFightingPokemon:
 	jr c, .exit ; no Basic Fighting Pokemon in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseBasicFightingPokemonText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -752,7 +752,7 @@ FindNidoran:
 	jr c, .exit ; no Nidoran in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseNidoranText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -834,7 +834,7 @@ FindOddish:
 	jr c, .exit ; no Oddish in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseAnOddishText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -909,7 +909,7 @@ FindBellsprout:
 	jr c, .exit ; no Bellsprout in the Deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseABellsproutText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -984,7 +984,7 @@ FindKrabby:
 	jr c, .exit ; no Krabby in the deck
 
 ; draw deck list interface and print text
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseAKrabbyText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText

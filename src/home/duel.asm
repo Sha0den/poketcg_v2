@@ -1681,7 +1681,7 @@ HandleAfterDamageEffects::
 	bank1call ApplyStatusConditionQueue
 	call Func_1bb4
 	bank1call UpdateArenaCardLastTurnDamage
-	bank1call Func_6e49
+	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
 	or a
 	ret
 
@@ -1712,7 +1712,7 @@ HandleConfusionDamageToSelf::
 	ld a, 20 ; damage
 	call DealConfusionDamageToSelf
 	call Func_1bb4
-	bank1call Func_6e49
+	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
 	bank1call ClearNonTurnTemporaryDuelvars
 	or a
 	ret

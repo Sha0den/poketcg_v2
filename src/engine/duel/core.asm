@@ -350,7 +350,7 @@ DuelMenuShortcut_PlayerActivePokemon:
 ; triggered by pressing SELECT in the duel menu
 DuelMenuShortcut_BothActivePokemon:
 	call FinishQueuedAnimations
-	call Func_4597
+	call OpenVariousPlayAreaScreens_FromSelectPresses
 	jr DuelMainInterface
 
 
@@ -624,11 +624,12 @@ OpenActivePokemonScreen:
 	jp OpenCardPage_FromCheckPlayArea
 
 
+; formerly Func_4597
 ; called when the Player presses SELECT while inside the main duel interface
 ; - 1st SELECT press displays the full play area screen
 ; - 2nd SELECT press displays the screen that lists the Player's play area Pokemon
 ; - 3rd SELECT press displays the screen that lists the opponent's play area Pokemon
-Func_4597:
+OpenVariousPlayAreaScreens_FromSelectPresses:
 	call OpenInPlayAreaScreen_FromSelectButton
 	ret c
 	call .Func_45a9
@@ -637,6 +638,8 @@ Func_4597:
 	call .Func_45a9
 	jp SwapTurn
 
+; draws the screen that lists the turn holder's play area Pokemon
+; and handles input to determine where to go next
 ; output:
 ;	carry = set:  if the Player pressed the B button
 .Func_45a9
@@ -3389,7 +3392,8 @@ SetDiscardPileScreenTexts:
 	jp SetCardListHeaderText
 
 
-Func_5591:
+; formerly Func_5591
+InitAndDrawCardListScreenLayout_WithSelectCheckMenu:
 	call InitAndDrawCardListScreenLayout
 	ld a, SELECT_CHECK
 	ld [wCardListItemSelectionMenuType], a
@@ -3442,7 +3446,7 @@ DrawCardListScreenLayout:
 	lb bc, 8, 6
 	call FillRectangle
 	call ApplyBGP6OrSGB3ToCardImage
-	call Func_5744
+	farcall PrintSortNumberInCardList_CallFromPointer
 	ld a, [wDuelTempList]
 	cp $ff
 	scf
@@ -3698,51 +3702,6 @@ LoadSelectedCardGfx:
 	call LoadLoaded1CardGfx
 	call SetBGP6OrSGB3ToCardPalette
 	jp FlushAllPalettesOrSendPal23Packet
-
-
-; preserves bc
-; output:
-;	[wPrintSortNumberInCardListPtr] = pointer for PrintSortNumberInCardList function
-;	[wSortCardListByID] = 1
-Func_5735:
-	ld hl, wPrintSortNumberInCardListPtr
-	ld de, PrintSortNumberInCardList
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ld a, 1
-	ld [wSortCardListByID], a
-	ret
-
-
-Func_5744:
-	ld hl, wPrintSortNumberInCardListPtr
-	jp CallIndirect
-
-
-; goes through the list at wDuelTempList + 10
-; and prints the number stored in each entry
-; beside the corresponding card in screen.
-; used in lists for reordering cards in the deck.
-; preserves de
-; input:
-;	wDuelTempList + 10 = $ff terminated list containing numbers for sorting
-PrintSortNumberInCardList:
-	lb bc, 1, 2 ; initial screen coordinates for printing
-	ld hl, wDuelTempList + 10
-.next
-	ld a, [hli]
-	cp $ff
-	ret z ; finished with loops
-	or a ; SYM_SPACE
-	jr z, .space
-	add SYM_0 ; load number symbol
-.space
-	call WriteByteToBGMap0
-	; move two lines down
-	inc c
-	inc c
-	jr .next
 
 
 ; draws the card page of the card at wLoadedCard1 and listens for input
@@ -5544,19 +5503,21 @@ PrintPlayAreaCardList:
 	ret
 
 
+; formerly Func_6194
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset (PLAY_AREA_* constant)
-Func_6194:
-	call Func_6186
+InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox:
+	call InitAndPrintPlayAreaCardInformationAndLocation
 	ld a, [wCurPlayAreaY]
 	ld e, a
 	ld d, 0
 	jp SetCursorParametersForTextBox_Default
 
 
+; formerly Func_6186
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset (PLAY_AREA_* constant)
-Func_6186:
+InitAndPrintPlayAreaCardInformationAndLocation:
 	ld hl, wCurPlayAreaSlot
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld [hli], a
@@ -6798,7 +6759,7 @@ HandleSpecialDuelMainSceneHotkeys:
 	scf
 	ret
 .both_duelist_play_areas
-	call Func_4597
+	call OpenVariousPlayAreaScreens_FromSelectPresses
 	scf
 	ret
 .down_pressed
@@ -7752,7 +7713,8 @@ ApplyStatusConditionToArenaPokemon:
 	ret
 
 
-Func_6e49::
+; formerly Func_6e49
+HandleDestinyBondAndBetweenTurnKnockOuts::
 	call HandleDestinyBondSubstatus
 ;	fallthrough
 
@@ -8155,86 +8117,6 @@ PrintThereWasNoEffectFromStatusText::
 	cp ASLEEP
 	ret z
 	ldtx hl, ThereWasNoEffectFromConfusionText
-	ret
-
-
-
-; if there is an Evolved Pokemon in the given location, list the card indices
-; of all stages in that location and return the card one stage below in d.
-; input:
-;	[hTempPlayAreaLocation_ff9d] = which play area location to check (PLAY_AREA_* constant)
-; output:
-;	a = card ID for the Pokemon in the given location
-;	d = card ID for the previous stage of the Pokemon in the given location
-;	carry = set:  if the Pokemon in the given location is Basic
-GetCardOneStageBelow:
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .not_basic
-	scf
-	ret
-
-.not_basic
-	ld hl, wAllStagesIndices
-	ld a, $ff
-	ld [hli], a
-	ld [hli], a
-	ld [hl], a
-
-; loads deck indices of the stages present in hTempPlayAreaLocation_ff9d.
-; the three stages are loaded consecutively in wAllStagesIndices.
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	or CARD_LOCATION_ARENA
-	ld c, a
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop
-	ld a, [hl]
-	cp c
-	jr nz, .next
-	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .next
-	ld b, l
-	push hl
-	ld a, [wLoadedCard2Stage]
-	ld e, a
-	ld d, $00
-	ld hl, wAllStagesIndices
-	add hl, de
-	ld [hl], b
-	pop hl
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop
-
-; if card at hTempPlayAreaLocation_ff9d is a stage 1, load d with basic card.
-; otherwise if stage 2, load d with the stage 1 card.
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD_STAGE
-	call GetTurnDuelistVariable
-	ld hl, wAllStagesIndices ; pointing to basic
-	cp STAGE1
-	jr z, .done
-	; if stage1 was skipped, hl should point to Basic stage card
-	cp STAGE2_WITHOUT_STAGE1
-	jr z, .done
-	inc hl ; pointing to stage 1
-.done
-	ld d, [hl]
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
-	ld e, a
-	or a
 	ret
 
 
@@ -8806,6 +8688,7 @@ PlayAttackAnimation_DealAttackDamageSimple::
 ;	b = play area location offset (PLAY_AREA_* constant), if applicable
 ;	c = wDamageEffectiveness constant (to print WEAK or RESIST if necessary)
 ;	de = damage dealt by the attack (to display the animation with the number)
+;	h = PLAYER_TURN or OPPONENT_TURN (for animation screen coordinates)
 ;	[wLoadedAttackAnimation] = which animation to play (ATK_ANIM_* constant)
 PlayAttackAnimation::
 	ldh a, [hWhoseTurn]
@@ -8813,11 +8696,10 @@ PlayAttackAnimation::
 	push hl
 	push de
 	push bc
-	ld a, [wWhoseTurn]
-	ldh [hWhoseTurn], a
 	ld a, c
 	ld [wDamageAnimEffectiveness], a
-	ldh a, [hWhoseTurn]
+	ld a, [wWhoseTurn]
+	ldh [hWhoseTurn], a
 	cp h
 	jr z, .got_location
 	set 7, b
@@ -8945,7 +8827,7 @@ PlayAttackAnimation::
 ;	ld [wExcludeArenaPokemon], a
 ;	call PrintPlayAreaCardList
 ;	call EnableLCD
-;	jp Func_6186
+;	jp InitAndPrintPlayAreaCardInformationAndLocation
 ;
 ;
 ; prints 8 (Energy) symbols in a row that were previously stored in wDefaultText

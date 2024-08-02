@@ -434,7 +434,8 @@ Serial_TossCoinATimes:
 	jp TossCoinATimes
 
 
-Func_61a1:
+; formerly Func_61a1
+SetupPlayAreaScreen:
 	xor a
 	ld [wExcludeArenaPokemon], a
 	ld a, [wDuelDisplayedScreen]
@@ -446,13 +447,16 @@ Func_61a1:
 	jp LoadDuelCheckPokemonScreenTiles
 
 
+; sets up and draws the screen that shows the turn holder's play area Pokemon.
+; the cursor is set to the given location and A/B input from the Player exits the screen.
+; formerly Func_2c10b
 ; input:
 ;	a = play area location offset (PLAY_AREA_* constant)
-Func_2c10b:
+DrawPlayAreaScreenToShowChanges:
 	ldh [hTempPlayAreaLocation_ff9d], a
-	call Func_61a1
+	call SetupPlayAreaScreen
 	bank1call PrintPlayAreaCardList_EnableLCD
-	bank1call Func_6194
+	bank1call InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox
 	ret
 
 
@@ -633,7 +637,7 @@ ReorderCardsOnTopOfDeck:
 	ldtx hl, ChooseTheOrderOfTheCardsText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
-	bank1call Func_5735
+	call PrintSortNumberInCardList_SetPointer
 
 .loop_selection
 	bank1call DisplayCardList
@@ -659,7 +663,7 @@ ReorderCardsOnTopOfDeck:
 
 ; refresh screen
 	push af
-	bank1call Func_5744
+	call PrintSortNumberInCardList_CallFromPointer
 	pop af
 
 ; check if we're done ordering
@@ -698,8 +702,55 @@ ReorderCardsOnTopOfDeck:
 	; clear this byte
 	dec hl
 	ld [hl], $00 ; overwrite order number with 0
-	bank1call Func_5744
+	call PrintSortNumberInCardList_CallFromPointer
 	jr .loop_selection
+
+
+; formerly Func_5735
+; preserves bc
+; output:
+;	[wPrintSortNumberInCardListPtr] = pointer for PrintSortNumberInCardList function
+;	[wSortCardListByID] = 1
+PrintSortNumberInCardList_SetPointer:
+	ld hl, wPrintSortNumberInCardListPtr
+	ld de, PrintSortNumberInCardList
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	ld a, 1
+	ld [wSortCardListByID], a
+	ret
+
+
+; formerly Func_5744
+PrintSortNumberInCardList_CallFromPointer:
+	ld hl, wPrintSortNumberInCardListPtr
+	jp CallIndirect
+
+
+; goes through the list at wDuelTempList + 10
+; and prints the number stored in each entry
+; beside the corresponding card in screen.
+; used in lists for reordering cards in the deck.
+; preserves de
+; input:
+;	wDuelTempList + 10 = $ff terminated list containing numbers for sorting
+PrintSortNumberInCardList:
+	lb bc, 1, 2 ; initial screen coordinates for printing
+	ld hl, wDuelTempList + 10
+.next
+	ld a, [hli]
+	cp $ff
+	ret z ; finished with loops
+	or a ; SYM_SPACE
+	jr z, .space
+	add SYM_0 ; load number symbol
+.space
+	call WriteByteToBGMap0
+	; move two lines down
+	inc c
+	inc c
+	jr .next
 
 
 ; output:
@@ -1277,7 +1328,7 @@ CallForRandomBasic50PercentEffect:
 	call PickRandomBasicCardFromDeck
 	jr nc, .put_in_bench
 	ld a, ATK_ANIM_FRIENDSHIP_SONG
-	call Func_2c12e
+	call PlayAttackAnimationOverAttackingPokemon
 	call .none_came_text
 	jp ShuffleCardsInDeck
 
@@ -1286,17 +1337,18 @@ CallForRandomBasic50PercentEffect:
 	call AddCardToHand
 	call PutHandPokemonCardInPlayArea
 	ld a, ATK_ANIM_FRIENDSHIP_SONG
-	call Func_2c12e
+	call PlayAttackAnimationOverAttackingPokemon
 	ldh a, [hTempCardIndex_ff98]
 	ldtx hl, PlacedOnTheBenchText
 	bank1call DisplayCardDetailScreen
 	jp ShuffleCardsInDeck
 
 
+; formerly Func_2c12e
 ; preserves de
 ; input:
 ;	a = which attack animation to play (ATK_ANIM_* constant)
-Func_2c12e:
+PlayAttackAnimationOverAttackingPokemon:
 	ld [wLoadedAttackAnimation], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld b, a
@@ -1592,7 +1644,7 @@ Scavenge_AISelection:
 ;	[hTempPlayAreaLocation_ffa1] = deck index of a Trainer card in own discard pile
 Scavenge_TrainerPlayerSelection:
 	call CreateTrainerCardListFromDiscardPile
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
 	call SetCardListHeaderText
@@ -3561,6 +3613,21 @@ DevolutionBeam_PlayerSelection:
 	jr .store_selection
 
 
+; handles the Player's selection of an Evolved Pokemon in the turn holder's play area
+; output:
+;	carry = set:  if the operation was cancelled by the Player (with B button)
+HandleEvolvedCardSelection:
+	bank1call HasAlivePokemonInPlayArea
+.loop
+	bank1call OpenPlayAreaScreenForSelection
+	ret c ; exit if the B button was pressed
+	add DUELVARS_ARENA_CARD_STAGE
+	call GetTurnDuelistVariable
+	or a
+	jr z, .loop ; if Basic, reset loop
+	ret
+
+
 ; AI picks the first Evolved Pokemon in the Player's play area.
 ; if none were found, it picks the first Evolved Pokemon in its own play area.
 ; preserves de
@@ -3678,7 +3745,7 @@ DevolutionBeam_DevolveEffect:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	add DUELVARS_ARENA_CARD
 	call GetTurnDuelistVariable
-	bank1call GetCardOneStageBelow
+	call GetCardOneStageBelow
 	call PrintDevolvedCardNameAndLevelText
 
 	ld a, d
@@ -3698,18 +3765,85 @@ DevolutionBeam_DevolveEffect:
 	ret
 
 
-; handles the Player's selection of an Evolved Pokemon in the turn holder's play area
+; if there is an Evolved Pokemon in the given location, list the card indices
+; of all stages in that location and return the card one stage below in d.
+; input:
+;	[hTempPlayAreaLocation_ff9d] = which play area location to check (PLAY_AREA_* constant)
 ; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-HandleEvolvedCardSelection:
-	bank1call HasAlivePokemonInPlayArea
+;	a = card ID for the Pokemon in the given location
+;	d = card ID for the previous stage of the Pokemon in the given location
+;	carry = set:  if the Pokemon in the given location is Basic
+;	[wAllStagesIndices] = deck index of the Basic Pokemon in the given location ($ff if none)
+;	[wAllStagesIndices + 1] = deck index of the Stage 1 Pokemon in the given location ($ff if none)
+;	[wAllStagesIndices + 2] = deck index of the Stage 2 Pokemon in the given location ($ff if none)
+GetCardOneStageBelow:
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, [wLoadedCard2Stage]
+	or a
+	jr nz, .not_basic
+	scf
+	ret
+
+.not_basic
+	ld hl, wAllStagesIndices
+	ld a, $ff
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+
+; loads deck indices of the stages present in hTempPlayAreaLocation_ff9d.
+; the three stages are loaded consecutively in wAllStagesIndices.
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	or CARD_LOCATION_ARENA
+	ld c, a
+	ld a, DUELVARS_CARD_LOCATIONS
+	call GetTurnDuelistVariable
 .loop
-	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit if the B button was pressed
+	ld a, [hl]
+	cp c
+	jr nz, .next
+	ld a, l
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, [wLoadedCard2Type]
+	cp TYPE_ENERGY
+	jr nc, .next
+	ld b, l
+	push hl
+	ld a, [wLoadedCard2Stage]
+	ld e, a
+	ld d, $00
+	ld hl, wAllStagesIndices
+	add hl, de
+	ld [hl], b
+	pop hl
+.next
+	inc l
+	ld a, l
+	cp DECK_SIZE
+	jr c, .loop
+
+; if card at hTempPlayAreaLocation_ff9d is a stage 1, load d with basic card.
+; otherwise if stage 2, load d with the stage 1 card.
+	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_STAGE
 	call GetTurnDuelistVariable
+	ld hl, wAllStagesIndices ; pointing to basic
+	cp STAGE1
+	jr z, .done
+	; if stage1 was skipped, hl should point to Basic stage card
+	cp STAGE2_WITHOUT_STAGE1
+	jr z, .done
+	inc hl ; pointing to stage 1
+.done
+	ld d, [hl]
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	ld e, a
 	or a
-	jr z, .loop ; if Basic, reset loop
 	ret
 
 
@@ -3808,6 +3942,7 @@ PrintDevolvedCardNameAndLevelText:
 	call DrawWideTextBox_WaitForInput
 	pop de
 	ret
+
 
 ; returns the opponent's Active Pokemon and any attached cards to the opponent's hand
 ReturnDefendingPokemonToTheHandEffect:
@@ -5183,7 +5318,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	xor a
 	ldh [hCurSelectionItem], a
 	ld [wCurGigashockItem], a
-	call Func_61a1
+	call SetupPlayAreaScreen
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
@@ -5238,7 +5373,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 .chosen
 	ldh a, [hCurMenuItem]
 	inc a
-	call Func_2c10b
+	call DrawPlayAreaScreenToShowChanges
 	ldh a, [hKeysPressed]
 	and B_BUTTON
 	jr nz, .try_cancel
@@ -5913,7 +6048,7 @@ ShuffleAttachedEnergyEffect:
 	ldtx hl, TheEnergyCardFromPlayAreaWasMovedText
 	call DrawWideTextBox_WaitForInput
 	xor a
-	jp Func_2c10b
+	jp DrawPlayAreaScreenToShowChanges
 
 
 ; replaces the user with a copy of a random Basic Pokemon from the deck
@@ -5935,7 +6070,7 @@ MorphEffect:
 	push hl
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
-	bank1call GetCardOneStageBelow
+	call GetCardOneStageBelow
 	ld a, d
 	call PutCardInDiscardPile
 	pop hl
@@ -6378,14 +6513,14 @@ EnergyTrans_TransferEffect:
 	cp DUELIST_TYPE_PLAYER
 	jr z, .player
 ; not player
-	call Func_61a1
+	call SetupPlayAreaScreen
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
 .player
 	xor a
 	ldh [hCurSelectionItem], a
-	call Func_61a1
+	call SetupPlayAreaScreen
 
 .draw_play_area
 	bank1call PrintPlayAreaCardList_EnableLCD
@@ -6626,7 +6761,7 @@ Heal_RemoveDamageEffect:
 	add 10 ; remove 1 damage counter
 	ld [hl], a
 	ldh a, [hPlayAreaEffectTarget]
-	call Func_2c10b
+	call DrawPlayAreaScreenToShowChanges
 	jp ExchangeRNG
 
 
@@ -6930,7 +7065,7 @@ PealOfThunder_RandomlyDamageEffect:
 	call ExchangeRNG
 	ld de, 30 ; damage to inflict
 	call RandomlyDamagePlayAreaPokemon
-	bank1call Func_6e49
+	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
 	ret
 
 
@@ -7017,7 +7152,7 @@ DamageSwap_SelectAndSwapEffect:
 	cp DUELIST_TYPE_PLAYER
 	jr z, .player
 ; not the Player
-	call Func_61a1
+	call SetupPlayAreaScreen
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
@@ -7026,7 +7161,7 @@ DamageSwap_SelectAndSwapEffect:
 	bank1call DrawWholeScreenTextBox
 	xor a
 	ldh [hCurSelectionItem], a
-	call Func_61a1
+	call SetupPlayAreaScreen
 
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
@@ -7173,7 +7308,7 @@ StrangeBehavior_SelectAndSwapEffect:
 	jr z, .player
 
 ; not the Player
-	call Func_61a1
+	call SetupPlayAreaScreen
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
@@ -7183,7 +7318,7 @@ StrangeBehavior_SelectAndSwapEffect:
 
 	xor a
 	ldh [hCurSelectionItem], a
-	call Func_61a1
+	call SetupPlayAreaScreen
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
@@ -7267,7 +7402,7 @@ Curse_PlayerSelection:
 	call SwapTurn
 	xor a
 	ldh [hCurSelectionItem], a
-	call Func_61a1
+	call SetupPlayAreaScreen
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
@@ -7372,7 +7507,7 @@ Curse_TransferDamageEffect:
 	jr z, .vs_player
 
 ; vs. opponent
-	call Func_61a1
+	call SetupPlayAreaScreen
 .vs_player
 ; transfer the damage counter between the targets that were selected
 	ldh a, [hPlayAreaEffectTarget]
@@ -7395,12 +7530,12 @@ Curse_TransferDamageEffect:
 ; vs. opponent
 	ldh a, [hPlayAreaEffectTarget]
 	ldh [hTempPlayAreaLocation_ff9d], a
-	bank1call Func_6194
+	bank1call InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox
 
 .done
 	call SwapTurn
 	call ExchangeRNG
-	bank1call Func_6e49
+	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
 	ret
 
 
@@ -7530,7 +7665,7 @@ HandlePlayerSelection2HandCards:
 	pop hl
 .loop
 	push hl
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	pop hl
 	call SetCardListInfoBoxText
 	push hl
@@ -7591,7 +7726,7 @@ ComputerSearchCheck:
 ;	[hTempList + 2] = deck index of the card to move from the deck to the hand
 ComputerSearch_PlayerDeckSelection:
 	call CreateDeckCardList
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseCardToPlaceInHandText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -7659,7 +7794,7 @@ Defender_AttachDefenderEffect:
 	call IsPlayerTurn
 	ret c ; return if it's the Player's turn
 	ldh a, [hTemp_ffa0]
-	jp Func_2c10b
+	jp DrawPlayAreaScreenToShowChanges
 
 
 ; handles the Player's selection of an Evolved Pokemon in their play area for Devolution Spray
@@ -7678,7 +7813,7 @@ DevolutionSpray_PlayerSelection:
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
-	bank1call GetCardOneStageBelow
+	call GetCardOneStageBelow
 	jr c, .read_input ; can't select a Basic Pokemon
 
 ; get pre-evolution card data
@@ -7705,10 +7840,10 @@ DevolutionSpray_PlayerSelection:
 ; show the Play Area screen with a static cursor
 ; so that the Player either presses A to do one more devolution
 ; or presses B to finish selecting.
-	bank1call Func_6194
+	bank1call InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox
 	jr c, .done_selection ; end selection if B button was pressed
 	; do one more devolution
-	bank1call GetCardOneStageBelow
+	call GetCardOneStageBelow
 
 .update_data
 ; overwrite the card data to the newly devolved stats
@@ -7780,7 +7915,7 @@ DevolutionSpray_DevolutionEffect:
 	jr z, .check_ko ; list is over
 	; devolve card to its previous stage
 	push hl
-	bank1call GetCardOneStageBelow
+	call GetCardOneStageBelow
 	ld a, d
 	call UpdateDevolvedCardHPAndStage
 	call ResetDevolvedCardStatus
@@ -7797,7 +7932,7 @@ DevolutionSpray_DevolutionEffect:
 	call PrintDevolvedCardNameAndLevelText
 	ldh a, [hTempList]
 	call PrintPlayAreaCardKnockedOutIfNoHP
-	bank1call Func_6e49
+	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
 	ret
 
 
@@ -7915,7 +8050,7 @@ EnergyRemoval_DiscardEffect:
 	ret c ; return if it's the Player's turn
 	call SwapTurn
 	ldh a, [hTemp_ffa0]
-	call Func_2c10b
+	call DrawPlayAreaScreenToShowChanges
 	jp SwapTurn
 
 
@@ -8067,12 +8202,12 @@ SuperEnergyRemoval_DiscardEffect:
 
 ; otherwise, show the affected Pokemon in the opponent's play area
 	ldh a, [hTemp_ffa0]
-	call Func_2c10b
+	call DrawPlayAreaScreenToShowChanges
 	xor a
 	ld [wDuelDisplayedScreen], a
 	call SwapTurn
 	ldh a, [hPlayAreaEffectTarget]
-	call Func_2c10b
+	call DrawPlayAreaScreenToShowChanges
 	jp SwapTurn
 
 
@@ -8107,7 +8242,7 @@ EnergyRetrieval_PlayerHandSelection:
 	call RemoveCardFromDuelTempList
 
 ; display the list on screen and have the player select 1 of the cards
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	bank1call DisplayCardList
 ;	ldh a, [hTempCardIndex_ff98] ; this is already in register a
 	ldh [hTempList], a
@@ -8323,7 +8458,7 @@ ItemFinder_PlayerSelection:
 ; cards were selected to discard from the hand.
 ; now to choose a Trainer card from the discard pile.
 	call CreateTrainerCardListFromDiscardPile
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChooseCardToPlaceInHandText
 	ldtx de, YourDiscardPileText
 	call SetCardListHeaderText
@@ -8690,7 +8825,7 @@ PokemonBreederCheck:
 PokemonBreeder_PlayerSelection:
 ; create a list of playable Stage2 cards in the hand
 	call CreatePlayableStage2PokemonCardListFromHand
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 
 ; handle the Player's selection of a Stage2 card
 	ldtx hl, PleaseSelectCardText
@@ -8984,7 +9119,7 @@ PokemonFlute_PlayerSelection:
 	call CreateBasicPokemonCardListFromDiscardPile
 
 ; display selection screen and store the Player's selection
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChoosePokemonToPlaceInPlayText
 	ldtx de, OpponentsDiscardPileText
 	call SetCardListHeaderText
@@ -9041,7 +9176,7 @@ PokemonTrader_PlayerHandSelection:
 
 ; create list with all Pokemon cards in the hand
 	call CreatePokemonCardListFromHand
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 
 ; handle Player selection
 	ldtx hl, ChoosePokemonToReturnToTheDeckText
@@ -9066,7 +9201,7 @@ PokemonTrader_PlayerDeckSelection:
 	ldtx hl, ChoosePokemonFromDeckText
 	call DrawWideTextBox_WaitForInput
 	call CreateDeckCardList
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, ChoosePokemonCardText
 	ldtx de, DuelistDeckText
 	call SetCardListHeaderText
@@ -9247,7 +9382,7 @@ Recycle_PlayerSelection:
 	jr nc, .tails
 
 	call CreateDiscardPileCardList
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 	ldtx hl, PleaseSelectCardText
 	ldtx de, YourDiscardPileText
 	call SetCardListHeaderText
@@ -9306,7 +9441,7 @@ Revive_PlayerSelection:
 	ldtx hl, ChooseBasicPokemonToPlaceOnBenchText
 	call DrawWideTextBox_WaitForInput
 	call CreateBasicPokemonCardListFromDiscardPile
-	bank1call Func_5591
+	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
 
 ; display screen to select Pokemon
 	ldtx hl, PleaseSelectCardText

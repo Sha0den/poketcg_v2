@@ -1709,7 +1709,7 @@ LookForCardThatIsKnockedOutOnDevolution:
 	ld a, c
 	ldh [hTempPlayAreaLocation_ff9d], a
 	push bc
-	bank1call GetCardOneStageBelow
+	farcall GetCardOneStageBelow
 	pop bc
 	jr c, .next
 	; is not a basic card

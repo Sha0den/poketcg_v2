@@ -76,7 +76,13 @@
 
 
 ## Code Optimization
-- **August 2, 2024:** 3 Files Changed
+- **August 2, 2024:** 5 Files Changed
+    - Move several functions from engine/duel/core.asm to engine/duel/effect_functions.asm
+    - Label numerous functions in engine/duel/core.asm and engine/duel/effect_functions.asm
+
+<br/>
+
+- **[August 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/6b7d716a262bc4d6971aa6e2954dc7b85d726f8b):** 3 Files Changed
     - Move a few functions from banks 0/1 to bank 6 (engine/link/link_duel.asm)
 
 <br/>
