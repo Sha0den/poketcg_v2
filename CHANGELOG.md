@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 2, 2024:** 5 Files Changed
+- **August 2, 2024:** 2 Files Changed
+    - Move Prophecy/Pokedex player select effects to engine/duel/effect_functions2.asm
+
+<br/>
+
+- **[August 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/328feb0d910fe875b7226f6868993094b9754813):** 5 Files Changed
     - Move several functions from engine/duel/core.asm to engine/duel/effect_functions.asm
     - Label numerous functions in engine/duel/core.asm and engine/duel/effect_functions.asm
 
