@@ -8675,8 +8675,9 @@ PlayAttackAnimation_DealAttackDamageSimple::
 	call SubtractHP
 	ld a, [wDuelDisplayedScreen]
 	cp DUEL_MAIN_SCENE
-	ret nz
+	jr nz, .done
 	call DrawDuelHUDs
+.done
 	pop de
 	pop hl
 	ret

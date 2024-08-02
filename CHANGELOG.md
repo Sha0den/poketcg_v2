@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 2, 2024:** 2 Files Changed
+- **[August 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/44fc27ab53be4baed0c310fa6a970a90964641f1):** 2 Files Changed
     - Move Prophecy/Pokedex player select effects to engine/duel/effect_functions2.asm
 
 <br/>
@@ -527,6 +527,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **August 2, 2024:** 1 File Changed
+    - Change a conditional return to a conditional jump to avoid missing a couple of pops
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/23905f186bfe79e892321a09135ca051a55c5c18)*
+
+<br/>
+
 - **[June 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/0350841247da35c6b11c79f88f58ca5a1f1050bb):** 1 File Changed
     - Use "farcall" when CheckIfCanEvolveInto_BasicToStage2 is accessed by the AI Logic 2 bank
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2)*
