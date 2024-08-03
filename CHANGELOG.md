@@ -264,6 +264,11 @@
 
 
 ## Miscellaneous Changes
+- **August 3, 2024:** 1 File Changed
+    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Remove-AI-artificial-delay) to remove the artificial delay applied to many of the AI's actions
+
+<br/>
+
 - **[August 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/23905f186bfe79e892321a09135ca051a55c5c18):** 2 Files Changed
     - Try to standardize the function comments that are used in engine/duel/core.asm
     - Plus some corrections/optimizations/shuffling of functions in said file
@@ -303,7 +308,7 @@
 
 <br/>
 
-- **(June 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/9b47a3046ecab3e451a1b68aae396dd837712634):** 6 Files Changed
+- **[June 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/9b47a3046ecab3e451a1b68aae396dd837712634):** 6 Files Changed
     - Try to standardize the function comments that are used in the engine/overworld files
     - Also perform many small optimizations in the engine/overworld files
 
@@ -527,7 +532,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **August 2, 2024:** 1 File Changed
+- **[August 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/af31753844fcabe625eab1a1439ade00567086f9):** 1 File Changed
     - Change a conditional return to a conditional jump to avoid missing a couple of pops
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/23905f186bfe79e892321a09135ca051a55c5c18)*
 
