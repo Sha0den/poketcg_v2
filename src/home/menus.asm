@@ -855,12 +855,7 @@ WaitForWideTextBoxInput::
 	ld hl, WideTextBoxMenuParameters
 	call InitializeMenuParameters
 	call EnableLCD
-.wait_A_or_B_loop
-	call DoFrame
-	call RefreshMenuCursor
-	ldh a, [hKeysPressed]
-	and A_BUTTON | B_BUTTON
-	jr z, .wait_A_or_B_loop
+	call DrawNarrowTextBox_WaitForInput.wait_A_or_B_loop
 	jp EraseCursor
 
 

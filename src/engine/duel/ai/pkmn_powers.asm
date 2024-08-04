@@ -110,13 +110,11 @@ HandleAIEnergyTrans:
 	ld a, e
 	ldh [hAIEnergyTransEnergyCard], a
 
-	push de
-	ld d, 30
-.small_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .small_delay_loop
+	; 30 frame delay
+	ld a, 30
+	call DoAFrames
 
+	push de
 	ld a, OPPACTION_6B15
 	bank1call AIMakeDecision
 	pop de
@@ -132,11 +130,8 @@ HandleAIEnergyTrans:
 ; transfer is done, perform delay
 ; and return to main scene.
 .done_transfer
-	ld d, 60
-.big_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .big_delay_loop
+	ld a, 60
+	call DoAFrames
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret
@@ -365,11 +360,9 @@ AIEnergyTransTransferEnergyToBench:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hAIEnergyTransPlayAreaLocation], a
 
-	ld d, 30
-.small_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .small_delay_loop
+	; 30 frame delay
+	ld a, 30
+	call DoAFrames
 
 	ld a, [wAIVenusaurLv67DeckIndex]
 	ldh [hTempCardIndex_ff9f], a
@@ -389,11 +382,8 @@ AIEnergyTransTransferEnergyToBench:
 ; transfer is done, perform delay
 ; and return to main scene.
 .done_transfer
-	ld d, 60
-.big_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .big_delay_loop
+	ld a, 60
+	call DoAFrames
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret
@@ -849,11 +839,10 @@ HandleAIStrangeBehavior:
 	call ConvertHPToCounters
 	ld e, a
 .loop_counters
-	ld d, 30
-.small_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .small_delay_loop
+	; 30 frame delay
+	ld a, 30
+	call DoAFrames
+
 	push de
 	ld a, OPPACTION_6B15
 	bank1call AIMakeDecision
@@ -861,12 +850,9 @@ HandleAIStrangeBehavior:
 	dec e
 	jr nz, .loop_counters
 
-; return to main scene
-	ld d, 60
-.big_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .big_delay_loop
+; return to main scene after a 60 frame delay
+	ld a, 60
+	call DoAFrames
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret
@@ -1128,11 +1114,9 @@ HandleAIDamageSwap:
 	ld a, [wce06]
 	ld e, a
 .loop_damage
-	ld d, 30
-.small_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .small_delay_loop
+	; 30 frame delay
+	ld a, 30
+	call DoAFrames
 
 	push de
 	call .CheckForDamageSwapTargetInBench
@@ -1148,12 +1132,9 @@ HandleAIDamageSwap:
 	jr nz, .loop_damage
 
 .done
-; return to main scene
-	ld d, 60
-.big_delay_loop
-	call DoFrame
-	dec d
-	jr nz, .big_delay_loop
+; return to main scene after a 60 frame delay
+	ld a, 60
+	call DoAFrames
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret

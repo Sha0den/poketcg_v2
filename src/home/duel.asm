@@ -2200,10 +2200,7 @@ PrintKnockedOut::
 	ldtx hl, WasKnockedOutText
 	call DrawWideTextBox_PrintText
 	ld a, 40
-.wait_frames
-	call DoFrame
-	dec a
-	jr nz, .wait_frames
+	call DoAFrames
 	scf
 	ret
 

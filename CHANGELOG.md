@@ -76,7 +76,13 @@
 
 
 ## Code Optimization
-- **August 4, 2024:** 5 Files Changed
+- **August 4, 2024:** 6 Files Changed (1 was simply deleted)
+    - Some refactoring to make use of the DoAFrames function
+    - Plus some minor home bank clean up
+
+<br/>
+
+- **[August 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/9c61a29d8d38a4c17809979a68b35fbef8513e56):** 5 Files Changed
     - Try to standardize the function comments that are used in the engine/link files
     - Plus some corrections/optimizations in said files
 

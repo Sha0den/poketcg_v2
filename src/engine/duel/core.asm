@@ -2562,10 +2562,7 @@ DeckShuffleAnimation:
 	call DrawWideTextBox_PrintText
 	call EnableLCD
 	ld a, 60
-.loop_wait
-	call DoFrame
-	dec a
-	jr nz, .loop_wait
+	call DoAFrames
 	ld a, $01
 	ret
 
@@ -6618,10 +6615,7 @@ AIMakeDecision:
 ; possible to examine the hand or duel main scene
 HandleWaitingLinkOpponentMenu:
 	ld a, 10
-.delay_loop
-	call DoFrame
-	dec a
-	jr nz, .delay_loop
+	call DoAFrames
 	ld [wCurrentDuelMenuItem], a ; 0
 .loop_outer
 	ld a, PLAYER_TURN
@@ -7987,11 +7981,8 @@ TurnDuelistTakePrizes:
 	cp DUELIST_TYPE_LINK_OPP
 	jr z, .link_opponent
 	call AIDoAction_TakePrize
-	ld c, 60
-.delay_loop
-	call DoFrame
-	dec c
-	jr nz, .delay_loop
+	ld a, 60
+	call DoAFrames
 	jr .asm_586f
 
 .link_opponent
@@ -8547,10 +8538,7 @@ Func_7324:
 
 ; delay coin flip for AI opponent
 	ld a, 30
-.asm_732f
-	call DoFrame
-	dec a
-	jr nz, .asm_732f
+	call DoAFrames
 	ldh a, [hff96]
 	ret
 

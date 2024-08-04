@@ -168,9 +168,7 @@ PrintScrollableText::
 	and B_BUTTON
 	jr nz, .skip_delay
 .apply_delay
-	push bc
 	call DoFrame
-	pop bc
 .go
 	dec c
 	jr nz, .nonzero_text_speed
