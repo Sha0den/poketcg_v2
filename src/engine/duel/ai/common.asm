@@ -29,47 +29,6 @@ CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 	scf
 	ret
 
-; returns no carry if, given the Player is using a MewtwoLv53 mill deck,
-; the AI already has a Bench fully set up, in which case it
-; will process some Trainer cards in hand (namely Energy Removals).
-; this is used to check whether to skip some normal AI routines
-; this turn and jump right to the attacking phase.
-HandleAIAntiMewtwoDeckStrategy:
-; return carry if Player is not playing MewtwoLv53 mill deck
-	ld a, [wAIBarrierFlagCounter]
-	bit AI_MEWTWO_MILL_F, a
-	jr z, .set_carry
-
-; else, check if there's been less than 2 turns
-; without the Player using Barrier.
-	cp AI_MEWTWO_MILL + 2
-	jr c, .count_bench
-
-; if there has been, reset wAIBarrierFlagCounter
-; and return carry.
-	xor a
-	ld [wAIBarrierFlagCounter], a
-	; fallthrough
-	
-.set_carry
-	scf
-	ret
-
-; else, check number of Pokemon that are set up in Bench
-; if less than 4, return carry.
-.count_bench
-	farcall CountNumberOfSetUpBenchPokemon
-	cp 4
-	ret c
-
-; if there's at least 4 Pokemon in the Bench set up,
-; process Trainer hand cards of AI_TRAINER_CARD_PHASE_05
-	ld a, AI_TRAINER_CARD_PHASE_05
-	farcall AIProcessHandTrainerCards
-	or a
-	ret
-
-
 ; lists in wDuelTempList all the basic energy cards
 ; in card location of a.
 ; outputs in a number of cards found.

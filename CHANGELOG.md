@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 4, 2024:** 6 Files Changed (1 was simply deleted)
+- **August 4, 2024:** 8 Files Changed
+    - Eliminate 8 farcalls by moving HandleAIMewtwoDeckStrategy from engine/duel/ai/common.asm to engine/duel/ai/core.asm
+
+<br/>
+
+- **[August 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/a7e60b10a884b3c9bed2ff089cc6c32769e50b3a):** 6 Files Changed (1 was simply deleted)
     - Some refactoring to make use of the DoAFrames function
     - Plus some minor home bank clean up
 

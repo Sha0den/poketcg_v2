@@ -33,7 +33,7 @@ AIDoTurn_GeneralNoRetreat:
 	call InitAITurnVars
 	ld a, AI_TRAINER_CARD_PHASE_01
 	call AIProcessHandTrainerCards
-	farcall HandleAIAntiMewtwoDeckStrategy
+	call HandleAIAntiMewtwoDeckStrategy
 	jp nc, .try_attack
 ; handle Pkmn Powers
 	farcall HandleAIGoGoRainDanceEnergy

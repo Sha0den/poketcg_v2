@@ -82,7 +82,7 @@ AIActionTable_LegendaryZapdos:
 AIDoTurn_LegendaryZapdos:
 ; initialize variables
 	call InitAITurnVars
-	farcall HandleAIAntiMewtwoDeckStrategy
+	call HandleAIAntiMewtwoDeckStrategy
 	jp nc, .try_attack
 ; process Trainer cards
 	ld a, AI_TRAINER_CARD_PHASE_01
