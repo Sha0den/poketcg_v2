@@ -1,4 +1,5 @@
-; hl = text ID
+; input:
+;	hl = text ID
 LoadLinkConnectingScene:
 	push hl
 	call SetSpriteAnimationsAsVBlankFunction
@@ -9,11 +10,12 @@ LoadLinkConnectingScene:
 	call DrawWideTextBox_PrintText
 	jp EnableLCD
 
-; shows Link Not Connected scene
-; then asks the player whether they want to try again
-; if the player selects "no", return carry
+
+; shows Link Not Connected scene, then asks the player if they want to try again
 ; input:
-;  - hl = text ID
+;	hl = text ID
+; output:
+;	carry = set:  if the player selected "No"
 LoadLinkNotConnectedSceneAndAskWhetherToTryAgain:
 	push hl
 	call RestoreVBlankFunction
@@ -27,15 +29,19 @@ LoadLinkNotConnectedSceneAndAskWhetherToTryAgain:
 	call YesOrNoMenuWithText_SetCursorToYes
 ;	fallthrough
 
+; preserves af
 ClearRPAndRestoreVBlankFunction:
 	push af
-	call ClearRP
+	xor a
+	ldh [rRP], a
 	call RestoreVBlankFunction
 	pop af
 	ret
 
+
 ; prepares IR communication parameter data
-; a = a IRPARAM_* constant for the function of this connection
+; input:
+;	a = IRPARAM_* constant for the function of this connection
 InitIRCommunications:
 	ld hl, wOwnIRCommunicationParams
 	ld [hl], a
@@ -55,8 +61,7 @@ InitIRCommunications:
 	ld hl, wOpponentName
 	ld [hli], a
 	ld [hl], a
-; loads player's name from SRAM
-; to wDefaultText
+; load the Player's name from SRAM to wDefaultText
 	call EnableSRAM
 	ld hl, sPlayerName
 	ld de, wDefaultText
@@ -69,9 +74,12 @@ InitIRCommunications:
 	jr nz, .loop
 	jp DisableSRAM
 
-; returns carry if communication was unsuccessful
-; if a = 0, then it was a communication error
-; if a = 1, then operation was cancelled by the player
+
+; input:
+;	a = IRPARAM_* constant
+; output:
+;	carry = set (& a = $0):  if there was a communication error
+;	carry = set (& a = $1):  if the operation was cancelled by the Player
 PrepareSendCardOrDeckConfigurationThroughIR:
 	call InitIRCommunications
 
@@ -84,7 +92,7 @@ PrepareSendCardOrDeckConfigurationThroughIR:
 	ldh a, [hKeysHeld]
 	bit A_BUTTON_F, a
 	jr z, .loop_frame
-; a btn
+; A button
 	call TrySendIRRequest
 	jr nc, .request_success
 	or a
@@ -108,9 +116,12 @@ PrepareSendCardOrDeckConfigurationThroughIR:
 	or a
 	ret
 
+
 ; exchanges player names and IR communication parameters
 ; checks whether parameters for communication match
 ; and if they don't, an error is issued
+; output:
+;	carry = set (& a = $0):  if there was an error
 ExchangeIRCommunicationParameters:
 	ld hl, wOwnIRCommunicationParams
 	ld de, wOtherIRCommunicationParams
@@ -151,6 +162,10 @@ ExchangeIRCommunicationParameters:
 	scf
 	ret
 
+
+; output:
+;	a = $01
+;	carry = set
 SetIRCommunicationErrorCode_Error:
 	ld hl, wIRCommunicationErrorCode
 	ld [hl], $01
@@ -162,6 +177,9 @@ SetIRCommunicationErrorCode_Error:
 	scf
 	ret
 
+
+; output:
+;	carry = set (& a = $ff):  if there was an error
 SetIRCommunicationErrorCode_NoError:
 	ld hl, wOwnIRCommunicationParams
 	ld [hl], $00
@@ -173,9 +191,14 @@ SetIRCommunicationErrorCode_NoError:
 	or a
 	ret
 
+
 ; makes device receptive to receive data from other device
 ; to write in wDuelTempList (either list of cards or a deck configuration)
-; returns carry if some error occurred
+; input:
+;	a = IRPARAM_* constant
+; output:
+;	carry = set (& a = $0):  if there was an error
+;	carry = set (& a = $1):  if the operation was cancelled
 TryReceiveCardOrDeckConfigurationThroughIR:
 	call InitIRCommunications
 .loop_receive_request
@@ -200,7 +223,9 @@ TryReceiveCardOrDeckConfigurationThroughIR:
 	scf
 	ret
 
-; returns carry if card(s) wasn't successfully sent
+
+; output:
+;	carry = set:  if an error occurred and the Player chose to quit
 _SendCard:
 	call StopMusic
 	ldtx hl, SendingACardText
@@ -227,8 +252,7 @@ _SendCard:
 	jr nz, .fail
 	call PlayCardPopSong
 	xor a
-	call ClearRPAndRestoreVBlankFunction
-	ret
+	jp ClearRPAndRestoreVBlankFunction
 
 .fail
 	call PlayCardPopSong
@@ -239,10 +263,15 @@ _SendCard:
 	scf
 	ret
 
+
+; preserves all registers except af
 PlayCardPopSong:
 	ld a, MUSIC_CARD_POP
 	jp PlaySong
 
+
+; output:
+;	carry = set:  if an error occurred and the Player chose to quit
 _ReceiveCard:
 	call StopMusic
 	ldtx hl, ReceivingACardText
@@ -261,17 +290,19 @@ _ReceiveCard:
 	jr c, .fail
 	call PlayCardPopSong
 	or a
-	call ClearRPAndRestoreVBlankFunction
-	ret
+	jp ClearRPAndRestoreVBlankFunction
 
 .fail
 	call PlayCardPopSong
 	ldtx hl, CardTransferWasntSuccessfulText
 	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
-	jr nc, _ReceiveCard
+	jr nc, _ReceiveCard ; loop back and try again
 	scf
 	ret
 
+
+; output:
+;	carry = set:  if an error occurred and the Player chose to quit
 _SendDeckConfiguration:
 	call StopMusic
 	ldtx hl, SendingADeckConfigurationText
@@ -296,10 +327,13 @@ _SendDeckConfiguration:
 	call PlayCardPopSong
 	ldtx hl, DeckConfigurationTransferWasntSuccessfulText
 	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
-	jr nc, _SendDeckConfiguration
+	jr nc, _SendDeckConfiguration ; loop back and try again
 	scf
 	ret
 
+
+; output:
+;	carry = set:  if an error occurred and the Player chose to quit
 _ReceiveDeckConfiguration:
 	call StopMusic
 	ldtx hl, ReceivingDeckConfigurationText

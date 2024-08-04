@@ -3,6 +3,9 @@
 ; - set rRP edge up, wait;
 ; - set rRP edge down, wait;
 ; - return
+; preserves all registers except af
+; input:
+;	hl = rRP
 TransmitIRBit:
 	jr c, .delay_once
 	ld [hl], RPF_WRITE_HI | RPF_ENREAD
@@ -28,6 +31,10 @@ TransmitIRBit:
 	nop
 	ret
 
+
+; preserves de
+; output:
+;	carry = set (& a = $ff):  if the B button was pressed
 TransmitIRDataBuffer:
 	call Func_19705
 	jp c, ReturnZFlagUnsetAndCarryFlagSet
@@ -39,8 +46,12 @@ TransmitIRDataBuffer:
 	ld c, 8
 ;	fallthrough
 
-; hl = start of data to transmit
-; c = number of bytes to transmit
+; preserves de
+; input:
+;	hl = start of data to transmit
+;	c = number of bytes to transmit
+; output:
+;	carry = set:  if the B button was pressed
 TransmitNBytesFromHLThroughIR:
 	ld b, $0
 .loop_data_bytes
@@ -57,7 +68,11 @@ TransmitNBytesFromHLThroughIR:
 	inc a
 ;	fallthrough
 
-; input a = byte to transmit through IR
+; preserves all registers except af
+; input:
+;	a = byte to transmit through IR
+; output:
+;	carry = set (& a = $ff):  if the B button was pressed
 TransmitByteThroughIR:
 	push hl
 	ld hl, rRP
@@ -85,18 +100,23 @@ TransmitByteThroughIR:
 	xor a ; return z set
 	ret
 
-; same as ReceiveByteThroughIR but
-; returns $0 in a if there's an error in IR
+
+; same as ReceiveByteThroughIR but returns $0 in a if there's an error in IR
+; preserves all registers except af
+; output:
+;	a = sequence of bits related to how rRP sets/unsets bit 1 ($00 if carry is set)
+;	carry = set:  if there was a time out error
 ReceiveByteThroughIR_ZeroIfUnsuccessful:
 	call ReceiveByteThroughIR
 	ret nc
 	xor a
 	ret
 
-; returns carry if there's some time out
-; and outputs $ff in register a
-; otherwise returns in a some sequence of bits
-; related to how rRP sets/unsets bit 1
+
+; preserves all registers except af
+; output:
+;	a = sequence of bits related to how rRP sets/unsets bit 1 ($ff if carry is set)
+;	carry = set:  if there was a time out error
 ReceiveByteThroughIR:
 	push de
 	push bc
@@ -137,10 +157,8 @@ ReceiveByteThroughIR:
 	ld b, 9
 	ld b, 9
 
-; checks for bit 1 in rRP
-; if in any of the checks it is unset,
-; then a is set to 0
-; this is done a total of 9 times
+; checks for bit 1 in rRP, and if it is unset in any of the checks,
+; then a is set to 0. this is done a total of 9 times.
 	bit RPB_DATAIN, [hl]
 	jr nz, .asm_196ec
 	xor a
@@ -163,12 +181,16 @@ ReceiveByteThroughIR:
 	or a
 	ret
 
+
 ; called when expecting to transmit data
+; preserves bc and de
+; output:
+;	carry = set (& a = $ff):  if the B button was pressed
 Func_19705:
 	ld hl, rRP
 .loop
 	ldh a, [rJOYP]
-	bit 1, a
+	bit 1, a ; P11
 	jr z, ReturnZFlagUnsetAndCarryFlagSet
 	ld a, $aa ; request
 	call TransmitByteThroughIR
@@ -180,12 +202,16 @@ Func_19705:
 	xor a
 	ret
 
+
 ; called when expecting to receive data
+; preserves bc and de
+; output:
+;	carry = set (& a = $ff):  if the B button was pressed
 Func_1971e:
 	ld hl, rRP
 .asm_19721
 	ldh a, [rJOYP]
-	bit 1, a
+	bit 1, a ; P11
 	jr z, ReturnZFlagUnsetAndCarryFlagSet
 	call ReceiveByteThroughIR_ZeroIfUnsuccessful
 	cp $aa ; request
@@ -195,6 +221,11 @@ Func_1971e:
 	xor a
 	ret
 
+
+; preserves de
+; output:
+;	carry = set (& a = $ff):  if the B button was pressed or
+;	                          if there was an error
 ReceiveIRDataBuffer:
 	call Func_1971e
 	jr c, ReturnZFlagUnsetAndCarryFlagSet
@@ -208,8 +239,12 @@ ReceiveIRDataBuffer:
 	ld c, 8
 ;	fallthrough
 
-; hl = address to write received data
-; c = number of bytes to be received
+; preserves de
+; input:
+;	hl = address to write received data
+;	c = number of bytes to be received
+; output:
+;	carry = set (& a = $ff):  if there was an error
 ReceiveNBytesToHLThroughIR:
 	ld b, 0
 .loop_data_bytes
@@ -232,8 +267,10 @@ ReturnZFlagUnsetAndCarryFlagSet:
 	scf  ; carry set
 	ret
 
-; disables interrupts, and sets joypad and IR communication port
-; switches to CGB normal speed
+
+; disables interrupts, sets joypad and IR communication port,
+; and switches to CGB normal speed
+; preserves de
 StartIRCommunications:
 	di
 	call SwitchToCGBNormalSpeed
@@ -243,7 +280,9 @@ StartIRCommunications:
 	ldh [rRP], a
 	ret
 
+
 ; reenables interrupts, and switches CGB back to double speed
+; preserves de
 CloseIRCommunications:
 	ld a, P14 | P15
 	ldh [rJOYP], a
@@ -261,15 +300,9 @@ CloseIRCommunications:
 	ei
 	ret
 
-; set rRP to 0
-ClearRP:
-	ld a, $00
-	ldh [rRP], a
-	ret
 
-; expects to receive a command (IRCMD_* constant)
-; in wIRDataBuffer + 1, then calls the subroutine
-; corresponding to that command
+; expects to receive a command (IRCMD_* constant) in wIRDataBuffer + 1,
+; then calls the subroutine corresponding to that command
 ExecuteReceivedIRCommands:
 	call StartIRCommunications
 .loop_commands
@@ -315,8 +348,7 @@ ExecuteReceivedIRCommands:
 .Close
 	pop hl
 	call CloseIRCommunications
-	or a
-	ret
+	; fallthrough
 
 ; returns without closing the IR communications
 ; will continue the command loop
@@ -341,8 +373,7 @@ ExecuteReceivedIRCommands:
 	call ReceiveNBytesToHLThroughIR
 	ret c
 	sub b
-	call TransmitByteThroughIR
-	ret
+	jp TransmitByteThroughIR
 
 ; receives an address to call, then stores
 ; the registers in the IR data buffer
@@ -352,6 +383,7 @@ ExecuteReceivedIRCommands:
 ;	fallthrough
 
 ; stores af, hl, de and bc in wIRDataBuffer
+; preserves af and bc
 StoreRegistersInIRDataBuffer:
 	push de
 	push hl
@@ -376,6 +408,7 @@ StoreRegistersInIRDataBuffer:
 	inc hl
 	ld [hl], b ; <- b
 	ret
+
 
 ; loads all the registers that were stored
 ; from StoreRegistersInIRDataBuffer
@@ -402,7 +435,10 @@ LoadRegistersFromIRDataBuffer:
 	pop af
 	ret
 
-; returns carry set if request sent was not acknowledged
+
+; preserves de
+; output:
+;	carry = set:  if the sent request was not acknowledged
 TrySendIRRequest:
 	call StartIRCommunications
 	ld hl, rRP
@@ -420,17 +456,16 @@ TrySendIRRequest:
 	dec c
 	jr nz, .send_request
 	scf
-	jr .close
+	jr SafelyCloseIRCommunications
 
 .received_ack
 	xor a
-.close
-	push af
-	call CloseIRCommunications
-	pop af
-	ret
+	jr SafelyCloseIRCommunications
 
-; returns carry set if request was not received
+
+; preserves de
+; output:
+;	carry = set:  if the request was not received
 TryReceiveIRRequest:
 	call StartIRCommunications
 	ld hl, rRP
@@ -443,18 +478,16 @@ TryReceiveIRRequest:
 	and P10 | P11
 	jr z, .wait_request
 	scf
-	jr .close
+	jr SafelyCloseIRCommunications
 
 .send_ack
 	ld a, $33 ; acknowledgement
 	call TransmitByteThroughIR
 	xor a
-.close
-	push af
-	call CloseIRCommunications
-	pop af
-	ret
+	jr SafelyCloseIRCommunications
 
+
+; preserves de
 ; sends request for other device to close current communication
 RequestCloseIRCommunication:
 	call StartIRCommunications
@@ -463,34 +496,39 @@ RequestCloseIRCommunication:
 	call TransmitIRDataBuffer
 ;	fallthrough
 
-; calls CloseIRCommunications while preserving af
+; preserves af and de
 SafelyCloseIRCommunications:
 	push af
 	call CloseIRCommunications
 	pop af
 	ret
 
-; sends a request for data to be transmitted
-; from the other device
-; hl = start of data to request to transmit
-; de = address to write data received
-; c = length of data
+
+; sends a request for data to be transmitted from the other device
+; preserves de
+; input:
+;	hl = start of data to request to transmit
+;	de = address to write data received
+;	c = length of data
 RequestDataTransmissionThroughIR:
 	ld a, IRCMD_TRANSMIT_DATA
 	call TransmitRegistersThroughIR
 	push de
-	push bc
 	call Func_1971e
-	pop bc
 	pop hl
 	jr c, SafelyCloseIRCommunications
 	call ReceiveNBytesToHLThroughIR
 	jr SafelyCloseIRCommunications
 
+
 ; transmits data to be written in the other device
-; hl = start of data to transmit
-; de = address for other device to write data
-; c = length of data
+; preserves de
+; input:
+;	hl = start of data to transmit
+;	de = address for other device to write data
+;	c = length of data
+; output:
+;	carry = set (& a = $ff):  if there was an error
 RequestDataReceivalThroughIR:
 	ld a, IRCMD_RECEIVE_DATA
 	call TransmitRegistersThroughIR
@@ -506,8 +544,10 @@ RequestDataReceivalThroughIR:
 	call ReturnZFlagUnsetAndCarryFlagSet
 	jr SafelyCloseIRCommunications
 
+
 ; first stores all the current registers in wIRDataBuffer
 ; then transmits it through IR
+; preserves all registers except af
 TransmitRegistersThroughIR:
 	push hl
 	push de

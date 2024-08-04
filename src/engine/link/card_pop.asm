@@ -26,7 +26,8 @@ _DoCardPop:
 	call HandleCardPopCommunications
 	push af
 	push hl
-	call ClearRP
+	xor a
+	ldh [rRP], a
 	call RestoreVBlankFunction
 	pop hl
 	pop af
@@ -70,12 +71,13 @@ _DoCardPop:
 	call LoadScene
 	pop hl
 	call PrintScrollableText_NoTextBoxLabel
-	call RestoreVBlankFunction
-	ret
+	jp RestoreVBlankFunction
+
 
 ; handles all communications to the other device to do Card Pop!
-; returns carry if Card Pop! is unsuccessful
-; and returns in hl the corresponding error text ID
+; output:
+;	hl = text ID for the corresponding error:  if the below condition is true
+;	carry = set:  if the Card Pop! did not succeed
 HandleCardPopCommunications:
 ; copy CardPopNameList from SRAM to WRAM
 	call EnableSRAM
@@ -137,12 +139,12 @@ HandleCardPopCommunications:
 .success
 	call DecideCardToReceiveFromCardPop
 
-; increment number of times Card Pop! was done
-; and write the other player's name to sCardPopNameList
+; increment the number of times that Card Pop! was done,
+; and write the other player's name to sCardPopNameList.
 ; the spot where this is written in the list is derived
-; from the lower nybble of sTotalCardPopsDone
-; that means that after 16 Card Pop!, the older
-; names start to get overwritten
+; from the lower nybble of sTotalCardPopsDone,
+; which means that after 16 Card Pop!,
+; the older names start to get overwritten.
 	call EnableSRAM
 	ld hl, sTotalCardPopsDone
 	ld a, [hl]
@@ -170,11 +172,14 @@ HandleCardPopCommunications:
 	scf
 	ret
 
+
 ; looks up the name in wNameBuffer in wCardPopNameList
 ; used to know whether this save file has done Card Pop!
 ; with the other player already
-; returns carry and wCardPopNameSearchResult = $ff if the name was found;
-; returns no carry and wCardPopNameSearchResult = $00 otherwise
+; output:
+;	[wCardPopNameSearchResult] = $00:  if the name wasn't found
+;	[wCardPopNameSearchResult] = $ff:  if the name was found
+;	carry = set:  if the name was found
 LookUpNameInCardPopNameList:
 ; searches for other player's name in this game's name list
 	ld hl, wCardPopNameList
@@ -191,8 +196,7 @@ LookUpNameInCardPopNameList:
 	jr nz, .loop_own_card_pop_name_list
 
 ; name was not found in wCardPopNameList
-
-; searches for this player's name in the other game's name list
+; search for this player's name in the other game's name list
 	call EnableSRAM
 	ld hl, wOtherPlayerCardPopNameList
 	ld c, CARDPOP_NAME_LIST_MAX_ELEMS
@@ -217,8 +221,9 @@ LookUpNameInCardPopNameList:
 	ld [wCardPopNameSearchResult], a ; $00 if name was not found, $ff otherwise
 	ret
 
-; compares names in hl and de
-; if they are different, return carry
+; compares the names in hl and de
+; output:
+;	carry = set:  if the names are different
 .CompareNames
 	ld b, NAME_BUFFER_LENGTH
 .loop_chars
@@ -235,14 +240,16 @@ LookUpNameInCardPopNameList:
 	scf
 	ret
 
-; loads in wLoadedCard1 a random card to be received
+
+; loads in wLoadedCard1 a random card to be received.
 ; this selection is done based on the rarity
-; decided from the names of both participants
+; decided from the names of both participants.
 ; the result will always be a non-Energy card that
 ; is not from a Promotional set, with the exception
-; of VenusaurLv64 and MewLv15
+; of VenusaurLv64 and MewLv15.
 ; output:
-; - e = card ID chosen
+;	a/e = card ID that was chosen
+;	wLoadedCard1 = contains the card_data_struct of the chosen card
 DecideCardToReceiveFromCardPop:
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a
@@ -255,7 +262,7 @@ DecideCardToReceiveFromCardPop:
 	call CalculateNameHash
 	pop bc
 
-; de = other player's name  hash
+; de = other player's name hash
 ; bc = this player's name hash
 
 ; updates RNG values to subtraction of these two hashes
@@ -271,8 +278,8 @@ DecideCardToReceiveFromCardPop:
 	ld [hl], $0 ; wRNGCounter
 
 ; depending on the values obtained from the hashes,
-; determine which rarity card to give to the player
-; along with the song to play with each rarity
+; determine which rarity card to give to the player,
+; along with the song to play with each rarity.
 ; the probabilities of each possibility can be calculated
 ; as follows (given 2 random player names):
 ; 101/256 ~ 39% for Circle
@@ -313,15 +320,14 @@ DecideCardToReceiveFromCardPop:
 	ret
 
 .venusaur1_or_mew2
-; choose either VenusaurLv64 or MewLv15
-; depending on whether the lower
-; bit of d is unset or set, respectively
+; choose either VenusaurLv64 or MewLv15,
+; depending on whether the lower bit of d is unset or set, respectively
 
 ; since the parameters for this decision is
 ; based on the cumulative xoring and addition
-; of the players' names, they have the same parity
-; and thus, the lower bit in d will always be 1
-; as a result, VenusaurLv64 is functionally unobtainable
+; of the players' names, they have the same parity,
+; and thus, the lower bit in d will always be 1.
+; as a result, VenusaurLv64 is functionally unobtainable.
 	ld a, MUSIC_MEDAL
 	ld [wCardPopCardObtainSong], a
 	ld e, VENUSAUR_LV64
@@ -331,35 +337,37 @@ DecideCardToReceiveFromCardPop:
 	ld e, MEW_LV15
 	jr .got_card_id
 
+
 ; lists in wCardPopCardCandidates all cards that:
-; - are not Energy cards;
-; - have the same rarity as input register a;
-; - are not from Promotional set.
+; - are not Energy cards
+; - are not from the Promotional set
+; - have the same rarity as the input from register a
+; preserves bc and de
 ; input:
-; - a = card rarity
+;	a = card rarity constant
 ; output:
-; - a = number of candidates
+;	a = number of candidates
+;	hl = wCardPopCardCandidates/wPlayerDeck
 CreateCardPopCandidateList:
-	ld hl, wPlayerDeck
+	ld hl, wCardPopCardCandidates ; same address as wPlayerDeck
 	push hl
 	push de
 	push bc
 	ld b, a
-
 	lb de, 0, GRASS_ENERGY
 .loop_card_ids
 	call LoadCardDataToBuffer1_FromCardID
 	jr c, .count ; no more card IDs
 	ld a, [wLoadedCard1Type]
 	and TYPE_ENERGY
-	jr nz, .next_card_id ; not Pokemon card
+	jr nz, .next_card_id ; skip if it's an Energy card
 	ld a, [wLoadedCard1Rarity]
 	cp b
-	jr nz, .next_card_id ; not equal rarity
+	jr nz, .next_card_id ; skip if it's a different rarity
 	ld a, [wLoadedCard1Set]
 	and $f0
 	cp PROMOTIONAL
-	jr z, .next_card_id ; no promos
+	jr z, .next_card_id ; skip if it's a Promo
 	ld [hl], e
 	inc hl
 .next_card_id
@@ -370,7 +378,7 @@ CreateCardPopCandidateList:
 ; and return it in a
 .count
 	ld [hl], $00 ; invalid card ID as end of list
-	ld hl, wPlayerDeck
+	ld hl, wCardPopCardCandidates
 	ld c, -1
 .loop_count
 	inc c
@@ -383,13 +391,14 @@ CreateCardPopCandidateList:
 	pop hl
 	ret
 
-; creates a unique two-byte hash from the name given in hl
-; the low byte is calculated by simply adding up all characters
-; the high byte is calculated by xoring all characters together
+
+; creates a unique two-byte hash from the name given in hl.
+; the low byte is calculated by simply adding up all characters.
+; the high byte is calculated by xoring all characters together.
 ; input:
-; - hl = points to the start of the name buffer
+;	hl = pointing to a text string (e.g. wNameBuffer)
 ; output:
-; - de = hash
+;	de = hash
 CalculateNameHash:
 	ld c, NAME_BUFFER_LENGTH
 	ld de, $0

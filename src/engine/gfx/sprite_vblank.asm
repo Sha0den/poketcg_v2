@@ -22,8 +22,7 @@ RestoreVBlankFunction:
 	ld de, wVBlankFunctionTrampoline + 1
 	call BackupVBlankFunctionTrampoline
 	call ClearSpriteAnimations
-	call ZeroObjectPositionsAndToggleOAMCopy
-	ret
+	jp ZeroObjectPositionsAndToggleOAMCopy
 
 
 ; copies 2 bytes from hl to de while interrupts are disabled

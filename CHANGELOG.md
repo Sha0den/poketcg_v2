@@ -76,6 +76,12 @@
 
 
 ## Code Optimization
+- **August 4, 2024:** 5 Files Changed
+    - Try to standardize the function comments that are used in the engine/link files
+    - Plus some corrections/optimizations in said files
+
+<br/>
+
 - **[August 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/44fc27ab53be4baed0c310fa6a970a90964641f1):** 2 Files Changed
     - Move Prophecy/Pokedex player select effects to engine/duel/effect_functions2.asm
 
@@ -98,6 +104,18 @@
 
 <br/>
 
+- **[August 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/23905f186bfe79e892321a09135ca051a55c5c18):** 2 Files Changed
+    - Try to standardize the function comments that are used in engine/duel/core.asm
+    - Plus some corrections/optimizations/shuffling of functions in said file
+
+<br/>
+
+- **[July 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/a9b7e3235658e1dd0817372a9f0b2fc048e27385):** 3 Files Changed
+    - Try to standardize the function comments that are used in the engine/duel/animations files
+    - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
 - **[July 25, 2024](https://github.com/Sha0den/poketcg_v2/commit/64e64318ae0c40f6aa22eea5b8f3b4c7a7931a9a):** 2 Files Changed
     - Delete BankswitchVRAM function and replace every bank20 call/jp with the inlined code
 
@@ -114,12 +132,48 @@
 
 <br/>
 
+- **[July 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/b96a8555722cb16b35f7eb082f695f283dd28805):** 3 Files Changed
+    - Try to standardize the function comments that are used in the effect functions files
+    - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
+- **[June 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/32960c5081f9c5c653b2552b04b1fd21b8883016):** 17 Files Changed
+    - Try to standardize the function comments that are used in the engine/menus files
+    - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
+- **[June 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/9b47a3046ecab3e451a1b68aae396dd837712634):** 6 Files Changed
+    - Try to standardize the function comments that are used in the engine/overworld files
+    - Also perform many small optimizations in the engine/overworld files
+
+<br/>
+
 - **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/fbbd4f3f7422ba5a9abcd6878e842c0aec178e02):** 19 Files Changed
     - Delete "Func_7415", "SetNoLineSeparation", and "SetOneLineSeparation" from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
     - Move "Func_61a1" to engine/duel/effect_functions.asm
     - Move "ZeroObjectPositionsAndToggleOAMCopy" to home/objects.asm
     - Move "WaitAttackAnimation" to home/duel.asm
     - Move "SetCardListHeader" and "SetCardListInfoBoxText" to home/menus.asm
+
+<br/>
+
+- **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/90115177c0340127d97cf4dba6724703c17b448b):** 9 Files Changed
+    - Add comments related to setting the carry flag for a variety of home bank functions
+    - Perform minor optimizations in home/duel.asm related to setting the carry flag
+
+<br/>
+
+- **[June 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/9ffd656449cac8b8781dedc4a466900ef8af1928):** 3 Files Changed
+    - Try to standardize the function comments that are used in engine/bank20.asm and the engine/sequences files
+    - Remove some unnecessary code from the aforementioned files
+
+<br/>
+
+- **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0e5c4e7ac27f6c5fee1642ec227dc8edf24d5a11):** 4 Files Changed
+    - Try to standardize the function comments that are used in the engine/gfx files
+    - Remove several unnecessary push/pops in engine/gfx/sprite_animations.asm
 
 <br/>
 
@@ -130,6 +184,13 @@
 
 - **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/afee23873ee49f2ace256d0319fc28d8b95e0b96):** 6 Files Changed
     - Delete ResetDoFrameFunction functions, and replace each call with the requisite lines of code
+
+<br/>
+
+- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d):** 51 Files Changed
+    - Try to standardize the function comments that are used in the home bank files
+    - Also eliminate some redundant code and update a few more ld's to ldh's
+    - Further adjustments made in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/acf60372628574a3e4c5d03c47c1ee058f1fe5ec)
 
 <br/>
 
@@ -264,31 +325,13 @@
 
 
 ## Miscellaneous Changes
-- **August 3, 2024:** 1 File Changed
+- **[August 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/0849ad946e2b0cef4a08988d983e7e3f3516c674):** 1 File Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Remove-AI-artificial-delay) to remove the artificial delay applied to many of the AI's actions
-
-<br/>
-
-- **[August 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/23905f186bfe79e892321a09135ca051a55c5c18):** 2 Files Changed
-    - Try to standardize the function comments that are used in engine/duel/core.asm
-    - Plus some corrections/optimizations/shuffling of functions in said file
-
-<br/>
-
-- **[July 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/a9b7e3235658e1dd0817372a9f0b2fc048e27385):** 3 Files Changed
-    - Try to standardize the function comments that are used in the engine/duel/animations files
-    - Plus some corrections/optimizations/shuffling of functions in said files
 
 <br/>
 
 - **[July 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/87cc896a64a7a987321b9fd94c8773aa509a6108):** 1 File Changed
     - Restructure home/math.asm
-
-<br/>
-
-- **[July 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/b96a8555722cb16b35f7eb082f695f283dd28805):** 3 Files Changed
-    - Try to standardize the function comments that are used in the effect functions files
-    - Plus some corrections/optimizations/shuffling of functions in said files
 
 <br/>
 
@@ -302,38 +345,8 @@
 
 <br/>
 
-- **[June 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/32960c5081f9c5c653b2552b04b1fd21b8883016):** 17 Files Changed
-    - Try to standardize the function comments that are used in the engine/menus files
-    - Plus some corrections/optimizations/shuffling of functions in said files
-
-<br/>
-
-- **[June 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/9b47a3046ecab3e451a1b68aae396dd837712634):** 6 Files Changed
-    - Try to standardize the function comments that are used in the engine/overworld files
-    - Also perform many small optimizations in the engine/overworld files
-
-<br/>
-
-- **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/90115177c0340127d97cf4dba6724703c17b448b):** 9 Files Changed
-    - Add comments related to setting the carry flag for a variety of home bank functions
-    - Perform minor optimizations in home/duel.asm related to setting the carry flag
-
-<br/>
-
-- **[June 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/9ffd656449cac8b8781dedc4a466900ef8af1928):** 3 Files Changed
-    - Try to standardize the function comments that are used in engine/bank20.asm and the engine/sequences files
-    - Remove some unnecessary code from the aforementioned files
-
-<br/>
-
 - **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/15bf474bae975ce662a989f5f4410f84b5a7906b):** 3 Files Changed
     - Move debug.asm from engine/menus and debug_player_coordinates.asm from engine/overworld to engine/unused
-
-<br/>
-
-- **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0e5c4e7ac27f6c5fee1642ec227dc8edf24d5a11):** 4 Files Changed
-    - Try to standardize the function comments that are used in the engine/gfx files
-    - Remove several unnecessary push/pops in engine/gfx/sprite_animations.asm
 
 <br/>
 
@@ -358,13 +371,6 @@
 
 - **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7b97cccbcd62933c6bd8ade0834cf9aca1fca6f):** 3 Files Changed
     - Reorganize the functions in home/substatus.asm
-
-<br/>
-
-- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d):** 51 Files Changed
-    - Try to standardize the function comments that are used in the home bank files
-    - Also eliminate some redundant code and update a few more ld's to ldh's
-    - Further adjustments made in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/acf60372628574a3e4c5d03c47c1ee058f1fe5ec)
 
 <br/>
 

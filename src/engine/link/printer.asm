@@ -1,6 +1,6 @@
-; sends serial data to printer
+; sends serial data to printer.
 ; if there's an error in connection,
-; show Printer Not Connected scene with error message
+; show Printer Not Connected scene with error message.
 _PreparePrinterConnection:
 	ld bc, 0
 	lb de, PRINTERPKT_DATA, FALSE
@@ -18,8 +18,10 @@ _PreparePrinterConnection:
 	jr z, ShowPrinterIsNotConnected
 ;	fallthrough
 
-; shows message on screen depending on wPrinterStatus
+; shows message on screen depending on wPrinterStatus.
 ; also shows SCENE_GAMEBOY_PRINTER_NOT_CONNECTED.
+; output:
+;	carry = set
 HandlePrinterError:
 	ld a, [wPrinterStatus]
 	cp $ff
@@ -54,13 +56,17 @@ HandlePrinterError:
 	scf
 	ret
 
+
 ShowPrinterIsNotConnected:
 	ldtx hl, PrinterIsNotConnectedText
 	ld a, $02
 ;	fallthrough
 
-; a = error code
-; hl = text ID to print in text box
+; input:
+;	a = error code
+;	hl = text ID for the notification text to print in the text box
+; output:
+;	carry = set
 ShowPrinterConnectionErrorScene:
 	push hl
 	; unnecessary loading TxRam, since the text data
@@ -79,7 +85,10 @@ ShowPrinterConnectionErrorScene:
 	scf
 	ret
 
+
 ; main card printer function
+; output:
+;	carry = set:  if there was an error
 _RequestToPrintCard:
 	ld e, a
 	ld d, $0
@@ -163,7 +172,7 @@ _RequestToPrintCard:
 	ld hl, wLoadedCard1Name
 	call InitTextPrinting_ProcessTextFromPointerToID
 
-; prints card's type, lv, HP and attacks if it's a Pokemon card
+; prints card's type, lv, and HP if it's a Pokemon card
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
 	ret nc ; skip Pokemon data
@@ -174,21 +183,20 @@ _RequestToPrintCard:
 	lb bc, 11, 66
 	call WriteByteToBGMap0
 	ld a, [wLoadedCard1Level]
-	lb bc, 12, 66
+	inc b ; (bc = 12, 66)
 	bank1call WriteTwoDigitNumberInTxSymbolFormat
 	ld a, SYM_HP
 	lb bc, 15, 66
 	call WriteByteToBGMap0
-	ld a, [wLoadedCard1EffectCommands]
-	inc b
+	ld a, [wLoadedCard1HP]
+	inc b ; (bc = 16, 66)
 	bank1call WriteTwoByteNumberInTxSymbolFormat
 	ret
 
-; writes the tiles necessary to draw
-; the card's information in sGfxBuffer0
-; this includes card's Retreat cost, Weakness, Resistance,
-; and attack if it's Pokemon card
-; or otherwise just the card's description.
+
+; writes the tiles necessary to draw the card's information in sGfxBuffer0.
+; if the card's a Pokemon, this includes its Retreat cost, Weakness, Resistance, and attack(s).
+; if it's a Trainer or Energy card, just print the card's description.
 DrawBottomCardInfoInSRAMGfxBuffer0:
 	call Func_1a025
 	xor a
@@ -222,6 +230,7 @@ DrawBottomCardInfoInSRAMGfxBuffer0:
 	ld a, $01 ; text isn't double-spaced
 	ld [wLineSeparation], a
 	lb de, 1, 66
+	ld a, 19 ; line length
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1NonPokemonDescription
 	call ProcessTextFromPointerToID
@@ -236,7 +245,9 @@ RetreatWeakResistData:
 	textitem 15, 72, NumberSymbolText
 	db $ff
 
+
 ; calls setup text and sets wTilePatternSelector
+; preserves bc
 Func_1a025:
 	lb de, $40, $bf
 	call SetupText
@@ -246,9 +257,11 @@ Func_1a025:
 	ld [wTilePatternSelectorCorrection], a
 	ret
 
+
 ; switches to CGB normal speed, resets serial
 ; enables SRAM and switches to SRAM1
 ; and clears sGfxBuffer0
+; preserves de
 PrepareForPrinterCommunications:
 	call SwitchToCGBNormalSpeed
 	call ResetSerial
@@ -265,6 +278,7 @@ PrepareForPrinterCommunications:
 	call EnableSRAM
 ;	fallthrough
 
+; preserves de
 ClearPrinterGfxBuffer:
 	ld hl, sGfxBuffer0
 	ld bc, $400
@@ -279,7 +293,9 @@ ClearPrinterGfxBuffer:
 	ld [wce9f], a
 	ret
 
+
 ; reverts settings changed by PrepareForPrinterCommunications
+; preserves af
 ResetPrinterCommunicationSettings:
 	push af
 	call SwitchToCGBDoubleSpeed
@@ -291,10 +307,14 @@ ResetPrinterCommunicationSettings:
 	pop af
 	ret
 
-; send printer packet:
-; - d = PRINTERPKT_* constant
-; - e = in case of PRINTERPKT_DATA, whether it's compressed
-; - bc = number of bytes in data
+
+; sends printer packet
+; input:
+;	bc = number of bytes in data
+;	d = PRINTERPKT_* constant
+;	e = in case of PRINTERPKT_DATA, whether it's compressed
+; output:
+;	carry = set:  if there was an error
 SendPrinterPacket:
 	push hl
 	ld hl, wPrinterPacket
@@ -351,7 +371,7 @@ SendPrinterPacket:
 
 	; we expect printer to send $81
 	; as the device number, any other value
-	; means that a second device in connected
+	; means that a second device is connected
 	ld a, [wSerialTransferData]
 	cp $81
 	jr nz, .unexpected_device_number
@@ -369,10 +389,11 @@ SendPrinterPacket:
 	scf
 	ret
 
-; tries initiating the communications for
-; sending data to printer
-; returns carry if operation was cancelled
-; by pressing B button or serial transfer took long
+
+; tries initiating the communications for sending data to printer
+; output:
+;	carry = set:  if the operation was cancelled by the Player (with B button) or
+;	              if the serial transfer took too long
 TryInitPrinterCommunications:
 	xor a
 	ld [wPrinterInitAttempts], a
@@ -409,17 +430,19 @@ TryInitPrinterCommunications:
 	ret
 
 .delay
-	ld c, 10
-.delay_loop
-	call DoFrame
-	dec c
-	jr nz, .delay_loop
+	ld a, 10
+	call DoAFrames
 	jr .init
 
-; loads tiles given by map in hl to sGfxBuffer5
-; copies first 20 tiles, then offsets by 2 tiles
-; and copies another 20
-; compresses this data and sends it to printer
+
+; loads tiles given by map in hl to sGfxBuffer5.
+; copies first 20 tiles, then offsets by 2 tiles and copies another 20.
+; compresses this data and sends it to the printer.
+; preserves bc
+; input:
+;	hl = pointing to a location in sGfxBuffer*
+; output:
+;	carry = set:  if there was an error
 SendTilesToPrinter:
 	push bc
 	ld de, sGfxBuffer5
@@ -448,7 +471,9 @@ SendTilesToPrinter:
 	ret
 
 ; copies a tile to de
-; a = tile to get from sGfxBuffer1
+; preserves bc and hl
+; input:
+;	a = tile to get from sGfxBuffer1
 .CopyTile
 	push hl
 	push bc
@@ -471,6 +496,9 @@ SendTilesToPrinter:
 	pop hl
 	ret
 
+
+; output:
+;	carry = set:  if there was an error
 Func_1a011:
 	call TryInitPrinterCommunications
 	ret c
@@ -483,6 +511,9 @@ Func_1a011:
 	jr nz, .asm_1a01a
 	jr SendPrinterInstructionPacket_1Sheet_3LineFeeds
 
+
+; output:
+;	carry = set:  if there was an error
 SendCardListToPrinter:
 	ld a, [wPrinterHorizontalOffset]
 	cp 1
@@ -494,12 +525,17 @@ SendCardListToPrinter:
 	ret c
 ;	fallthrough
 
+; output:
+;	carry = set:  if there was an error
 SendPrinterInstructionPacket_1Sheet_3LineFeeds:
 	call GetPrinterContrastSerialData
 	push hl
 	lb hl, 3, 1
 	jr SendPrinterInstructionPacket
 
+
+; output:
+;	carry = set:  if there was an error
 Func_19f87:
 	call TryInitPrinterCommunications
 	ret c ; aborted
@@ -509,6 +545,9 @@ Func_19f87:
 	call SendTilesToPrinter
 	jr SendPrinterInstructionPacket_1Sheet
 
+
+; output:
+;	carry = set:  if there was an error
 Func_19f99:
 	call TryInitPrinterCommunications
 	ret c
@@ -521,8 +560,9 @@ Func_19f99:
 	jr nz, .asm_19fa2
 ;	fallthrough
 
-; uses wPrinterNumberLineFeeds to get number
-; of line feeds to insert before print
+; uses wPrinterNumberLineFeeds to get number of line feeds to insert before print
+; output:
+;	carry = set:  if there was an error
 SendPrinterInstructionPacket_1Sheet:
 	call GetPrinterContrastSerialData
 	push hl
@@ -533,11 +573,14 @@ SendPrinterInstructionPacket_1Sheet:
 	ld l, 1
 ;	fallthrough
 
-; h = number of line feeds where:
-;     high nybble is number of line feeds before printing
-;     low nybble is number of line feeds after printing
-; l = number of sheets
 ; expects printer contrast information to be on stack
+; input:
+;	h = number of line feeds where:
+;		high nybble is number of line feeds before printing
+;		low nybble is number of line feeds after printing
+;	l = number of sheets
+; output:
+;	carry = set:  if there was an error
 SendPrinterInstructionPacket:
 	push hl
 	ld bc, 0
@@ -553,9 +596,10 @@ SendPrinterInstructionPacket:
 	pop hl
 	ret
 
-; returns in h and l the bytes
-; to be sent through serial to the printer
-; for the set contrast level
+
+; preserves bc
+; output:
+;	hl = bytes to be sent through serial to the printer for the set contrast level
 GetPrinterContrastSerialData:
 	ld a, [wPrinterContrastLevel]
 	ld e, a
@@ -569,7 +613,9 @@ GetPrinterContrastSerialData:
 .contrast_level_data
 	db $00, $20, $40, $60, $7f
 
-; a = saved deck index to print
+
+; input:
+;	a = saved deck index to print
 _PrintDeckConfiguration:
 ; copies selected deck from SRAM to wDuelTempList
 	call EnableSRAM
@@ -645,6 +691,7 @@ _PrintDeckConfiguration:
 	call ResetPrinterCommunicationSettings
 	call RestoreVBlankFunction
 	jp HandlePrinterError
+
 
 _PrintCardList:
 ; if Select button is held when printing card list
@@ -829,8 +876,7 @@ _PrintCardList:
 	cp c
 	ret z ; already handled this card type
 
-	; show corresponding icon and text
-	; for this new card type
+	; show corresponding icon and text for this new card type
 	ld a, c
 	ld [hl], a ; set it as current card type
 	add a
@@ -852,11 +898,10 @@ _PrintCardList:
 	pop hl
 	ld d, 3
 	inc e
-	call InitTextPrinting
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 
 	call AddToPrinterGfxBuffer
 	ld hl, wPrinterCurCardTypeCount
@@ -924,6 +969,9 @@ _PrintCardList:
 ;	fallthrough
 
 ; increases printer horizontal offset by 2
+; preserves hl
+; output:
+;	carry = set:  if LoadGfxBufferForPrinter transfer was unsuccessful
 AddToPrinterGfxBuffer:
 	push hl
 	ld hl, wPrinterHorizontalOffset
@@ -939,7 +987,9 @@ AddToPrinterGfxBuffer:
 ;	fallthrough
 
 ; copies Gfx to Gfx buffer and sends some serial data
-; returns carry set if unsuccessful
+; preserves hl
+; output:
+;	carry = set:  if the transfer was unsuccessful
 LoadGfxBufferForPrinter:
 	push hl
 	call TryInitPrinterCommunications
@@ -968,7 +1018,9 @@ LoadGfxBufferForPrinter:
 	scf
 	ret
 
-; load symbol, name, level and card count to buffer
+
+; loads symbol, name, level and card count to buffer
+; preserves hl
 LoadCardInfoForPrinter:
 	push hl
 	ld a, [wPrinterHorizontalOffset]
@@ -1000,6 +1052,7 @@ LoadCardInfoForPrinter:
 	pop hl
 	ret
 
+
 ShowPrinterTransmitting:
 	call SetSpriteAnimationsAsVBlankFunction
 	ld a, SCENE_GAMEBOY_PRINTER_TRANSMITTING
@@ -1009,15 +1062,17 @@ ShowPrinterTransmitting:
 	call DrawWideTextBox_PrintText
 	jp EnableLCD
 
-; compresses $28 tiles in sGfxBuffer5
-; and writes it in sGfxBuffer5 + $28 tiles.
+
+; compresses $28 tiles in sGfxBuffer5 and writes it in sGfxBuffer5 + $28 tiles.
 ; compressed data has 2 commands to instruct on how to decompress it.
-; - a command byte with bit 7 not set, means to copy that many + 1
-; bytes that are following it literally.
-; - a command byte with bit 7 set, means to copy the following byte
-; that many times + 2 (after masking the top bit of command byte).
-; returns in bc the size of the compressed data and
-; in de the packet type data.
+;	- a command byte with bit 7 not set: copy that many + 1 bytes
+;	  that are following it literally
+;	- a command byte with bit 7 set: copy the following byte that many times + 2
+;	 (after masking the top bit of command byte)
+; output:
+;	bc = size of the compressed data
+;	de = PRINTERPKT_DATA, TRUE
+;	hl = sGfxBuffer5 + $28 tiles
 CompressDataForPrinterSerialTransfer:
 	ld hl, sGfxBuffer5
 	ld de, sGfxBuffer5 + $28 tiles
@@ -1040,7 +1095,7 @@ CompressDataForPrinterSerialTransfer:
 	ld a, c
 	ld b, c
 	dec a
-	ld [de], a ; number of bytes to  copy literally - 1
+	ld [de], a ; number of bytes to copy literally - 1
 	inc de
 .copy_literal_sequence
 	ld a, [hli]
@@ -1085,26 +1140,31 @@ CompressDataForPrinterSerialTransfer:
 	lb de, PRINTERPKT_DATA, TRUE
 	ret
 
+
 ; checks whether the next byte sequence in hl, up to c bytes, can be compressed
 ; returns carry if the next sequence of bytes can be compressed,
-; i.e. has at least 3 consecutive bytes with the same value.
-; in that case, returns in e the number of consecutive
-; same value bytes that were found.
+; i.e. it has at least 3 consecutive bytes with the same value.
+; in that case, returns in e the number of consecutive same value bytes that were found.
 ; if there are no bytes with same value, then count as many bytes left
 ; as possible until either there are no more remaining data bytes,
 ; or until a sequence of 3 bytes with the same value are found.
 ; in that case, the number of bytes in this sequence is returned in e.
+; preserves hl
+; input:
+;	c = number of bytes to check
+;	hl = pointing to the start of the data to check
+; output:
+;	e = number of consecutive bytes with the same value that can be compressed
+;	carry = set:  if there's data that can be compressed
 CheckDataCompression:
 	push hl
 	ld e, c
 	ld a, c
-; if number of remaining bytes is less than 4
-; then no point in compressing
+; if number of remaining bytes is less than 4, then no point in compressing
 	cp 4
 	jr c, .no_carry
 
-; check first if there are at least
-; 3 consecutive bytes with the same value
+; check first if there are at least 3 consecutive bytes with the same value
 	ld b, c
 	ld a, [hli]
 	cp [hl]
