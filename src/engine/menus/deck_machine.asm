@@ -1783,12 +1783,13 @@ TryBuildDeckMachineDeck:
 	ret
 
 ; needs more cards than the player has in their in collection
+; return with carry set and the number of cards needed in a
 .not_enough
 	ld e, a
 	ld a, d
 	sub e
-	ret z ; carry is set
-;	fallthrough
+	scf
+	ret
 
 ; preserves af and bc
 ; input:
