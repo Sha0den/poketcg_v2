@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 4, 2024:** 8 Files Changed
+- **August 5, 2024:** 1 File Changed
+    - Review and clean up engine/menus/deck_machine.asm
+
+<br/>
+
+- **[August 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/37fd5f8676a6a3d2583fd40baf6b1bdff03437ba):** 8 Files Changed
     - Eliminate 8 farcalls by moving HandleAIMewtwoDeckStrategy from engine/duel/ai/common.asm to engine/duel/ai/core.asm
 
 <br/>

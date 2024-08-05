@@ -101,12 +101,11 @@ HandleDeckMissingCardsList:
 	ld [hl], $01
 	call .PrintDeckIndexAndName
 	lb de, 1, 14
-	call InitTextPrinting
 	ld hl, wCardConfirmationText
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld hl, hffb0
 	ld [hl], $00
 	jp PrintConfirmationCardList
@@ -137,7 +136,9 @@ HandleDeckMissingCardsList:
 	inc a
 	ld hl, wDefaultText
 	call ConvertToNumericalDigits
-	ld [hl], "FW0_・"
+	ld a, TX_FULLWIDTH3
+	ld [hli], a
+	ld [hl], $7b ; Period
 	inc hl
 	ld [hl], TX_END
 	ld hl, wDefaultText
@@ -171,17 +172,16 @@ GiftCenter_SendCard:
 	call LoadSymbolsFont
 	bank1call SetDefaultConsolePalettes
 
-	lb de, $3c, $bf
+	lb de, $38, $bf
 	call SetupText
 	lb de, 3, 1
 	ldtx hl, ProceduresForSendingCardsText
 	call InitTextPrinting_ProcessTextFromID
 	lb de, 1, 3
-	call InitTextPrinting
 	ldtx hl, CardSendingProceduresText
 	ld a, $01 ; text isn't double-spaced
 	ld [wLineSeparation], a
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	xor a ; text is double-spaced
 	ld [wLineSeparation], a
 	ldtx hl, PleaseReadTheProceduresForSendingCardsText
@@ -364,6 +364,7 @@ Func_b088:
 	inc [hl]
 	jr .loop
 
+; preserves all registers
 .Func_b0c0
 	push af
 	push bc
@@ -799,7 +800,7 @@ ClearScreenAndDrawDeckMachineScreen:
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
 	bank1call SetDefaultConsolePalettes
-	lb de, $3c, $ff
+	lb de, $38, $ff
 	call SetupText
 	lb de, 0, 0
 	lb bc, 20, 13
@@ -813,20 +814,21 @@ ClearScreenAndDrawDeckMachineScreen:
 
 ; prints wDeckMachineTitleText as the title text
 ; preserves bc
+; input:
+;	[wDeckMachineTitleText] = text ID (2 bytes)
 SetDeckMachineTitleText:
 	lb de, 1, 0
-	call InitTextPrinting
 	ld hl, wDeckMachineTitleText
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	jp ProcessTextFromID
+	jp InitTextPrinting_ProcessTextFromID
 
 
 ; saves all sSavedDecks pointers in wMachineDeckPtrs
 GetSavedDeckPointers:
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
-	add NUM_DECK_SAVE_MACHINE_SLOTS ; add a is better
+	add a
 	ld hl, wMachineDeckPtrs
 	call ClearNBytesFromHL
 	ld de, wMachineDeckPtrs
@@ -852,18 +854,20 @@ UpdateDeckMachineScrollArrowsAndEntries:
 	call DrawListScrollArrows
 	jr PrintVisibleDeckMachineEntries
 
+; input:
+;	[wDeckMachineTitleText] = text ID (2 bytes)
+;	[wDeckMachineText] = text ID (2 bytes)
 DrawDeckMachineScreen:
 	call DrawListScrollArrows
 	ld hl, hffb0
 	ld [hl], $01
 	call SetDeckMachineTitleText
 	lb de, 1, 14
-	call InitTextPrinting
 	ld hl, wDeckMachineText
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	ld hl, hffb0
 	ld [hl], $00
 ;	fallthrough
@@ -891,19 +895,23 @@ PrintVisibleDeckMachineEntries:
 	jr .loop
 
 
-; prints the deck name of the deck corresponding to the wMachineDeckPtrs index in register a,
+; prints the deck name of the deck corresponding to the wMachineDeckPtrs index in register a.
 ; also checks whether the deck can be built, either directly from the player's collection
 ; or by dismantling other decks, and places the corresponding symbol next to the name.
 ; input:
 ;	a = wMachineDeckPtrs index
 ;	de = screen coordinates for printing the text
+; output:
+;	carry = set:  if the deck from input is not valid, i.e. it has no cards
 PrintDeckMachineEntry:
 	ld b, a
 	push bc
 	ld hl, wDefaultText
 	inc a
 	call ConvertToNumericalDigits
-	ld [hl], "FW0_・"
+	ld a, TX_FULLWIDTH3
+	ld [hli], a
+	ld [hl], $7b ; Period
 	inc hl
 	ld [hl], TX_END
 	call InitTextPrinting
@@ -1182,19 +1190,10 @@ DeckMachineSelectionParams:
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
 
-DeckMachineMenuParameters:
-	db 1, 2 ; cursor x, cursor y
-	db 3 ; y displacement between items
-	db 4 ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
-
 
 ; preserves af, bc, and hl
 ; output:
-;	de = pointer for saved deck
-; corresponding to index in wSelectedDeckMachineEntry
+;	de = pointer for saved deck corresponding to index in wSelectedDeckMachineEntry
 GetSelectedSavedDeckPtr:
 	push af
 	push hl
@@ -1278,8 +1277,8 @@ CheckIfHasEnoughCardsToBuildDeck:
 	ret
 
 
-; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM
-; immediately returns if SRAM bank 0 is already the current SRAM bank
+; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM.
+; immediately returns if SRAM bank 0 is already the current SRAM bank.
 ; preserves all registers
 SafelySwitchToSRAM0:
 	push af
@@ -1294,8 +1293,8 @@ SafelySwitchToSRAM0:
 	ret
 
 
-; switches to SRAM bank 1 and stores current SRAM bank in wTempBankSRAM
-; immediately returns if SRAM bank 1 is already the current SRAM bank
+; switches to SRAM bank 1 and stores current SRAM bank in wTempBankSRAM.
+; immediately returns if SRAM bank 1 is already the current SRAM bank.
 ; preserves all registers
 SafelySwitchToSRAM1:
 	push af
@@ -1434,6 +1433,8 @@ DrawListScrollArrows:
 
 ; handles the deck menu for when the player
 ; needs to make space for new deck to build
+; output:
+;	carry = set:  if the operation was cancelled by the Player (with B button)
 HandleDismantleDeckToMakeSpace:
 	ldtx hl, YouMayOnlyCarry4DecksText
 	call DrawWideTextBox_WaitForInput
@@ -1507,6 +1508,8 @@ HandleDismantleDeckToMakeSpace:
 ; will check if can be built with or without dismantling.
 ; prompts the player in case a deck has to be dismantled,
 ; or, if it's impossible to build the deck, then show the list of missing cards.
+; output:
+;	carry = set (always?)
 TryBuildDeckMachineDeck:
 	ld a, [wSelectedDeckMachineEntry]
 	ld b, a
@@ -1543,9 +1546,8 @@ TryBuildDeckMachineDeck:
 	call DisableSRAM
 	jr nc, .got_deck_slot
 	call HandleDismantleDeckToMakeSpace
-	jr nc, .got_deck_slot
-	scf
-	ret
+	ret c
+	; fallthrough
 
 .got_deck_slot
 	ld [wDeckSlotForNewDeck], a
@@ -1681,6 +1683,8 @@ TryBuildDeckMachineDeck:
 
 ; collects cards missing from the player's collection
 ; and shows its confirmation list
+; output:
+;	carry = set
 .ShowMissingCardList
 ; copy saved deck card from SRAM to wCurDeckCards
 ; and make unique card list sorted by ID
@@ -1714,17 +1718,16 @@ TryBuildDeckMachineDeck:
 	or a
 	jr z, .finish_missing_card_list
 	ld b, a
-	push bc
+;	push bc
 	push de
 	push hl
 	ld hl, wCurDeckCards
 	call .CheckIfCardIsMissing
 	pop hl
 	pop de
-	pop bc
+;	pop bc
 	jr nc, .loop_deck_configuration
-	; this card is missing
-	; store in wFilteredCardList this card ID
+	; this card is missing, so store in wFilteredCardList this card ID
 	; a number of times equal to the amount still needed
 	ld c, a
 	ld a, b
@@ -1755,7 +1758,7 @@ TryBuildDeckMachineDeck:
 
 
 ; checks if player has enough cards with ID given in register a
-; in the collection to build the deck and, if not,
+; in the collection to build the deck, and if not,
 ; sets the carry flag and outputs in a the difference
 ; preserves bc
 ; input:
@@ -1784,8 +1787,8 @@ TryBuildDeckMachineDeck:
 	ld e, a
 	ld a, d
 	sub e
-	scf ; not necessary since the carry flag is already set
-	ret z
+	ret z ; carry is set
+;	fallthrough
 
 ; preserves af and bc
 ; input:
@@ -2108,6 +2111,8 @@ HandleAutoDeckMenu:
 ; clears the screen, loads the proper tiles,
 ; prints the Auto Deck title and deck entries,
 ; and creates the auto deck configurations
+; input:
+;	[wDeckMachineTitleText] = text ID (2 bytes)
 .InitAutoDeckMenu
 	call Set_OBJ_8x8
 	xor a
@@ -2119,18 +2124,17 @@ HandleAutoDeckMenu:
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
 	bank1call SetDefaultConsolePalettes
-	lb de, $3c, $ff
+	lb de, $38, $ff
 	call SetupText
 	lb de, 0, 0
 	lb bc, 20, 13
 	call DrawRegularTextBox
 	lb de, 1, 0
-	call InitTextPrinting
 	ld hl, wDeckMachineTitleText
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	call SafelySwitchToSRAM1
 	farcall ReadAutoDeckConfiguration
 	call .CreateAutoDeckPointerList
