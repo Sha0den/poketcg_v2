@@ -1271,15 +1271,15 @@ HandleCheckMenuInput_YourOrOppPlayArea:
 	and A_BUTTON
 	jr nz, .a_pressed
 	; B button pressed
-	ld a, $ff ; cancel
-	call PlaySFXConfirmOrCancel
+	ld a, -1 ; cancel
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
 .a_pressed
 	call DisplayCheckMenuCursor_YourOrOppPlayArea
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
@@ -1809,14 +1809,14 @@ YourOrOppPlayAreaScreen_HandleInput:
 	jr nz, .a_button
 
 	ld a, -1 ; cancel
-	call PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
 .a_button
 	call .draw_cursor
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wYourOrOppPlayAreaCurPosition]
 	scf
 	ret

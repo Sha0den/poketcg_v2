@@ -65,8 +65,8 @@ HandleDeckMissingCardsList:
 	jr z, .loop_input
 
 .open_card_pge
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListCursorPos]
 	ld [wced7], a
 
@@ -259,8 +259,8 @@ GiftCenter_ReceiveCard:
 	and START
 	jr z, .asm_afe2
 .asm_aff5
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 
@@ -692,8 +692,8 @@ HandleDeckMachineSelection:
 
 ; show deck confirmation screen with deck cards
 ; and return with the carry flag set
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	call OpenDeckConfirmationMenu
 	ld a, [wTempCardListVisibleOffset]
 	ld [wCardListVisibleOffset], a
@@ -1965,7 +1965,7 @@ HandleAutoDeckMenu:
 
 	; show confirmation list
 	ld a, $1
-	call PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank2
 	call SafelySwitchToSRAM1
 	call OpenDeckConfirmationMenu
 	call SafelySwitchToSRAM0
@@ -2072,7 +2072,7 @@ HandleAutoDeckMenu:
 
 	; show confirmation list
 	ld a, $1
-	call PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank2
 	call SafelySwitchToSRAM1
 	xor a
 	call HandleDeckMissingCardsList

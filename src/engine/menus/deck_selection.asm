@@ -278,15 +278,15 @@ HandleStartButtonInDeckSelectionMenu:
 	jr nc, .valid_deck
 
 ; not a valid deck, cancel
-	ld a, $ff ; cancel
-	call PlaySFXConfirmOrCancel
+	ld a, -1 ; cancel
+	call PlaySFXConfirmOrCancel_Bank2
 	call PrintThereIsNoDeckHereText
 	scf
 	ret
 
 .valid_deck
 	ld a, $1
-	call PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank2
 	call GetPointerToDeckCards
 	push hl
 	call GetPointerToDeckName

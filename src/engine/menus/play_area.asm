@@ -521,14 +521,14 @@ OpenInPlayAreaScreen_HandleInput:
 
 	; the B button was pressed
 	ld a, -1
-	farcall PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank6
 	scf
 	ret
 
 .a_button
 	call .draw_cursor
-	ld a, $01
-	farcall PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank6
 	ld a, [wInPlayAreaCurPosition]
 	scf
 	ret

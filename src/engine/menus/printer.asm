@@ -78,8 +78,8 @@ PrinterMenu_PokemonCards:
 	and START
 	jr z, .loop_frame_2
 ; start button
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListNumCursorPositions]
 	ld [wTempCardListNumCursorPositions], a
 	ld a, [wCardListCursorPos]

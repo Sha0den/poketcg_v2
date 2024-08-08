@@ -61,15 +61,15 @@ HandleCheckMenuInput:
 	jr z, .no_input
 	and A_BUTTON
 	jr nz, .a_press
-	ld a, $ff ; cancel
-	call PlaySFXConfirmOrCancel
+	ld a, -1 ; cancel
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
 .a_press
 	call DisplayCheckMenuCursor
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
@@ -125,12 +125,12 @@ DisplayCheckMenuCursor:
 	jr DrawCheckMenuCursor
 
 
-; plays sound depending on value in a
+; plays a sound effect depending on the value in a
 ; preserves all registers
 ; input:
-;	a  = $ff:  play cancel sound effect
-;	a != $ff:  play confirm sound effect
-PlaySFXConfirmOrCancel:
+;	a  = -1:  play SFX_CANCEL  (usually following a B press)
+;	a != -1:  play SFX_CONFIRM (usually following an A press)
+PlaySFXConfirmOrCancel_Bank2:
 	push af
 	inc a
 	jr z, .cancel_sfx

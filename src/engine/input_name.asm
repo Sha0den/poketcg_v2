@@ -38,18 +38,20 @@ ClearMemory:
 	pop af
 	ret
 
-; play different sfx by a.
-; if a is 0xff play SFX_CANCEL (usually following a B press),
-; else play SFX_CONFIRM (usually following an A press).
-PlayAcceptOrDeclineSFX:
+; plays a sound effect depending on the value in a
+; preserves all registers
+; input:
+;	a  = -1:  play SFX_CANCEL  (usually following a B press)
+;	a != -1:  play SFX_CONFIRM (usually following an A press)
+PlaySFXConfirmOrCancel_Bank6:
 	push af
 	inc a
-	jr z, .sfx_decline
+	jr z, .cancel_sfx
 	ld a, SFX_CONFIRM
-	jr .sfx_accept
-.sfx_decline
+	jr .play_sfx
+.cancel_sfx
 	ld a, SFX_CANCEL
-.sfx_accept
+.play_sfx
 	call PlaySFX
 	pop af
 	ret
@@ -98,7 +100,7 @@ InputPlayerName:
 	jr z, .else
 	; if pressed start button.
 	ld a, $01
-	call PlayAcceptOrDeclineSFX
+	call PlaySFXConfirmOrCancel_Bank6
 	call Func_1aa07
 	ld a, 6
 	ld [wNamingScreenCursorX], a
@@ -418,7 +420,7 @@ NamingScreen_CheckButtonState:
 	jr nz, .asm_69e5
 	ld a, $ff
 .asm_69e5
-	call PlayAcceptOrDeclineSFX
+	call PlaySFXConfirmOrCancel_Bank6
 	push af
 	call Func_1aa23
 	pop af
@@ -955,7 +957,7 @@ InputDeckName:
 	jr z, .on_start
 
 	ld a, $01
-	call PlayAcceptOrDeclineSFX
+	call PlaySFXConfirmOrCancel_Bank6
 	call Func_1afa1
 
 	ld a, 6
@@ -1213,7 +1215,7 @@ Func_1aefb:
 	jr nz, .asm_6f7f
 	ld a, $ff
 .asm_6f7f
-	call PlayAcceptOrDeclineSFX
+	call PlaySFXConfirmOrCancel_Bank6
 	push af
 	call Func_1afbd
 	pop af

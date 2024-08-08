@@ -44,8 +44,8 @@ OpenGlossaryScreen:
 	jr .next
 
 .on_select
-	ld a, $01
-	farcall PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank6
 .change_page
 	ld a, [wGlossaryPageNo]
 	xor $01 ; swap page
@@ -187,8 +187,7 @@ OpenGlossaryScreen:
 	jr z, .loop
 
 	ld a, -1
-	farcall PlaySFXConfirmOrCancel
-	ret
+	jp PlaySFXConfirmOrCancel_Bank6
 
 GlossaryTextData:
 	textitem 6, 0, GlossaryFWText

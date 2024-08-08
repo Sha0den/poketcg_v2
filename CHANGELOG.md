@@ -76,8 +76,15 @@
 
 
 ## Code Optimization
-- **August 5, 2024:** 1 File Changed
+- **August 8, 2024:** 10 Files Changed
+    - Standardize the functions responsible for playing the confirm/cancel sound effects
+    - Eliminate some unnecessary farcalls
+
+<br/>
+
+- **[August 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/6f6424caf4c5ad4e6853d33f379a3188d97d7483):** 1 File Changed
     - Review and clean up engine/menus/deck_machine.asm
+    - This file also had a small bug which was fixed in [this commit](https://github.com/Sha0den/poketcg_v2/commit/a75667fb625f0a177c98922351a605e7ee6356b4)
 
 <br/>
 

@@ -678,8 +678,8 @@ CardAlbum:
 	ldh a, [hKeysPressed]
 	and B_BUTTON
 	jr z, .loop_input_2
-	ld a, $ff
-	call PlaySFXConfirmOrCancel
+	ld a, -1
+	call PlaySFXConfirmOrCancel_Bank2
 	ldh a, [hCurMenuItem]
 	jr .booster_pack_menu
 
@@ -713,8 +713,8 @@ CardAlbum:
 	and START
 	jr z, .loop_input_3
 .open_card_page
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListNumCursorPositions]
 	ld [wTempCardListNumCursorPositions], a
 	ld a, [wCardListCursorPos]

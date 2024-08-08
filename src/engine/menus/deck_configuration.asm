@@ -461,8 +461,8 @@ HandleDeckBuildScreen:
 	ldh a, [hDPadHeld]
 	and START
 	jr z, .no_start_btn_1
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	call ConfirmDeckConfiguration
 	ld a, [wCurCardTypeFilter]
 	ld [wTempCardTypeFilter], a
@@ -528,8 +528,8 @@ HandleDeckBuildScreen:
 	ldh a, [hDPadHeld]
 	and START
 	jr z, .no_start_btn_2
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 
 	; temporarily store the current cursor position (to retrieve it later)
 	ld a, [wCardListCursorPos]
@@ -546,8 +546,8 @@ HandleDeckBuildScreen:
 	jr .loop_input
 
 .open_card_page
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListNumCursorPositions]
 	ld [wTempCardListNumCursorPositions], a
 	ld a, [wCardListCursorPos]
@@ -1741,9 +1741,9 @@ HandleCardSelectionInput:
 	and A_BUTTON
 	jr nz, ConfirmSelectionAndReturnCarry
 	; B button was pressed
-	ld a, $ff
+	ld a, -1
 	ldh [hffb3], a
-	call PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
@@ -1753,8 +1753,8 @@ HandleCardSelectionInput:
 ;	carry = set
 ConfirmSelectionAndReturnCarry:
 	call DrawHorizontalListCursor_Visible
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListCursorPos]
 	ld e, a
 	ldh a, [hffb3]
@@ -1923,8 +1923,8 @@ HandleDeckCardSelectionList:
 
 .select_card
 	call DrawListCursor_Visible
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListCursorPos]
 	ld e, a
 	ldh a, [hffb3]
@@ -1937,9 +1937,9 @@ HandleDeckCardSelectionList:
 	jr z, .check_sfx
 	and A_BUTTON
 	jr nz, .select_card
-	ld a, $ff
+	ld a, -1
 	ldh [hffb3], a
-	call PlaySFXConfirmOrCancel
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
@@ -2432,8 +2432,8 @@ HandleDeckConfirmationMenu:
 	jr z, .loop_input
 
 .selected_card
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListCursorPos]
 	ld [wced7], a
 
@@ -2575,8 +2575,8 @@ ShowDeckInfoHeaderAndWaitForBButton:
 	ldh a, [hKeysPressed]
 	and B_BUTTON
 	jr z, .wait_input
-	ld a, $ff
-	jp PlaySFXConfirmOrCancel
+	ld a, -1
+	jp PlaySFXConfirmOrCancel_Bank2
 
 
 ; draws a box at the top of the screen with wCurDeck's name and card count
@@ -3205,8 +3205,8 @@ HandlePlayersCardsScreen:
 	; START button was pressed
 
 .open_card_page
-	ld a, $01
-	call PlaySFXConfirmOrCancel
+	ld a, $1
+	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wCardListNumCursorPositions]
 	ld [wTempCardListNumCursorPositions], a
 	ld a, [wCardListCursorPos]
