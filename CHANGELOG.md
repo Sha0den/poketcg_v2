@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 8, 2024:** 10 Files Changed
+- **[August 8, 2024](https://github.com/Sha0den/poketcg_v2/commit/75be99262d8db5f3222698eb5abbe832d5993fe2):** 10 Files Changed
     - Standardize the functions responsible for playing the confirm/cancel sound effects
     - Eliminate some unnecessary farcalls
 
@@ -348,6 +348,11 @@
 
 
 ## Miscellaneous Changes
+- **August 9, 2024:** 1 File Changed
+    - Comment out some unreferenced data in home/sgb.asm
+
+<br/>
+
 - **[August 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/0849ad946e2b0cef4a08988d983e7e3f3516c674):** 1 File Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Remove-AI-artificial-delay) to remove the artificial delay applied to many of the AI's actions
 

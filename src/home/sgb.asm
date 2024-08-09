@@ -153,25 +153,6 @@ Pal01Packet_InitSGB::
 	rgb 7, 0, 0
 	db $00
 
-Pal23Packet_0b00::
-	sgb PAL23, 1 ; sgb_command, length
-	rgb 0, 31, 0
-	rgb 0, 15, 0
-	rgb 0, 7, 0
-	rgb 0, 0, 0
-	rgb 0, 0, 31
-	rgb 0, 0, 15
-	rgb 0, 0, 7
-	db $00
-
-AttrBlkPacket_0b10::
-	sgb ATTR_BLK, 1 ; sgb_command, length
-	db 1 ; number of data sets
-	; Control Code, Color Palette Designation, X1, Y1, X2, Y2
-	db ATTR_BLK_CTRL_INSIDE + ATTR_BLK_CTRL_LINE, 1 << 0 + 2 << 2, 5, 5, 10, 10 ; data set 1
-	ds 6 ; data set 2
-	ds 2 ; data set 3
-
 ; SGB hardware detection
 ; if found, disable multi-controller mode
 ; output:
@@ -277,3 +258,24 @@ MltReq2Packet::
 ;	call SendSGB
 ;	ei
 ;	ret
+;
+;
+;Pal23Packet_0b00::
+;	sgb PAL23, 1 ; sgb_command, length
+;	rgb 0, 31, 0
+;	rgb 0, 15, 0
+;	rgb 0, 7, 0
+;	rgb 0, 0, 0
+;	rgb 0, 0, 31
+;	rgb 0, 0, 15
+;	rgb 0, 0, 7
+;	db $00
+;
+;
+;AttrBlkPacket_0b10::
+;	sgb ATTR_BLK, 1 ; sgb_command, length
+;	db 1 ; number of data sets
+;	; Control Code, Color Palette Designation, X1, Y1, X2, Y2
+;	db ATTR_BLK_CTRL_INSIDE + ATTR_BLK_CTRL_LINE, 1 << 0 + 2 << 2, 5, 5, 10, 10 ; data set 1
+;	ds 6 ; data set 2
+;	ds 2 ; data set 3
