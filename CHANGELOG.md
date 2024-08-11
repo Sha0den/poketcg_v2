@@ -76,8 +76,8 @@
 
 
 ## Code Optimization
-- **August 11, 2024:** 11 Files Changed
-    - Refactor and organize all functions associated with writing numbers
+- **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/edc9a809d7096e625af1e26e41cea6bc2b79693f):** 11 Files Changed
+    - Refactor and better organize all functions associated with writing numbers
 
 <br/>
 
@@ -353,6 +353,12 @@
 
 
 ## Miscellaneous Changes
+- **August 11, 2024** 5 Files Changed
+    - Move coss toss functions from engine/duel.core.asm to a separate file that's linked with a less important bank
+    - Align the printed coin tally numbers
+
+<br/>
+
 - **[August 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/0a96c62b8cb2588b01647e867eef0ce7ceee8721):** 1 File Changed
     - Comment out some unreferenced data in home/sgb.asm
 

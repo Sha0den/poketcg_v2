@@ -185,3 +185,6 @@ INCLUDE "engine/gfx/sprites.asm"
 INCLUDE "data/sprite_animation_pointers.asm"
 INCLUDE "data/palette_pointers.asm"
 INCLUDE "data/maps/tilemaps.asm"
+
+SECTION "Coin Toss", ROMX
+INCLUDE "engine/coin_toss.asm"

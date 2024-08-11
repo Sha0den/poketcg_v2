@@ -27,7 +27,7 @@ TossCoinATimes::
 	ld [hl], e
 	inc hl
 	ld [hl], d
-	bank1call _TossCoin
+	farcall _TossCoin
 	ld hl, wDuelDisplayedScreen
 	ld [hl], 0
 	pop hl
