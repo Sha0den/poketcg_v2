@@ -184,14 +184,13 @@ _RequestToPrintCard:
 	call WriteByteToBGMap0
 	ld a, [wLoadedCard1Level]
 	inc b ; (bc = 12, 66)
-	bank1call WriteTwoDigitNumberInTxSymbolFormat
+	call WriteTwoDigitNumberInTxSymbolFormat_TrimLeadingZero
 	ld a, SYM_HP
 	lb bc, 15, 66
 	call WriteByteToBGMap0
 	ld a, [wLoadedCard1HP]
 	inc b ; (bc = 16, 66)
-	bank1call WriteTwoByteNumberInTxSymbolFormat
-	ret
+	jp WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 
 
 ; writes the tiles necessary to draw the card's information in sGfxBuffer0.
@@ -223,8 +222,7 @@ DrawBottomCardInfoInSRAMGfxBuffer0:
 	bank1call DisplayCardPage_PokemonOverview.attacks
 	lb bc, 16, 72
 	ld a, [wLoadedCard1PokedexNumber]
-	bank1call WriteEntireTwoByteNumberInTxSymbolFormat
-	ret
+	jp WriteOneByteNumberInTxSymbolFormat
 
 .not_pkmn_card
 	ld a, $01 ; text isn't double-spaced
@@ -960,12 +958,15 @@ _PrintCardList:
 	ld e, a
 	ld d, 2
 	call InitTextPrinting_ProcessTextFromID
-	ld d, 14
-	call InitTextPrinting
 	pop hl
-	call TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank6
+	push de
+	call TwoByteNumberToTxSymbol_TrimLeadingZeros
+	pop bc
+	ld b, 14
+	call BCCoordToBGMap0Address
 	ld hl, wStringBuffer
-	call ProcessText
+	ld b, 5
+	call SafeCopyDataHLtoDE
 ;	fallthrough
 
 ; increases printer horizontal offset by 2
@@ -1048,7 +1049,7 @@ LoadCardInfoForPrinter:
 	call WriteByteToBGMap0
 	inc b
 	ld a, [wPrinterCardCount]
-	bank1call WriteTwoDigitNumberInTxSymbolFormat
+	call WriteTwoDigitNumberInTxSymbolFormat_TrimLeadingZero
 	pop hl
 	ret
 
@@ -1232,69 +1233,6 @@ CheckDataCompression:
 .no_carry
 	pop hl
 	or a
-	ret
-
-
-; converts the number at hl to TX_SYMBOL text format and writes it to wStringBuffer,
-; replacing any leading zeros with SYM_SPACE
-; preserves bc and de
-; input:
-;	hl = number to convert to symbol font
-; output:
-;	[wStringBuffer] = numerical text string
-TwoByteNumberToTxSymbol_TrimLeadingZeros_Bank6::
-	push de
-	push bc
-	ld de, wStringBuffer
-	push de
-	ld bc, -10000
-	call .get_digit
-	ld bc, -1000
-	call .get_digit
-	ld bc, -100
-	call .get_digit
-	ld bc, -10
-	call .get_digit
-	ld bc, -1
-	call .get_digit
-	xor a ; TX_END
-	ld [de], a
-	pop hl
-	ld e, 5
-.digit_loop
-	inc hl
-	ld a, [hl]
-	cp SYM_0
-	jr nz, .done ; jump if not zero
-	ld [hl], SYM_SPACE ; trim leading zero
-	inc hl
-	dec e
-	jr nz, .digit_loop
-	dec hl
-	ld [hl], SYM_0
-.done
-	dec hl
-	pop bc
-	pop de
-	ret
-
-.get_digit
-	ld a, TX_SYMBOL
-	ld [de], a
-	inc de
-	ld a, SYM_0 - 1
-.subtract_loop
-	inc a
-	add hl, bc
-	jr c, .subtract_loop
-	ld [de], a
-	inc de
-	ld a, l
-	sub c
-	ld l, a
-	ld a, h
-	sbc b
-	ld h, a
 	ret
 
 

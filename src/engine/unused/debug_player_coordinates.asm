@@ -22,10 +22,10 @@ Func_1c003:
 
 	ld bc, $20
 	ld a, [wPlayerXCoord]
-	bank1call WriteTwoByteNumberInTxSymbolFormat
+	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 	ld bc, $320
 	ld a, [wPlayerYCoord]
-	bank1call WriteTwoByteNumberInTxSymbolFormat
+	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 	ld a, $77
 	ldh [hWX], a
 	ld a, $88

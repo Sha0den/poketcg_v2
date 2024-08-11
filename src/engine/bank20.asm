@@ -1446,8 +1446,7 @@ Func_80cd7:
 	call InitTextPrinting_ProcessTextFromID
 	ld bc, FlushAllPalettes
 	ld a, [wLoadedNPCTempIndex]
-	bank1call WriteTwoByteNumberInTxSymbolFormat
-	ret
+	jp WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 
 .DrawNPCSprite
 	ld a, [wLoadedNPCTempIndex]

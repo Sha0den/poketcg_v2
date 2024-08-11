@@ -76,6 +76,11 @@
 
 
 ## Code Optimization
+- **August 11, 2024:** 11 Files Changed
+    - Refactor and organize all functions associated with writing numbers
+
+<br/>
+
 - **[August 8, 2024](https://github.com/Sha0den/poketcg_v2/commit/75be99262d8db5f3222698eb5abbe832d5993fe2):** 10 Files Changed
     - Standardize the functions responsible for playing the confirm/cancel sound effects
     - Eliminate some unnecessary farcalls
@@ -348,7 +353,7 @@
 
 
 ## Miscellaneous Changes
-- **August 9, 2024:** 1 File Changed
+- **[August 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/0a96c62b8cb2588b01647e867eef0ce7ceee8721):** 1 File Changed
     - Comment out some unreferenced data in home/sgb.asm
 
 <br/>

@@ -1287,7 +1287,9 @@ AppendOwnedCardCountAndStorageCountNumbers:
 ; if the tens is 0, it maps to an empty character
 ; preserves all registers
 ; input:
-;	a = number to convert to symbol font
+;	a = two-digit number to convert to symbol font
+; output:
+;	[wDecimalDigitsSymbols] = number in text symbol format with digits reversed
 CalculateOnesAndTensDigits:
 	push af
 	push bc
@@ -1315,18 +1317,18 @@ CalculateOnesAndTensDigits:
 	add SYM_0
 .zero2
 	ld [hl], a
-
 	pop hl
 	pop de
 	pop bc
 	pop af
 	ret
 
-; converts value in register a to numerical symbols for ProcessText
+; converts a two-digit number in register a to numerical symbols for ProcessText
 ; places the symbols in hl
 ; preserves de
 ; input:
-;	a = number to convert to symbol font
+;	a = two-digit number to convert to symbol font
+;	hl = where to store the numerical text string
 ConvertToNumericalDigits:
 	call CalculateOnesAndTensDigits
 	push hl
@@ -3591,90 +3593,12 @@ PrintTotalNumberOfCardsInCollection:
 	jr nz, .loop_all_cards
 
 ; hl = total number of cards in collection
-	call .GetTotalCountDigits
-	ld hl, wTempCardCollection
-	ld de, wDecimalDigitsSymbols
-	ld b, $00
-	call .PlaceNumericalChar
-	call .PlaceNumericalChar
-	call .PlaceNumericalChar
-	call .PlaceNumericalChar
-	call .PlaceNumericalChar
-	ld a, $07
-	ld [hli], a
-	ld [hl], TX_END
+	ld de, wTempCardCollection
+	call TwoByteNumberToFullwidthTextInDE_TrimLeadingZeros
 	lb de, 14, 0
 	call InitTextPrinting
 	ld hl, wTempCardCollection
 	jp ProcessText
-
-; places a numerical character in hl from de
-; doesn't place a 0 if no non-0 numerical character has been placed before
-; this makes it so that there are no 0s in more significant digits
-; input:
-;	b = 0:  check for a leading zero (to replace with SYM_SPACE)
-;	b > 0:  simply copy value from de to hl
-;	de = address from which to read the symbol font character (wDecimalDigitsSymbols)
-;	hl = where to store the symbol font character (wTempCardCollection)
-.PlaceNumericalChar
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld a, b
-	or a
-	jr z, .leading_num
-	ld a, [de]
-	inc de
-	ld [hli], a
-	ret
-.leading_num
-; don't place a 0 as a leading number
-	ld a, [de]
-	inc de
-	cp SYM_0
-	jr z, .space_char
-	ld [hli], a
-	ld b, $01 ; at least one non-0 character was placed
-	ret
-.space_char
-	xor a ; SYM_SPACE
-	ld [hli], a
-	ret
-
-; gets the digits in decimal form of value stored in hl
-; stores the result in wDecimalDigitsSymbols
-; input:
-;	hl = number to convert to symbol font
-.GetTotalCountDigits
-	ld de, wDecimalDigitsSymbols
-	ld bc, -10000
-	call .GetDigit
-	ld bc, -1000
-	call .GetDigit
-	ld bc, -100
-	call .GetDigit
-	ld bc, -10
-	call .GetDigit
-	ld bc, -1
-;	fallthrough
-
-; input:
-;	bc = digit offset
-;	hl = number to convert to symbol font
-.GetDigit
-	ld a, SYM_0 - 1
-.loop
-	inc a
-	add hl, bc
-	jr c, .loop
-	ld [de], a
-	inc de
-	ld a, l
-	sub c
-	ld l, a
-	ld a, h
-	sbc b
-	ld h, a
-	ret
 
 
 ;----------------------------------------

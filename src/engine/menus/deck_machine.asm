@@ -1001,19 +1001,8 @@ PrintDeckMachineEntry:
 	call InitTextPrinting
 	pop bc
 	call .GetNumCardsMissingToBuildDeck
-	call CalculateOnesAndTensDigits
-	ld hl, wDecimalDigitsSymbols
-	ld a, [hli]
-	ld b, a
-	ld a, [hl]
 	ld hl, wDefaultText
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld [hli], a
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld a, b
-	ld [hli], a
+	call ConvertToNumericalDigits
 	ld [hl], TX_END
 	ld hl, wDefaultText
 	call ProcessText

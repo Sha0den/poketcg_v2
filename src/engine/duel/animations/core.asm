@@ -679,20 +679,7 @@ GetDamageNumberChars:
 
 .ConvertDigitToCharTile
 	ld a, SPRITE_ANIM_79 - 1
-.loop_sub
-	inc a
-	add hl, bc
-	jr c, .loop_sub
-	ld [de], a
-	inc de
-	; get remaining amount
-	ld a, l
-	sub c
-	ld l, a
-	ld a, h
-	sbc b
-	ld h, a
-	ret
+	jp GetTxSymbolDigit.subtract_loop
 
 
 ; preserves hl

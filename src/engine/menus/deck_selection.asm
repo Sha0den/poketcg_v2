@@ -341,7 +341,7 @@ InputCurDeckName:
 	call DisableSRAM
 	ld l, a
 	ld de, wDefaultText
-	call TwoByteNumberToText
+	call TwoByteNumberToHalfwidthText
 
 	ld hl, wCurDeckName
 	ld [hl], $6
@@ -508,37 +508,3 @@ ResetCheckMenuCursorPositionAndBlink:
 	ld [wCheckMenuCursorYPosition], a
 	ld [wCheckMenuCursorBlinkCounter], a
 	ret
-
-
-;----------------------------------------
-;        UNREFERENCED FUNCTIONS
-;----------------------------------------
-;
-; writes to $d00a the decimal representation (symbol font characters) of the value in hl
-; input:
-;	hl = number to convert to symbol font
-;Func_9001:
-;	ld de, $d00a
-;	ld bc, -100
-;	call .GetNumberChar
-;	ld bc, -10
-;	call .GetNumberChar
-;	ld bc, -1
-;	call .GetNumberChar
-;	ret
-;
-;.GetNumberChar
-;	ld a, SYM_0 - 1
-;.loop
-;	inc a
-;	add hl, bc
-;	jr c, .loop
-;	ld [de], a
-;	inc de
-;	ld a, l
-;	sub c
-;	ld l, a
-;	ld a, h
-;	sbc b
-;	ld h, a
-;	ret
