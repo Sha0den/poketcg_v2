@@ -4470,9 +4470,11 @@ DisplayCardPage_PokemonOverview:
 .print_numbers_and_energies
 	; print Pokedex number in the bottom right corner (16,16)
 	lb bc, 16, 16
-	ld a, [wLoadedCard1PokedexNumber]
-;	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	call WriteOneByteNumberInTxSymbolFormat
+	ld hl, wLoadedCard1PokedexNumber
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call WriteThreeDigitNumberInTxSymbolFormat
 	; print the name, damage, and Energy cost of each attack and/or Pokemon Power that exists
 	; first attack at 5,10 and second at 5,12
 	lb bc, 5, 10

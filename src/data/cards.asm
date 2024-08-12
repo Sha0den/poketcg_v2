@@ -278,8 +278,7 @@ BulbasaurCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx SeedName ; category
-	db 1 ; Pokedex number
-	db 0
+	dw 1 ; Pokedex number
 	db 13 ; level
 	db 2, 4 ; length
 	dw 15 * 10 ; weight
@@ -329,8 +328,7 @@ IvysaurCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx SeedName ; category
-	db 2 ; Pokedex number
-	db 0
+	dw 2 ; Pokedex number
 	db 20 ; level
 	db 3, 3 ; length
 	dw 29 * 10 ; weight
@@ -380,8 +378,7 @@ VenusaurLv64Card:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx SeedName ; category
-	db 3 ; Pokedex number
-	db 0
+	dw 3 ; Pokedex number
 	db 64 ; level
 	db 6, 7 ; length
 	dw 221 * 10 ; weight
@@ -431,8 +428,7 @@ VenusaurLv67Card:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx SeedName ; category
-	db 3 ; Pokedex number
-	db 0
+	dw 3 ; Pokedex number
 	db 67 ; level
 	db 6, 7 ; length
 	dw 221 * 10 ; weight
@@ -482,8 +478,7 @@ CaterpieCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx WormName ; category
-	db 10 ; Pokedex number
-	db 0
+	dw 10 ; Pokedex number
 	db 13 ; level
 	db 1, 0 ; length
 	dw 6 * 10 ; weight
@@ -533,8 +528,7 @@ MetapodCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx CocoonName ; category
-	db 11 ; Pokedex number
-	db 0
+	dw 11 ; Pokedex number
 	db 21 ; level
 	db 2, 4 ; length
 	dw 22 * 10 ; weight
@@ -584,8 +578,7 @@ ButterfreeCard:
 	db WR_FIRE ; weakness
 	db WR_FIGHTING ; resistance
 	tx ButterflyName ; category
-	db 12 ; Pokedex number
-	db 0
+	dw 12 ; Pokedex number
 	db 28 ; level
 	db 3, 7 ; length
 	dw 71 * 10 ; weight
@@ -635,8 +628,7 @@ WeedleCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx HairyBugName ; category
-	db 13 ; Pokedex number
-	db 0
+	dw 13 ; Pokedex number
 	db 12 ; level
 	db 1, 0 ; length
 	dw 7 * 10 ; weight
@@ -686,8 +678,7 @@ KakunaCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx CocoonName ; category
-	db 14 ; Pokedex number
-	db 0
+	dw 14 ; Pokedex number
 	db 23 ; level
 	db 2, 0 ; length
 	dw 22 * 10 ; weight
@@ -737,8 +728,7 @@ BeedrillCard:
 	db WR_FIRE ; weakness
 	db WR_FIGHTING ; resistance
 	tx PoisonBeeName ; category
-	db 15 ; Pokedex number
-	db 0
+	dw 15 ; Pokedex number
 	db 32 ; level
 	db 3, 3 ; length
 	dw 65 * 10 ; weight
@@ -788,8 +778,7 @@ EkansCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx SnakeName ; category
-	db 23 ; Pokedex number
-	db 0
+	dw 23 ; Pokedex number
 	db 10 ; level
 	db 6, 7 ; length
 	dw 15 * 10 ; weight
@@ -839,8 +828,7 @@ ArbokCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx CobraName ; category
-	db 24 ; Pokedex number
-	db 0
+	dw 24 ; Pokedex number
 	db 27 ; level
 	db 11, 6 ; length
 	dw 143 * 10 ; weight
@@ -890,8 +878,7 @@ NidoranFCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PoisonPinName ; category
-	db 29 ; Pokedex number
-	db 0
+	dw 29 ; Pokedex number
 	db 13 ; level
 	db 1, 4 ; length
 	dw 15 * 10 ; weight
@@ -941,8 +928,7 @@ NidorinaCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PoisonPinName ; category
-	db 30 ; Pokedex number
-	db 0
+	dw 30 ; Pokedex number
 	db 24 ; level
 	db 2, 7 ; length
 	dw 44 * 10 ; weight
@@ -992,8 +978,7 @@ NidoqueenCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx DrillName ; category
-	db 31 ; Pokedex number
-	db 0
+	dw 31 ; Pokedex number
 	db 43 ; level
 	db 4, 3 ; length
 	dw 132 * 10 ; weight
@@ -1043,8 +1028,7 @@ NidoranMCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PoisonPinName ; category
-	db 32 ; Pokedex number
-	db 0
+	dw 32 ; Pokedex number
 	db 20 ; level
 	db 1, 4 ; length
 	dw 15 * 10 ; weight
@@ -1094,8 +1078,7 @@ NidorinoCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PoisonPinName ; category
-	db 33 ; Pokedex number
-	db 0
+	dw 33 ; Pokedex number
 	db 25 ; level
 	db 2, 11 ; length
 	dw 43 * 10 ; weight
@@ -1145,8 +1128,7 @@ NidokingCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx DrillName ; category
-	db 34 ; Pokedex number
-	db 0
+	dw 34 ; Pokedex number
 	db 48 ; level
 	db 4, 7 ; length
 	dw 137 * 10 ; weight
@@ -1196,8 +1178,7 @@ ZubatCard:
 	db WR_PSYCHIC ; weakness
 	db WR_FIGHTING ; resistance
 	tx BatName ; category
-	db 41 ; Pokedex number
-	db 0
+	dw 41 ; Pokedex number
 	db 10 ; level
 	db 2, 7 ; length
 	dw 17 * 10 ; weight
@@ -1247,8 +1228,7 @@ GolbatCard:
 	db WR_PSYCHIC ; weakness
 	db WR_FIGHTING ; resistance
 	tx BatName ; category
-	db 42 ; Pokedex number
-	db 0
+	dw 42 ; Pokedex number
 	db 29 ; level
 	db 5, 3 ; length
 	dw 121 * 10 ; weight
@@ -1298,8 +1278,7 @@ OddishCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx WeedName ; category
-	db 43 ; Pokedex number
-	db 0
+	dw 43 ; Pokedex number
 	db 8 ; level
 	db 1, 8 ; length
 	dw 12 * 10 ; weight
@@ -1349,8 +1328,7 @@ GloomCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx WeedName ; category
-	db 44 ; Pokedex number
-	db 0
+	dw 44 ; Pokedex number
 	db 22 ; level
 	db 2, 7 ; length
 	dw 19 * 10 ; weight
@@ -1400,8 +1378,7 @@ VileplumeCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx FlowerName ; category
-	db 45 ; Pokedex number
-	db 0
+	dw 45 ; Pokedex number
 	db 35 ; level
 	db 3, 11 ; length
 	dw 41 * 10 ; weight
@@ -1451,8 +1428,7 @@ ParasCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx MushroomName ; category
-	db 46 ; Pokedex number
-	db 0
+	dw 46 ; Pokedex number
 	db 8 ; level
 	db 1, 0 ; length
 	dw 12 * 10 ; weight
@@ -1502,8 +1478,7 @@ ParasectCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx MushroomName ; category
-	db 47 ; Pokedex number
-	db 0
+	dw 47 ; Pokedex number
 	db 28 ; level
 	db 3, 3 ; length
 	dw 65 * 10 ; weight
@@ -1553,8 +1528,7 @@ VenonatCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx InsectName ; category
-	db 48 ; Pokedex number
-	db 0
+	dw 48 ; Pokedex number
 	db 12 ; level
 	db 3, 3 ; length
 	dw 66 * 10 ; weight
@@ -1604,8 +1578,7 @@ VenomothCard:
 	db WR_FIRE ; weakness
 	db WR_FIGHTING ; resistance
 	tx PoisonmothName ; category
-	db 49 ; Pokedex number
-	db 0
+	dw 49 ; Pokedex number
 	db 28 ; level
 	db 4, 11 ; length
 	dw 28 * 10 ; weight
@@ -1655,8 +1628,7 @@ BellsproutCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx FlowerName ; category
-	db 69 ; Pokedex number
-	db 0
+	dw 69 ; Pokedex number
 	db 11 ; level
 	db 2, 4 ; length
 	dw 9 * 10 ; weight
@@ -1706,8 +1678,7 @@ WeepinbellCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx FlycatcherName ; category
-	db 70 ; Pokedex number
-	db 0
+	dw 70 ; Pokedex number
 	db 28 ; level
 	db 3, 3 ; length
 	dw 14 * 10 ; weight
@@ -1757,8 +1728,7 @@ VictreebelCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx FlycatcherName ; category
-	db 71 ; Pokedex number
-	db 0
+	dw 71 ; Pokedex number
 	db 42 ; level
 	db 5, 7 ; length
 	dw 34 * 10 ; weight
@@ -1808,8 +1778,7 @@ GrimerCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx SludgeName ; category
-	db 88 ; Pokedex number
-	db 0
+	dw 88 ; Pokedex number
 	db 17 ; level
 	db 2, 11 ; length
 	dw 66 * 10 ; weight
@@ -1859,8 +1828,7 @@ MukCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx SludgeName ; category
-	db 89 ; Pokedex number
-	db 0
+	dw 89 ; Pokedex number
 	db 34 ; level
 	db 3, 11 ; length
 	dw 66 * 10 ; weight
@@ -1910,8 +1878,7 @@ ExeggcuteCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx EggName ; category
-	db 102 ; Pokedex number
-	db 0
+	dw 102 ; Pokedex number
 	db 14 ; level
 	db 1, 4 ; length
 	dw 6 * 10 ; weight
@@ -1961,8 +1928,7 @@ ExeggutorCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx CoconutName ; category
-	db 103 ; Pokedex number
-	db 0
+	dw 103 ; Pokedex number
 	db 35 ; level
 	db 6, 7 ; length
 	dw 265 * 10 ; weight
@@ -2012,8 +1978,7 @@ KoffingCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PoisonGasName ; category
-	db 109 ; Pokedex number
-	db 0
+	dw 109 ; Pokedex number
 	db 13 ; level
 	db 2, 0 ; length
 	dw 2 * 10 ; weight
@@ -2063,8 +2028,7 @@ WeezingCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PoisonGasName ; category
-	db 110 ; Pokedex number
-	db 0
+	dw 110 ; Pokedex number
 	db 27 ; level
 	db 3, 11 ; length
 	dw 21 * 10 ; weight
@@ -2114,8 +2078,7 @@ TangelaLv8Card:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx VineName ; category
-	db 114 ; Pokedex number
-	db 0
+	dw 114 ; Pokedex number
 	db 8 ; level
 	db 3, 3 ; length
 	dw 77 * 10 ; weight
@@ -2165,8 +2128,7 @@ TangelaLv12Card:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx VineName ; category
-	db 114 ; Pokedex number
-	db 0
+	dw 114 ; Pokedex number
 	db 12 ; level
 	db 3, 3 ; length
 	dw 77 * 10 ; weight
@@ -2216,8 +2178,7 @@ ScytherCard:
 	db WR_FIRE ; weakness
 	db WR_FIGHTING ; resistance
 	tx MantisName ; category
-	db 123 ; Pokedex number
-	db 0
+	dw 123 ; Pokedex number
 	db 25 ; level
 	db 4, 11 ; length
 	dw 123 * 10 ; weight
@@ -2267,8 +2228,7 @@ PinsirCard:
 	db WR_FIRE ; weakness
 	db NONE ; resistance
 	tx StagbeetleName ; category
-	db 127 ; Pokedex number
-	db 0
+	dw 127 ; Pokedex number
 	db 24 ; level
 	db 4, 11 ; length
 	dw 121 * 10 ; weight
@@ -2318,8 +2278,7 @@ CharmanderCard:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx LizardName ; category
-	db 4 ; Pokedex number
-	db 0
+	dw 4 ; Pokedex number
 	db 10 ; level
 	db 2, 0 ; length
 	dw 19 * 10 ; weight
@@ -2369,8 +2328,7 @@ CharmeleonCard:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FlameName ; category
-	db 5 ; Pokedex number
-	db 0
+	dw 5 ; Pokedex number
 	db 32 ; level
 	db 3, 7 ; length
 	dw 42 * 10 ; weight
@@ -2420,8 +2378,7 @@ CharizardCard:
 	db WR_WATER ; weakness
 	db WR_FIGHTING ; resistance
 	tx FlameName ; category
-	db 6 ; Pokedex number
-	db 0
+	dw 6 ; Pokedex number
 	db 76 ; level
 	db 5, 7 ; length
 	dw 200 * 10 ; weight
@@ -2471,8 +2428,7 @@ VulpixCard:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FoxName ; category
-	db 37 ; Pokedex number
-	db 0
+	dw 37 ; Pokedex number
 	db 11 ; level
 	db 2, 0 ; length
 	dw 22 * 10 ; weight
@@ -2522,8 +2478,7 @@ NinetalesLv32Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FoxName ; category
-	db 38 ; Pokedex number
-	db 0
+	dw 38 ; Pokedex number
 	db 32 ; level
 	db 3, 7 ; length
 	dw 44 * 10 ; weight
@@ -2573,8 +2528,7 @@ NinetalesLv35Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FoxName ; category
-	db 38 ; Pokedex number
-	db 0
+	dw 38 ; Pokedex number
 	db 35 ; level
 	db 3, 7 ; length
 	dw 44 * 10 ; weight
@@ -2624,8 +2578,7 @@ GrowlitheCard:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx PuppyName ; category
-	db 58 ; Pokedex number
-	db 0
+	dw 58 ; Pokedex number
 	db 18 ; level
 	db 2, 4 ; length
 	dw 42 * 10 ; weight
@@ -2675,8 +2628,7 @@ ArcanineLv34Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx LegendaryName ; category
-	db 59 ; Pokedex number
-	db 0
+	dw 59 ; Pokedex number
 	db 34 ; level
 	db 6, 3 ; length
 	dw 342 * 10 ; weight
@@ -2726,8 +2678,7 @@ ArcanineLv45Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx LegendaryName ; category
-	db 59 ; Pokedex number
-	db 0
+	dw 59 ; Pokedex number
 	db 45 ; level
 	db 6, 3 ; length
 	dw 342 * 10 ; weight
@@ -2777,8 +2728,7 @@ PonytaCard:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FireHorseName ; category
-	db 77 ; Pokedex number
-	db 0
+	dw 77 ; Pokedex number
 	db 10 ; level
 	db 3, 3 ; length
 	dw 66 * 10 ; weight
@@ -2828,8 +2778,7 @@ RapidashCard:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FireHorseName ; category
-	db 78 ; Pokedex number
-	db 0
+	dw 78 ; Pokedex number
 	db 33 ; level
 	db 5, 7 ; length
 	dw 209 * 10 ; weight
@@ -2879,8 +2828,7 @@ MagmarLv24Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx SpitfireName ; category
-	db 126 ; Pokedex number
-	db 0
+	dw 126 ; Pokedex number
 	db 24 ; level
 	db 4, 3 ; length
 	dw 98 * 10 ; weight
@@ -2930,8 +2878,7 @@ MagmarLv31Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx SpitfireName ; category
-	db 126 ; Pokedex number
-	db 0
+	dw 126 ; Pokedex number
 	db 31 ; level
 	db 4, 3 ; length
 	dw 98 * 10 ; weight
@@ -2981,8 +2928,7 @@ FlareonLv22Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FlameName ; category
-	db 136 ; Pokedex number
-	db 0
+	dw 136 ; Pokedex number
 	db 22 ; level
 	db 2, 11 ; length
 	dw 55 * 10 ; weight
@@ -3032,8 +2978,7 @@ FlareonLv28Card:
 	db WR_WATER ; weakness
 	db NONE ; resistance
 	tx FlameName ; category
-	db 136 ; Pokedex number
-	db 0
+	dw 136 ; Pokedex number
 	db 28 ; level
 	db 2, 11 ; length
 	dw 55 * 10 ; weight
@@ -3083,8 +3028,7 @@ MoltresLv35Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx FlameName ; category
-	db 146 ; Pokedex number
-	db 0
+	dw 146 ; Pokedex number
 	db 35 ; level
 	db 6, 7 ; length
 	dw 132 * 10 ; weight
@@ -3134,8 +3078,7 @@ MoltresLv37Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx FlameName ; category
-	db 146 ; Pokedex number
-	db 0
+	dw 146 ; Pokedex number
 	db 37 ; level
 	db 6, 7 ; length
 	dw 132 * 10 ; weight
@@ -3185,8 +3128,7 @@ SquirtleCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx TinyTurtleName ; category
-	db 7 ; Pokedex number
-	db 0
+	dw 7 ; Pokedex number
 	db 8 ; level
 	db 1, 8 ; length
 	dw 20 * 10 ; weight
@@ -3236,8 +3178,7 @@ WartortleCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx TurtleName ; category
-	db 8 ; Pokedex number
-	db 0
+	dw 8 ; Pokedex number
 	db 22 ; level
 	db 3, 3 ; length
 	dw 50 * 10 ; weight
@@ -3287,8 +3228,7 @@ BlastoiseCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx ShellfishName ; category
-	db 9 ; Pokedex number
-	db 0
+	dw 9 ; Pokedex number
 	db 52 ; level
 	db 5, 3 ; length
 	dw 189 * 10 ; weight
@@ -3338,8 +3278,7 @@ PsyduckCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx DuckName ; category
-	db 54 ; Pokedex number
-	db 0
+	dw 54 ; Pokedex number
 	db 15 ; level
 	db 2, 7 ; length
 	dw 43 * 10 ; weight
@@ -3389,8 +3328,7 @@ GolduckCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx DuckName ; category
-	db 55 ; Pokedex number
-	db 0
+	dw 55 ; Pokedex number
 	db 27 ; level
 	db 5, 7 ; length
 	dw 169 * 10 ; weight
@@ -3440,8 +3378,7 @@ PoliwagCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx TadpoleName ; category
-	db 60 ; Pokedex number
-	db 0
+	dw 60 ; Pokedex number
 	db 13 ; level
 	db 2, 0 ; length
 	dw 27 * 10 ; weight
@@ -3491,8 +3428,7 @@ PoliwhirlCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx TadpoleName ; category
-	db 61 ; Pokedex number
-	db 0
+	dw 61 ; Pokedex number
 	db 28 ; level
 	db 3, 4 ; length
 	dw 44 * 10 ; weight
@@ -3542,8 +3478,7 @@ PoliwrathCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx TadpoleName ; category
-	db 62 ; Pokedex number
-	db 0
+	dw 62 ; Pokedex number
 	db 48 ; level
 	db 4, 3 ; length
 	dw 119 * 10 ; weight
@@ -3593,8 +3528,7 @@ TentacoolCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx JellyfishName ; category
-	db 72 ; Pokedex number
-	db 0
+	dw 72 ; Pokedex number
 	db 10 ; level
 	db 2, 11 ; length
 	dw 100 * 10 ; weight
@@ -3644,8 +3578,7 @@ TentacruelCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx JellyfishName ; category
-	db 73 ; Pokedex number
-	db 0
+	dw 73 ; Pokedex number
 	db 21 ; level
 	db 5, 3 ; length
 	dw 121 * 10 ; weight
@@ -3695,8 +3628,7 @@ SeelCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx SeaLionName ; category
-	db 86 ; Pokedex number
-	db 0
+	dw 86 ; Pokedex number
 	db 12 ; level
 	db 3, 7 ; length
 	dw 198 * 10 ; weight
@@ -3746,8 +3678,7 @@ DewgongCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx SeaLionName ; category
-	db 87 ; Pokedex number
-	db 0
+	dw 87 ; Pokedex number
 	db 42 ; level
 	db 5, 7 ; length
 	dw 265 * 10 ; weight
@@ -3797,8 +3728,7 @@ ShellderCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx BivalveName ; category
-	db 90 ; Pokedex number
-	db 0
+	dw 90 ; Pokedex number
 	db 8 ; level
 	db 1, 0 ; length
 	dw 9 * 10 ; weight
@@ -3848,8 +3778,7 @@ CloysterCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx BivalveName ; category
-	db 91 ; Pokedex number
-	db 0
+	dw 91 ; Pokedex number
 	db 25 ; level
 	db 4, 11 ; length
 	dw 292 * 10 ; weight
@@ -3899,8 +3828,7 @@ KrabbyCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx RiverCrabName ; category
-	db 98 ; Pokedex number
-	db 0
+	dw 98 ; Pokedex number
 	db 20 ; level
 	db 1, 4 ; length
 	dw 14 * 10 ; weight
@@ -3950,8 +3878,7 @@ KinglerCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx PincerName ; category
-	db 99 ; Pokedex number
-	db 0
+	dw 99 ; Pokedex number
 	db 27 ; level
 	db 4, 3 ; length
 	dw 132 * 10 ; weight
@@ -4001,8 +3928,7 @@ HorseaCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx DragonName ; category
-	db 116 ; Pokedex number
-	db 0
+	dw 116 ; Pokedex number
 	db 19 ; level
 	db 1, 4 ; length
 	dw 18 * 10 ; weight
@@ -4052,8 +3978,7 @@ SeadraCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx DragonName ; category
-	db 117 ; Pokedex number
-	db 0
+	dw 117 ; Pokedex number
 	db 23 ; level
 	db 3, 1 ; length
 	dw 55 * 10 ; weight
@@ -4103,8 +4028,7 @@ GoldeenCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx GoldfishName ; category
-	db 118 ; Pokedex number
-	db 0
+	dw 118 ; Pokedex number
 	db 12 ; level
 	db 2, 0 ; length
 	dw 33 * 10 ; weight
@@ -4154,8 +4078,7 @@ SeakingCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx GoldfishName ; category
-	db 119 ; Pokedex number
-	db 0
+	dw 119 ; Pokedex number
 	db 28 ; level
 	db 4, 3 ; length
 	dw 86 * 10 ; weight
@@ -4205,8 +4128,7 @@ StaryuCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx StarshapeName ; category
-	db 120 ; Pokedex number
-	db 0
+	dw 120 ; Pokedex number
 	db 15 ; level
 	db 2, 7 ; length
 	dw 76 * 10 ; weight
@@ -4256,8 +4178,7 @@ StarmieCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx MysteriousName ; category
-	db 121 ; Pokedex number
-	db 0
+	dw 121 ; Pokedex number
 	db 28 ; level
 	db 3, 7 ; length
 	dw 176 * 10 ; weight
@@ -4307,8 +4228,7 @@ MagikarpCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx FishName ; category
-	db 129 ; Pokedex number
-	db 0
+	dw 129 ; Pokedex number
 	db 8 ; level
 	db 2, 11 ; length
 	dw 22 * 10 ; weight
@@ -4358,8 +4278,7 @@ GyaradosCard:
 	db WR_GRASS ; weakness
 	db WR_FIGHTING ; resistance
 	tx AtrociousName ; category
-	db 130 ; Pokedex number
-	db 0
+	dw 130 ; Pokedex number
 	db 41 ; level
 	db 21, 4 ; length
 	dw 518 * 10 ; weight
@@ -4409,8 +4328,7 @@ LaprasCard:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx TransportName ; category
-	db 131 ; Pokedex number
-	db 0
+	dw 131 ; Pokedex number
 	db 31 ; level
 	db 8, 2 ; length
 	dw 485 * 10 ; weight
@@ -4460,8 +4378,7 @@ VaporeonLv29Card:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx BubbleJetName ; category
-	db 134 ; Pokedex number
-	db 0
+	dw 134 ; Pokedex number
 	db 29 ; level
 	db 3, 3 ; length
 	dw 64 * 10 ; weight
@@ -4511,8 +4428,7 @@ VaporeonLv42Card:
 	db WR_LIGHTNING ; weakness
 	db NONE ; resistance
 	tx BubbleJetName ; category
-	db 134 ; Pokedex number
-	db 0
+	dw 134 ; Pokedex number
 	db 42 ; level
 	db 3, 3 ; length
 	dw 64 * 10 ; weight
@@ -4562,8 +4478,7 @@ OmanyteCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx SpiralName ; category
-	db 138 ; Pokedex number
-	db 0
+	dw 138 ; Pokedex number
 	db 19 ; level
 	db 1, 4 ; length
 	dw 17 * 10 ; weight
@@ -4613,8 +4528,7 @@ OmastarCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx SpiralName ; category
-	db 139 ; Pokedex number
-	db 0
+	dw 139 ; Pokedex number
 	db 32 ; level
 	db 3, 3 ; length
 	dw 77 * 10 ; weight
@@ -4664,8 +4578,7 @@ ArticunoLv35Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx FreezeName ; category
-	db 144 ; Pokedex number
-	db 0
+	dw 144 ; Pokedex number
 	db 35 ; level
 	db 5, 7 ; length
 	dw 122 * 10 ; weight
@@ -4715,8 +4628,7 @@ ArticunoLv37Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx FreezeName ; category
-	db 144 ; Pokedex number
-	db 0
+	dw 144 ; Pokedex number
 	db 37 ; level
 	db 5, 7 ; length
 	dw 122 * 10 ; weight
@@ -4766,8 +4678,7 @@ PikachuLv12Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 12 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -4817,8 +4728,7 @@ PikachuLv14Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 14 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -4868,8 +4778,7 @@ PikachuLv16Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 16 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -4919,8 +4828,7 @@ PikachuAltLv16Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 16 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -4970,8 +4878,7 @@ FlyingPikachuCard:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 12 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -5021,8 +4928,7 @@ SurfingPikachuLv13Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 13 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -5072,8 +4978,7 @@ SurfingPikachuAltLv13Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 25 ; Pokedex number
-	db 0
+	dw 25 ; Pokedex number
 	db 13 ; level
 	db 1, 4 ; length
 	dw 13 * 10 ; weight
@@ -5123,8 +5028,7 @@ RaichuLv40Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 26 ; Pokedex number
-	db 0
+	dw 26 ; Pokedex number
 	db 40 ; level
 	db 2, 7 ; length
 	dw 66 * 10 ; weight
@@ -5174,8 +5078,7 @@ RaichuLv45Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MouseName ; category
-	db 26 ; Pokedex number
-	db 0
+	dw 26 ; Pokedex number
 	db 45 ; level
 	db 2, 7 ; length
 	dw 66 * 10 ; weight
@@ -5225,8 +5128,7 @@ MagnemiteLv13Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MagnetName ; category
-	db 81 ; Pokedex number
-	db 0
+	dw 81 ; Pokedex number
 	db 13 ; level
 	db 1, 0 ; length
 	dw 13 * 10 ; weight
@@ -5276,8 +5178,7 @@ MagnemiteLv15Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MagnetName ; category
-	db 81 ; Pokedex number
-	db 0
+	dw 81 ; Pokedex number
 	db 15 ; level
 	db 1, 0 ; length
 	dw 13 * 10 ; weight
@@ -5327,8 +5228,7 @@ MagnetonLv28Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MagnetName ; category
-	db 82 ; Pokedex number
-	db 0
+	dw 82 ; Pokedex number
 	db 28 ; level
 	db 3, 3 ; length
 	dw 132 * 10 ; weight
@@ -5378,8 +5278,7 @@ MagnetonLv35Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx MagnetName ; category
-	db 82 ; Pokedex number
-	db 0
+	dw 82 ; Pokedex number
 	db 35 ; level
 	db 3, 3 ; length
 	dw 132 * 10 ; weight
@@ -5429,8 +5328,7 @@ VoltorbCard:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx BallName ; category
-	db 100 ; Pokedex number
-	db 0
+	dw 100 ; Pokedex number
 	db 10 ; level
 	db 1, 8 ; length
 	dw 23 * 10 ; weight
@@ -5480,8 +5378,7 @@ ElectrodeLv35Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx BallName ; category
-	db 101 ; Pokedex number
-	db 0
+	dw 101 ; Pokedex number
 	db 35 ; level
 	db 3, 11 ; length
 	dw 147 * 10 ; weight
@@ -5531,8 +5428,7 @@ ElectrodeLv42Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx BallName ; category
-	db 101 ; Pokedex number
-	db 0
+	dw 101 ; Pokedex number
 	db 42 ; level
 	db 3, 11 ; length
 	dw 147 * 10 ; weight
@@ -5582,8 +5478,7 @@ ElectabuzzLv20Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx ElectricName ; category
-	db 125 ; Pokedex number
-	db 0
+	dw 125 ; Pokedex number
 	db 20 ; level
 	db 3, 7 ; length
 	dw 66 * 10 ; weight
@@ -5633,8 +5528,7 @@ ElectabuzzLv35Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx ElectricName ; category
-	db 125 ; Pokedex number
-	db 0
+	dw 125 ; Pokedex number
 	db 35 ; level
 	db 3, 7 ; length
 	dw 66 * 10 ; weight
@@ -5684,8 +5578,7 @@ JolteonLv24Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx LightningName ; category
-	db 135 ; Pokedex number
-	db 0
+	dw 135 ; Pokedex number
 	db 24 ; level
 	db 2, 7 ; length
 	dw 54 * 10 ; weight
@@ -5735,8 +5628,7 @@ JolteonLv29Card:
 	db WR_FIGHTING ; weakness
 	db NONE ; resistance
 	tx LightningName ; category
-	db 135 ; Pokedex number
-	db 0
+	dw 135 ; Pokedex number
 	db 29 ; level
 	db 2, 7 ; length
 	dw 54 * 10 ; weight
@@ -5786,8 +5678,7 @@ ZapdosLv40Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx ElectricName ; category
-	db 145 ; Pokedex number
-	db 0
+	dw 145 ; Pokedex number
 	db 40 ; level
 	db 5, 3 ; length
 	dw 116 * 10 ; weight
@@ -5837,8 +5728,7 @@ ZapdosLv64Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx ElectricName ; category
-	db 145 ; Pokedex number
-	db 0
+	dw 145 ; Pokedex number
 	db 64 ; level
 	db 5, 3 ; length
 	dw 116 * 10 ; weight
@@ -5888,8 +5778,7 @@ ZapdosLv68Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx ElectricName ; category
-	db 145 ; Pokedex number
-	db 0
+	dw 145 ; Pokedex number
 	db 68 ; level
 	db 5, 3 ; length
 	dw 116 * 10 ; weight
@@ -5939,8 +5828,7 @@ SandshrewCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx MouseName ; category
-	db 27 ; Pokedex number
-	db 0
+	dw 27 ; Pokedex number
 	db 12 ; level
 	db 2, 0 ; length
 	dw 26 * 10 ; weight
@@ -5990,8 +5878,7 @@ SandslashCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx MouseName ; category
-	db 28 ; Pokedex number
-	db 0
+	dw 28 ; Pokedex number
 	db 33 ; level
 	db 3, 3 ; length
 	dw 65 * 10 ; weight
@@ -6041,8 +5928,7 @@ DiglettCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx MoleName ; category
-	db 50 ; Pokedex number
-	db 0
+	dw 50 ; Pokedex number
 	db 8 ; level
 	db 0, 8 ; length
 	dw 2 * 10 ; weight
@@ -6092,8 +5978,7 @@ DugtrioCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx MoleName ; category
-	db 51 ; Pokedex number
-	db 0
+	dw 51 ; Pokedex number
 	db 36 ; level
 	db 2, 4 ; length
 	dw 73 * 10 ; weight
@@ -6143,8 +6028,7 @@ MankeyCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PigMonkeyName ; category
-	db 56 ; Pokedex number
-	db 0
+	dw 56 ; Pokedex number
 	db 7 ; level
 	db 1, 8 ; length
 	dw 62 * 10 ; weight
@@ -6194,8 +6078,7 @@ PrimeapeCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PigMonkeyName ; category
-	db 57 ; Pokedex number
-	db 0
+	dw 57 ; Pokedex number
 	db 35 ; level
 	db 3, 3 ; length
 	dw 71 * 10 ; weight
@@ -6245,8 +6128,7 @@ MachopCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx SuperpowerName ; category
-	db 66 ; Pokedex number
-	db 0
+	dw 66 ; Pokedex number
 	db 20 ; level
 	db 2, 7 ; length
 	dw 43 * 10 ; weight
@@ -6296,8 +6178,7 @@ MachokeCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx SuperpowerName ; category
-	db 67 ; Pokedex number
-	db 0
+	dw 67 ; Pokedex number
 	db 40 ; level
 	db 4, 11 ; length
 	dw 155 * 10 ; weight
@@ -6347,8 +6228,7 @@ MachampCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx SuperpowerName ; category
-	db 68 ; Pokedex number
-	db 0
+	dw 68 ; Pokedex number
 	db 67 ; level
 	db 5, 3 ; length
 	dw 287 * 10 ; weight
@@ -6398,8 +6278,7 @@ GeodudeCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx RockName ; category
-	db 74 ; Pokedex number
-	db 0
+	dw 74 ; Pokedex number
 	db 16 ; level
 	db 1, 4 ; length
 	dw 44 * 10 ; weight
@@ -6449,8 +6328,7 @@ GravelerCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx RockName ; category
-	db 75 ; Pokedex number
-	db 0
+	dw 75 ; Pokedex number
 	db 29 ; level
 	db 3, 3 ; length
 	dw 232 * 10 ; weight
@@ -6500,8 +6378,7 @@ GolemCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx MegatonName ; category
-	db 76 ; Pokedex number
-	db 0
+	dw 76 ; Pokedex number
 	db 36 ; level
 	db 4, 7 ; length
 	dw 662 * 10 ; weight
@@ -6551,8 +6428,7 @@ OnixCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx RockSnakeName ; category
-	db 95 ; Pokedex number
-	db 0
+	dw 95 ; Pokedex number
 	db 12 ; level
 	db 28, 10 ; length
 	dw 463 * 10 ; weight
@@ -6602,8 +6478,7 @@ CuboneCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx LonelyName ; category
-	db 104 ; Pokedex number
-	db 0
+	dw 104 ; Pokedex number
 	db 13 ; level
 	db 1, 4 ; length
 	dw 14 * 10 ; weight
@@ -6653,8 +6528,7 @@ MarowakLv26Card:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx BonekeeperName ; category
-	db 105 ; Pokedex number
-	db 0
+	dw 105 ; Pokedex number
 	db 26 ; level
 	db 3, 3 ; length
 	dw 99 * 10 ; weight
@@ -6704,8 +6578,7 @@ MarowakLv32Card:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx BonekeeperName ; category
-	db 105 ; Pokedex number
-	db 0
+	dw 105 ; Pokedex number
 	db 32 ; level
 	db 3, 3 ; length
 	dw 99 * 10 ; weight
@@ -6755,8 +6628,7 @@ HitmonleeCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx KickingName ; category
-	db 106 ; Pokedex number
-	db 0
+	dw 106 ; Pokedex number
 	db 30 ; level
 	db 4, 11 ; length
 	dw 110 * 10 ; weight
@@ -6806,8 +6678,7 @@ HitmonchanCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PunchingName ; category
-	db 107 ; Pokedex number
-	db 0
+	dw 107 ; Pokedex number
 	db 33 ; level
 	db 4, 7 ; length
 	dw 111 * 10 ; weight
@@ -6857,8 +6728,7 @@ RhyhornCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx SpikeName ; category
-	db 111 ; Pokedex number
-	db 0
+	dw 111 ; Pokedex number
 	db 18 ; level
 	db 3, 3 ; length
 	dw 254 * 10 ; weight
@@ -6908,8 +6778,7 @@ RhydonCard:
 	db WR_GRASS ; weakness
 	db WR_LIGHTNING ; resistance
 	tx DrillName ; category
-	db 112 ; Pokedex number
-	db 0
+	dw 112 ; Pokedex number
 	db 48 ; level
 	db 6, 3 ; length
 	dw 265 * 10 ; weight
@@ -6959,8 +6828,7 @@ KabutoCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx ShellfishName ; category
-	db 140 ; Pokedex number
-	db 0
+	dw 140 ; Pokedex number
 	db 9 ; level
 	db 1, 8 ; length
 	dw 25 * 10 ; weight
@@ -7010,8 +6878,7 @@ KabutopsCard:
 	db WR_GRASS ; weakness
 	db NONE ; resistance
 	tx ShellfishName ; category
-	db 141 ; Pokedex number
-	db 0
+	dw 141 ; Pokedex number
 	db 30 ; level
 	db 4, 3 ; length
 	dw 89 * 10 ; weight
@@ -7061,8 +6928,7 @@ AerodactylCard:
 	db WR_GRASS ; weakness
 	db WR_FIGHTING ; resistance
 	tx FossilName ; category
-	db 142 ; Pokedex number
-	db 0
+	dw 142 ; Pokedex number
 	db 28 ; level
 	db 5, 11 ; length
 	dw 130 * 10 ; weight
@@ -7112,8 +6978,7 @@ AbraCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PsiName ; category
-	db 63 ; Pokedex number
-	db 0
+	dw 63 ; Pokedex number
 	db 10 ; level
 	db 2, 11 ; length
 	dw 43 * 10 ; weight
@@ -7163,8 +7028,7 @@ KadabraCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PsiName ; category
-	db 64 ; Pokedex number
-	db 0
+	dw 64 ; Pokedex number
 	db 38 ; level
 	db 4, 3 ; length
 	dw 125 * 10 ; weight
@@ -7214,8 +7078,7 @@ AlakazamCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx PsiName ; category
-	db 65 ; Pokedex number
-	db 0
+	dw 65 ; Pokedex number
 	db 42 ; level
 	db 4, 11 ; length
 	dw 106 * 10 ; weight
@@ -7265,8 +7128,7 @@ SlowpokeLv9Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx DopeyName ; category
-	db 79 ; Pokedex number
-	db 0
+	dw 79 ; Pokedex number
 	db 9 ; level
 	db 3, 11 ; length
 	dw 79 * 10 ; weight
@@ -7316,8 +7178,7 @@ SlowpokeLv18Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx DopeyName ; category
-	db 79 ; Pokedex number
-	db 0
+	dw 79 ; Pokedex number
 	db 18 ; level
 	db 3, 11 ; length
 	dw 79 * 10 ; weight
@@ -7367,8 +7228,7 @@ SlowbroCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx HermitcrabName ; category
-	db 80 ; Pokedex number
-	db 0
+	dw 80 ; Pokedex number
 	db 26 ; level
 	db 5, 3 ; length
 	dw 173 * 10 ; weight
@@ -7418,8 +7278,7 @@ GastlyLv8Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx GasName ; category
-	db 92 ; Pokedex number
-	db 0
+	dw 92 ; Pokedex number
 	db 8 ; level
 	db 4, 3 ; length
 	dw 2 ; weight
@@ -7469,8 +7328,7 @@ GastlyLv17Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx GasName ; category
-	db 92 ; Pokedex number
-	db 0
+	dw 92 ; Pokedex number
 	db 17 ; level
 	db 4, 3 ; length
 	dw 2 ; weight
@@ -7520,8 +7378,7 @@ HaunterLv17Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx GasName ; category
-	db 93 ; Pokedex number
-	db 0
+	dw 93 ; Pokedex number
 	db 17 ; level
 	db 5, 3 ; length
 	dw 2 ; weight
@@ -7571,8 +7428,7 @@ HaunterLv22Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx GasName ; category
-	db 93 ; Pokedex number
-	db 0
+	dw 93 ; Pokedex number
 	db 22 ; level
 	db 5, 3 ; length
 	dw 2 ; weight
@@ -7622,8 +7478,7 @@ GengarCard:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx ShadowName ; category
-	db 94 ; Pokedex number
-	db 0
+	dw 94 ; Pokedex number
 	db 38 ; level
 	db 4, 11 ; length
 	dw 89 * 10 ; weight
@@ -7673,8 +7528,7 @@ DrowzeeCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx HypnosisName ; category
-	db 96 ; Pokedex number
-	db 0
+	dw 96 ; Pokedex number
 	db 12 ; level
 	db 3, 3 ; length
 	dw 71 * 10 ; weight
@@ -7724,8 +7578,7 @@ HypnoCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx HypnosisName ; category
-	db 97 ; Pokedex number
-	db 0
+	dw 97 ; Pokedex number
 	db 36 ; level
 	db 5, 3 ; length
 	dw 167 * 10 ; weight
@@ -7775,8 +7628,7 @@ MrMimeCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx BarrierName ; category
-	db 122 ; Pokedex number
-	db 0
+	dw 122 ; Pokedex number
 	db 28 ; level
 	db 4, 3 ; length
 	dw 120 * 10 ; weight
@@ -7826,8 +7678,7 @@ JynxCard:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx HumanShapeName ; category
-	db 124 ; Pokedex number
-	db 0
+	dw 124 ; Pokedex number
 	db 23 ; level
 	db 4, 7 ; length
 	dw 90 * 10 ; weight
@@ -7877,8 +7728,7 @@ MewtwoLv53Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx GeneticName ; category
-	db 150 ; Pokedex number
-	db 0
+	dw 150 ; Pokedex number
 	db 53 ; level
 	db 6, 7 ; length
 	dw 269 * 10 ; weight
@@ -7928,8 +7778,7 @@ MewtwoLv60Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx GeneticName ; category
-	db 150 ; Pokedex number
-	db 0
+	dw 150 ; Pokedex number
 	db 60 ; level
 	db 6, 7 ; length
 	dw 269 * 10 ; weight
@@ -7979,8 +7828,7 @@ MewtwoAltLV60Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx GeneticName ; category
-	db 150 ; Pokedex number
-	db 0
+	dw 150 ; Pokedex number
 	db 60 ; level
 	db 6, 7 ; length
 	dw 269 * 10 ; weight
@@ -8030,8 +7878,7 @@ MewLv8Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx NewSpeciesName ; category
-	db 151 ; Pokedex number
-	db 0
+	dw 151 ; Pokedex number
 	db 8 ; level
 	db 1, 4 ; length
 	dw 9 * 10 ; weight
@@ -8081,8 +7928,7 @@ MewLv15Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx NewSpeciesName ; category
-	db 151 ; Pokedex number
-	db 0
+	dw 151 ; Pokedex number
 	db 15 ; level
 	db 1, 4 ; length
 	dw 9 * 10 ; weight
@@ -8132,8 +7978,7 @@ MewLv23Card:
 	db WR_PSYCHIC ; weakness
 	db NONE ; resistance
 	tx NewSpeciesName ; category
-	db 151 ; Pokedex number
-	db 0
+	dw 151 ; Pokedex number
 	db 23 ; level
 	db 1, 4 ; length
 	dw 9 * 10 ; weight
@@ -8183,8 +8028,7 @@ PidgeyCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx TinyBirdName ; category
-	db 16 ; Pokedex number
-	db 0
+	dw 16 ; Pokedex number
 	db 8 ; level
 	db 1, 0 ; length
 	dw 4 * 10 ; weight
@@ -8234,8 +8078,7 @@ PidgeottoCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx BirdName ; category
-	db 17 ; Pokedex number
-	db 0
+	dw 17 ; Pokedex number
 	db 36 ; level
 	db 3, 7 ; length
 	dw 66 * 10 ; weight
@@ -8285,8 +8128,7 @@ PidgeotLv38Card:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx BirdName ; category
-	db 18 ; Pokedex number
-	db 0
+	dw 18 ; Pokedex number
 	db 38 ; level
 	db 4, 11 ; length
 	dw 87 * 10 ; weight
@@ -8336,8 +8178,7 @@ PidgeotLv40Card:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx BirdName ; category
-	db 18 ; Pokedex number
-	db 0
+	dw 18 ; Pokedex number
 	db 40 ; level
 	db 4, 11 ; length
 	dw 87 * 10 ; weight
@@ -8387,8 +8228,7 @@ RattataCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx RatName ; category
-	db 19 ; Pokedex number
-	db 0
+	dw 19 ; Pokedex number
 	db 9 ; level
 	db 1, 0 ; length
 	dw 8 * 10 ; weight
@@ -8438,8 +8278,7 @@ RaticateCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx RatName ; category
-	db 20 ; Pokedex number
-	db 0
+	dw 20 ; Pokedex number
 	db 41 ; level
 	db 2, 4 ; length
 	dw 41 * 10 ; weight
@@ -8489,8 +8328,7 @@ SpearowCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx TinyBirdName ; category
-	db 21 ; Pokedex number
-	db 0
+	dw 21 ; Pokedex number
 	db 13 ; level
 	db 1, 0 ; length
 	dw 4 * 10 ; weight
@@ -8540,8 +8378,7 @@ FearowCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx BeakName ; category
-	db 22 ; Pokedex number
-	db 0
+	dw 22 ; Pokedex number
 	db 27 ; level
 	db 3, 11 ; length
 	dw 84 * 10 ; weight
@@ -8591,8 +8428,7 @@ ClefairyCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx FairyName ; category
-	db 35 ; Pokedex number
-	db 0
+	dw 35 ; Pokedex number
 	db 14 ; level
 	db 2, 0 ; length
 	dw 17 * 10 ; weight
@@ -8642,8 +8478,7 @@ ClefableCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx FairyName ; category
-	db 36 ; Pokedex number
-	db 0
+	dw 36 ; Pokedex number
 	db 34 ; level
 	db 4, 3 ; length
 	dw 88 * 10 ; weight
@@ -8693,8 +8528,7 @@ JigglypuffLv12Card:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx BalloonName ; category
-	db 39 ; Pokedex number
-	db 0
+	dw 39 ; Pokedex number
 	db 12 ; level
 	db 1, 8 ; length
 	dw 12 * 10 ; weight
@@ -8744,8 +8578,7 @@ JigglypuffLv13Card:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx BalloonName ; category
-	db 39 ; Pokedex number
-	db 0
+	dw 39 ; Pokedex number
 	db 13 ; level
 	db 1, 8 ; length
 	dw 12 * 10 ; weight
@@ -8795,8 +8628,7 @@ JigglypuffLv14Card:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx BalloonName ; category
-	db 39 ; Pokedex number
-	db 0
+	dw 39 ; Pokedex number
 	db 14 ; level
 	db 1, 8 ; length
 	dw 12 * 10 ; weight
@@ -8846,8 +8678,7 @@ WigglytuffCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx BalloonName ; category
-	db 40 ; Pokedex number
-	db 0
+	dw 40 ; Pokedex number
 	db 36 ; level
 	db 3, 3 ; length
 	dw 26 * 10 ; weight
@@ -8897,8 +8728,7 @@ MeowthLv14Card:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx ScratchCatName ; category
-	db 52 ; Pokedex number
-	db 0
+	dw 52 ; Pokedex number
 	db 14 ; level
 	db 1, 4 ; length
 	dw 9 * 10 ; weight
@@ -8948,8 +8778,7 @@ MeowthLv15Card:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx ScratchCatName ; category
-	db 52 ; Pokedex number
-	db 0
+	dw 52 ; Pokedex number
 	db 15 ; level
 	db 1, 4 ; length
 	dw 9 * 10 ; weight
@@ -8999,8 +8828,7 @@ PersianCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx ClassyCatName ; category
-	db 53 ; Pokedex number
-	db 0
+	dw 53 ; Pokedex number
 	db 25 ; level
 	db 3, 3 ; length
 	dw 71 * 10 ; weight
@@ -9050,8 +8878,7 @@ FarfetchdCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx WildDuckName ; category
-	db 83 ; Pokedex number
-	db 0
+	dw 83 ; Pokedex number
 	db 20 ; level
 	db 2, 7 ; length
 	dw 33 * 10 ; weight
@@ -9101,8 +8928,7 @@ DoduoCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx TwinBirdName ; category
-	db 84 ; Pokedex number
-	db 0
+	dw 84 ; Pokedex number
 	db 10 ; level
 	db 4, 7 ; length
 	dw 86 * 10 ; weight
@@ -9152,8 +8978,7 @@ DodrioCard:
 	db WR_LIGHTNING ; weakness
 	db WR_FIGHTING ; resistance
 	tx TriplebirdName ; category
-	db 85 ; Pokedex number
-	db 0
+	dw 85 ; Pokedex number
 	db 28 ; level
 	db 5, 11 ; length
 	dw 188 * 10 ; weight
@@ -9203,8 +9028,7 @@ LickitungCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx LickingName ; category
-	db 108 ; Pokedex number
-	db 0
+	dw 108 ; Pokedex number
 	db 26 ; level
 	db 3, 11 ; length
 	dw 144 * 10 ; weight
@@ -9254,8 +9078,7 @@ ChanseyCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx EggName ; category
-	db 113 ; Pokedex number
-	db 0
+	dw 113 ; Pokedex number
 	db 55 ; level
 	db 3, 7 ; length
 	dw 76 * 10 ; weight
@@ -9305,8 +9128,7 @@ KangaskhanCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx ParentName ; category
-	db 115 ; Pokedex number
-	db 0
+	dw 115 ; Pokedex number
 	db 40 ; level
 	db 7, 3 ; length
 	dw 176 * 10 ; weight
@@ -9356,8 +9178,7 @@ TaurosCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx WildBullName ; category
-	db 128 ; Pokedex number
-	db 0
+	dw 128 ; Pokedex number
 	db 32 ; level
 	db 4, 7 ; length
 	dw 195 * 10 ; weight
@@ -9407,8 +9228,7 @@ DittoCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx TransformName ; category
-	db 132 ; Pokedex number
-	db 0
+	dw 132 ; Pokedex number
 	db 19 ; level
 	db 1, 0 ; length
 	dw 9 * 10 ; weight
@@ -9458,8 +9278,7 @@ EeveeCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx EvolutionName ; category
-	db 133 ; Pokedex number
-	db 0
+	dw 133 ; Pokedex number
 	db 12 ; level
 	db 1, 0 ; length
 	dw 14 * 10 ; weight
@@ -9509,8 +9328,7 @@ PorygonCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx VirtualName ; category
-	db 137 ; Pokedex number
-	db 0
+	dw 137 ; Pokedex number
 	db 12 ; level
 	db 2, 7 ; length
 	dw 80 * 10 ; weight
@@ -9560,8 +9378,7 @@ SnorlaxCard:
 	db WR_FIGHTING ; weakness
 	db WR_PSYCHIC ; resistance
 	tx SleepingName ; category
-	db 143 ; Pokedex number
-	db 0
+	dw 143 ; Pokedex number
 	db 20 ; level
 	db 6, 11 ; length
 	dw 1014 * 10 ; weight
@@ -9611,8 +9428,7 @@ DratiniCard:
 	db NONE ; weakness
 	db WR_PSYCHIC ; resistance
 	tx DragonName ; category
-	db 147 ; Pokedex number
-	db 0
+	dw 147 ; Pokedex number
 	db 10 ; level
 	db 5, 11 ; length
 	dw 7 * 10 ; weight
@@ -9662,8 +9478,7 @@ DragonairCard:
 	db NONE ; weakness
 	db WR_PSYCHIC ; resistance
 	tx DragonName ; category
-	db 148 ; Pokedex number
-	db 0
+	dw 148 ; Pokedex number
 	db 33 ; level
 	db 13, 1 ; length
 	dw 36 * 10 ; weight
@@ -9713,8 +9528,7 @@ DragoniteLv41Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx DragonName ; category
-	db 149 ; Pokedex number
-	db 0
+	dw 149 ; Pokedex number
 	db 41 ; level
 	db 7, 3 ; length
 	dw 463 * 10 ; weight
@@ -9764,8 +9578,7 @@ DragoniteLv45Card:
 	db NONE ; weakness
 	db WR_FIGHTING ; resistance
 	tx DragonName ; category
-	db 149 ; Pokedex number
-	db 0
+	dw 149 ; Pokedex number
 	db 45 ; level
 	db 7, 3 ; length
 	dw 463 * 10 ; weight

@@ -16,8 +16,7 @@ MACRO card_data_struct
 \1Weakness::      ds 1
 \1Resistance::    ds 1
 \1Category::      ds 2
-\1PokedexNumber:: ds 1
-\1Unknown1::      ds 1
+\1PokedexNumber:: ds 2
 \1Level::         ds 1
 \1Length::        ds 2
 \1Weight::        ds 2

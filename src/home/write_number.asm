@@ -1,21 +1,5 @@
 ; given a number between 0-255 in a, converts it to TX_SYMBOL format,
 ; and writes it to wStringBuffer + 2 and to the BGMap0 address at bc.
-; also prints any leading zeros.
-; preserves bc and de
-; input:
-;	a = number that will be printed
-;	bc = screen coordinates at which to begin printing the number
-WriteOneByteNumberInTxSymbolFormat::
-	push de
-	push bc
-	ld l, a
-	ld h, $00
-	call TwoByteNumberToTxSymbol
-	jr WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros.print_number
-
-
-; given a number between 0-255 in a, converts it to TX_SYMBOL format,
-; and writes it to wStringBuffer + 2 and to the BGMap0 address at bc.
 ; any leading zeros are replaced with SYM_SPACE.
 ; preserves bc and de
 ; input:
@@ -34,6 +18,20 @@ WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros::
 	call CopyDataToBGMap0
 	pop de
 	ret
+
+
+; given a number between 0-999 in hl, converts it to TX_SYMBOL format,
+; and writes it to wStringBuffer + 2 and to the BGMap0 address at bc.
+; also prints any leading zeros.
+; preserves bc and de
+; input:
+;	hl = number that will be printed
+;	bc = screen coordinates at which to begin printing the number
+WriteThreeDigitNumberInTxSymbolFormat::
+	push de
+	push bc
+	call TwoByteNumberToTxSymbol
+	jr WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros.print_number
 
 
 ; converts the number at hl to halfwidth text (ascii) format and writes it to de

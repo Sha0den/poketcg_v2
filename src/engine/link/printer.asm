@@ -221,8 +221,11 @@ DrawBottomCardInfoInSRAMGfxBuffer0:
 	ld c, 66
 	bank1call DisplayCardPage_PokemonOverview.attacks
 	lb bc, 16, 72
-	ld a, [wLoadedCard1PokedexNumber]
-	jp WriteOneByteNumberInTxSymbolFormat
+	ld hl, wLoadedCard1PokedexNumber
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	jp WriteThreeDigitNumberInTxSymbolFormat
 
 .not_pkmn_card
 	ld a, $01 ; text isn't double-spaced

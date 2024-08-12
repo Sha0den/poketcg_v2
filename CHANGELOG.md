@@ -353,7 +353,7 @@
 
 
 ## Miscellaneous Changes
-- **August 11, 2024** 5 Files Changed
+- **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/133b38fda44d1fee37d11d7ed805e47a3c616221):** 5 Files Changed
     - Move coss toss functions from engine/duel.core.asm to a separate file that's linked with a less important bank
     - Align the printed coin tally numbers
 
@@ -532,6 +532,12 @@
 
 
 ## New Features
+- **August 12, 2024:** 6 Files Changed
+    - Pokedex numbers now use 2 bytes to support Pokemon from all generations
+    - Although, the printing function will have to be edited if it exceeds 3 digits (1,000+)
+
+<br/>
+
 - **[June 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/3cccfcb07e93fa73d4bc0ab4978a295d98321e4a):** 2 Files Changed
     - Display lowercase halfwidth font characters
     - Increase size of half_width.png to account for future additions
