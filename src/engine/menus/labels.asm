@@ -36,12 +36,11 @@ PrintLabels:
 	ld e, [hl]
 	inc hl
 	call AdjustCoordinatesForBGScroll
-	call InitTextPrinting
 	ld a, [hli]
 	push hl
 	ld h, [hl]
 	ld l, a
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	pop hl
 	inc hl
 	jr .loop_text_print_2

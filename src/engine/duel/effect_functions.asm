@@ -2641,9 +2641,8 @@ HandleColorChangeScreen:
 	call CopyCardNameAndLevel
 	ld [hl], $00
 	lb de, 7, 0
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 
 ; list all the colors
 	ld hl, ShiftMenuData

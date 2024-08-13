@@ -130,8 +130,6 @@ HandleDeckMissingCardsList:
 	ld a, [wCurDeckName]
 	or a
 	ret z ; not a valid deck
-	lb de, 0, 1
-	call InitTextPrinting
 	ld a, [wCurDeck]
 	inc a
 	ld hl, wDefaultText
@@ -142,7 +140,8 @@ HandleDeckMissingCardsList:
 	inc hl
 	ld [hl], TX_END
 	ld hl, wDefaultText
-	call ProcessText
+	lb de, 0, 1
+	call InitTextPrinting_ProcessText
 
 	ld hl, wCurDeckName
 	ld de, wDefaultText
@@ -158,8 +157,7 @@ HandleDeckMissingCardsList:
 	call CopyListFromHLToDE
 	lb de, 3, 1
 	ld hl, wDefaultText
-	call InitTextPrinting
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 GiftCenter_SendCard:
@@ -324,9 +322,8 @@ ShowReceivedCardsList:
 	ld [wTxRam2 + 0], a
 	ld [wTxRam2 + 1], a
 	lb de, 1, 14
-	call InitTextPrinting
 	ldtx hl, ReceivedTheseCardsFromText
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	ld hl, hffb0
 	ld [hl], $00
 	jp PrintCardSelectionList
@@ -914,9 +911,8 @@ PrintDeckMachineEntry:
 	ld [hl], $7b ; Period
 	inc hl
 	ld [hl], TX_END
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	pop af
 
 ; get the deck corresponding to the index from input
@@ -945,9 +941,8 @@ PrintDeckMachineEntry:
 	call InitTextPrinting_ProcessTextFromID
 	ld d, 13
 	inc e
-	call InitTextPrinting
 	ld hl, .text
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	scf
 	ret
 
@@ -972,9 +967,8 @@ PrintDeckMachineEntry:
 	pop de
 	ld d, 13
 	inc e
-	call InitTextPrinting
 	ld hl, .text
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	or a
 	ret
 
@@ -1103,9 +1097,8 @@ PrintNumSavedDecks:
 	call ConvertToNumericalDigits
 	ld [hl], TX_END
 	lb de, 14, 1
-	call InitTextPrinting
 	ld hl, wDefaultText
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 ; handles player choice in what deck to save in the Deck Save Machine.
@@ -2321,6 +2314,5 @@ GiftCenter_ReceiveDeck:
 ;	call ConvertToNumericalDigits
 ;	ld [hl], TX_END
 ;	lb de, 14, 1
-;	call InitTextPrinting
 ;	ld hl, wDefaultText
-;	jp ProcessText
+;	jp InitTextPrinting_ProcessText

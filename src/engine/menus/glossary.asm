@@ -102,9 +102,8 @@ OpenGlossaryScreen:
 	ld [hl], TX_END
 
 	lb de, 17, 10
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 
 ; print the page-specific text
 	lb de, 1, 2
@@ -161,14 +160,11 @@ OpenGlossaryScreen:
 	push hl
 	ld d, a
 	ld e, 1
-	call InitTextPrinting
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 	pop hl
-	lb de, 1, 4
-	call InitTextPrinting
 	inc hl
 	inc hl
 	ld a, [hli]
@@ -176,7 +172,8 @@ OpenGlossaryScreen:
 	ld l, a
 	ld a, $01 ; text isn't double-spaced
 	ld [wLineSeparation], a
-	call ProcessTextFromID
+	lb de, 1, 4
+	call InitTextPrinting_ProcessTextFromID
 	xor a ; text is double-spaced
 	ld [wLineSeparation], a
 	call EnableLCD

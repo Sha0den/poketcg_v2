@@ -1768,9 +1768,8 @@ DrawDuelistPortraitsAndNames:
 	push de
 	call CopyPlayerName
 	lb de, 0, 11
-	call InitTextPrinting
 	pop hl
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	; player's portrait
 	lb bc, 0, 5
 	call DrawPlayerPortrait
@@ -1784,9 +1783,8 @@ DrawDuelistPortraitsAndNames:
 	add SCREEN_WIDTH
 	ld d, a
 	ld e, 0
-	call InitTextPrinting
 	pop hl
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	; opponent's portrait
 	ld a, [wOpponentPortrait]
 	lb bc, 13, 1
@@ -1930,8 +1928,7 @@ DisplayCardListDetails:
 	call PrintCardListItems
 	ldtx hl, TheCardYouReceivedText
 	lb de, 1, 1
-	call InitTextPrinting
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	ldtx hl, YouReceivedTheseCardsText
 	jp DrawWideTextBox_WaitForInput
 
@@ -2344,8 +2341,7 @@ DisplayNoBasicPokemonInHandScreen:
 	call PrintCardListItems
 	ldtx hl, DuelistHandText
 	lb de, 1, 1
-	call InitTextPrinting
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	call EnableLCD
 	jp WaitForWideTextBoxInput
 
@@ -2374,8 +2370,7 @@ DisplayPracticeDuelPlayerHandScreen:
 	call PrintCardListItems
 	ldtx hl, DuelistHandText
 	lb de, 1, 1
-	call InitTextPrinting
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	jp EnableLCD
 
 
@@ -2739,9 +2734,8 @@ DrawDuelHUD:
 	add SCREEN_WIDTH
 	ld d, a
 .print_color_icon
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	ld b, d
 	ld c, e
 	call GetArenaCardColor
@@ -3585,19 +3579,17 @@ DisplayCardList:
 PrintCardListHeaderAndInfoBoxTexts:
 	lb de, 1, 14
 	call AdjustCoordinatesForBGScroll
-	call InitTextPrinting
 	ld hl, wCardListInfoBoxText
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	ld hl, wCardListHeaderText
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	lb de, 1, 1
-	call InitTextPrinting
-	jp PrintTextNoDelay
+	jp InitTextPrinting_PrintTextNoDelay
 
 
 ; displays the SELECT|CHECK or PLAY|CHECK menu when a card of a list is selected and handles input

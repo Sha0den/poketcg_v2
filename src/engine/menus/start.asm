@@ -280,21 +280,18 @@ PrintStartMenuDescriptionText:
 
 .CardPop
 	lb de, 1, 12
-	call InitTextPrinting
 	ldtx hl, WhenYouCardPopWithFriendText
-	jp PrintTextNoDelay
+	jp InitTextPrinting_PrintTextNoDelay
 
 .ContinueDuel
 	lb de, 1, 12
-	call InitTextPrinting
 	ldtx hl, TheGameWillContinueFromThePointInTheDuelText
-	jp PrintTextNoDelay
+	jp InitTextPrinting_PrintTextNoDelay
 
 .NewGame
 	lb de, 1, 12
-	call InitTextPrinting
 	ldtx hl, StartANewGameText
-	jp PrintTextNoDelay
+	jp InitTextPrinting_PrintTextNoDelay
 
 .ContinueFromDiary
 	; get OW map name
@@ -317,9 +314,8 @@ PrintStartMenuDescriptionText:
 
 	; print text
 	lb de, 1, 10
-	call InitTextPrinting
 	ldtx hl, ContinueFromDiarySummaryText
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 
 	ld a, [wTotalNumCardsCollected]
 	ld d, a
@@ -396,9 +392,8 @@ ShowCardPopCGBDisclaimer:
 	lb bc, 20, 8
 	call DrawRegularTextBox
 	lb de, 1,12
-	call InitTextPrinting
 	ldtx hl, YouCanAccessCardPopOnlyWithGameBoyColorsText
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	lb bc, SYM_CURSOR_D, SYM_BOX_BOTTOM
 	lb de, 18, 17
 	call SetCursorParametersForTextBox

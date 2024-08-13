@@ -4,7 +4,7 @@
 ;		db $ff
 ; preserves bc
 ; input:
-;	hl = list of text items to print
+;	hl = $ff-terminated list of text items to print
 PlaceTextItems::
 	ld d, [hl] ; x coordinate
 	inc hl
@@ -23,7 +23,8 @@ PlaceTextItems::
 ; like ProcessTextFromID, except it calls InitTextPrinting first
 ; preserves bc and de
 ; input:
-;	de = coordinates at which to begin printing the text
+;	de = screen coordinates at which to begin printing the text
+;	hl = text ID
 InitTextPrinting_ProcessTextFromID::
 	call InitTextPrinting
 	jr ProcessTextFromID
@@ -31,7 +32,8 @@ InitTextPrinting_ProcessTextFromID::
 ; like ProcessTextFromPointerToID, except it calls InitTextPrinting first
 ; preserves bc and de
 ; input:
-;	de = coordinates at which to begin printing the text
+;	de = screen coordinates at which to begin printing the text
+;	[hl] = text ID
 InitTextPrinting_ProcessTextFromPointerToID::
 	call InitTextPrinting
 ;	fallthrough
@@ -40,7 +42,7 @@ InitTextPrinting_ProcessTextFromPointerToID::
 ; provided in hl rather than the text ID directly.
 ; preserves bc and de
 ; input:
-;	hl = pointer to text ID
+;	[hl] = text ID
 ProcessTextFromPointerToID::
 	ld a, [hli]
 	or [hl]
@@ -108,6 +110,10 @@ CountLinesOfTextFromID::
 
 ; calls PrintScrollableText with no text box label, then waits for the
 ; player to press A or B to advance the printed text
+; input:
+;	hl = text ID for the scrollable text
+; output:
+;	carry = set:  if the B button was pressed
 PrintScrollableText_NoTextBoxLabel::
 	xor a
 	call PrintScrollableText
@@ -123,11 +129,19 @@ WaitForPlayerToAdvanceText::
 
 ; calls PrintScrollableText with text box label, then waits for the
 ; player to press A or B to advance the printed text
+; input:
+;	de = text ID for the text box label
+;	hl = text ID for the scrollable text
+; output:
+;	carry = set:  if the B button was pressed
 PrintScrollableText_WithTextBoxLabel::
 	call PrintScrollableText_WithTextBoxLabel_NoWait
 	jr WaitForPlayerToAdvanceText
 
 
+; input:
+;	de = text ID for the text box label
+;	hl = text ID for the scrollable text
 PrintScrollableText_WithTextBoxLabel_NoWait::
 	push hl
 	ld hl, wTextBoxLabel
@@ -145,8 +159,10 @@ PrintScrollableText_WithTextBoxLabel_NoWait::
 ; if labeled, the text ID of the label is provided in wTextBoxLabel.
 ; PrintScrollableText is used mostly for overworld NPC text.
 ; input:
-;	a = 1:  use a label for the text
-;	a = 0:  don't use a label for the text box
+;	hl = text ID for the scrollable text
+;	a == 0:  don't use a label for the text box
+;	a != 0:  use a label for the text
+;	[wTextBoxLabel] = text ID for the label:  if a != 0
 PrintScrollableText::
 	ld [wIsTextBoxLabeled], a
 	ldh a, [hBankROM]
@@ -190,7 +206,7 @@ PrintScrollableText::
 ; fills wTextHeader1 with TX_KATAKANA, wFontWidth, hBankROM,
 ; and uses register bc to fill in the text's pointer.
 ; input:
-;	hl = pointer to text
+;	hl = text ID for the header
 ; output:
 ;	[wWhichTextHeader] = 0
 ;	[wWhichTxRam2] = 0
@@ -208,7 +224,7 @@ ResetTxRam_WriteToTextHeader::
 ; fills the wTextHeader specified in wWhichTextHeader (0-3) with
 ; hJapaneseSyllabary, wFontWidth, hBankROM, and uses bc to fill in the text's pointer.
 ; input:
-;	hl = pointer to text
+;	hl = text ID for the header
 WriteToTextHeader::
 	push hl
 	call GetPointerToTextHeader
@@ -224,9 +240,11 @@ WriteToTextHeader::
 	ld [hl], b
 	ret
 
+
 ; same as WriteToTextHeader, except it then increases wWhichTextHeader to
 ; set the next text header to the current one (usually, because
 ; it will soon be written to due to a TX_RAM command).
+;	hl = text ID for the header
 WriteToTextHeader_MoveToNext::
 	call WriteToTextHeader
 	ld hl, wWhichTextHeader
@@ -260,9 +278,9 @@ ReadTextHeader::
 GetPointerToTextHeader::
 	ld a, [wWhichTextHeader]
 	ld e, a
-	add a
-	add a
-	add e
+	add a ; *2
+	add a ; *4
+	add e ; *5
 	ld e, a
 	ld d, $0
 	ld hl, wTextHeader1
@@ -274,6 +292,8 @@ GetPointerToTextHeader::
 ; if labeled, the label's text ID is provided in wTextBoxLabel
 ; calls InitTextPrintingInTextbox after drawing the text box
 ; preserves hl
+; input:
+;	[wTextBoxLabel] = text ID (2 bytes):  if [wIsTextBoxLabeled] != 0
 DrawTextReadyLabeledOrRegularTextBox::
 	push hl
 	lb de, 0, 12
@@ -411,7 +431,7 @@ HandleTxRam2Or3::
 	ret
 
 
-; uses the two byte text id in hl to read the three byte text offset
+; uses the two byte text ID in hl to read the three byte text offset
 ; loads the correct bank for the specific text and returns the pointer in hl
 ; preserves bc and de
 ; input:
@@ -470,7 +490,7 @@ CopyPlayerNameOrTurnDuelistName::
 ; prints text with ID at hl, with letter delay, in a textbox area.
 ; the text must fit in the textbox; PrintScrollableText should be used instead.
 ; input:
-;	hl = ID of text to print
+;	hl = text ID
 PrintText::
 	ld a, l
 	or h
@@ -508,10 +528,18 @@ PrintText::
 	ret
 
 
+; like PrintTextNoDelay, except it calls InitTextPrinting first
+; input:
+;	de = screen coordinates at which to begin printing the text
+;	hl = text ID
+InitTextPrinting_PrintTextNoDelay::
+	call InitTextPrinting
+;	fallthrough
+
 ; prints text with ID at hl, without letter delay, in a textbox area.
 ; the text must fit in the textbox; PrintScrollableText should be used instead.
 ; input:
-;	hl = ID of text to print
+;	hl = text ID
 PrintTextNoDelay::
 	ldh a, [hBankROM]
 	push af
@@ -617,6 +645,8 @@ CopyTextData_FromTextID::
 
 ; text ID (usually of a card name) for TX_RAM2
 ; preserves all registers except af
+; input:
+;	hl = text ID
 LoadTxRam2::
 	ld a, l
 	ld [wTxRam2], a
@@ -627,6 +657,7 @@ LoadTxRam2::
 
 ; a number between 0 and 65535 for TX_RAM3
 ; preserves all registers except af
+;	hl = number
 LoadTxRam3::
 	ld a, l
 	ld [wTxRam3], a

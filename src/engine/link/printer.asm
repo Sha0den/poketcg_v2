@@ -638,9 +638,8 @@ _PrintDeckConfiguration:
 	lb bc, 20, 4
 	call DrawRegularTextBoxDMG
 	lb de, 4, 66
-	call InitTextPrinting
 	ld hl, wDuelTempList ; print deck name
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	ldtx hl, DeckPrinterText
 	call ProcessTextFromID
 
@@ -721,9 +720,8 @@ _PrintCardList:
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a
 	lb de, 2, 66
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	ldtx hl, AllCardsOwnedText
 	call ProcessTextFromID
 	ld a, [wPrintOnlyStarRarity]
@@ -1041,9 +1039,8 @@ LoadCardInfoForPrinter:
 .skip_card_symbol
 	ld a, 14
 	call CopyCardNameAndLevel
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	ld a, [wPrinterHorizontalOffset]
 	or %1000000
 	ld c, a

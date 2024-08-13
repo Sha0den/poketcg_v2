@@ -1,31 +1,24 @@
-; currently an unreferenced function
-; similar to ProcessText except it calls InitTextPrinting first,
-; with the first two bytes of hl being used to set hTextBGMap0Address.
-; (the caller to ProcessText usually calls InitTextPrinting first)
+; like ProcessText, except it calls InitTextPrinting first
 ; preserves bc and de
 ; input:
-;	hl = text to process
+;	de = screen coordinates at which to begin printing the text
+;	[hl] = first byte of a TX_END/null-terminated text string
 InitTextPrinting_ProcessText::
-	push de
-	push bc
-	ld d, [hl]
-	inc hl
-	ld e, [hl]
-	inc hl
 	call InitTextPrinting
-	jr ProcessText.next_char
+;	fallthrough
 
 ; reads the characters from the text at hl and processes them,
 ; looping until TX_END is found.
 ; ignores TX_RAM1, TX_RAM2, and TX_RAM3 characters.
 ; preserves bc and de
 ; input:
-;	hl = text to process
+;	[hl] = first byte of a TX_END/null-terminated text string
 ProcessText::
 	push de
 	push bc
 	call InitTextFormat
 	jr .next_char
+
 .char_loop
 	cp TX_CTRL_START
 	jr c, .character_pair
@@ -33,6 +26,7 @@ ProcessText::
 	jr nc, .character_pair
 	call ProcessSpecialTextCharacter
 	jr .next_char
+
 .character_pair
 	ld e, a ; first character
 	ld d, [hl] ; second character
@@ -54,10 +48,11 @@ ProcessText::
 	ret
 
 
-; processes the text character provided in a checking for specific control characters.
+; processes the text character provided in a, checking for specific control characters.
 ; hl points to the text character coming right after the one loaded into a.
 ; input:
 ;	a = special text character to process
+;	[hl] = next text character
 ; output:
 ;	carry = set:  if the character from input was not processed
 ProcessSpecialTextCharacter::
@@ -77,10 +72,17 @@ ProcessSpecialTextCharacter::
 	jr z, .tx_half2full
 	scf
 	ret
+
+.set_syllabary
+	ldh [hJapaneseSyllabary], a
+	xor a
+	ret
+
 .tx_halfwidth
 	ld a, HALF_WIDTH
 	ld [wFontWidth], a
 	ret
+
 .tx_half2full
 	call TerminateHalfWidthText
 	xor a ; FULL_WIDTH
@@ -88,10 +90,7 @@ ProcessSpecialTextCharacter::
 	ld a, TX_KATAKANA
 	ldh [hJapaneseSyllabary], a
 	ret
-.set_syllabary
-	ldh [hJapaneseSyllabary], a
-	xor a
-	ret
+
 .tx_symbol
 	ld a, [wFontWidth]
 	push af
@@ -119,6 +118,7 @@ ProcessSpecialTextCharacter::
 	jr z, .end_of_line
 	xor a
 	ret
+
 .end_of_line
 	call TerminateHalfWidthText
 	ld a, [wLineSeparation]
@@ -151,8 +151,8 @@ ProcessSpecialTextCharacter::
 ; based on the values given in d and e respectively.
 ; preserves bc and de
 ; input:
-;	d = start of the text tiles
-;	e = end of the text tiles
+;	d = start of the text tiles (in vram)
+;	e = end of the text tiles (in vram)
 SetupText::
 	ld a, d
 	dec a
@@ -176,12 +176,12 @@ SetupText::
 	ret
 
 
+; preserves all registers except af
 ; output:
 ;	[wFontWidth] = FULL_WIDTH
 ;	[hTextLineCurPos] = 0
 ;	[wHalfWidthPrintState] = 0
 ;	[hJapaneseSyllabary] = TX_KATAKANA
-; preserves all registers except af
 InitTextFormat::
 	xor a
 	ld [wFontWidth], a ; FULL_WIDTH
@@ -242,7 +242,8 @@ InitTextPrinting::
 ; depending upon the byte at hffb0
 ; preserves all registers except af
 ; input:
-;	de = text characters
+;	d = first text character
+;	e = second text character
 ;	[hffb0] = $0 (no bit set): generate and place text tile
 ;	[hffb0] = $2 (bit 1 set):  only generate text tile?
 ;	[hffb0] = $1 (bit 0 set):  not even generate it, but just update text buffers?
@@ -276,6 +277,8 @@ Func_22ca::
 
 ; writes a to wCurTextTile and to the tile pointed to by hTextBGMap0Address,
 ; then increments hTextBGMap0Address and hTextLineCurPos
+; input:
+;	a = used to set [wCurTextTile]
 PlaceNextTextTile::
 	ld [wCurTextTile], a
 	ld hl, hTextBGMap0Address
@@ -308,19 +311,16 @@ TerminateHalfWidthText::
 	ld a, [wHalfWidthPrintState]
 	or a
 	ret z ; return if the last printed character was the second of a pair
-	push hl
 	push de
-	push bc
 	ld e, " "
 	call Func_22ca
-	pop bc
 	pop de
-	pop hl
 	ret
 
 
 ; input:
-;	de = text characters
+;	d = first text character
+;	e = second text character
 ; output:
 ;	carry = set:  if the characters from input were found
 Func_2325::
@@ -372,7 +372,8 @@ Func_2325::
 ; searches linked-list for text characters in e/d (registers)
 ; if found, hoist the result to head of list and return it.
 ; input:
-;	de = text characters
+;	d = first text character
+;	e = second text character
 ; output:
 ;	carry = set:  if the characters from input were found
 Func_235e::
@@ -466,7 +467,7 @@ CaseHalfWidthLetter::
 ; FULL_WIDTH if the first character is TX_HALFWIDTH
 ; preserves de and hl
 ; input:
-;	hl = text to check
+;	[hl] = first byte of a TX_END/null-terminated text string
 ; output:
 ;	b = length of text from input in tiles
 ;	c = length of text from input in bytes
@@ -490,7 +491,7 @@ GetTextLengthInTiles::
 ; iterates over text at hl until TX_END is found
 ; preserves de and hl
 ; input:
-;	hl = text to check
+;	[hl] = first byte of a TX_END/null-terminated text string
 ; output:
 ;	b = length of text in half-tiles
 ;	c = length of text in bytes
@@ -565,6 +566,7 @@ CopyTextData::
 .fw_text_done
 	ld a, e
 	ret
+
 .half_width_text
 	ld a, [wTextMaxLength]
 	add a
@@ -582,6 +584,7 @@ CopyTextData::
 	ld a, e
 	ret
 
+; preserves bc
 .copyTextData
 	push bc
 	ld c, l
@@ -658,7 +661,8 @@ GenerateTextTile::
 ; made from the ascii characters given in d and e
 ; preserves bc
 ; input:
-;	de = left and right characters to use for font tile
+;	d = first text character
+;	e = second text character
 ; output:
 ;	de = wTextTileBuffer
 CreateHalfWidthFontTile::
@@ -811,10 +815,12 @@ ClassifyTextCharacterPair::
 	ld d, TX_KATAKANA
 	or a
 	ret
+
 .half_width
 ; in half width mode, the first character goes in e, so leave them like that
 	or a
 	ret
+
 .continue_check
 	cp TX_CTRL_START
 	jr c, .ath_font
@@ -823,6 +829,7 @@ ClassifyTextCharacterPair::
 	ld d, $0
 	or a
 	ret
+
 .ath_font
 ; TX_FULLWIDTH1 to TX_FULLWIDTH4
 ; swap d and e to put the TX_FULLWIDTH* character first
@@ -867,6 +874,24 @@ GetFullWidthFontTileOffset::
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+; similar to ProcessText except it calls InitTextPrinting first,
+; with the first two bytes of hl being used to set hTextBGMap0Address.
+; (the caller to ProcessText usually calls InitTextPrinting first).
+; preserves bc and de
+; input:
+;	[hl] = screen coordinates at which to begin printing the text (2 bytes)
+;	[hl + 2] = first byte of a TX_END/null-terminated text string
+;InitTextPrinting_ProcessText::
+;	push de
+;	push bc
+;	ld d, [hl]
+;	inc hl
+;	ld e, [hl]
+;	inc hl
+;	call InitTextPrinting
+;	jr ProcessText.next_char
+;
 ;
 ; pointers to VRAM?
 ;Unknown_2589::

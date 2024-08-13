@@ -12,9 +12,8 @@ LoadCollectedMedalTilemaps:
 	add e
 	ld e, a
 	call AdjustCoordinatesForBGScroll
-	call InitTextPrinting
 	ldtx hl, PlayerStatusMedalsTitleText
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	ld hl, MedalCoordsAndTilemaps
 	ld a, EVENT_MEDAL_FLAGS
 	farcall GetEventValue

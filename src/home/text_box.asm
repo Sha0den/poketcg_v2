@@ -97,9 +97,8 @@ DrawLabeledTextBox::
 	pop de
 	push de
 	push bc
-	call InitTextPrinting
 	ld hl, wc000
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	pop bc
 	pop de
 	ld a, [wConsole]

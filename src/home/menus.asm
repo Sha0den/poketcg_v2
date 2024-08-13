@@ -323,7 +323,6 @@ HandleDuelMenuInput::
 	or a
 	ret
 
-
 DuelMenuCursorCoords::
 	db  2, 14 ; Hand
 	db  2, 16 ; Attack
@@ -403,11 +402,10 @@ ReloadCardListItems::
 	push hl
 	call LoadCardDataToBuffer1_FromDeckIndex
 	call DrawCardSymbol
-	call InitTextPrinting
 	ld a, [wListItemNameMaxLength]
 	call CopyCardNameAndLevel
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	pop hl
 	inc hl
 	ld a, [wNumListItems]
@@ -642,8 +640,9 @@ GetCardSymbolData::
 ; draws, at de, the 2x2 tile card symbol associated to the TYPE_* constant in wLoadedCard1Type
 ; preserves all registers except af
 ; input:
-;	de = coordinates at which to begin drawing the symbol
+;	de = screen coordinates at which to begin drawing the symbol
 ;	hl = pointing to an entry from CardSymbolTable
+;	wLoadedCard1 = contains a card_data_struct
 DrawCardSymbol::
 	push hl
 	push de
@@ -696,6 +695,7 @@ CardSymbolTable::
 ; preserves bc and de
 ; input:
 ;	a = length in number of tiles (the resulting string will be padded with spaces to match it)
+;	wLoadedCard1 = contains a card_data_struct
 CopyCardNameAndLevel::
 	farcall _CopyCardNameAndLevel
 	ret
@@ -704,7 +704,7 @@ CopyCardNameAndLevel::
 ; sets cursor parameters for navigating in a text box, but using
 ; default values for the cursor tile (SYM_CURSOR_R) and the tile behind it (SYM_SPACE).
 ; input:
-;	de = coordinates of the cursor
+;	de = screen coordinates for the cursor
 SetCursorParametersForTextBox_Default::
 	lb bc, SYM_CURSOR_R, SYM_SPACE ; cursor tile, tile behind cursor
 	call SetCursorParametersForTextBox
@@ -712,8 +712,7 @@ SetCursorParametersForTextBox_Default::
 
 ; waits for the player to press either the A or the B button
 ; output:
-;	carry = set:      if the A button was pressed
-;	carry = not set:  if the B button was pressed
+;	carry = set:  if the B button was pressed
 WaitForButtonAorB::
 	call DoFrame
 	call RefreshMenuCursor
@@ -734,8 +733,9 @@ WaitForButtonAorB::
 ; sets cursor parameters for navigating in a text box
 ; preserves bc and de
 ; input:
-;	bc = tile numbers of the cursor and of the tile behind it
-;	de = coordinates of the cursor
+;	b = tile number for the cursor sprite
+;	c = tile number for the background tile behind the cursor
+;	de = screen coordinates for the cursor
 SetCursorParametersForTextBox::
 	xor a
 	ld hl, wCurMenuItem
@@ -758,34 +758,32 @@ SetCursorParametersForTextBox::
 ; draws a 20x6 text box aligned to the bottom of the screen,
 ; prints the text at hl without letter delay, and waits for A or B to be pressed
 ; input:
-;	hl = text to print
+;	hl = text ID for the text to print
 DrawWideTextBox_PrintTextNoDelay_Wait::
 	call DrawWideTextBox_PrintTextNoDelay
 	jr WaitForWideTextBoxInput
 
 
-; draws a 20x6 text box aligned to the bottom of the screen
-; and prints the text at hl without letter delay
-; input:
-;	hl = text to print
-DrawWideTextBox_PrintTextNoDelay::
-	push hl
-	call DrawWideTextBox
-	ld a, 19
-	jr DrawTextBox_PrintTextNoDelay
-
-
 ; draws a 12x6 text box aligned to the bottom left of the screen
 ; and prints the text at hl without letter delay
 ; input:
-;	hl = text to print
+;	hl = text ID for the text to print
 DrawNarrowTextBox_PrintTextNoDelay::
 	push hl
 	call DrawNarrowTextBox
 	ld a, 11
-;	fallthrough
+	jr DrawWideTextBox_PrintTextNoDelay.print_text
 
-DrawTextBox_PrintTextNoDelay::
+
+; draws a 20x6 text box aligned to the bottom of the screen
+; and prints the text at hl without letter delay
+; input:
+;	hl = text ID for the text to print
+DrawWideTextBox_PrintTextNoDelay::
+	push hl
+	call DrawWideTextBox
+	ld a, 19
+.print_text
 	lb de, 1, 14
 	call AdjustCoordinatesForBGScroll
 	call InitTextPrintingInTextbox
@@ -800,7 +798,7 @@ DrawTextBox_PrintTextNoDelay::
 ; draws a 20x6 text box aligned to the bottom of the screen
 ; and prints the text at hl with letter delay
 ; input:
-;	hl = text to print
+;	hl = text ID for the text to print
 DrawWideTextBox_PrintText::
 	push hl
 	call DrawWideTextBox
@@ -816,7 +814,7 @@ DrawWideTextBox_PrintText::
 ; draws a 12x6 text box aligned to the bottom left of the screen,
 ; prints the text at hl without letter delay, and waits for A or B to be pressed
 ; input:
-;	hl = text to print
+;	hl = text ID for the text to print
 DrawNarrowTextBox_WaitForInput::
 	call DrawNarrowTextBox_PrintTextNoDelay
 	xor a
@@ -844,7 +842,7 @@ NarrowTextBoxMenuParameters::
 ; draws a 20x6 text box aligned to the bottom of the screen,
 ; prints the text at hl with letter delay, and waits for A or B to be pressed
 ; input:
-;	hl = text to print
+;	hl = text ID for the text to print
 DrawWideTextBox_WaitForInput::
 	call DrawWideTextBox_PrintText
 ;	fallthrough
@@ -876,9 +874,9 @@ YesOrNoMenuWithText_SetCursorToYes::
 
 ; displays a YES / NO menu in a 20x6 textbox with custom text and handles input
 ; input:
-;	hl = text to print
-;	wDefaultYesOrNo = 1:  the default selection will be "Yes"
-;	wDefaultYesOrNo = 0:  the default selection will be "No"
+;	hl = text ID for the question
+;	[wDefaultYesOrNo] = 1:  the default selection will be "Yes"
+;	[wDefaultYesOrNo] = 0:  the default selection will be "No"
 ; output:
 ;	carry = set:  if "No" was selected
 YesOrNoMenuWithText::
@@ -893,19 +891,10 @@ YesOrNoMenu::
 	lb de, 7, 16 ; x, y
 	call PrintYesOrNoItems
 	lb de, 6, 16 ; x, y
-	jr HandleYesOrNoMenu
-
-; prints the YES / NO menu items at coordinates x,y = 3,16 and handles input
-; wDefaultYesOrNo determines whether the cursor initially points to YES or to NO
-; output:
-;	carry = set:  if "No" was selected
-YesOrNoMenuWithText_LeftAligned::
-	call DrawNarrowTextBox_PrintTextNoDelay
-	lb de, 3, 16 ; x, y
-	call PrintYesOrNoItems
-	lb de, 2, 16 ; x, y
 ;	fallthrough
 
+; input:
+;	de = screen coordinates for the cursor
 HandleYesOrNoMenu::
 	ld a, d
 	ld [wLeftmostItemCursorX], a
@@ -961,9 +950,25 @@ HandleYesOrNoMenu::
 	ret
 
 
+; prints the YES / NO menu items at coordinates x,y = 3,16 and handles input
+; wDefaultYesOrNo determines whether the cursor initially points to YES or to NO
+; input:
+;	hl = text ID for the question
+;	[wDefaultYesOrNo] = 1:  the default selection will be "Yes"
+;	[wDefaultYesOrNo] = 0:  the default selection will be "No"
+; output:
+;	carry = set:  if "No" was selected
+YesOrNoMenuWithText_LeftAligned::
+	call DrawNarrowTextBox_PrintTextNoDelay
+	lb de, 3, 16 ; x, y
+	call PrintYesOrNoItems
+	lb de, 2, 16 ; x, y
+	jr HandleYesOrNoMenu
+
+
 ; displays a two-item horizontal menu with custom text provided in hl and handles input
 ; input:
-;	hl = text to print
+;	hl = text ID for the horizontal menu
 TwoItemHorizontalMenu::
 	call DrawWideTextBox_PrintText
 	lb de, 6, 16 ; x, y
@@ -980,7 +985,7 @@ TwoItemHorizontalMenu::
 ; prints "YES NO" at de
 ; preserves bc
 ; input:
-;	de = coordinates at which to begin printing the text
+;	de = screen coordinates at which to begin printing the text
 PrintYesOrNoItems::
 	call AdjustCoordinatesForBGScroll
 	ldtx hl, YesOrNoText
@@ -989,8 +994,8 @@ PrintYesOrNoItems::
 
 ; preserves all registers except af
 ; input:
-;	de = text id for text box header
-;	hl = text id for text box contents
+;	de = text ID for the text box header
+;	hl = text ID for the text box contents
 SetCardListHeaderText::
 	ld a, e
 	ld [wCardListHeaderText], a
@@ -1000,7 +1005,7 @@ SetCardListHeaderText::
 
 ; preserves all registers except af
 ; input:
-;	hl = text id for text box contents
+;	hl = text ID for the text box contents
 SetCardListInfoBoxText::
 	ld a, l
 	ld [wCardListInfoBoxText], a

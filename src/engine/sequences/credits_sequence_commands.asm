@@ -378,9 +378,8 @@ CreditsSequenceCmd_PrintText:
 	ld a, b
 	or $20
 	ld e, a ; y coordinate for the text
-	call InitTextPrinting
 	pop hl
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	jp AdvanceCreditsSequenceCmdPtrBy6
 
 
@@ -394,9 +393,8 @@ CreditsSequenceCmd_PrintTextBox:
 	push de
 	ld d, c
 	ld e, b
-	call InitTextPrinting
 	pop hl
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	jp AdvanceCreditsSequenceCmdPtrBy6
 
 

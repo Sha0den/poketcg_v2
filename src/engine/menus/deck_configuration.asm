@@ -296,8 +296,7 @@ PrintDeckName:
 	call CopyListFromHLToDE
 	pop de
 	ld hl, wDefaultText
-	call InitTextPrinting
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	or a
 	ret
 
@@ -351,8 +350,7 @@ PrintDeckNameForDeckMachine:
 	ld [wDefaultText + DECK_NAME_SIZE + 2], a
 	pop de
 	ld hl, wDefaultText
-	call InitTextPrinting
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	or a
 	ret
 
@@ -1011,9 +1009,8 @@ PrintSlashSixty:
 	ld a, SYM_0
 	ld [hli], a
 	ld [hl], TX_END
-	call InitTextPrinting
 	ld hl, wDefaultText
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 ; creates two separate lists given the card type in register a
@@ -1430,9 +1427,8 @@ PrintCardTypeCounts:
 	jr nz, .loop
 	ld [hl], TX_END
 	lb de, 1, 4
-	call InitTextPrinting
 	ld hl, wDefaultText
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 ; prints the list of cards, applying the filter from register a.
@@ -1518,9 +1514,8 @@ PrintTotalCardCount:
 	pop bc
 	ld [hl], TX_END
 	pop de
-	call InitTextPrinting
 	ld hl, wDefaultText
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 ; prints the name, level and storage count of the cards
@@ -1576,17 +1571,15 @@ PrintDeckBuildingCardList:
 	pop bc
 	pop de
 	push hl
-	call InitTextPrinting
 	ld hl, wDefaultText
 	jr .process_text
 
 .invalid_card
 	pop de
 	push hl
-	call InitTextPrinting
 	ld hl, Text_9a30
 .process_text
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	pop hl
 
 	ld a, b
@@ -2286,9 +2279,8 @@ PrintNumberValueInCursorYPos:
 	add [hl]
 	ld e, a
 	ld d, 14
-	call InitTextPrinting
 	ld hl, wDefaultText
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 ; removes the card in register e from the deck configuration
 ; and updates the values shown for its count in the card selection list
@@ -2661,8 +2653,7 @@ PrintCurDeckNumberAndName:
 ;	lb de, 6, 2 ; coordinates if printing after a number
 	lb de, 3, 2 ; coordinates without a deck number
 	ld hl, wDefaultText
-	call InitTextPrinting
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 .new_deck
 ;	lb de, 6, 2 ; coordinates if printing after a number
@@ -2676,8 +2667,7 @@ PrintCurDeckNumberAndName:
 	call CopyListFromHLToDE
 	lb de, 3, 2
 	ld hl, wDefaultText
-	call InitTextPrinting
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 ; sorts wCurDeckCards by ID
@@ -2833,9 +2823,8 @@ PrintConfirmationCardList:
 	pop de
 	call .DrawCardTypeIcon
 	push hl
-	call InitTextPrinting
 	ld hl, wDefaultText
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	pop hl
 	ld a, b
 	dec a
@@ -3416,16 +3405,14 @@ PrintCardSelectionList:
 	pop bc
 	pop de
 	push hl
-	call InitTextPrinting
 	ld hl, wDefaultText
 	jr .process_text
 .invalid_card
 	pop de
 	push hl
-	call InitTextPrinting
 	ld hl, Text_9a36
 .process_text
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	pop hl
 
 	ld a, b
@@ -3596,9 +3583,8 @@ PrintTotalNumberOfCardsInCollection:
 	ld de, wTempCardCollection
 	call TwoByteNumberToFullwidthTextInDE_TrimLeadingZeros
 	lb de, 14, 0
-	call InitTextPrinting
 	ld hl, wTempCardCollection
-	jp ProcessText
+	jp InitTextPrinting_ProcessText
 
 
 ;----------------------------------------

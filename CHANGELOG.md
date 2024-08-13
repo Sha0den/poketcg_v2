@@ -76,6 +76,12 @@
 
 
 ## Code Optimization
+- **August 13, 2024:** 16 Files Changed
+    - Add 'InitTextPrinting_PrintTextNoDelay' and 'InitTextPrinting_ProcessText' functions
+    - Edit some of the comments in home/menus.asm, home/print_text.asm, and home_process_text.asm, plus a few minor optimizations
+
+<br/>
+
 - **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/edc9a809d7096e625af1e26e41cea6bc2b79693f):** 11 Files Changed
     - Refactor and better organize all functions associated with writing numbers
 
@@ -532,7 +538,7 @@
 
 
 ## New Features
-- **August 12, 2024:** 6 Files Changed
+- **[August 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/3fa4a8c98343049ee5e2505aae7168b8353c1a9f):** 6 Files Changed
     - Pokedex numbers now use 2 bytes to support Pokemon from all generations
     - Although, the printing function will have to be edited if it exceeds 3 digits (1,000+)
 

@@ -340,11 +340,8 @@ PrintCardSetListEntries:
 	pop bc
 	pop de
 	push hl
-	call InitTextPrinting
-	pop hl
-	push hl
 	call .AppendCardListIndex
-	call ProcessText
+	call InitTextPrinting_ProcessText
 	ld hl, wDefaultText
 ;	jr .asm_a76d
 ;
@@ -391,6 +388,7 @@ PrintCardSetListEntries:
 	done
 
 ; gets the index in the card list and adds it to wCurDeckName
+; preserves bc and de
 .AppendCardListIndex
 	push bc
 	push de

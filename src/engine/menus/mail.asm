@@ -414,8 +414,7 @@ PrintPCPackName:
 	call GetPCPackCoordinates
 	ld e, c
 	ld d, b
-	call InitTextPrinting
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	pop de
 	pop bc
 	pop hl
@@ -434,9 +433,8 @@ PrintEmptyPCPackName:
 	call GetPCPackCoordinates
 	ld e, c
 	ld d, b
-	call InitTextPrinting
 	ldtx hl, EmptyMailNameText
-	call PrintTextNoDelay
+	call InitTextPrinting_PrintTextNoDelay
 	pop de
 	pop bc
 	pop hl
