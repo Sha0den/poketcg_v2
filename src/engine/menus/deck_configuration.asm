@@ -3100,20 +3100,6 @@ HandleSendDeckConfigurationMenu:
 	ret
 
 
-; copies b bytes from hl to de
-; input:
-;	b = number of bytes to copy
-;	hl = address from which to start copying the data
-;	de = where to copy the data
-CopyNBytesFromHLToDE:
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, CopyNBytesFromHLToDE
-	ret
-
-
 ; handles the screen showing all the player's cards
 HandlePlayersCardsScreen:
 	call WriteCardListsTerminatorBytes

@@ -230,11 +230,6 @@ LoadCardGfx::
 	call CopyGfxData
 	ld b, CGB_PAL_SIZE
 	ld de, wCardPalette
-.copy_card_palette
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .copy_card_palette
+	call CopyNBytesFromHLToDE
 	pop af
 	jp BankswitchROM

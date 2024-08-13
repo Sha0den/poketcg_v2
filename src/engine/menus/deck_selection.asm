@@ -105,13 +105,7 @@ EmptyScreenAndLoadFontDuelAndDeckIcons:
 InitDeckBuildingParams:
 	ld de, wMaxNumCardsAllowed
 	ld b, $7
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-	ret
+	jp CopyNBytesFromHLToDE
 
 
 DeckBuildingParams:

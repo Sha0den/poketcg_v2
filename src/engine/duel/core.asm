@@ -4140,20 +4140,17 @@ SetBGP7OrSGB2ToCardPalette:
 	or a ; CONSOLE_DMG
 	ret z
 	cp CONSOLE_SGB
-	jr z, .sgb
+	jr z, SetSGB2ToCardPalette
 	ld a, $07 ; CGB BG Palette 7
 	jr CopyCGBCardPalette
-.sgb
+
+
+SetSGB2ToCardPalette:
 	ld hl, wCardPalette
 	ld de, wTempSGBPacket + 1 ; PAL Packet color #0 (PAL23's SGB2)
 	ld b, CGB_PAL_SIZE
-.copy_pal_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .copy_pal_loop
-	ret
+	jp CopyNBytesFromHLToDE
+
 
 
 SetBGP6OrSGB3ToCardPalette:
@@ -4170,7 +4167,7 @@ SetSGB3ToCardPalette:
 	ld hl, wCardPalette + 2
 	ld de, wTempSGBPacket + 9 ; Pal Packet color #4 (PAL23's SGB3)
 	ld b, 6
-	jr SetBGP7OrSGB2ToCardPalette.copy_pal_loop
+	jp CopyNBytesFromHLToDE
 
 
 SetOBP1OrSGB3ToCardPalette:
@@ -5485,13 +5482,8 @@ PrintPlayAreaCardList:
 	ld [wNumPlayAreaItems], a
 	ld hl, wDuelTempList + 1
 	ld de, wDuelTempList
-.shift_back_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .shift_back_loop
-	ret
+	jp CopyNBytesFromHLToDE
+
 
 
 ; formerly Func_6194
@@ -6386,13 +6378,8 @@ LoadPlayerDeck:
 	ld de, sDeck1Cards
 	add hl, de
 	ld de, wPlayerDeck
-	ld c, DECK_SIZE
-.copy_cards_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec c
-	jr nz, .copy_cards_loop
+	ld b, DECK_SIZE
+	call CopyNBytesFromHLToDE
 	jp DisableSRAM
 
 

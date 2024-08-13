@@ -83,12 +83,19 @@ SafeCopyDataHLtoDE::
 	ld a, [wLCDC]
 	rla
 	jr c, HblankCopyDataHLtoDE
-.lcd_off_loop
+;	fallthrough
+
+; copies b bytes of data from hl to de
+; input:
+;	b = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
+CopyNBytesFromHLToDE::
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec b
-	jr nz, .lcd_off_loop
+	jr nz, CopyNBytesFromHLToDE
 	ret
 
 
