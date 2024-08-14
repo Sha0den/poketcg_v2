@@ -1,3 +1,49 @@
+HandlePrinterMenu:
+	bank1call PreparePrinterConnection
+	ret c
+	xor a
+.loop
+	ld hl, PrinterMenuParameters
+	call InitializeMenuParameters
+	call EmptyScreenAndLoadFontDuelAndDeckIcons
+	lb de, 4, 0
+	lb bc, 12, 12
+	call DrawRegularTextBox
+	lb de, 6, 2
+	ldtx hl, PrintMenuItemsText
+	call InitTextPrinting_ProcessTextFromID
+	ldtx hl, WhatWouldYouLikeToPrintText
+	call DrawWideTextBox_PrintText
+	call EnableLCD
+.loop_input
+	call DoFrame
+	call HandleMenuInput
+	jr nc, .loop_input
+	ldh a, [hCurMenuItem]
+	cp $ff
+	call z, PrinterMenu_QuitPrint
+	ld [wSelectedPrinterMenuItem], a
+	ld hl, PrinterMenuFunctionTable
+	call JumpToFunctionInTable
+	ld a, [wSelectedPrinterMenuItem]
+	jr .loop
+
+PrinterMenuParameters:
+	db 5, 2 ; cursor x, cursor y
+	db 2 ; y displacement between items
+	db 5 ; number of items
+	db SYM_CURSOR_R ; cursor tile number
+	db SYM_SPACE ; tile behind cursor
+	dw NULL ; function pointer if non-0
+
+PrinterMenuFunctionTable:
+	dw PrinterMenu_PokemonCards
+	dw PrinterMenu_DeckConfiguration
+	dw PrinterMenu_CardList
+	dw PrinterMenu_PrintQuality
+	dw PrinterMenu_QuitPrint
+
+
 PrinterMenu_PokemonCards:
 	call WriteCardListsTerminatorBytes
 	call PrintPlayersCardsHeaderInfo
@@ -196,6 +242,60 @@ Data_ad05:
 	dw NULL ; wCardListHandlerFunction
 
 
+PrinterMenu_DeckConfiguration:
+	xor a
+	ld [wCardListVisibleOffset], a
+	call ClearScreenAndDrawDeckMachineScreen
+	ld a, DECK_SIZE
+	ld [wNumDeckMachineEntries], a
+
+	xor a
+.start_selection
+	ld hl, DeckMachineSelectionParams
+	call InitCardSelectionParams
+	call DrawListScrollArrows
+	call PrintNumSavedDecks
+	ldtx hl, PleaseChooseDeckConfigurationToPrintText
+	call DrawWideTextBox_PrintText
+	ldtx de, PleaseChooseDeckConfigurationToPrintText
+	call InitDeckMachineDrawingParams
+.loop_input
+	call HandleDeckMachineSelection
+	jr c, .start_selection
+	cp $ff
+	ret z
+
+	ld b, a
+	ld a, [wCardListVisibleOffset]
+	add b
+	ld [wSelectedDeckMachineEntry], a
+	call CheckIfSelectedDeckMachineEntryIsEmpty
+	jr c, .loop_input
+	call DrawWideTextBox
+	ldtx hl, PrintThisDeckText
+	call YesOrNoMenuWithText
+	jr c, .no
+	call GetSelectedSavedDeckPtr
+	ld hl, DECK_NAME_SIZE
+	add hl, de
+	ld de, wCurDeckCards
+	ld b, DECK_SIZE
+	call EnableSRAM
+	call CopyNBytesFromHLToDE
+	call DisableSRAM
+	xor a ; terminator byte for deck
+	ld [wCurDeckCards + DECK_SIZE], a
+	call SortCurDeckCardsByID
+	ld a, [wSelectedDeckMachineEntry]
+	bank1call PrintDeckConfiguration
+	call ClearScreenAndDrawDeckMachineScreen
+
+.no
+	ld a, [wTempDeckMachineCursorPos]
+	ld [wCardListCursorPos], a
+	jr .start_selection
+
+
 PrinterMenu_CardList:
 	call WriteCardListsTerminatorBytes
 	call Set_OBJ_8x8
@@ -226,58 +326,6 @@ PrinterMenu_CardList:
 	ret
 
 
-HandlePrinterMenu:
-	bank1call PreparePrinterConnection
-	ret c
-	xor a
-.loop
-	ld hl, PrinterMenuParameters
-	call InitializeMenuParameters
-	call EmptyScreenAndLoadFontDuelAndDeckIcons
-	lb de, 4, 0
-	lb bc, 12, 12
-	call DrawRegularTextBox
-	lb de, 6, 2
-	ldtx hl, PrintMenuItemsText
-	call InitTextPrinting_ProcessTextFromID
-	ldtx hl, WhatWouldYouLikeToPrintText
-	call DrawWideTextBox_PrintText
-	call EnableLCD
-.loop_input
-	call DoFrame
-	call HandleMenuInput
-	jr nc, .loop_input
-	ldh a, [hCurMenuItem]
-	cp $ff
-	call z, PrinterMenu_QuitPrint
-	ld [wSelectedPrinterMenuItem], a
-	ld hl, PrinterMenuFunctionTable
-	call JumpToFunctionInTable
-	ld a, [wSelectedPrinterMenuItem]
-	jr .loop
-
-PrinterMenuParameters:
-	db 5, 2 ; cursor x, cursor y
-	db 2 ; y displacement between items
-	db 5 ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
-
-PrinterMenuFunctionTable:
-	dw PrinterMenu_PokemonCards
-	dw PrinterMenu_DeckConfiguration
-	dw PrinterMenu_CardList
-	dw PrinterMenu_PrintQuality
-	dw PrinterMenu_QuitPrint
-
-
-PrinterMenu_QuitPrint:
-	add sp, $2 ; exit menu
-	ldtx hl, PleaseMakeSureToTurnGameBoyPrinterOffText
-	jp DrawWideTextBox_WaitForInput
-
-
 PrinterMenu_PrintQuality:
 	ldtx hl, PleaseSetTheContrastText
 	call DrawWideTextBox_PrintText
@@ -303,7 +351,7 @@ PrinterMenu_PrintQuality:
 	call InitializeMenuParameters
 	ldtx hl, WhatWouldYouLikeToPrintText
 	call DrawWideTextBox_PrintText
-	jr HandlePrinterMenu.loop_input
+	jp HandlePrinterMenu.loop_input
 
 Data_adf5:
 	db 5  ; x position
@@ -314,3 +362,9 @@ Data_adf5:
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
+
+
+PrinterMenu_QuitPrint:
+	add sp, $2 ; exit menu
+	ldtx hl, PleaseMakeSureToTurnGameBoyPrinterOffText
+	jp DrawWideTextBox_WaitForInput

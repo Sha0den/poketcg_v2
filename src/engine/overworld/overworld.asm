@@ -1259,7 +1259,7 @@ PauseMenu:
 ; preserves bc and de
 DisplayPauseMenu:
 	ld a, [wSelectedPauseMenuItem]
-	ld hl, Unknown_10d98
+	ld hl, PauseMenuParams
 	farcall InitAndPrintMenu
 	ret
 
@@ -1354,10 +1354,11 @@ PointerTable_c846:
 	dw PCMenu_Glossary
 	dw PCMenu_Print
 
+
 ; preserves bc and de
 DisplayPCMenu:
 	ld a, [wSelectedPCMenuItem]
-	ld hl, Unknown_10da9
+	ld hl, PCMenuParams
 	farcall InitAndPrintMenu
 	ret
 

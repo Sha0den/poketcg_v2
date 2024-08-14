@@ -18,6 +18,7 @@ INCLUDE "engine/menus/deck_configuration.asm"
 INCLUDE "engine/menus/card_album.asm"
 INCLUDE "engine/menus/printer.asm"
 INCLUDE "engine/menus/deck_machine.asm"
+INCLUDE "engine/menus/gift_center_core.asm"
 
 SECTION "Overworld Scripting", ROMX
 INCLUDE "engine/overworld/overworld.asm"

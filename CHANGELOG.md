@@ -90,7 +90,7 @@
 
 - **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/edc9a809d7096e625af1e26e41cea6bc2b79693f):** 11 Files Changed
     - Refactor and better organize all functions associated with writing numbers
-    - August 14th commit swapped the FULLWIDTH3 fonts for TX_SYMBOL fonts in the fullwidth text functions, to avoid overwriting the numbers on screen with other font tiles once VRAM runs out of space for new font tiles
+    - [This commit](https://github.com/Sha0den/poketcg_v2/commit/c1249198e62a2e53fecb4c4feabf0c1097870614) swapped the FULLWIDTH3 fonts for TX_SYMBOL fonts in the fullwidth text functions, to avoid overwriting the numbers on screen with other font tiles once VRAM runs out of space for new font tiles
 
 <br/>
 
@@ -366,6 +366,13 @@
 
 
 ## Miscellaneous Changes
+- **August 13, 2024:** 8 Files Changed
+    - Create engine/menus/gift_center.core.asm and move gift center functions in engine/menus/deck_configuration and engine/menu/deck_machine.asm to the new file
+    - Organize functions in engine/menus/printer.asm (after importing PrinterMenu_DeckConfiguration)
+    - Move and label unrelated menu parameter data from engine/menus/gift_center.asm to engine/menus/labels.asm
+
+<br/>
+
 - **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/133b38fda44d1fee37d11d7ed805e47a3c616221):** 5 Files Changed
     - Move coss toss functions from engine/duel.core.asm to a separate file that's linked with a less important bank
     - Align the printed coin tally numbers
