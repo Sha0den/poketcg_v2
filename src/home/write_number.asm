@@ -65,11 +65,10 @@ GetHalfwidthTextDigit::
 ;	bc = digit offset
 ;	hl = number to convert to a fullwidth text font
 GetFullwidthTextDigit::
-	ld a, TX_FULLWIDTH3
+	ld a, TX_SYMBOL
 	ld [de], a
 	inc de
-	ld a, "FW3_0" - 1
-	jr GetTxSymbolDigit.subtract_loop
+;	fallthrough
 
 ; input:
 ;	bc = digit offset
@@ -95,7 +94,7 @@ GetTxSymbolDigit::
 ; input:
 ;	hl = number to covert to text
 ; ouput:
-;	[wStringBuffer] = number in text symbol format with leading zeros (5 bytes)
+;	[wStringBuffer] = number in text symbol format with leading zeros (6 bytes, but the last one is empty)
 TwoByteNumberToTxSymbol::
 	ld de, wStringBuffer
 ;	fallthrough
@@ -126,7 +125,7 @@ TwoByteNumberToTxSymbolInDE::
 ;	hl = number to convert to text symbols
 ; output:
 ;	hl = pointer for first non-zero digit in wStringBuffer
-;	[wStringBuffer] = number in text symbol format (5 bytes)
+;	[wStringBuffer] = number in text symbol format (6 bytes, but the last one is empty)
 TwoByteNumberToTxSymbol_TrimLeadingZeros::
 	ld de, wStringBuffer
 ;	fallthrough
@@ -183,7 +182,7 @@ TwoByteNumberToText_TrimLeadingZeros::
 	ret
 
 
-; converts the number at hl to fullwidth text and writes it to wStringBuffer,
+; converts the number at hl to fullwidth (symbol font) text and writes it to wStringBuffer,
 ; replacing any leading zeros with spaces. If 'InitTextPrinting' was already called,
 ; then 'ProcessText' can be called after this function to print the number on the screen.
 ; input:
@@ -191,7 +190,7 @@ TwoByteNumberToText_TrimLeadingZeros::
 ; output:
 ;	e = number of digits in number from input (excluding any leading zeros)
 ;	hl = pointer for first non-zero digit in wStringBuffer
-;	[wStringBuffer] = number in fullwidth text format (10 bytes)
+;	[wStringBuffer] = number in fullwidth text format (11 bytes, but the last one is empty)
 TwoByteNumberToFullwidthText_TrimLeadingZeros::
 	ld de, wStringBuffer
 ;	fallthrough
@@ -223,14 +222,14 @@ TwoByteNumberToFullwidthTextInDE_TrimLeadingZeros::
 .digit_loop
 	inc hl
 	ld a, [hl]
-	cp "FW3_0"
+	cp SYM_0
 	jr nz, .done ; jump if not zero
-	ld [hl], "FW3_ " ; trim leading zero
+	ld [hl], SYM_SPACE ; trim leading zero
 	inc hl
 	dec e
 	jr nz, .digit_loop
 	dec hl
-	ld [hl], "FW3_0"
+	ld [hl], SYM_0
 .done
 	dec hl
 	ret

@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 13, 2024:** 5 Files Changed
+- **[August 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/018fa95ded992eda2701e3377412adbe0c05a421):** 5 Files Changed
     - Move 'CopyNBytesFromHLToDE' from engine/menu/deck_configuration.asm to home/copy.asm
     - Refactor several functions to make use of the new home bank function
 
@@ -90,6 +90,7 @@
 
 - **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/edc9a809d7096e625af1e26e41cea6bc2b79693f):** 11 Files Changed
     - Refactor and better organize all functions associated with writing numbers
+    - August 14th commit swapped the FULLWIDTH3 fonts for TX_SYMBOL fonts in the fullwidth text functions, to avoid overwriting the numbers on screen with other font tiles once VRAM runs out of space for new font tiles
 
 <br/>
 
