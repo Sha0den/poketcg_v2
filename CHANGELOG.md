@@ -495,6 +495,7 @@
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
+    - Text pointers were later adjusted in another commit.
 
 <br/>
 
@@ -558,7 +559,7 @@
 
 
 ## New Features
-- **August 15, 2024:** 3 Files Changed
+- **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/d7050ca9cd207220c60d520d1c2f70f2175eb35c):** 3 Files Changed
     - Make the phantom cards (Venusaur Lv64 and Mew Lv15) obtainable without using Card Pop! by adding them to the list of possible Challenge Cup prizes
 
 <br/>
