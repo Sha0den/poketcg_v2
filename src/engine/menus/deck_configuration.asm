@@ -975,6 +975,41 @@ DrawCardTypeIconsAndPrintCardCounts:
 	jp EnableLCD
 
 
+; draws the same tile across an entire line in BG Map
+; if CGB, also fills the line with background palette 4 in VRAM1
+; input:
+;	a = TX_SYMBOL (SYM_* constant)
+;	bc = coordinates to print line
+FillBGMapLineWithA::
+	call BCCoordToBGMap0Address
+	ld b, SCREEN_WIDTH
+	call FillDEWithA
+	ld a, [wConsole]
+	cp CONSOLE_CGB
+	ret nz ; return if not CGB
+	ld a, $04
+	ld b, SCREEN_WIDTH
+	call BankswitchVRAM1
+	call FillDEWithA
+	jp BankswitchVRAM0
+
+
+; fills de with b bytes of the value in register a
+; preserves a and de
+; input:
+;	a = byte to copy
+;	b = number of bytes to copy
+;	de = where to copy the data
+FillDEWithA:
+	ld l, e
+	ld h, d
+.loop
+	ld [hli], a
+	dec b
+	jr nz, .loop
+	ret
+
+
 ; saves the count of each type of card that is in wCurDeckCards
 ; stores these values in wCardFilterCounts
 CountNumberOfCardsForEachCardType:

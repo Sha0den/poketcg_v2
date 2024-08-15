@@ -29,9 +29,7 @@ WriteDataBlockToBGMap0::
 	jr nz, .find_zero_loop
 	ld a, b ; length of data
 	pop bc ; x,y
-	push af
 	call BCCoordToBGMap0Address
-	pop af
 	ld b, a ; length of data
 	pop hl ; address containing the data
 	or a
@@ -51,7 +49,7 @@ WriteDataBlockToBGMap0::
 
 
 ; writes a to [v*BGMap0 + BG_MAP_WIDTH * c + b]
-; preserves all registers except af (af is also preserved if lcd is off)
+; preserves all registers except af
 ; input:
 ;	a = byte to draw
 ;	bc = screen coordinates at which to draw the byte
@@ -64,9 +62,7 @@ WriteByteToBGMap0::
 	push hl
 	push de
 	push bc
-	push af
 	call BCCoordToBGMap0Address
-	pop af
 	ld [de], a
 	pop bc
 	pop de
@@ -107,9 +103,7 @@ HblankWriteByteToBGMap0::
 CopyDataToBGMap0::
 	push bc
 	push hl
-	push af
 	call BCCoordToBGMap0Address
-	pop af
 	ld b, a
 	pop hl
 	call SafeCopyDataHLtoDE
@@ -118,6 +112,7 @@ CopyDataToBGMap0::
 
 
 ; maps coordinates at bc to a BGMap0 address.
+; preserves a register
 ; input:
 ;	bc = screen coordinates
 ; output:

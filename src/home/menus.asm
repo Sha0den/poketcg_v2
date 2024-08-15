@@ -1014,25 +1014,6 @@ SetCardListInfoBoxText::
 	ret
 
 
-; draws the same tile across an entire line in BG Map
-; if CGB, also fills the line with background palette 4 in VRAM1
-; input:
-;	a = TX_SYMBOL (SYM_* constant)
-;	bc = coordinates to print line
-FillBGMapLineWithA::
-	call BCCoordToBGMap0Address
-	ld b, SCREEN_WIDTH
-	call FillDEWithA
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	ret nz ; return if not CGB
-	ld a, $04
-	ld b, SCREEN_WIDTH
-	call BankswitchVRAM1
-	call FillDEWithA
-	jp BankswitchVRAM0
-
-
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

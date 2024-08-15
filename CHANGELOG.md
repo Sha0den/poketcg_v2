@@ -76,6 +76,12 @@
 
 
 ## Code Optimization
+- **August 15, 2024:** 5 Files Changed
+    - Return 'FillBGMapLineWithA' and 'FillDEWithA' to engine/menu/deck_configuration.asm
+    - Remove some unnecessary push af/pop af surrounding calls of 'BCCoordToBGMap0Address' 
+
+<br/>
+
 - **[August 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/018fa95ded992eda2701e3377412adbe0c05a421):** 5 Files Changed
     - Move 'CopyNBytesFromHLToDE' from engine/menu/deck_configuration.asm to home/copy.asm
     - Refactor several functions to make use of the new home bank function
@@ -366,7 +372,7 @@
 
 
 ## Miscellaneous Changes
-- **August 13, 2024:** 8 Files Changed
+- **[August 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/576581a7aac4bb8e1da6ab8c1076aabbe927e3fb):** 8 Files Changed
     - Create engine/menus/gift_center.core.asm and move gift center functions in engine/menus/deck_configuration and engine/menu/deck_machine.asm to the new file
     - Organize functions in engine/menus/printer.asm (after importing PrinterMenu_DeckConfiguration)
     - Move and label unrelated menu parameter data from engine/menus/gift_center.asm to engine/menus/labels.asm

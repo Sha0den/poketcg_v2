@@ -196,24 +196,6 @@ CopyBankedDataToDE::
 	jp BankswitchROM
 
 
-; fills de with b bytes of the value in register a
-; preserves af and hl
-; input:
-;	a = byte to copy
-;	b = number of bytes to copy
-;	de = where to copy the data
-FillDEWithA:
-	push hl
-	ld l, e
-	ld h, d
-.loop
-	ld [hli], a
-	dec b
-	jr nz, .loop
-	pop hl
-	ret
-
-
 ; fills bc bytes of data at hl with a
 ; preserves all registers except af
 ; input:
