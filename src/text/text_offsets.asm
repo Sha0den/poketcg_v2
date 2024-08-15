@@ -909,8 +909,8 @@ TextOffsets::
 	textpointer CheckedCardsInBoosterPackText                      ; 0x0389
 	textpointer UnusedText038a                                     ; 0x038a
 	textpointer WonTheMedalText                                    ; 0x038b
-	textpointer UnusedText038c                                     ; 0x038c
-	textpointer UnusedText038d                                     ; 0x038d
+	textpointer VenusaurLv64TradeCardName                          ; 0x038c
+	textpointer MewLv15TradeCardName                               ; 0x038d
 	textpointer UnusedText038e                                     ; 0x038e
 	textpointer UnusedText038f                                     ; 0x038f
 	textpointer UnusedText0390                                     ; 0x0390

@@ -998,12 +998,12 @@ WonTheMedalText:
 	line "Won the <RAMTEXT> Medal!"
 	done
 
-UnusedText038c: ; Unused
-	text "????"
+VenusaurLv64TradeCardName:
+	text "<Lv>64 Venusaur"
 	done
 
-UnusedText038d: ; Unused
-	text "????"
+MewLv15TradeCardName:
+	text "<Lv>15 Mew"
 	done
 
 UnusedText038e: ; Unused

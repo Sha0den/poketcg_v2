@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 15, 2024:** 5 Files Changed
+- **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/6c2492884a48e725b65165e9e8e7eff305bcff3c):** 5 Files Changed
     - Return 'FillBGMapLineWithA' and 'FillDEWithA' to engine/menu/deck_configuration.asm
     - Remove some unnecessary push af/pop af surrounding calls of 'BCCoordToBGMap0Address' 
 
@@ -558,6 +558,11 @@
 
 
 ## New Features
+- **August 15, 2024:** 3 Files Changed
+    - Make the phantom cards (Venusaur Lv64 and Mew Lv15) obtainable without using Card Pop! by adding them to the list of possible Challenge Cup prizes
+
+<br/>
+
 - **[August 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/3fa4a8c98343049ee5e2505aae7168b8353c1a9f):** 6 Files Changed
     - Pokedex numbers now use 2 bytes to support Pokemon from all generations
     - Although, the printing function will have to be edited if it exceeds 3 digits (1,000+)

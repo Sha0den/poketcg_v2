@@ -1801,6 +1801,12 @@ ChallengeCupPrizeCards:
 
 	db FLYING_PIKACHU
 	tx FlyingPikachuTradeCardName
+
+	db VENUSAUR_LV64
+	tx VenusaurLv64TradeCardName
+
+	db MEW_LV15
+	tx MewLv15TradeCardName
 .end
 
 
