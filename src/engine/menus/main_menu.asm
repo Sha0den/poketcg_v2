@@ -68,7 +68,7 @@ MainMenu_ContinueFromDiary:
 MainMenu_CardPop:
 	ld a, MUSIC_CARD_POP
 	call PlaySong
-	bank1call DoCardPop
+	farcall DoCardPop
 	farcall WhiteOutDMGPals
 	call DoFrameIfLCDEnabled
 	ld a, MUSIC_STOP

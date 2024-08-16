@@ -1199,7 +1199,7 @@ ScriptCommand_ShowCardReceivedScreen:
 	farcall InitMenuScreen
 	farcall FlashWhiteScreen
 	pop af
-	bank1call ShowPromotionalCardScreen
+	farcall ShowPromotionalCardScreen
 	call WhiteOutDMGPals
 	call DoFrameIfLCDEnabled
 	call ReturnToOverworldNoCallback
@@ -2145,7 +2145,7 @@ ScriptCommand_nop:
 
 ScriptCommand_GiveStarterDeck:
 	ld a, [wStarterDeckChoice]
-	bank1call AddStarterDeck
+	farcall AddStarterDeck
 	jp IncreaseScriptPointerBy1
 
 

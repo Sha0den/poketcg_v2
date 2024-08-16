@@ -76,9 +76,14 @@
 
 
 ## Code Optimization
+- **August 16, 2024:** 19 Files Changed
+    - Eliminate some redundant bank 1 functions (mainly from engine/menus/common.asm)
+
+<br/>
+
 - **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/6c2492884a48e725b65165e9e8e7eff305bcff3c):** 5 Files Changed
     - Return 'FillBGMapLineWithA' and 'FillDEWithA' to engine/menu/deck_configuration.asm
-    - Remove some unnecessary push af/pop af surrounding calls of 'BCCoordToBGMap0Address' 
+    - Remove some unnecessary push af/pop af surrounding calls of 'BCCoordToBGMap0Address'
 
 <br/>
 
@@ -495,7 +500,7 @@
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
-    - Text pointers were later adjusted in another commit.
+    - Text pointers were later adjusted in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/fe4c091b38639bc5b52078c9ac153a0eac12ae01)
 
 <br/>
 

@@ -34,7 +34,6 @@ ROM0
 ROMX $01
 	"Game Loop"
 	"Duel Core"
-	"Menus Common"
 ROMX $02
 	"Menus 1"
 ROMX $03

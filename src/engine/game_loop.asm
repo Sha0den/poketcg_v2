@@ -36,13 +36,6 @@ GameLoop::
 .reset_game
 	jp Reset
 
-InitSaveDataAndSetUppercase::
-	farcall InitSaveData
-	; only use uppercase font characters
-;	ld a, 1
-;	ld [wUppercaseHalfWidthLetters], a
-	ret
-
 ; basic setup to be able to print the ResetBackUpRamText in an empty screen
 SetupResetBackUpRamScreen:
 	xor a ; SYM_SPACE

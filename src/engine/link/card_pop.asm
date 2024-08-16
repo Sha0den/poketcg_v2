@@ -1,4 +1,4 @@
-_DoCardPop:
+DoCardPop::
 ; loads scene for Card Pop! screen
 ; then checks if console is SGB
 ; and issues an error message in case it is

@@ -226,7 +226,7 @@ TryReceiveCardOrDeckConfigurationThroughIR:
 
 ; output:
 ;	carry = set:  if an error occurred and the Player chose to quit
-_SendCard:
+SendCard::
 	call StopMusic
 	ldtx hl, SendingACardText
 	call LoadLinkConnectingScene
@@ -258,7 +258,7 @@ _SendCard:
 	call PlayCardPopSong
 	ldtx hl, CardTransferWasntSuccessfulText
 	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
-	jr nc, _SendCard ; loop back and try again
+	jr nc, SendCard ; loop back and try again
 	; failed
 	scf
 	ret
@@ -272,7 +272,7 @@ PlayCardPopSong:
 
 ; output:
 ;	carry = set:  if an error occurred and the Player chose to quit
-_ReceiveCard:
+ReceiveCard::
 	call StopMusic
 	ldtx hl, ReceivingACardText
 	call LoadLinkConnectingScene
@@ -296,14 +296,14 @@ _ReceiveCard:
 	call PlayCardPopSong
 	ldtx hl, CardTransferWasntSuccessfulText
 	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
-	jr nc, _ReceiveCard ; loop back and try again
+	jr nc, ReceiveCard ; loop back and try again
 	scf
 	ret
 
 
 ; output:
 ;	carry = set:  if an error occurred and the Player chose to quit
-_SendDeckConfiguration:
+SendDeckConfiguration::
 	call StopMusic
 	ldtx hl, SendingADeckConfigurationText
 	call LoadLinkConnectingScene
@@ -327,14 +327,14 @@ _SendDeckConfiguration:
 	call PlayCardPopSong
 	ldtx hl, DeckConfigurationTransferWasntSuccessfulText
 	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
-	jr nc, _SendDeckConfiguration ; loop back and try again
+	jr nc, SendDeckConfiguration ; loop back and try again
 	scf
 	ret
 
 
 ; output:
 ;	carry = set:  if an error occurred and the Player chose to quit
-_ReceiveDeckConfiguration:
+ReceiveDeckConfiguration::
 	call StopMusic
 	ldtx hl, ReceivingDeckConfigurationText
 	call LoadLinkConnectingScene
@@ -350,6 +350,6 @@ _ReceiveDeckConfiguration:
 	call PlayCardPopSong
 	ldtx hl, DeckConfigurationTransferWasntSuccessfulText
 	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
-	jr nc, _ReceiveDeckConfiguration ; loop back and try again
+	jr nc, ReceiveDeckConfiguration ; loop back and try again
 	scf
 	ret

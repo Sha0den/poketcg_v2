@@ -8542,7 +8542,7 @@ PlayAttackAnimation::
 ;	ret c ; card not found
 ;	push de
 ;	ld a, e
-;	call RequestToPrintCard
+;	farcall RequestToPrintCard
 ;	pop de
 ;	inc de
 ;	jr .card_loop

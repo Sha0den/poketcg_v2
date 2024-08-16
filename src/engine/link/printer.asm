@@ -1,7 +1,7 @@
 ; sends serial data to printer.
 ; if there's an error in connection,
 ; show Printer Not Connected scene with error message.
-_PreparePrinterConnection:
+PreparePrinterConnection::
 	ld bc, 0
 	lb de, PRINTERPKT_DATA, FALSE
 	call SendPrinterPacket
@@ -89,7 +89,7 @@ ShowPrinterConnectionErrorScene:
 ; main card printer function
 ; output:
 ;	carry = set:  if there was an error
-_RequestToPrintCard:
+RequestToPrintCard::
 	ld e, a
 	ld d, $0
 	call LoadCardDataToBuffer1_FromCardID
@@ -617,7 +617,7 @@ GetPrinterContrastSerialData:
 
 ; input:
 ;	a = saved deck index to print
-_PrintDeckConfiguration:
+PrintDeckConfiguration::
 ; copies selected deck from SRAM to wDuelTempList
 	call EnableSRAM
 	ld l, a
@@ -693,7 +693,7 @@ _PrintDeckConfiguration:
 	jp HandlePrinterError
 
 
-_PrintCardList:
+PrintCardList::
 ; if Select button is held when printing card list
 ; only print cards with Star rarity (excluding Promotional cards)
 ; even if it's not marked as seen in the collection

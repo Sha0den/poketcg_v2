@@ -55,7 +55,7 @@ GiveBoosterPack:
 	call ZeroObjectPositionsAndToggleOAMCopy
 	ld a, $4
 	ld [wTextBoxFrameType], a
-	bank1call OpenBoosterPack
+	farcall OpenBoosterPack
 	farcall WhiteOutDMGPals
 	call DoFrameIfLCDEnabled
 	pop af

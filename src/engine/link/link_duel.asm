@@ -2,7 +2,7 @@
 ; decides which device will pick the number of prizes
 ; then exchanges names and duels between the players
 ; and starts the main duel routine
-_SetUpAndStartLinkDuel:
+SetUpAndStartLinkDuel::
 	ld hl, sp+$00
 	ld a, l
 	ld [wDuelReturnAddress + 0], a

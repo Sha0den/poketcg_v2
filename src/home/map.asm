@@ -88,7 +88,7 @@ GameEvent_BattleCenter::
 	ld [wDuelTheme], a
 	ld a, MUSIC_CARD_POP
 	call PlaySong
-	bank1call SetUpAndStartLinkDuel
+	farcall SetUpAndStartLinkDuel
 	scf
 	ret
 

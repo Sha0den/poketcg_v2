@@ -1,4 +1,4 @@
-_OpenBoosterPack:
+OpenBoosterPack::
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a
 ; clears DECK_SIZE bytes starting from wPlayerDuelVariables

@@ -7,9 +7,6 @@ INCLUDE "engine/game_loop.asm"
 SECTION "Duel Core", ROMX
 INCLUDE "engine/duel/core.asm"
 
-SECTION "Menus Common", ROMX
-INCLUDE "engine/menus/common.asm"
-
 SECTION "Menus 1", ROMX
 INCLUDE "engine/menus/duel.asm"
 INCLUDE "engine/menus/deck_selection.asm"

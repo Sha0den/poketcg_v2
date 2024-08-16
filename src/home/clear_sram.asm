@@ -20,7 +20,8 @@ ValidateSRAM::
 	jr nz, .check_pattern_loop
 	call RestartSRAM
 	scf
-	bank1call InitSaveDataAndSetUppercase
+;	call InitSaveDataAndSetUppercase
+	farcall InitSaveData
 	jp DisableSRAM
 .check_sequence
 	ld hl, s0a000
@@ -37,8 +38,17 @@ ValidateSRAM::
 .restart_sram
 	call RestartSRAM
 	or a
-	bank1call InitSaveDataAndSetUppercase
+;	call InitSaveDataAndSetUppercase
+	farcall InitSaveData
 	jp DisableSRAM
+
+
+;InitSaveDataAndSetUppercase::
+;	farcall InitSaveData
+;	; only use uppercase font characters
+;	ld a, 1
+;	ld [wUppercaseHalfWidthLetters], a
+;	ret
 
 
 ; zeroes all SRAM banks and set s0a000 to $04, $21, $05

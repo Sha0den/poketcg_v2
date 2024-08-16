@@ -61,7 +61,7 @@ GiftCenter_SendCard:
 	call CopyListFromHLToDE
 	xor a
 	ld [wNameBuffer], a
-	bank1call SendCard
+	farcall SendCard
 	ret c
 	call EnableSRAM
 	ld hl, wCurDeckCards
@@ -79,7 +79,7 @@ GiftCenter_ReceiveCard:
 	xor a
 	ld [wDuelTempList], a
 	ld [wNameBuffer], a
-	bank1call ReceiveCard
+	farcall ReceiveCard
 	ret c
 
 	call EnableSRAM
@@ -220,7 +220,7 @@ GiftCenter_SendDeck:
 
 	xor a
 	ld [wNameBuffer], a
-	bank1call SendDeckConfiguration
+	farcall SendDeckConfiguration
 	ret c
 
 	call GetSelectedSavedDeckPtr
@@ -279,7 +279,7 @@ GiftCenter_ReceiveDeck:
 	xor a
 	ld [wDuelTempList], a
 	ld [wNameBuffer], a
-	bank1call ReceiveDeckConfiguration
+	farcall ReceiveDeckConfiguration
 	ret c
 	call EnableSRAM
 	ld hl, wDuelTempList

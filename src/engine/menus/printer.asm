@@ -1,5 +1,5 @@
 HandlePrinterMenu:
-	bank1call PreparePrinterConnection
+	farcall PreparePrinterConnection
 	ret c
 	xor a
 .loop
@@ -204,7 +204,7 @@ PrinterMenu_PokemonCards:
 	ld b, $00
 	add hl, bc
 	ld a, [hl]
-	bank1call RequestToPrintCard
+	farcall RequestToPrintCard
 	call PrintPlayersCardsHeaderInfo
 	jp .asm_ac37
 
@@ -287,7 +287,7 @@ PrinterMenu_DeckConfiguration:
 	ld [wCurDeckCards + DECK_SIZE], a
 	call SortCurDeckCardsByID
 	ld a, [wSelectedDeckMachineEntry]
-	bank1call PrintDeckConfiguration
+	farcall PrintDeckConfiguration
 	call ClearScreenAndDrawDeckMachineScreen
 
 .no
@@ -322,7 +322,7 @@ PrinterMenu_CardList:
 	ldh a, [hffb3]
 	or a
 	ret nz
-	bank1call PrintCardList
+	farcall PrintCardList
 	ret
 
 

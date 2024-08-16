@@ -6,6 +6,7 @@
 ;   $1 = Squirtle
 ;   $2 = Bulbasaur
 _AddStarterDeck:
+AddStarterDeck::
 	add a
 	ld e, a
 	ld d, 0
@@ -61,7 +62,7 @@ _AddStarterDeck:
 ; clears saved data (card Collection/saved decks/Card Pop! data/etc)
 ; then adds the starter decks as saved decks
 ; marks all cards in Collection as not owned
-InitSaveData:
+InitSaveData::
 ; clear card and deck save data
 	call EnableSRAM
 	ld a, PLAYER_TURN

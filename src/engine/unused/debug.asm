@@ -52,7 +52,7 @@ DebugCreateBoosterPack:
 	ld a, [hl]
 	add e
 	farcall GenerateBoosterPack
-	bank1call OpenBoosterPack
+	farcall OpenBoosterPack
 .cancel
 	scf
 	ret
