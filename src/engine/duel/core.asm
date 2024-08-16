@@ -7741,9 +7741,8 @@ Func_6fa5:
 	ldtx hl, TookAllThePrizesText
 	call DrawWideTextBox_WaitForInput
 	call ExchangeRNG
-	call SwapTurn
 	scf
-	ret
+	jp SwapTurn
 
 
 ; returns in wNumberPrizeCardsToTake the number of Pokemon in the turn holder's

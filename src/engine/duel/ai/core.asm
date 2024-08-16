@@ -1733,19 +1733,17 @@ LookForCardThatIsKnockedOutOnDevolution:
 	cp b
 	jr nz, .loop
 
-	call SwapTurn
 	pop af
 	ldh [hTempPlayAreaLocation_ff9d], a
 	or a
-	ret
+	jp SwapTurn
 
 .set_carry
-	call SwapTurn
 	pop af
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld a, c
 	scf
-	ret
+	jp SwapTurn
 
 ; returns carry if the following conditions are met:
 ;	- arena card HP >= half max HP

@@ -20,14 +20,12 @@ CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 	jr nz, .loop_deck
 
 ; no carry
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 .not_mewtwo1
-	call SwapTurn
 	scf
-	ret
+	jp SwapTurn
 
 ; lists in wDuelTempList all the basic energy cards
 ; in card location of a.

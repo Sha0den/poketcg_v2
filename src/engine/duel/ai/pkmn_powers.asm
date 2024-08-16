@@ -942,9 +942,8 @@ HandleAICurse:
 	jr nz, .loop_play_area_2
 
 .failed
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 .use_curse
 	ld a, e

@@ -1518,10 +1518,9 @@ ENDR
 	ld a, [wIsSwapTurnPending]
 	or a
 	jr z, .dont_swap
-	call SwapTurn
 	ld a, [wce5c]
 	or %10000000
-	ret
+	jp SwapTurn
 .dont_swap
 	ld a, [wce5c]
 	ret

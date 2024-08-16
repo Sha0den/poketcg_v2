@@ -1509,14 +1509,12 @@ AIDecide_EnergyRemoval:
 	call PickAttachedEnergyCardToRemove
 	ld [wce1a], a
 	pop af
-	call SwapTurn
 	scf
-	ret
+	jp SwapTurn
 
 .no_carry
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 ; returns carry if this card has any energy cards attached
 .CheckIfCardHasEnergyAttached
@@ -1779,9 +1777,8 @@ AIDecide_SuperEnergyRemoval:
 	or a
 	jr nz, .pick_energy
 .no_carry
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 ; returns carry if the number of energy cards attached
 ; is fewer than 2, or if all energy combined yields

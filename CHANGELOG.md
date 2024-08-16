@@ -76,6 +76,11 @@
 
 
 ## Code Optimization
+- **August 16, 2024:** 7 Files Changed
+    - Replace numerous instances of "call SwapTurn/ret" with "jp SwapTurn"
+
+<br/>
+
 - **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/27f907125c4291fe9d8715094d38730daca9ab86):** 19 Files Changed
     - Eliminate some redundant bank 1 functions (mainly from engine/menus/common.asm)
 
@@ -693,7 +698,7 @@
 
 
 ## Potential Hacks
-- **[August 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/62a73e33e60c8e5b61d477bb1b9f0f675def074c):** Only Need to Change 1 File
+- **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/2843d5458f802c3b1b918b8b04b6d6f30d46e005):** Only Need to Change 1 File
     - Instructions for giving the Player a full card collection (credit to Oats)
 
 <br/>

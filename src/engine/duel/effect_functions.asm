@@ -287,14 +287,12 @@ DefendingPokemon_AttackCheck:
 	or [hl]
 	jr nz, .has_attack
 ; has no attack
-	call SwapTurn
 	ldtx hl, NoAttackMayBeChosenText
 	scf
-	ret
+	jp SwapTurn
 .has_attack
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 
 ; preserves bc and de
@@ -2377,14 +2375,12 @@ HandleDefendingPokemonAttackSelection:
 	ld d, [hl]
 	inc hl
 	ld e, [hl]
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 .set_carry
-	call SwapTurn
 	scf
-	ret
+	jp SwapTurn
 
 .open_atk_page
 	ldh a, [hCurMenuItem]
@@ -2887,16 +2883,14 @@ DiscardEnergyDefendingPokemon_PlayerSelection:
 	bank1call HandleEnergyDiscardMenuInput
 	jr c, .loop_input ; must choose, B button can't be used to exit
 
-	call SwapTurn
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a ; store selected card to discard
-	ret
+	jp SwapTurn
 
 .no_energy
-	call SwapTurn
 	ld a, $ff
 	ldh [hTemp_ffa0], a
-	ret
+	jp SwapTurn
 ;
 ;Alt_DiscardEnergyDefendingPokemon_PlayerSelection:
 ;	call SwapTurn
@@ -2918,17 +2912,15 @@ DiscardEnergyDefendingPokemon_PlayerSelection:
 ;	bank1call HandleEnergyDiscardMenuInput
 ;	jr c, .loop_input ; must choose, B button can't be used to exit
 ;
-;	call SwapTurn
 ;	ldh a, [hTempCardIndex_ff98]
 ;	ldh [hTemp_ffa0], a ; store selected card to discard
-;	ret
+;	jp SwapTurn
 ;
 ;.no_energy
-;	call SwapTurn
 ;	ld a, $ff
 ;	ldh [hTemp_ffa0], a
 ;	or a
-;	ret
+;	jp SwapTurn
 
 
 ; output:
@@ -3232,10 +3224,9 @@ SwitchDefendingPokemon_SwitchEffect:
 	ld e, a
 	call HandleNShieldAndTransparency
 	call nc, SwapArenaWithBenchPokemon
-	call SwapTurn
 	xor a
 	ld [wDuelDisplayedScreen], a
-	ret
+	jp SwapTurn
 
 
 ; identical to SwitchDefendingPokemon_PlayerSelection
@@ -3859,7 +3850,6 @@ DefendingPokemonEnergyDamageMultiplier:
 	cp DECK_SIZE
 	jr c, .loop
 
-	call SwapTurn
 	ld l, c
 	ld h, $00
 	ld b, $00
@@ -3869,7 +3859,7 @@ DefendingPokemonEnergyDamageMultiplier:
 	add hl, hl ; hl = 10 * c
 	ld e, l
 	ld d, h
-	ret
+	jp SwapTurn
 
 
 ; sets attack damage to 10 times the amount of Energy attached to the Defending Pokemon
@@ -5010,10 +5000,9 @@ AlsoDamageTo3Benched_PlayerSelection:
 	call GetTurnDuelistVariable
 	cp 2
 	jr nc, .has_bench
-	call SwapTurn
 	ld a, $ff
 	ldh [hTempList], a
-	ret
+	jp SwapTurn
 
 .has_bench
 	ldtx hl, ChooseUpTo3PkmnOnBenchToGiveDamageText
@@ -5082,10 +5071,9 @@ AlsoDamageTo3Benched_PlayerSelection:
 	ldh a, [hKeysPressed]
 	and B_BUTTON
 	jr nz, .try_cancel
-	call SwapTurn
 	call GetNextPositionInTempList
 	ld [hl], $ff ; terminating byte
-	ret
+	jp SwapTurn
 
 .try_cancel
 	ldh a, [hCurSelectionItem]
@@ -7181,15 +7169,13 @@ Curse_PlayerSelection:
 	ld b, SYM_SPACE
 	call DrawSymbolOnPlayAreaCursor
 	call EraseCursor
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 ; returns carry if the operation was cancelled
 .cancel
-	call SwapTurn
 	scf
-	ret
+	jp SwapTurn
 
 
 ; transfers a damage counter between 2 of the opponent's Pokemon
@@ -7872,9 +7858,8 @@ SuperEnergyRemoval_PlayerSelection:
 .done
 	call GetNextPositionInTempList
 	ld [hl], $ff
-	call SwapTurn
 	or a
-	ret
+	jp SwapTurn
 
 
 ; discards a given Energy card from a given Pokemon in the turn holder's play area,
@@ -8829,10 +8814,9 @@ PokemonFlute_PlayerSelection:
 	ldtx de, OpponentsDiscardPileText
 	call SetCardListHeaderText
 	bank1call DisplayCardList
-	call SwapTurn
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
-	ret
+	jp SwapTurn
 
 
 ; puts a Pokemon from the opponent's discard pile onto their Bench
