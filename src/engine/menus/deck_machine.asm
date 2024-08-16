@@ -914,14 +914,12 @@ CheckIfHasEnoughCardsToBuildDeck:
 
 .set_carry
 	pop hl
-	call DisableSRAM
 	scf
-	ret
+	jp DisableSRAM
 
 .no_carry
-	call DisableSRAM
 	or a
-	ret
+	jp DisableSRAM
 
 
 ; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM.

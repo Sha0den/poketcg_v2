@@ -197,9 +197,8 @@ DebugDuelMode:
 	jr nz, .input_loop
 	and $01
 	ld [sDebugDuelMode], a
-	call DisableSRAM
 	scf
-	ret
+	jp DisableSRAM
 
 Unknown_12908:
 	db 10, 0 ; start menu coordinates

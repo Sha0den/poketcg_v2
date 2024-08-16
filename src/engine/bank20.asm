@@ -311,8 +311,7 @@ CopyBGDataToVRAMOrSRAM:
 	jr nz, .loop
 	pop af
 	call BankswitchSRAM
-	call DisableSRAM
-	ret
+	jp DisableSRAM
 
 
 ; safely copies $20 bytes at a time
@@ -364,11 +363,10 @@ SafelyCopyBGMapFromSRAMToVRAM:
 	jr nz, .loop
 	pop af
 	call BankswitchSRAM
-	call DisableSRAM
 	pop de
 	pop bc
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; clears sGfxBuffer0 and sGfxBuffer1
@@ -386,10 +384,9 @@ ClearSRAMBGMaps:
 	call FillMemoryWithA
 	pop af
 	call BankswitchSRAM
-	call DisableSRAM
 	pop bc
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; preserves bc and de

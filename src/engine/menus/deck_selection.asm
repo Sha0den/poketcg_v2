@@ -18,9 +18,8 @@ CopyDeckFromSRAM:
 	jr nz, .loop
 	xor a
 	ld [hl], a
-	call DisableSRAM
 	pop bc
-	ret
+	jp DisableSRAM
 
 
 ; clears some WRAM addresses to act as terminator bytes

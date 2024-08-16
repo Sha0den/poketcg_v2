@@ -37,10 +37,9 @@ GetAmountOfCardsOwned::
 .skip_card
 	inc e
 	jr nz, .next_card ; assumes sCardCollection is $100 bytes long (CARD_COLLECTION_SIZE)
-	call DisableSRAM
 	pop bc
 	pop de
-	ret
+	jp DisableSRAM
 
 
 ; preserves all registers except af
@@ -186,11 +185,10 @@ AddCardToCollection::
 	inc a
 	ld [hl], a
 .already_max
-	call DisableSRAM
 	pop bc
 	pop de
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; removes a card with ID given in a from sCardCollection (decrement its count if non-0)
@@ -208,9 +206,8 @@ RemoveCardFromCollection::
 	dec a
 	ld [hl], a
 .zero
-	call DisableSRAM
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; preserves bc and hl
@@ -241,6 +238,5 @@ GetCardAlbumProgress::
 .skip
 	inc l
 	jr nz, .next_card ; assumes sCardCollection is $100 bytes long (CARD_COLLECTION_SIZE)
-	call DisableSRAM
 	pop hl
-	ret
+	jp DisableSRAM

@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 16, 2024:** 7 Files Changed
+- **August 16, 2024:** 10 Files Changed
+    - Replace numerous instances of "call DisableSRAM/ret" with "jp SwapTurn"
+
+<br/>
+
+- **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/ce71442afc97cd8bcdf2a3cfb4dbed17d723717e):** 7 Files Changed
     - Replace numerous instances of "call SwapTurn/ret" with "jp SwapTurn"
 
 <br/>
@@ -382,10 +387,21 @@
 
 
 ## Miscellaneous Changes
+- **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/d7050ca9cd207220c60d520d1c2f70f2175eb35c):** 3 Files Changed
+    - Make the phantom cards (Venusaur Lv64 and Mew Lv15) obtainable without using Card Pop! by adding them to the list of possible Challenge Cup prizes
+
+<br/>
+
 - **[August 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/576581a7aac4bb8e1da6ab8c1076aabbe927e3fb):** 8 Files Changed
     - Create engine/menus/gift_center.core.asm and move gift center functions in engine/menus/deck_configuration and engine/menu/deck_machine.asm to the new file
     - Organize functions in engine/menus/printer.asm (after importing PrinterMenu_DeckConfiguration)
     - Move and label unrelated menu parameter data from engine/menus/gift_center.asm to engine/menus/labels.asm
+
+<br/>
+
+- **[August 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/3fa4a8c98343049ee5e2505aae7168b8353c1a9f):** 6 Files Changed
+    - Pokedex numbers now use 2 bytes to support Pokemon from all generations
+    - Although, the printing function will have to be edited if it exceeds 3 digits (1,000+)
 
 <br/>
 
@@ -569,17 +585,6 @@
 
 
 ## New Features
-- **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/d7050ca9cd207220c60d520d1c2f70f2175eb35c):** 3 Files Changed
-    - Make the phantom cards (Venusaur Lv64 and Mew Lv15) obtainable without using Card Pop! by adding them to the list of possible Challenge Cup prizes
-
-<br/>
-
-- **[August 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/3fa4a8c98343049ee5e2505aae7168b8353c1a9f):** 6 Files Changed
-    - Pokedex numbers now use 2 bytes to support Pokemon from all generations
-    - Although, the printing function will have to be edited if it exceeds 3 digits (1,000+)
-
-<br/>
-
 - **[June 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/3cccfcb07e93fa73d4bc0ab4978a295d98321e4a):** 2 Files Changed
     - Display lowercase halfwidth font characters
     - Increase size of half_width.png to account for future additions

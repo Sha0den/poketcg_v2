@@ -70,9 +70,8 @@ AddGiftCenterDeckCardsToCollection:
 	dec d
 	jr nz, .loop_deck
 .done
-	call DisableSRAM
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; adds all cards in the deck at hl to the player's collection
@@ -816,9 +815,8 @@ DismantleDeck:
 	ld a, DECK_SIZE
 	call ClearNBytesFromHL
 .done_dismantle
-	call DisableSRAM
 	add sp, $2
-	ret
+	jp DisableSRAM
 
 
 ; output:
@@ -891,9 +889,8 @@ CheckIfCurrentDeckWasChanged:
 	jp DisableSRAM
 
 .set_carry
-	call DisableSRAM
 	scf
-	ret
+	jp DisableSRAM
 
 
 ; preserves de
@@ -1191,13 +1188,11 @@ IsCardInAnyDeck:
 	dec b
 	jr nz, .loop
 ; not found
-	call DisableSRAM
 	scf
-	ret
+	jp DisableSRAM
 .not_found
-	call DisableSRAM
 	or a
-	ret
+	jp DisableSRAM
 
 
 ; preserves all registers

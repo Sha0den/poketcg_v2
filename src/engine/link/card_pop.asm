@@ -163,9 +163,8 @@ HandleCardPopCommunications:
 	ld [hli], a
 	dec c
 	jr nz, .loop_write_name
-	call DisableSRAM
 	or a
-	ret
+	jp DisableSRAM
 
 .fail
 	ldtx hl, ThePopWasntSuccessfulText
@@ -217,9 +216,8 @@ LookUpNameInCardPopNameList:
 	ld a, $ff
 	scf
 .no_carry
-	call DisableSRAM
 	ld [wCardPopNameSearchResult], a ; $00 if name was not found, $ff otherwise
-	ret
+	jp DisableSRAM
 
 ; compares the names in hl and de
 ; output:

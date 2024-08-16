@@ -229,9 +229,8 @@ GiftCenter_SendDeck:
 	ld de, wDefaultText
 	call EnableSRAM
 	call CopyListFromHLToDE
-	call DisableSRAM
 	or a
-	ret
+	jp DisableSRAM
 
 
 GiftCenter_ReceiveDeck:
@@ -309,9 +308,8 @@ GiftCenter_ReceiveDeck:
 	ld de, wDefaultText
 	call EnableSRAM
 	call CopyListFromHLToDE
-	call DisableSRAM
 	xor a
-	ret
+	jp DisableSRAM
 
 
 ; initializes WRAM variables to start creating a deck configuration to send

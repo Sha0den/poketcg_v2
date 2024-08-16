@@ -507,11 +507,10 @@ Func_12ba7:
 	call CopyDataHLtoDE
 	ld a, [wSpriteVRAMBufferSize]
 	ld [de], a
-	call DisableSRAM
 	pop de
 	pop bc
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; copies sprite data back into WRAM from SRAM
@@ -530,11 +529,10 @@ Func_12bcd:
 	call CopyDataHLtoDE
 	ld a, [hl]
 	ld [wSpriteVRAMBufferSize], a
-	call DisableSRAM
 	pop de
 	pop bc
 	pop hl
-	ret
+	jp DisableSRAM
 
 
 ; clears wSpriteVRAMBufferSize and wSpriteVRAMBuffer

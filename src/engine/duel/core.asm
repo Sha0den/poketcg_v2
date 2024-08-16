@@ -6349,9 +6349,8 @@ ValidateSavedDuelData:
 .no_saved_data
 	scf
 .ok
-	call DisableSRAM
 	pop de
-	ret
+	jp DisableSRAM
 
 
 ; discards the data of a duel that was saved by SaveDuelData, by setting the first byte
