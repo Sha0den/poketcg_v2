@@ -45,7 +45,7 @@
 <br/>
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/2a907f7c823e298803449fb872d10db0aff2d1d6):** 1 File Changed
-    - Fix the AI not checking the Unable_Retreat substatus before retreating
+    - Fix the AI not checking the Unable_Retreat substatus before retreating (credit to Oats)
 
 <br/>
 
@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 16, 2024:** 19 Files Changed
+- **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/27f907125c4291fe9d8715094d38730daca9ab86):** 19 Files Changed
     - Eliminate some redundant bank 1 functions (mainly from engine/menus/common.asm)
 
 <br/>
@@ -594,7 +594,7 @@
 <br/>
 
 - **[May 10, 2024](https://github.com/Sha0den/improvedpoketcg/commit/13c38116fc85504d9e05b68de8133275213f6173):** 1 File Changed
-    - Add a scroll arrow to a Trainer or Pokémon attack card page when the description is continued on another page
+    - Add a scroll arrow to a Trainer or Pokémon attack card page when the description is continued on another page (credit to Oats)
 
 <br/>
 
@@ -693,6 +693,11 @@
 
 
 ## Potential Hacks
+- **[August 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/62a73e33e60c8e5b61d477bb1b9f0f675def074c):** Only Need to Change 1 File
+    - Instructions for giving the Player a full card collection (credit to Oats)
+
+<br/>
+
 - **[May 14, 2024](https://github.com/Sha0den/improvedpoketcg/commit/62a73e33e60c8e5b61d477bb1b9f0f675def074c):** Only Need to Change 1 File
     - Instructions for skipping the mandatory practice duel with Sam
     - This is less relevant now that the practice duel is optional
