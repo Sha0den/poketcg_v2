@@ -682,8 +682,14 @@ HandleDestinyBondSubstatus::
 	ret z
 	ld [hl], 0
 	push hl
-	bank1call DrawDuelMainScene
-	bank1call DrawDuelHUDs
+	ldh a, [hBankROM]
+	push af
+	ld a, BANK(DrawDuelMainScene)
+	rst BankswitchROM
+	call DrawDuelMainScene
+	call DrawDuelHUDs ; also in bank $01
+	pop af
+	rst BankswitchROM
 	pop hl
 	ld l, DUELVARS_ARENA_CARD
 	ld a, [hl]

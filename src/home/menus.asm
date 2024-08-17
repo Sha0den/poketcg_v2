@@ -697,8 +697,15 @@ CardSymbolTable::
 ;	a = length in number of tiles (the resulting string will be padded with spaces to match it)
 ;	wLoadedCard1 = contains a card_data_struct
 CopyCardNameAndLevel::
-	farcall _CopyCardNameAndLevel
-	ret
+	ld h, a
+	ldh a, [hBankROM]
+	push af
+	ld a, BANK(_CopyCardNameAndLevel)
+	rst BankswitchROM
+	ld a, h
+	call _CopyCardNameAndLevel
+	pop af
+	jp BankswitchROM
 
 
 ; sets cursor parameters for navigating in a text box, but using

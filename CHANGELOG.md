@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 17, 2024:** 26 Files Changed
+- **August 17, 2024:** 4 Files Changed
+    - Use in-lined bank switches instead of farcalls for a few home bank functions and do the opposite for a couple of rarely used functions that are related to Mankey's Peek
+
+<br/>
+
+- **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f8ae74bb130f69e77980961ec34160fae067097a):** 26 Files Changed
     - Make 'BankSwitchROM' a restart vector and replace each "call" with "rst" (you could also replace each "jp" with "rst" and a "ret" to free up even more space in the home bank, at the cost of 4 cycles per byte saved)
 
 <br/>

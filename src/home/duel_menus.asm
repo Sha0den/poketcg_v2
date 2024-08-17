@@ -55,27 +55,14 @@ DrawPlayersPrizeAndBenchCards::
 
 
 HandlePeekSelection::
-	ldh a, [hBankROM]
-	push af
-	ld a, BANK(_HandlePeekSelection)
-	rst BankswitchROM
-	call _HandlePeekSelection
-	ld b, a
-	pop af
-	rst BankswitchROM
-	ld a, b
+	farcall _HandlePeekSelection
 	ret
 
 
 DrawAIPeekScreen::
 	ld b, a
-	ldh a, [hBankROM]
-	push af
-	ld a, BANK(_DrawAIPeekScreen)
-	rst BankswitchROM
-	call _DrawAIPeekScreen
-	pop af
-	jp BankswitchROM
+	farcall _DrawAIPeekScreen
+	ret
 
 
 ; input:

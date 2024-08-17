@@ -101,12 +101,14 @@ GameEvent_GiftCenter::
 	call PauseSong
 	ld a, MUSIC_CARD_POP
 	call PlaySong
+	ld a, BANK(HandleGiftCenter)
+	rst BankswitchROM
 	ld a, GAME_EVENT_GIFT_CENTER
 	ld [wActiveGameEvent], a
 	ld a, [wGiftCenterChoice]
 	or $10
 	ld [wGiftCenterChoice], a
-	farcall HandleGiftCenter
+	call HandleGiftCenter
 	ld a, [wGiftCenterChoice]
 	and $ef
 	ld [wGiftCenterChoice], a
