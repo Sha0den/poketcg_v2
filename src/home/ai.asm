@@ -36,7 +36,7 @@ AIDoAction::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(DeckAIPointerTable)
-	call BankswitchROM
+	rst BankswitchROM
 
 ; load hl with the corresponding pointer
 	ld a, [wOpponentDeckID]
@@ -67,6 +67,6 @@ AIDoAction::
 .done
 	ld c, a
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, c
 	ret

@@ -23,10 +23,10 @@ TimerHandler::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(SoundTimerHandler)
-	call BankswitchROM
+	rst BankswitchROM
 	call SoundTimerHandler
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	; clear in-timer flag
 	ld hl, wReentrancyFlag
 	res IN_TIMER, [hl]

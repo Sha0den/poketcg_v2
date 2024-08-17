@@ -76,8 +76,13 @@
 
 
 ## Code Optimization
-- **August 17, 2024:** 28 Files Changed
-    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Save-space-and-improve-performance-with-RST-vectors) to add an rst for 'GetTurnDuelistVariable'
+- **August 17, 2024:** 26 Files Changed
+    - Make 'BankSwitchROM' a restart vector and replace each "call" with "rst" (you could also replace each "jp" with "rst" and a "ret" to free up even more space in the home bank, at the cost of 4 cycles per byte saved)
+
+<br/>
+
+- **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/aa5f126fcf7589bd10738cf0bb732f05b4624dfe):** 28 Files Changed
+    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Save-space-and-improve-performance-with-RST-vectors) to make 'GetTurnDuelistVariable' a restart vector and replace each "call GetTurnDuelistVariable" with an rst macro
 
 <br/>
 

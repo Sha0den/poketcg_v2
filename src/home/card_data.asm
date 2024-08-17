@@ -219,7 +219,7 @@ LoadCardGfx::
 	srl h
 	ld a, BANK(CardGraphics)
 	add h
-	call BankswitchROM
+	rst BankswitchROM
 	pop hl
 	; once we have the bank, get the pointer: multiply by 8 and discard the bank offset
 	add hl, hl

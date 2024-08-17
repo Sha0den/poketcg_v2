@@ -8,7 +8,7 @@ Start::
 	ldh [rIE], a
 	call ZeroRAM
 	ld a, $1
-	call BankswitchROM
+	rst BankswitchROM
 	xor a
 	call BankswitchSRAM
 	call BankswitchVRAM0
@@ -27,6 +27,6 @@ Start::
 	call CopyDMAFunction
 	call ValidateSRAM
 	ld a, BANK(GameLoop)
-	call BankswitchROM
+	rst BankswitchROM
 	ld sp, $e000
 	jp GameLoop

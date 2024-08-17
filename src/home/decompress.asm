@@ -170,7 +170,7 @@ DecompressDataFromBank::
 	ldh a, [hBankROM]
 	push af
 	ld a, [wTempPointerBank]
-	call BankswitchROM
+	rst BankswitchROM
 	call DecompressData
 	pop af
 	jp BankswitchROM

@@ -99,7 +99,7 @@ CountLinesOfTextFromID::
 	jr .char_loop
 .end
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, c
 	inc a
 	pop bc
@@ -265,7 +265,7 @@ ReadTextHeader::
 	ld a, [hli]
 	ld [wFontWidth], a
 	ld a, [hli]
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -446,7 +446,7 @@ GetTextOffsetFromTextID::
 	add hl, de
 	set 6, h ; hl = (hl * 3) + $4000
 	ld a, BANK(TextOffsets)
-	call BankswitchROM
+	rst BankswitchROM
 	ld e, [hl]
 	inc hl
 	ld d, [hl]
@@ -458,7 +458,7 @@ GetTextOffsetFromTextID::
 	rl h
 	rla
 	add BANK("Text 1")
-	call BankswitchROM
+	rst BankswitchROM
 	res 7, d
 	set 6, d ; $4000 ≤ de ≤ $7fff
 	ld l, e
@@ -570,7 +570,7 @@ CopyText::
 	or a
 	jr nz, .next_tile_loop
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	dec de
 	ret
 .special

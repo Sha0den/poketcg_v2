@@ -35,7 +35,7 @@ BankpushROM::
 	pop de
 	pop af
 	add b
-	call BankswitchROM
+	rst BankswitchROM
 	pop bc
 	ret
 
@@ -68,7 +68,7 @@ BankpushROM2::
 	ld h, d
 	pop de
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop bc
 	ret
 
@@ -80,7 +80,7 @@ BankpopROM::
 	push de
 	ld hl, sp+$7
 	ld a, [hld]
-	call BankswitchROM
+	rst BankswitchROM
 	dec hl
 	ld d, [hl]
 	dec hl
@@ -93,14 +93,4 @@ BankpopROM::
 	pop de
 	pop hl
 	pop af
-	ret
-
-
-; switches ROM bank to a
-; preserves all registers
-; input:
-;	a = ROM bank to use
-BankswitchROM::
-	ldh [hBankROM], a
-	ld [MBC3RomBank], a
 	ret

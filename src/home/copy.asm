@@ -185,7 +185,7 @@ CopyBankedDataToDE::
 	push af
 	push hl
 	ld a, [wTempPointerBank]
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [wTempPointer]
 	ld l, a
 	ld a, [wTempPointer + 1]

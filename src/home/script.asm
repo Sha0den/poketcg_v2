@@ -7,10 +7,10 @@ HandleMoveModeAPress::
 	call GetMapScriptPointer
 	jr nc, .handleSecondAPressScript
 	ld a, BANK(FindPlayerMovementFromDirection)
-	call BankswitchROM
+	rst BankswitchROM
 	call FindPlayerMovementFromDirection
 	ld a, BANK(MapScripts)
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [wPlayerDirection]
 	ld d, a
 .findAPressMatchLoop
@@ -42,7 +42,7 @@ HandleMoveModeAPress::
 	pop hl
 	pop bc
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	scf
 	ret
 .noMatch
@@ -53,7 +53,7 @@ HandleMoveModeAPress::
 	jr .findAPressMatchLoop
 .handleSecondAPressScript
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	ld l, MAP_SCRIPT_PRESSED_A
 	jp CallMapScriptPointerIfExists ; this function is in Bank $03
 
@@ -81,12 +81,12 @@ GetMapScriptPointer::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(MapScripts)
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, l
 	or h
 	jr nz, .asm_3ae5
@@ -131,12 +131,12 @@ RunOverworldScript::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(OverworldScriptTable)
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop bc
 	jp hl
 
@@ -146,7 +146,7 @@ ResetAnimationQueue::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(_ResetAnimationQueue)
-	call BankswitchROM
+	rst BankswitchROM
 	call _ResetAnimationQueue
 	pop af
 	jp BankswitchROM
@@ -157,7 +157,7 @@ FinishQueuedAnimations::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(ClearAndDisableQueuedAnimations)
-	call BankswitchROM
+	rst BankswitchROM
 	call ClearAndDisableQueuedAnimations
 	jr c, .skip_clear_frame_func
 	xor a
@@ -178,7 +178,7 @@ FinishQueuedAnimations::
 ;	ldh a, [hBankROM]
 ;	push af
 ;	ld a, BANK(_GameLoop)
-;	call BankswitchROM
+;	rst BankswitchROM
 ;	call _GameLoop
 ;	pop af
 ;	jp BankswitchROM

@@ -1020,7 +1020,7 @@ SetCardListInfoBoxText::
 ;
 ;ContinueDuel::
 ;	ld a, BANK(_ContinueDuel)
-;	call BankswitchROM
+;	rst BankswitchROM
 ;	jp _ContinueDuel
 ;
 ;

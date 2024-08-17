@@ -38,7 +38,7 @@ PlayDuelAnimation::
 	push bc
 	push de
 	ld a, BANK(LoadDuelAnimationToBuffer)
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [wTempAnimation]
 	cp DUEL_SPECIAL_ANIMS
 	jr nc, .load_buffer
@@ -69,7 +69,7 @@ UpdateQueuedAnimations::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(_UpdateQueuedAnimations)
-	call BankswitchROM
+	rst BankswitchROM
 	call _UpdateQueuedAnimations
 	call HandleAllSpriteAnimations
 	pop af
@@ -82,11 +82,11 @@ Func_3bb5::
 	ldh a, [hBankROM]
 	push af
 	ld a, [wDuelAnimReturnBank]
-	call BankswitchROM
+	rst BankswitchROM
 	call HandleAllSpriteAnimations
 	call CallHL
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, $80
 	ld [wd4c0], a
 	ret

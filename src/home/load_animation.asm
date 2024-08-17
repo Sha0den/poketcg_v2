@@ -14,7 +14,7 @@ ClearSpriteAnimations::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(_ClearSpriteAnimations)
-	call BankswitchROM
+	rst BankswitchROM
 	call _ClearSpriteAnimations
 	pop af
 	jp BankswitchROM
@@ -25,7 +25,7 @@ HandleAllSpriteAnimations::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(_HandleAllSpriteAnimations)
-	call BankswitchROM
+	rst BankswitchROM
 	call _HandleAllSpriteAnimations
 	pop af
 	jp BankswitchROM
@@ -38,7 +38,7 @@ DrawSpriteAnimationFrame::
 	ldh a, [hBankROM]
 	push af
 	ld a, [wCurrSpriteFrameBank]
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [wCurrSpriteXPos]
 	cp $f0
 	ld a, 0
@@ -169,7 +169,7 @@ GetAnimationFramePointer::
 	ld a, [wTempPointer + 1]
 	ld h, a
 	ld a, [wTempPointerBank]
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [hli]
 
 	push af
@@ -190,7 +190,7 @@ GetAnimationFramePointer::
 	ld bc, SPRITE_ANIM_FRAME_BANK
 	add hl, bc
 	ld [hli], a
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [de]
 	ld [hli], a
 	inc de
@@ -261,14 +261,14 @@ LoadScene::
 	push af
 	push hl
 	ld a, BANK(_LoadScene)
-	call BankswitchROM
+	rst BankswitchROM
 	ld hl, sp+$5
 	ld a, [hl]
 	call _LoadScene
 	call FlushAllPalettes
 	pop hl
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop af
 	ld a, [wSceneSpriteIndex]
 	ret
@@ -292,7 +292,7 @@ DrawPortrait::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(_DrawPortrait)
-	call BankswitchROM
+	rst BankswitchROM
 	call _DrawPortrait
 	pop af
 	jp BankswitchROM
@@ -314,7 +314,7 @@ Func_3e31::
 	push af
 	call HandleAllSpriteAnimations
 	ld a, BANK(DoLoadedFramesetSubgroupsFrame)
-	call BankswitchROM
+	rst BankswitchROM
 	call DoLoadedFramesetSubgroupsFrame
 	pop af
 	jp BankswitchROM

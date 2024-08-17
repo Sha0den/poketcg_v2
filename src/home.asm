@@ -21,8 +21,15 @@ GetTurnDuelistVariable::
 	ds 2
 
 SECTION "rst10", ROM0
+; switches ROM bank to a
+; preserves all registers
+; input:
+;	a = ROM bank to use
+BankswitchROM::
+	ldh [hBankROM], a
+	ld [MBC3RomBank], a
 	ret
-	ds 7
+	ds 2
 
 SECTION "rst18", ROM0
 	jp Bank1Call

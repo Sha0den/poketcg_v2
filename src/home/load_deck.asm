@@ -12,7 +12,7 @@ LoadDeck::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(DeckPointers)
-	call BankswitchROM
+	rst BankswitchROM
 	add hl, hl
 	ld de, DeckPointers
 	add hl, de
@@ -24,13 +24,13 @@ LoadDeck::
 	jr z, .null_pointer
 	call CopyDeckData
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop hl
 	or a
 	ret
 .null_pointer
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop hl
 	scf
 	ret

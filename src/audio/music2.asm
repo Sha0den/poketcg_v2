@@ -168,8 +168,7 @@ Music2_Update:
 	ld hl, SFX_UpdateSFX
 	call Bankswitch3dTo3f
 	ld a, [wCurSongBank]
-	ldh [hBankROM], a
-	ld [MBC3RomBank], a
+	rst BankswitchROM
 	ld a, [wddf2]
 	cp $0
 	jr z, .update_channels
@@ -254,8 +253,7 @@ Music2_BeginSong:
 	add hl, bc
 	ld a, [hl]
 	ld [wCurSongBank], a
-	ldh [hBankROM], a
-	ld [MBC3RomBank], a
+	rst BankswitchROM
 	pop af
 	add a
 	ld c, a

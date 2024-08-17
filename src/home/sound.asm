@@ -126,7 +126,7 @@ Func_37a5::
 	srl h
 	ld a, BANK(CardGraphics)
 	add h
-	call BankswitchROM
+	rst BankswitchROM
 	pop hl
 	add hl, hl
 	add hl, hl

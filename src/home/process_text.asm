@@ -670,7 +670,7 @@ CreateHalfWidthFontTile::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(HalfWidthFont)
-	call BankswitchROM
+	rst BankswitchROM
 	; write the right half of the tile (first character) to wTextTileBuffer + 2n
 	push de
 	ld a, e

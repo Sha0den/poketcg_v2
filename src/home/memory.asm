@@ -10,13 +10,13 @@ GetFarByte::
 	push hl
 	ld hl, sp+$05
 	ld a, [hl]
-	call BankswitchROM
+	rst BankswitchROM
 	pop hl
 	ld a, [hl]
 	ld hl, sp+$03
 	ld [hl], a
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop af
 	pop hl
 	ret

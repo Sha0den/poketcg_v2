@@ -39,7 +39,7 @@ VBlankHandler::
 	res IN_VBLANK, [hl]
 .done
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	pop hl
 	pop de
 	pop bc

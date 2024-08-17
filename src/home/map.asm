@@ -6,15 +6,15 @@ OverworldDoFrameFunction::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(SetScreenScrollWram)
-	call BankswitchROM
+	rst BankswitchROM
 	call SetScreenScrollWram
 	call Func_c554 ; this function is also in Bank $03
 	ld a, BANK(HandleAllNPCMovement)
-	call BankswitchROM
+	rst BankswitchROM
 	call HandleAllNPCMovement
 	call HandleAllSpriteAnimations
 	ld a, BANK(DoLoadedFramesetSubgroupsFrame)
-	call BankswitchROM
+	rst BankswitchROM
 	call DoLoadedFramesetSubgroupsFrame
 	call UpdateRNGSources
 	pop af
@@ -112,7 +112,7 @@ GameEvent_GiftCenter::
 	ld [wGiftCenterChoice], a
 	call ResumeSong
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	scf
 	ret
 
@@ -248,7 +248,7 @@ CopyGfxDataFromTempBank::
 	ldh a, [hBankROM]
 	push af
 	ld a, [wTempPointerBank]
-	call BankswitchROM
+	rst BankswitchROM
 	call CopyGfxData
 	pop af
 	jp BankswitchROM
@@ -294,7 +294,7 @@ HandleMapWarp::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(_HandleMapWarp)
-	call BankswitchROM
+	rst BankswitchROM
 	call _HandleMapWarp
 	pop af
 	jp BankswitchROM
@@ -383,11 +383,11 @@ GetNextNPCMovementByte::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(ExecuteNPCMovement)
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, [bc]
 	ld c, a
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	ld a, c
 	pop bc
 	ret

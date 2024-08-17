@@ -4,14 +4,11 @@ SECTION "Audio Callback", ROM0
 Bankswitch3dTo3f::
 	push af
 	ld a, $3f
-	ldh [hBankROM], a
-	ld [MBC3RomBank], a
+	rst BankswitchROM
 	pop af
 	ld bc, .bankswitch3d
 	push bc
 	jp hl
 .bankswitch3d
 	ld a, $3d
-	ldh [hBankROM], a
-	ld [MBC3RomBank], a
-	ret
+	jp BankswitchROM

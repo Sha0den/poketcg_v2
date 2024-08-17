@@ -467,7 +467,7 @@ LinkOpponentTurnFrameFunction::
 	ret nc
 .return
 	ld a, $01
-	call BankswitchROM
+	rst BankswitchROM
 	ld hl, wLinkOpponentTurnReturnAddress
 	ld a, [hli]
 	ld h, [hl]

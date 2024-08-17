@@ -22,14 +22,14 @@ TryExecuteEffectCommandFunction::
 	ldh a, [hBankROM]
 	push af
 	ld a, [wEffectFunctionsBank]
-	call BankswitchROM
+	rst BankswitchROM
 	or a
 	call CallHL
 	push af
 	; restore original bank and return
 	pop bc
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	push bc
 	pop af
 	ret
@@ -54,7 +54,7 @@ CheckMatchingCommand::
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(EffectCommands)
-	call BankswitchROM
+	rst BankswitchROM
 	; store the bank number of command functions ($b) in wEffectFunctionsBank
 	ld a, BANK("Effect Functions")
 	ld [wEffectFunctionsBank], a
@@ -76,13 +76,13 @@ CheckMatchingCommand::
 	ld l, a
 	; restore bank and return nc
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	or a
 	ret
 
 .no_more_commands
 	; restore bank and return carry
 	pop af
-	call BankswitchROM
+	rst BankswitchROM
 	scf
 	ret
