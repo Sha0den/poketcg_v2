@@ -63,3 +63,7 @@ MACRO retbc
 	push bc
 	ret
 ENDM
+
+MACRO get_turn_duelist_var
+	rst GetTurnDuelistVariable
+ENDM

@@ -5,24 +5,41 @@ INCLUDE "constants.asm"
 SECTION "rst00", ROM0
 	ret
 	ds 7
+
 SECTION "rst08", ROM0
+; returns [[hWhoseTurn] << 8 + a] in a and in [hl]
+; i.e. duelvar a of the player whose turn it is
+; preserves bc and de
+; input:
+;	a = wPlayerDuelVariables constant
+GetTurnDuelistVariable::
+	ld l, a
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld a, [hl]
 	ret
-	ds 7
+	ds 2
+
 SECTION "rst10", ROM0
 	ret
 	ds 7
+
 SECTION "rst18", ROM0
 	jp Bank1Call
 	ds 5
+
 SECTION "rst20", ROM0
 	jp RST20
 	ds 5
+
 SECTION "rst28", ROM0
 	jp FarCall
 	ds 5
+
 SECTION "rst30", ROM0
 	ret
 	ds 7
+
 SECTION "rst38", ROM0
 	ret
 	ds 7

@@ -183,7 +183,7 @@ AIDecide_Potion1:
 	ld d, a
 
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld h, a
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -221,7 +221,7 @@ AIDecide_Potion2:
 ; can KO
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld h, a
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -258,7 +258,7 @@ AIDecide_Potion2:
 .loop
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	ret z
 	call .check_boost_if_taken_damage
@@ -377,7 +377,7 @@ AIDecide_SuperPotion1:
 	ld d, a
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld h, a
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -421,7 +421,7 @@ AIDecide_SuperPotion2:
 ; can KO
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld h, a
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -460,7 +460,7 @@ AIDecide_SuperPotion2:
 .loop
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	ret z
 	ld d, a
@@ -661,7 +661,7 @@ AIDecide_Defender1:
 	sub 20
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	sub d
 	jr c, .no_carry
 	jr z, .no_carry
@@ -685,7 +685,7 @@ AIDecide_Defender2:
 
 .recoil
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wSelectedAttack]
 	or a
@@ -735,7 +735,7 @@ AIDecide_Defender2:
 	sub 20
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	sub d
 	jr c, .no_carry
 	jr z, .no_carry
@@ -779,7 +779,7 @@ AIDecide_Pluspower1:
 .cannot_ko
 ; get active Pokémon's info.
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
@@ -789,7 +789,7 @@ AIDecide_Pluspower1:
 ; if substatus is active, return.
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -864,7 +864,7 @@ AIDecide_Pluspower1:
 	ret c
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	call SwapTurn
 	ld a, e
@@ -903,7 +903,7 @@ AIDecide_Pluspower2:
 	ret c
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	call SwapTurn
 	ld a, e
@@ -1051,7 +1051,7 @@ AIDecide_GustOfWind:
 .check_id
 	; skip if current active card is MEW_LV23 or MEWTWO_LV53
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MEW_LV23
@@ -1208,7 +1208,7 @@ AIDecide_GustOfWind:
 	ld a, [wSelectedAttack]
 	ld e, a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	call CopyAttackDataAndDamage_FromDeckIndex
 	ld a, [wLoadedAttackCategory]
@@ -1400,7 +1400,7 @@ AIPlay_Bill:
 ; return carry if cards in deck > 9
 AIDecide_Bill:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE - 9
 	ret
 
@@ -1448,7 +1448,7 @@ AIDecide_EnergyRemoval:
 .loop_1
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	jr z, .default
 
@@ -1482,7 +1482,7 @@ AIDecide_EnergyRemoval:
 .loop_2
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	jr z, .found_damage
 
@@ -1643,7 +1643,7 @@ AIDecide_SuperEnergyRemoval:
 ; return immediately if no Arena cards
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	jr z, .exit
 
@@ -1709,7 +1709,7 @@ AIDecide_SuperEnergyRemoval:
 .loop_3
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	jr z, .no_carry
 
@@ -1758,7 +1758,7 @@ AIDecide_SuperEnergyRemoval:
 .loop_4
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	jr z, .found_damage
 
@@ -1948,7 +1948,7 @@ AIDecide_PokemonBreeder:
 .found
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	push hl
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop hl
 	ld c, a
 	ld e, PLAY_AREA_ARENA
@@ -1972,7 +1972,7 @@ AIDecide_PokemonBreeder:
 .can_evolve
 	ld a, DUELVARS_ARENA_CARD_HP
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call ConvertHPToCounters
 	swap a
 	ld b, a
@@ -2016,7 +2016,7 @@ AIDecide_PokemonBreeder:
 	xor a
 	ld [wce06], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld e, $00
 	ld d, $00
@@ -2075,7 +2075,7 @@ AIDecide_PokemonBreeder:
 	push hl
 	ld d, a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld e, PLAY_AREA_ARENA
 
@@ -2111,7 +2111,7 @@ AIDecide_PokemonBreeder:
 	ld [wce07], a
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld e, $00
 	ld d, $00
@@ -2195,7 +2195,7 @@ AIDecide_PokemonBreeder:
 
 ; the card that is evolving is not active card
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld c, 0
 
@@ -2268,7 +2268,7 @@ AIPlay_ProfessorOak:
 AIDecide_ProfessorOak:
 ; return if cards in deck <= 6
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE - 6
 	ret nc
 
@@ -2293,7 +2293,7 @@ AIDecide_ProfessorOak:
 ; check number of cards in hand
 .check_cards_hand
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 4
 	jr nc, .more_than_3_cards
 
@@ -2368,7 +2368,7 @@ AIDecide_ProfessorOak:
 	ld [wce0f + 1], a
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
@@ -2455,7 +2455,7 @@ AIDecide_ProfessorOak:
 	ld [wce08], a
 	ld a, DUELVARS_CARD_LOCATIONS
 	add d
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp CARD_LOCATION_HAND
 	jr nz, .evolution_not_in_hand
 
@@ -2465,7 +2465,7 @@ AIDecide_ProfessorOak:
 ; handles Legendary Articuno Deck AI logic.
 .HandleLegendaryArticunoDeck
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jr nc, .check_playable_cards
 
@@ -2483,7 +2483,7 @@ AIDecide_ProfessorOak:
 	add e
 
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	farcall CheckForEvolutionInList
 	pop de
 	jr c, .check_playable_cards
@@ -2562,7 +2562,7 @@ AIDecide_ProfessorOak:
 	jr c, .found_grimer_or_muk
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	jp .check_cards_deck
 
 .found_grimer_or_muk
@@ -2631,7 +2631,7 @@ AIDecide_EnergyRetrieval:
 	ld [wce1c], a
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
@@ -2644,7 +2644,7 @@ AIDecide_EnergyRetrieval:
 
 ; load this card's ID in wTempCardID
 ; and this card's Type in wTempCardType
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempCardID], a
@@ -2896,7 +2896,7 @@ AIDecide_SuperEnergyRetrieval:
 	ld [wce1f], a
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
@@ -2909,7 +2909,7 @@ AIDecide_SuperEnergyRetrieval:
 
 ; load this card's ID in wTempCardID
 ; and this card's Type in wTempCardType
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempCardID], a
@@ -3067,14 +3067,14 @@ AIDecide_PokemonCenter:
 	ld [wce0f], a
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 
 ; get this Pokemon's current HP in number of counters
@@ -3244,7 +3244,7 @@ AIDecide_EnergySearch:
 ; useful to any of the Play Area Pokemon
 .CheckForUsefulEnergyCards
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
@@ -3252,7 +3252,7 @@ AIDecide_EnergySearch:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 
 ; store ID and type of card
 	call GetCardIDFromDeckIndex
@@ -3295,7 +3295,7 @@ AIDecide_EnergySearch:
 ; in Play Area. If none found, return carry.
 .CheckUsefulFireOrLightningEnergy
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
@@ -3303,7 +3303,7 @@ AIDecide_EnergySearch:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 
 ; get card's ID and Type
 	call GetCardIDFromDeckIndex
@@ -3358,7 +3358,7 @@ AIDecide_EnergySearch:
 ; in Play Area. If none found, return carry.
 .CheckUsefulGrassEnergy
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
@@ -3366,7 +3366,7 @@ AIDecide_EnergySearch:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 
 ; get card's ID and Type
 	call GetCardIDFromDeckIndex
@@ -3438,7 +3438,7 @@ AIDecide_Pokedex:
 
 ; return no carry if number of cards in deck <= 4
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE - 4
 	jr nc, .no_carry
 
@@ -3465,7 +3465,7 @@ AIDecide_Pokedex:
 	ld [wAIPokedexCounter], a ; reset counter
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	add DUELVARS_DECK_CARDS
 	ld l, a
 	lb de, $00, $00
@@ -3595,7 +3595,7 @@ PickPokedexCards:
 	ld [wAIPokedexCounter], a ; reset counter ; reset counter
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	add DUELVARS_DECK_CARDS
 	ld l, a
 	lb de, $00, $00
@@ -3726,7 +3726,7 @@ AIPlay_FullHeal:
 
 AIDecide_FullHeal:
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 
 ; skip if no status on arena card
 	or a ; NO_STATUS
@@ -3780,7 +3780,7 @@ AIDecide_FullHeal:
 
 ; temporarily remove status effect for damage checking
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, [hl]
 	ld [hl], NO_STATUS
 	push hl
@@ -3844,7 +3844,7 @@ AIDecide_MrFuji:
 
 ; if just one Pokemon in Play Area, skip.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 1
 	ret z
 
@@ -3856,7 +3856,7 @@ AIDecide_MrFuji:
 .loop_bench
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 
 	ld a, [wLoadedCard1HP]
@@ -3914,7 +3914,7 @@ AIDecide_ScoopUp:
 
 ; if only one Pokemon in Play Area, skip.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 2
 	jr c, .no_carry
 
@@ -3940,7 +3940,7 @@ AIDecide_ScoopUp:
 
 .cannot_ko
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp PARALYZED
 	jr z, .cannot_retreat
@@ -3966,7 +3966,7 @@ AIDecide_ScoopUp:
 .cannot_retreat
 ; store damage and total HP left
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1HP]
 	call ConvertHPToCounters
@@ -4004,7 +4004,7 @@ AIDecide_ScoopUp:
 .HandleLegendaryArticuno
 ; if less than 3 Play Area Pokemon cards, skip.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jr c, .no_carry
 
@@ -4016,7 +4016,7 @@ AIDecide_ScoopUp:
 
 ; check Arena card
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp ARTICUNO_LV37
@@ -4086,7 +4086,7 @@ AIDecide_ScoopUp:
 .HandleLegendaryRonald
 ; if less than 3 Play Area Pokemon cards, skip.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jp c, .no_carry
 
@@ -4127,7 +4127,7 @@ AIDecide_Maintenance:
 
 ; skip if number of cars in hand < 4.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 4
 	jr c, .no_carry
 
@@ -4168,7 +4168,7 @@ AIDecide_Maintenance:
 
 ; skip if number of cards in hand < 3.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jr c, .no_carry
 
@@ -4481,7 +4481,7 @@ AIPlay_Imakuni:
 ; only sets carry if Active card is not confused.
 AIDecide_Imakuni:
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr z, .confused
@@ -4546,7 +4546,7 @@ AIDecide_Gambler:
 ; this is done to counteract the deck out strategy
 ; of MewtwoLv53 deck, by replenishing the deck with hand cards.
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE - 4
 	jr nc, .set_carry
 .no_carry
@@ -4581,7 +4581,7 @@ AIDecide_Revive:
 
 ; skip if number of Pokemon cards in Play Area >= 4
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 4
 	jr nc, .no_carry
 
@@ -4726,7 +4726,7 @@ AIPlay_ClefairyDollOrMysteriousFossil:
 AIDecide_ClefairyDollOrMysteriousFossil:
 ; if has max number of Play Area Pokemon, skip
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .no_carry
 
@@ -4735,7 +4735,7 @@ AIDecide_ClefairyDollOrMysteriousFossil:
 
 ; if the Arena card is Wigglytuff, return carry
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp WIGGLYTUFF
@@ -4993,7 +4993,7 @@ AIPlay_ComputerSearch:
 AIDecide_ComputerSearch:
 ; skip if number of cards in hand < 3
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jr c, .no_carry
 
@@ -5015,7 +5015,7 @@ AIDecide_ComputerSearch_RockCrusher:
 ; if number of cards in hand is equal to 3,
 ; target Professor Oak in deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jr nz, .graveler
 
@@ -5192,7 +5192,7 @@ AIDecide_ComputerSearch_RockCrusher:
 AIDecide_ComputerSearch_WondersOfScience:
 ; if number of cards in hand < 5, target Professor Oak in deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 5
 	jr nc, .look_in_hand
 

@@ -562,7 +562,7 @@ DrawInPlayArea_ActiveCardGfx:
 	ld [wArenaCardsInPlayArea], a
 
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1 ; no Pokemon
 	jr z, .opponent1
 
@@ -1465,7 +1465,7 @@ ENDR
 
 .got_prize_bitmask
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and b
 	ret z ; return if the prize card was already taken
 
@@ -1474,7 +1474,7 @@ ENDR
 	ld [wce5c], a
 	ld a, c
 	add DUELVARS_PRIZE_CARDS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	jr .ShowSelectedCard
 
 .SelectedOppsHand
@@ -1873,13 +1873,13 @@ _SelectPrizeCards::
 	or a
 	jr z, .done_selection
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr nz, .got_prizes
 
 .done_selection
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTemp_ffa0], a
 	ld a, [wSelectedPrizeCardListPtr + 0]
 	ld l, a
@@ -1929,20 +1929,20 @@ _SelectPrizeCards::
 	; if cursor prize is not set,
 	; then return to input loop
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and b
 	jr z, .loop_handle_input
 
 	; remove prize
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	sub b
 	ld [hl], a
 
 	; get its deck index
 	ld a, c
 	add DUELVARS_PRIZE_CARDS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 
 	ld hl, wSelectedPrizeCardListPtr
 	ld e, [hl]

@@ -5,7 +5,7 @@
 ;	de = damage to double
 HandleDoubleDamageSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	bit SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
 	ret z
 ;	fallthrough
@@ -96,7 +96,7 @@ HandleDamageReductionExceptSubstatus2::
 	or a
 	jr nz, PreventAllDamage
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .not_affected_by_substatus1
 	cp SUBSTATUS1_NO_DAMAGE
@@ -214,7 +214,7 @@ HandleNoDamageOrEffectSubstatus::
 	cp POKEMON_POWER
 	ret z
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld e, NO_DAMAGE_OR_EFFECT_ATTACK
 	ldtx hl, NoDamageOrEffectDueToAttackText
 	cp SUBSTATUS1_IMMUNITY
@@ -288,7 +288,7 @@ HandleNShieldAndTransparency::
 	push de
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MEW_LV8
@@ -331,7 +331,7 @@ HandleNShieldAndTransparency::
 ;	              an attack effect that makes it unable to attack
 HandleCantAttackSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	ldtx hl, UnableToAttackThatPokemonText
@@ -354,7 +354,7 @@ HandleCantAttackSubstatus::
 ;	              at wSelectedAttack because it's affected by Amnesia
 HandleAmnesiaSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 ; check amnesia
@@ -365,7 +365,7 @@ HandleAmnesiaSubstatus::
 	ret
 .affected_by_amnesia
 	ld a, DUELVARS_ARENA_CARD_DISABLED_ATTACK_INDEX
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, [wSelectedAttack]
 	cp [hl]
 	jr nz, .not_the_disabled_atk
@@ -395,7 +395,7 @@ HandleSmokescreenSubstatus::
 ;	carry = set:  if the turn holder's Active Pokemon is affected by Smokescreen
 CheckSmokescreenSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	ldtx de, SmokescreenCheckText
@@ -417,7 +417,7 @@ CheckSmokescreenSubstatus::
 ;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
 CheckCantRetreatDueToAttackEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	cp SUBSTATUS2_UNABLE_RETREAT
@@ -436,7 +436,7 @@ CheckCantRetreatDueToAttackEffect::
 ;	carry = set:  if the turn holder can't play any Trainer cards because of Headache
 CheckCantUseTrainerDueToHeadache::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	bit SUBSTATUS3_HEADACHE_F, [hl]
 	ret z
@@ -486,7 +486,7 @@ CountPokemonIDInPlayArea::
 	ld [wTempPokemonID_ce7c], a
 	ld c, $0
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	jr z, .check_bench
 	call GetCardIDFromDeckIndex
@@ -494,13 +494,13 @@ CountPokemonIDInPlayArea::
 	cp e
 	jr nz, .check_bench
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	jr nz, .check_bench
 	inc c
 .check_bench
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 .next_bench_slot
 	ld a, [hli]
 	cp -1
@@ -566,7 +566,7 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	or a
 	jr nz, .check_toxic_gas
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	ldtx hl, CannotUseDueToStatusText
 	scf
@@ -592,7 +592,7 @@ ClearChangedTypesIfMuk::
 	call SwapTurn
 .zero_changed_types
 	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, MAX_PLAY_AREA_POKEMON
 .zero_changed_types_loop
 	xor a
@@ -608,7 +608,7 @@ ClearChangedTypesIfMuk::
 ; preserves bc and de
 ClearDamageReductionSubstatus2::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	cp SUBSTATUS2_REDUCE_BY_20
@@ -627,14 +627,14 @@ ClearDamageReductionSubstatus2::
 ; preserves bc and de
 UpdateSubstatusConditions_StartOfTurn::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], $0
 	or a
 	ret z
 	cp SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
 	ret nz
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	set SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
 	ret
 
@@ -644,15 +644,15 @@ UpdateSubstatusConditions_StartOfTurn::
 ; preserves bc and de
 UpdateSubstatusConditions_EndOfTurn::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	res SUBSTATUS3_HEADACHE_F, [hl]
 	push hl
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	xor a
 	ld [hl], a
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop hl
 	cp SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
 	ret z
@@ -677,7 +677,7 @@ HandleDestinyBondSubstatus::
 	or a
 	ret nz
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	ld [hl], 0
@@ -732,10 +732,10 @@ HandleStrikesBack_AgainstDamagingAttack::
 	; subtract 10 HP from Attacking Pokemon (turn holder's Active Pokemon)
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push af
 	push hl
 	ld de, 10
@@ -802,7 +802,7 @@ ApplyStrikesBack_AgainstResidualAttack::
 	ld l, a
 	call LoadTxRam2
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop de
 	push af
 	push hl

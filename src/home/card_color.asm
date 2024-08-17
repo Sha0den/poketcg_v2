@@ -15,13 +15,13 @@ GetPlayAreaCardColor::
 	push de
 	ld e, a
 	add DUELVARS_ARENA_CARD_CHANGED_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	bit HAS_CHANGED_COLOR_F, a
 	jr nz, .has_changed_color
 .regular_color
 	ld a, e
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_TRAINER
@@ -37,7 +37,7 @@ GetPlayAreaCardColor::
 	jr c, .regular_color ; jump if can't use Shift
 	ld a, e
 	add DUELVARS_ARENA_CARD_CHANGED_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop de
 	pop hl
 	and $f
@@ -63,14 +63,14 @@ GetPlayAreaCardWeakness::
 ;	a = Weakness of the turn holder's Active Pokemon
 GetArenaCardWeakness::
 	ld a, DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret nz
 	ld a, DUELVARS_ARENA_CARD
 ;	fallthrough
 
 GetCardWeakness::
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Weakness]
 	ret
@@ -96,14 +96,14 @@ GetPlayAreaCardResistance::
 ;	a = Resistance of the turn holder's Active Pokemon
 GetArenaCardResistance::
 	ld a, DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret nz
 	ld a, DUELVARS_ARENA_CARD
 ;	fallthrough
 
 GetCardResistance::
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Resistance]
 	ret
@@ -114,7 +114,7 @@ GetCardResistance::
 ; at wAttachedEnergies into Fire Energy
 HandleEnergyBurn::
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp CHARIZARD

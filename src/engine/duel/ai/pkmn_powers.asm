@@ -14,7 +14,7 @@ HandleAIEnergyTrans:
 	ret c
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	dec a
 	ret z ; return if no Bench cards
 
@@ -50,13 +50,13 @@ HandleAIEnergyTrans:
 ; look for VenusaurLv67 in Play Area
 ; so that its PKMN Power can be used.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	dec a
 	ld b, a
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
 	call GetCardIDFromDeckIndex
 	ld a, e
@@ -90,7 +90,7 @@ HandleAIEnergyTrans:
 .loop_deck_locations
 	ld a, DUELVARS_CARD_LOCATIONS
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and %00011111
 	cp CARD_LOCATION_BENCH_1
 	jr c, .next_card
@@ -141,7 +141,7 @@ HandleAIEnergyTrans:
 ; would be enough to use it. Outputs number of energy cards needed in a.
 .CheckEnoughGrassEnergyCardsForAttack
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp EXEGGUTOR
@@ -202,7 +202,7 @@ HandleAIEnergyTrans:
 .count_loop
 	ld a, DUELVARS_CARD_LOCATIONS
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and %00011111
 	cp CARD_LOCATION_BENCH_1
 	jr c, .count_next
@@ -286,13 +286,13 @@ AIEnergyTransTransferEnergyToBench:
 ; so look for VenusaurLv67 in Play Area
 ; so that its PKMN Power can be used.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	dec a
 	ld b, a
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
 	ld [wAIVenusaurLv67DeckIndex], a
 	call GetCardIDFromDeckIndex
@@ -337,7 +337,7 @@ AIEnergyTransTransferEnergyToBench:
 .loop_deck_locations
 	ld a, DUELVARS_CARD_LOCATIONS
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp CARD_LOCATION_ARENA
 	jr nz, .next_card
 
@@ -407,18 +407,18 @@ HandleAIPkmnPowers:
 	ret nc ; return no carry if AI randomly decides to
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld c, PLAY_AREA_ARENA
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	jr nz, .next_2
 
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add c
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [wce08], a
 
 	push af
@@ -563,7 +563,7 @@ HandleAIHeal:
 	jr nc, .set_carry ; return carry if can't KO
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld h, a
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -595,7 +595,7 @@ HandleAIHeal:
 ; and find the one with the most damage.
 .check_bench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	lb bc, 0, 0
 	ld e, PLAY_AREA_BENCH_1
@@ -690,7 +690,7 @@ HandleAIShift:
 	ld a, [wAIDefendingPokemonWeakness]
 	ld b, a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, PLAY_AREA_ARENA
 .loop_play_area
 	ld a, [hli]
@@ -741,7 +741,7 @@ HandleAIPeek:
 
 .check_ai_prizes
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld hl, wAIPeekedPrizes
 	and [hl]
 	ld [hl], a
@@ -812,7 +812,7 @@ HandleAIStrangeBehavior:
 	ld [wce06], a
 	ldh a, [hTemp_ffa0]
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	sub 10
 	ret z ; return if Slowbro has only 10 HP remaining
 
@@ -885,7 +885,7 @@ HandleAICurse:
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
 	push hl
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop hl
 	cp c
 	jr nc, .next_1
@@ -925,7 +925,7 @@ HandleAICurse:
 
 .second_card
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 .loop_play_area_2
 	ld a, e
@@ -969,20 +969,20 @@ HandleAICowardice:
 	ret c ; randomly return
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 1
 	ret z ; return if only one Pokemon in Play Area
 
 	ld b, a
 	ld c, PLAY_AREA_ARENA
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	jr nz, .next
 .loop
 	ld a, DUELVARS_ARENA_CARD
 	add c
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [wce08], a
 	call GetCardIDFromDeckIndex
 	ld a, e
@@ -1015,7 +1015,7 @@ HandleAICowardice:
 	ldh [hTemp_ffa0], a
 	ld e, a
 	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CAN_EVOLVE_THIS_TURN
 	ret z ; return if was played this turn
 	call GetCardDamageAndMaxHP
@@ -1050,7 +1050,7 @@ HandleAICowardice:
 ; and with no energy cards attached.
 HandleAIDamageSwap:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	dec a
 	ret z ; return if no Bench Pokemon
 
@@ -1066,7 +1066,7 @@ HandleAIDamageSwap:
 
 ; only take damage off certain cards in Arena
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp ALAKAZAM
@@ -1101,7 +1101,7 @@ HandleAIDamageSwap:
 ; use Damage Swap
 	ld a, [wce08]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
 	ld a, [wce08]
 	ldh [hTemp_ffa0], a
@@ -1146,7 +1146,7 @@ HandleAIDamageSwap:
 ; returns carry if one is found, and outputs remaining HP in a.
 .CheckForDamageSwapTargetInBench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld c, PLAY_AREA_BENCH_1
 	lb de, $ff, $ff
@@ -1156,7 +1156,7 @@ HandleAIDamageSwap:
 .loop_bench
 	ld a, c
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push de
 	call GetCardIDFromDeckIndex
 	ld a, e
@@ -1191,7 +1191,7 @@ HandleAIDamageSwap:
 ; found a potential candidate to receive damage counters
 	ld a, DUELVARS_ARENA_CARD_HP
 	add c
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 20
 	jr c, .next_play_area ; ignore cards with only 10 HP left
 

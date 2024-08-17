@@ -28,7 +28,7 @@ AIDecideWhetherToRetreat:
 
 .check_status
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .check_ko_1 ; no status
 	and DOUBLE_POISONED
@@ -108,7 +108,7 @@ AIDecideWhetherToRetreat:
 	ld a, [wAIPlayerResistance]
 	ld b, a
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 .loop_resistance_1
 	ld a, [hli]
 	cp $ff
@@ -138,7 +138,7 @@ AIDecideWhetherToRetreat:
 	ld a, [wAIPlayerColor]
 	ld b, a
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 .loop_weakness_1
 	ld a, [hli]
 	cp $ff
@@ -168,7 +168,7 @@ AIDecideWhetherToRetreat:
 	ld a, [wAIPlayerWeakness]
 	ld b, a
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld e, $00
 .loop_weakness_2
 	inc e
@@ -185,7 +185,7 @@ AIDecideWhetherToRetreat:
 
 	push de
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	pop de
@@ -217,7 +217,7 @@ AIDecideWhetherToRetreat:
 	ld a, [wAIPlayerColor]
 	ld b, a
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 .loop_resistance_2
 	ld a, [hli]
 	cp $ff
@@ -234,7 +234,7 @@ AIDecideWhetherToRetreat:
 ; if none is found, skip AddToAIScore
 .check_ko_2
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, 0
 .loop_ko_1
 	inc c
@@ -305,7 +305,7 @@ AIDecideWhetherToRetreat:
 	call CheckIfCanDamageDefendingPokemon
 	jr c, .check_retreat_cost
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, 0
 .loop_damage
 	inc c
@@ -363,7 +363,7 @@ AIDecideWhetherToRetreat:
 ; if none is found, skip SubFromAIScore
 .check_defending_can_ko
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld e, 0
 .loop_ko_2
 	inc e
@@ -391,7 +391,7 @@ AIDecideWhetherToRetreat:
 
 .check_active_id
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MYSTERIOUS_FOSSIL
@@ -417,7 +417,7 @@ AIDecideWhetherToRetreat:
 	inc e
 	ld a, e
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	jr z, .no_carry
 	ld a, e
@@ -469,7 +469,7 @@ AIDecideBenchPokemonToSwitchTo:
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 2
 	ret c
 
@@ -479,7 +479,7 @@ AIDecideBenchPokemonToSwitchTo:
 	ld a, 50
 	ld [wAIScore], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld c, PLAY_AREA_ARENA
 	push bc
@@ -573,7 +573,7 @@ AIDecideBenchPokemonToSwitchTo:
 .check_defending_weak
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	call TranslateColorToWR
@@ -648,7 +648,7 @@ AIDecideBenchPokemonToSwitchTo:
 .check_hp
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr nz, .add_hp_score
 	ld [wAIScore], a
@@ -684,7 +684,7 @@ AIDecideBenchPokemonToSwitchTo:
 ;	- is a MewLv8 and defending card is not basic stage
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	cp MR_MIME
 	jr z, .raise_score
@@ -780,7 +780,7 @@ AITryToRetreat:
 
 ; check status
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp ASLEEP
 	jp z, .check_id
@@ -819,7 +819,7 @@ AITryToRetreat:
 
 .check_id
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MYSTERIOUS_FOSSIL
@@ -832,7 +832,7 @@ AITryToRetreat:
 	pop af
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	and CNF_SLP_PRZ
 	cp ASLEEP
@@ -883,7 +883,7 @@ AITryToRetreat:
 ; choose energy cards to discard according to color
 .choose_energy_discard
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempCardID], a
@@ -984,7 +984,7 @@ AITryToRetreat:
 ; this is equivalent to using its Pokémon Power
 .mysterious_fossil_or_clefairy_doll
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 2
 	jr nc, .has_bench
 	; doesn't have any bench
@@ -993,7 +993,7 @@ AITryToRetreat:
 
 .has_bench
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
 	xor a
 	ldh [hTemp_ffa0], a

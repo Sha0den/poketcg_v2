@@ -47,7 +47,7 @@ FindBasicEnergyCardsInLocation:
 	ld a, DUELVARS_CARD_LOCATIONS
 	add e
 	push hl
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld hl, wTempAI
 	cp [hl]
 	pop hl
@@ -114,7 +114,7 @@ AIPickEnergyCardToDiscard:
 	ld b, a
 	ld a, DUELVARS_ARENA_CARD
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempCardID], a
@@ -172,7 +172,7 @@ PickAttachedEnergyCardToRemove:
 	ld b, a
 	ld a, DUELVARS_ARENA_CARD
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempCardID], a
@@ -248,7 +248,7 @@ PickTwoAttachedEnergyCards:
 	ld b, a
 	ld a, DUELVARS_ARENA_CARD
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempCardID], a
@@ -447,7 +447,7 @@ LookForCardIDInLocation:
 .loop
 	ld a, DUELVARS_CARD_LOCATIONS
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp b
 	jr nz, .next
 	ld a, e
@@ -628,7 +628,7 @@ LookForCardIDInPlayArea_Bank8:
 .loop
 	ld a, DUELVARS_ARENA_CARD
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp $ff
 	ret z
 
@@ -827,7 +827,7 @@ CheckIfHasCardIDInHand:
 ; plus Pokemon in Turn Duelist's Play Area.
 CountPokemonCardsInHandAndInPlayArea:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [wTempAI], a
 	call CreateHandCardList
 	ld hl, wDuelTempList
@@ -908,7 +908,7 @@ AICheckIfAttackIsHighRecoil:
 	ld a, [wSelectedAttack]
 	ld e, a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	call CopyAttackDataAndDamage_FromDeckIndex
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F

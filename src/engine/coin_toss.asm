@@ -44,7 +44,7 @@ _TossCoin::
 ; store duelist type and reset number of heads
 	call EnableLCD
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [wCoinTossDuelistType], a
 	call ExchangeRNG
 	xor a

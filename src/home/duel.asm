@@ -53,7 +53,7 @@ CopyDeckData::
 CountPrizes::
 	push hl
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld l, a
 	xor a
 .count_loop
@@ -74,7 +74,7 @@ CountPrizes::
 DrawCardFromDeck::
 	push hl
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE
 	jr nc, .empty_deck
 	inc a
@@ -101,7 +101,7 @@ ReturnCardToDeck::
 	push hl
 	push af
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	dec a
 	ld [hl], a ; decrement number of cards not in deck
 	add DUELVARS_DECK_CARDS
@@ -128,7 +128,7 @@ SearchCardInDeckAndAddToHand::
 	push bc
 	ld c, a
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, DECK_SIZE
 	sub [hl]
 	inc [hl] ; increment number of cards not in deck
@@ -195,7 +195,7 @@ RemoveCardFromHand::
 	push de
 	ld c, a
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .done ; done if no cards in hand
 	ld b, a ; number of cards in hand
@@ -230,7 +230,7 @@ RemoveCardFromHand::
 ; input:
 ;	a = deck index (0-59) of the hand card to move to the discard pile
 MoveHandCardToDiscardPile::
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, [hl]
 	and $ff ^ CARD_LOCATION_JUST_DRAWN
 	cp CARD_LOCATION_HAND
@@ -247,7 +247,7 @@ PutCardInDiscardPile::
 	push af
 	push hl
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], CARD_LOCATION_DISCARD_PILE
 	ld e, l
 	ld l, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
@@ -272,7 +272,7 @@ MoveDiscardPileCardToHand::
 	push hl
 	push de
 	push bc
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	set CARD_LOCATION_JUST_DRAWN_F, [hl]
 	ld b, l
 	ld l, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
@@ -343,7 +343,7 @@ CreateDiscardPileCardList::
 ;	wDuelTempList = $ff terminated list with deck indices of all cards still in the turn holder's deck
 CreateDeckCardList::
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE
 	jr nc, .no_cards_left_in_deck
 	ld a, DECK_SIZE
@@ -387,7 +387,7 @@ CreateArenaOrBenchEnergyCardList::
 	ld c, a
 	ld de, wDuelTempList
 	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 .next_card_loop
 	ld a, [hl]
 	cp c
@@ -851,7 +851,7 @@ EvolvePokemonCard::
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [wPreEvolutionPokemonCard], a ; save pre-evolved Pokemon card into wPreEvolutionPokemonCard
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ldh a, [hTempCardIndex_ff98]
@@ -863,7 +863,7 @@ EvolvePokemonCard::
 	ldh a, [hTempPlayAreaLocation_ff9d] ; derp
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, [wLoadedCard2HP]
 	ld c, a
 	ld a, [wLoadedCard1HP]
@@ -885,7 +885,7 @@ EvolvePokemonCard::
 	; set the new evolution stage of the card
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_STAGE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, [wLoadedCard1Stage]
 	ld [hl], a
 	or a
@@ -904,7 +904,7 @@ CheckIfCanEvolveInto::
 	push de
 	ld a, e
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, d
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -921,7 +921,7 @@ CheckIfCanEvolveInto::
 	pop de
 	ld a, e
 	add DUELVARS_ARENA_CARD_FLAGS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CAN_EVOLVE_THIS_TURN
 	jr nz, .can_evolve
 	; if the card trying to evolve was played this turn, it can't evolve
@@ -984,7 +984,7 @@ ClearAllStatusConditions::
 PutHandPokemonCardInPlayArea::
 	push af
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .already_max_pkmn_in_play
 	inc [hl]
@@ -1048,7 +1048,7 @@ PutHandPokemonCardInPlayArea::
 ;	a = CARD_LOCATION_PLAY_AREA + e
 PutHandCardInPlayArea::
 	call RemoveCardFromHand
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, e
 	or CARD_LOCATION_PLAY_AREA
 	ld [hl], a
@@ -1120,7 +1120,7 @@ ShiftAllPokemonToFirstPlayAreaSlots::
 ; preserves bc
 ShiftTurnPokemonToFirstPlayAreaSlots::
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	lb de, PLAY_AREA_ARENA, PLAY_AREA_ARENA
 .next_play_area_slot
 	bit 7, [hl]
@@ -1324,19 +1324,6 @@ CountCardIDInLocation::
 	ret
 
 
-; returns [[hWhoseTurn] << 8 + a] in a and in [hl]
-; i.e. duelvar a of the player whose turn it is
-; preserves bc and de
-; input:
-;	a = wPlayerDuelVariables constant
-GetTurnDuelistVariable::
-	ld l, a
-	ldh a, [hWhoseTurn]
-	ld h, a
-	ld a, [hl]
-	ret
-
-
 ; returns [([hWhoseTurn] ^ $1) << 8 + a] in a and in [hl]
 ; i.e. duelvar a of the player whose turn it is not
 ; preserves bc and de
@@ -1509,14 +1496,14 @@ CopyAttackDataAndDamage::
 ; preserves bc and de
 UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -1792,7 +1779,7 @@ CheckSelfConfusionDamage::
 	xor a
 	ld [wGotHeadsFromConfusionCheck], a
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr z, .confused
@@ -1907,7 +1894,7 @@ DealConfusionDamageToSelf::
 	ld c, a
 	ld b, PLAY_AREA_ARENA
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	bank1call PlayAttackAnimation_DealAttackDamageSimple
 	call PrintKnockedOutIfHLZero
 	pop af
@@ -2085,7 +2072,7 @@ ApplyDamageModifiers_DamageToSelf::
 ;	de = updated damage
 ApplyAttachedPluspower::
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld de, PLUSPOWER
 	call CountCardIDInLocation
 	ld l, a
@@ -2107,7 +2094,7 @@ ApplyAttachedPluspower::
 ;	de = updated damage
 ApplyAttachedDefender::
 	push de
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld de, DEFENDER
 	call CountCardIDInLocation
 	ld l, a
@@ -2155,14 +2142,14 @@ SubtractHP::
 PrintPlayAreaCardKnockedOutIfNoHP::
 	ld e, a
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret nz ; return if the Active Pokemon has more than 0 HP
 	ld a, [wTempNonTurnDuelistCardID]
 	push af
 	ld a, e
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1ID]
 	ld [wTempNonTurnDuelistCardID], a
@@ -2241,7 +2228,7 @@ DealDamageToPlayAreaPokemon::
 	push de
 	ld a, [wTempPlayAreaLocation_cceb]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -2297,7 +2284,7 @@ DealDamageToPlayAreaPokemon::
 .benched
 	ld c, $00
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push af
 	bank1call PlayAttackAnimation_DealAttackDamageSimple
 	pop af
@@ -2326,7 +2313,7 @@ DrawDuelMainScene_PrintPokemonsAttackText::
 ; and the attack's name is taken from wLoadedAttackName.
 PrintPokemonsAttackText::
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 18
 	call CopyCardNameAndLevel
@@ -2367,7 +2354,7 @@ PrintFailedEffectText::
 	jr z, .no_effect_from_status
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 18
 	call CopyCardNameAndLevel
@@ -2402,7 +2389,7 @@ PrintFailedEffectText::
 GetPlayAreaCardRetreatCost::
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 ;	fallthrough
 
@@ -2414,7 +2401,7 @@ GetPlayAreaCardRetreatCost::
 GetLoadedCard1RetreatCost::
 	ld c, 0
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 .check_bench_loop
 	ld a, [hli]
 	cp -1
@@ -2455,11 +2442,11 @@ GetCardDamageAndMaxHP::
 	push hl
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, DUELVARS_ARENA_CARD_HP
 	add e
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, [wLoadedCard2HP]
 	ld c, a
 	sub [hl]
@@ -2544,7 +2531,7 @@ CheckDeckIndexForBasicPokemon::
 ;	cpl
 ;	ld d, a
 ;	ld a, DUELVARS_PRIZES
-;	call GetTurnDuelistVariable
+;	get_turn_duelist_var
 ;	and e
 ;	ret
 ;

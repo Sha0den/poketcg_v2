@@ -33,7 +33,7 @@ AIDecidePlayPokemonCard:
 ; if Play Area has more than 4 Pokémon, decrease AI score
 ; else, increase AI score
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 4
 	jr c, .has_4_or_fewer
 	ld a, 20
@@ -135,7 +135,7 @@ AIDecideEvolution:
 ; start looping Pokémon in Play Area
 ; to find a card to evolve
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld b, 0
 .next_bench_pokemon
@@ -187,7 +187,7 @@ AIDecideEvolution:
 .check_evolution_attacks
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push af
 	ld a, [wTempAIPokemonCard]
 	ld [hl], a
@@ -265,7 +265,7 @@ AIDecideEvolution:
 .check_defending_can_ko
 	ld a, [wTempAI]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop af
 	ld [hl], a
 	ld a, [wTempAI]
@@ -281,7 +281,7 @@ AIDecideEvolution:
 ; if current card has a status condition, raise AI score
 .check_status
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .check_2nd_stage_hand
 	ld a, 4
@@ -323,7 +323,7 @@ AIDecideEvolution:
 .check_mysterious_fossil
 	ld a, [wTempAI]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1ID]
 	cp MYSTERIOUS_FOSSIL
@@ -479,7 +479,7 @@ AIDecideSpecialEvolutions:
 ; if this result is >= 70, check if there's
 ; a Muk in any duelist's Play Area
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld c, 0
 .loop
@@ -550,7 +550,7 @@ AIDecidePlayLegendaryBirds:
 .articuno
 	; exit if not enough Pokemon in Play Area
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 2
 	ret c
 
@@ -571,7 +571,7 @@ AIDecidePlayLegendaryBirds:
 	; checks for player's Pokemon Power
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld e, $00
 	call CopyAttackDataAndDamage_FromDeckIndex
@@ -582,7 +582,7 @@ AIDecidePlayLegendaryBirds:
 
 	; return if no space on the bench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp MAX_BENCH_POKEMON
 	jr c, .check_muk_and_snorlax
 	ret
@@ -612,7 +612,7 @@ AIDecidePlayLegendaryBirds:
 .moltres
 	; checks if there's enough cards in deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 56 ; max number of cards not in deck to activate
 	jr nc, .subtract
 	ret

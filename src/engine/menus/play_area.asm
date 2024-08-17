@@ -166,7 +166,7 @@ OpenInPlayAreaScreen::
 
 	ld a, l
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	ret z
 
@@ -235,7 +235,7 @@ OpenInPlayAreaScreen_TurnHolderPlayArea:
 .on_bench
 	ld [wCurPlayAreaSlot], a
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	ret z
 	call GetCardIDFromDeckIndex
@@ -446,7 +446,7 @@ OpenInPlayAreaScreen_HandleInput:
 
 .player_area
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	dec a
 	jr nz, .bench_pokemon_exists
 

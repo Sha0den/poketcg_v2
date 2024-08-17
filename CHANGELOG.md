@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 17, 2024:** 13 Files Changed
+- **August 17, 2024:** 28 Files Changed
+    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Save-space-and-improve-performance-with-RST-vectors) to add an rst for 'GetTurnDuelistVariable'
+
+<br/>
+
+- **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/b7df77baf845c570e40bc1cd8c5e9e8c1353b035):** 13 Files Changed
     - Remove the "debug_nop" rst
 
 <br/>

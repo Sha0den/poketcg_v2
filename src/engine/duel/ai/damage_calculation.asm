@@ -8,7 +8,7 @@ EstimateDamage_VersusDefendingCard:
 	ld e, a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	call CopyAttackDataAndDamage_FromDeckIndex
 	ld a, [wLoadedAttackCategory]
@@ -54,7 +54,7 @@ EstimateDamage_VersusDefendingCard:
 ; for the switching, to obtain the right damage calculation...
 	; reset substatus1
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push af
 	push hl
 	ld [hl], $00
@@ -108,7 +108,7 @@ _CalculateDamage_VersusDefendingPokemon:
 	; load this card's data
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2ID]
 	ld [wTempTurnDuelistCardID], a
@@ -116,7 +116,7 @@ _CalculateDamage_VersusDefendingPokemon:
 	; load player's arena card data
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2ID]
 	ld [wTempNonTurnDuelistCardID], a
@@ -181,7 +181,7 @@ _CalculateDamage_VersusDefendingPokemon:
 
 .no_underflow
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and DOUBLE_POISONED
 	jr z, .not_poisoned
 	ld c, 20
@@ -221,7 +221,7 @@ EstimateDamage_FromDefendingPokemon:
 	ld [wSelectedAttack], a
 	ld e, a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	call CopyAttackDataAndDamage_FromDeckIndex
 	call SwapTurn
@@ -275,7 +275,7 @@ EstimateDamage_FromDefendingPokemon:
 ; ...otherwise substatuses need to be temporarily reset to account
 ; for the switching, to obtain the right damage calculation...
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push af
 	push hl
 	ld [hl], $00
@@ -332,7 +332,7 @@ CalculateDamage_FromDefendingPokemon:
 	; load player active card's data
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2ID]
 	ld [wTempTurnDuelistCardID], a
@@ -341,7 +341,7 @@ CalculateDamage_FromDefendingPokemon:
 	; load opponent's card data
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2ID]
 	ld [wTempNonTurnDuelistCardID], a
@@ -361,14 +361,14 @@ CalculateDamage_FromDefendingPokemon:
 	or a
 	jr nz, .bench_weak
 	ld a, DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr nz, .unchanged_weak
 
 .bench_weak
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Weakness]
 .unchanged_weak
@@ -384,14 +384,14 @@ CalculateDamage_FromDefendingPokemon:
 	or a
 	jr nz, .bench_res
 	ld a, DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr nz, .unchanged_res
 
 .bench_res
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Resistance]
 .unchanged_res
@@ -424,7 +424,7 @@ CalculateDamage_FromDefendingPokemon:
 	or a
 	jr nz, .done
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and DOUBLE_POISONED
 	jr z, .done
 	ld c, 40

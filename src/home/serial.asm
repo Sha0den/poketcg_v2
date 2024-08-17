@@ -335,7 +335,7 @@ ExchangeRNG::
 	cp DUELTYPE_LINK
 	ret nz ; not a link duel
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a ; cp DUELIST_TYPE_PLAYER
 	jr z, .player_turn
 ; link opponent's turn

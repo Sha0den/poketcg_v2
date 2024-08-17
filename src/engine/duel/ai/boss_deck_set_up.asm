@@ -5,7 +5,7 @@
 SetUpBossStartingHandAndDeck:
 ; shuffle all hand cards in deck
 	ld a, DUELVARS_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, STARTING_HAND_SIZE
 .loop_hand
 	ld a, [hl]
@@ -26,7 +26,7 @@ SetUpBossStartingHandAndDeck:
 	ld [wAISetupEnergyCount], a
 
 	ld a, DUELVARS_DECK_CARDS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, STARTING_HAND_SIZE
 	call .Loop_Deck
 
@@ -67,7 +67,7 @@ SetUpBossStartingHandAndDeck:
 
 ; draw new set of hand cards
 	ld a, DUELVARS_DECK_CARDS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, STARTING_HAND_SIZE
 .draw_loop
 	ld a, [hli]

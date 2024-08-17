@@ -1058,7 +1058,7 @@ AIFindKrabby:
 ;	                     ordering data (numbers from 1 to the total number of cards being reordered)
 HandleProphecyScreen:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld a, DECK_SIZE
 	sub [hl] ; a = number of cards in deck
@@ -1266,7 +1266,7 @@ HandleProphecyPlayerSelection:
 
 .turn_duelist
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE
 	jr nc, .select_deck ; no cards, go back to deck selection
 	call HandleProphecyScreen
@@ -1317,7 +1317,7 @@ HandlePokedexPlayerSelection:
 
 ; cap the number of cards to reorder up to the number of cards in deck (maximum of 5)
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, a
 	ld a, DECK_SIZE
 	sub [hl]

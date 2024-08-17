@@ -109,7 +109,7 @@ AIDoTurn_LegendaryDragonite:
 ; have Energy cards attached, try attaching from hand.
 ; otherwise run normal AI energy attach routine.
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, KANGASKHAN
 	cp e

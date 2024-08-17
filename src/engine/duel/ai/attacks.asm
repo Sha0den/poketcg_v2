@@ -191,13 +191,13 @@ GetAIScoreOfAttack:
 	xor a
 	ld [wAICannotDamage], a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -302,7 +302,7 @@ GetAIScoreOfAttack:
 
 	; if LOW_RECOIL KOs self, decrease AI score
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp e
 	jr c, .kos_self
 	jp nz, .check_defending_can_ko
@@ -313,7 +313,7 @@ GetAIScoreOfAttack:
 .high_recoil
 	; dismiss this attack if no benched Pokémon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 2
 	jr c, .dismiss_high_recoil_atk
 	; has benched Pokémon
@@ -342,7 +342,7 @@ GetAIScoreOfAttack:
 ; HP of active card is < half max HP.
 .zapping_selfdestruct_deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 31
 	jr nc, .high_recoil_generic_checks
 	ld e, PLAY_AREA_ARENA
@@ -352,7 +352,7 @@ GetAIScoreOfAttack:
 	jr c, .high_recoil_generic_checks
 	ld b, 0
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MAGNEMITE_LV13
@@ -394,7 +394,7 @@ GetAIScoreOfAttack:
 ; dismiss it if it causes the player to win.
 .high_recoil_generic_checks
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp CHANSEY
@@ -475,7 +475,7 @@ GetAIScoreOfAttack:
 	ld a, [wSelectedAttack]
 	ld e, a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	call CopyAttackDataAndDamage_FromDeckIndex
 	ld a, ATTACK_FLAG2_ADDRESS | DISCARD_ENERGY_F
@@ -527,7 +527,7 @@ GetAIScoreOfAttack:
 	inc b
 .asm_16cec
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call CalculateByteTensDigit
 	cp b
 	jr c, .tally_heal_score
@@ -638,7 +638,7 @@ GetAIScoreOfAttack:
 ; if this Pokémon is confused, subtract from score.
 .check_if_confused
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr nz, .handle_special_atks
@@ -677,7 +677,7 @@ GetAIScoreOfAttack:
 .check_if_kos_bench
 	ld d, a
 	ld a, DUELVARS_BENCH
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld e, PLAY_AREA_ARENA
 .loop
 	inc e
@@ -687,7 +687,7 @@ GetAIScoreOfAttack:
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
 	push hl
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	pop hl
 	cp b
 	jr z, .increase_count

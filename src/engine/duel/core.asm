@@ -242,7 +242,7 @@ SetupDuel:
 ; drawing the card at hTempCardIndex_ff98 and saves the duel state to SRAM.
 HandleTurn:
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [wDuelistType], a
 	ld a, [wDuelTurns]
 	cp 2
@@ -356,7 +356,7 @@ DuelMenuShortcut_BothActivePokemon:
 ; triggered by selecting the "Hand" item in the duel menu
 DuelMenu_Hand:
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jp nz, OpenPlayerHandScreen
 	ldtx hl, NoCardsInHandText
@@ -526,7 +526,7 @@ DuelMenu_PkmnPower:
 ; triggered by selecting the "Retreat" item in the duel menu
 DuelMenu_Retreat:
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	ldh [hTemp_ffa0], a
@@ -611,7 +611,7 @@ DuelMenuData:
 ; draws the card page screen for the turn holder's Active Pokemon, if it exists
 OpenActivePokemonScreen:
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	ret z
 	call GetCardIDFromDeckIndex
@@ -801,7 +801,7 @@ PlayPokemonCard:
 	or a ; BASIC
 	jr nz, .try_evolve ; jump if the card being played is a Stage 1 or 2 Pokemon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .no_space
 	ldh a, [hTempCardIndex_ff98]
@@ -809,7 +809,7 @@ PlayPokemonCard:
 	call PutHandPokemonCardInPlayArea
 	ldh [hTempPlayAreaLocation_ff9d], a
 	add DUELVARS_ARENA_CARD_STAGE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], BASIC
 	ld a, OPPACTION_PLAY_BASIC_PKMN
 	call SetOppAction_SerialSendDuelData
@@ -834,7 +834,7 @@ PlayPokemonCard:
 
 .try_evolve
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ldh a, [hTempCardIndex_ff98]
 	ld d, a
@@ -937,7 +937,7 @@ CheckAbleToRetreat:
 	call HasAlivePokemonInBench
 	jr c, .unable_to_retreat
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
@@ -1339,7 +1339,7 @@ DisplayAttackPage_Attack2Page2:
 PrintAndLoadAttacksToDuelTempList:
 	call DrawWideTextBox
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldh [hTempCardIndex_ff98], a
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld c, 0
@@ -1546,7 +1546,7 @@ CheckIfEnoughEnergiesOfType:
 ;	carry = set:  if the turn holder's Active Pokemon is Paralyzed or Asleep
 CheckIfActiveCardParalyzedOrAsleep:
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp PARALYZED
 	jr z, .paralyzed
@@ -1584,7 +1584,7 @@ DisplayDrawNCardsScreen:
 	xor a
 	ld [wNumCardsBeingDrawn], a
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, DECK_SIZE
 	sub [hl]
 	ld hl, wNumCardsTryingToDraw
@@ -1861,7 +1861,7 @@ PrintDuelResultStats:
 	inc e
 	inc c
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldtx hl, YesText
 	or a
 	jr nz, .pkmn_in_play_area
@@ -1873,7 +1873,7 @@ PrintDuelResultStats:
 	inc d
 	inc c
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, DECK_SIZE
 	sub [hl]
 .print_x_cards
@@ -2132,7 +2132,7 @@ HandleDuelSetup:
 ; called twice, once for each duelist.
 ChooseInitialArenaAndBenchPokemon:
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DUELIST_TYPE_PLAYER
 	jr z, .choose_arena
 	cp DUELIST_TYPE_LINK_OPP
@@ -2162,7 +2162,7 @@ ChooseInitialArenaAndBenchPokemon:
 	call SerialExchangeBytes
 	jp c, DuelTransmissionError
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], DUELIST_TYPE_LINK_OPP
 	or a
 	ret
@@ -2208,7 +2208,7 @@ ChooseInitialArenaAndBenchPokemon:
 	call DisplayPlaceInitialPokemonCardsScreen
 	jr c, .bench_done
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .no_space
 	ldh a, [hTempCardIndex_ff98]
@@ -2253,7 +2253,7 @@ ShuffleDeckAndDrawSevenCards:
 	dec b
 	jr nz, .draw_loop
 	ld a, DUELVARS_HAND
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, $00
 	ld c, 7
 .cards_loop
@@ -2511,7 +2511,7 @@ DeckShuffleAnimation:
 
 ; if there's only one card in the deck, skip the shuffling animation
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, DECK_SIZE
 	sub [hl]
 	cp 2
@@ -2568,7 +2568,7 @@ DeckShuffleAnimation:
 ; includes the background, both Active Pokemon, and both HUDs.
 DrawDuelMainScene::
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DUELIST_TYPE_PLAYER
 	jr z, .draw
 	ldh a, [hWhoseTurn]
@@ -2592,13 +2592,13 @@ DrawDuelMainScene::
 	ld a, DUEL_MAIN_SCENE
 	ld [wDuelDisplayedScreen], a
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld de, v0Tiles1 + $50 tiles
 	call LoadPlayAreaCardGfx
 	call SetBGP7OrSGB2ToCardPalette
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld de, v0Tiles1 + $20 tiles
 	call LoadPlayAreaCardGfx
 	call SetBGP6OrSGB3ToCardPalette
@@ -2607,7 +2607,7 @@ DrawDuelMainScene::
 ; next, draw the Pokemon in the Arena
 ;.place_player_arena_pkmn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	jr z, .place_opponent_arena_pkmn
 	ld a, $d0 ; v0Tiles1 + $50 tiles
@@ -2619,7 +2619,7 @@ DrawDuelMainScene::
 .place_opponent_arena_pkmn
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	jr z, .place_other_elements
 	ld a, $a0 ; v0Tiles1 + $20 tiles
@@ -2642,7 +2642,7 @@ DrawDuelMainScene::
 ; and color symbols, attached cards, and other information, for both duelists.
 DrawDuelHUDs::
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DUELIST_TYPE_PLAYER
 	jr z, .draw_hud
 	ldh a, [hWhoseTurn]
@@ -2659,7 +2659,7 @@ DrawDuelHUDs::
 	call DrawDuelHUD
 	lb bc, 8, 5
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call CheckPrintCnfSlpPrz
 	inc c
 	call CheckPrintPoisoned
@@ -2672,7 +2672,7 @@ DrawDuelHUDs::
 	call DrawDuelHUD
 	lb bc, 11, 6
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call CheckPrintCnfSlpPrz
 	dec c
 	call CheckPrintPoisoned
@@ -2701,7 +2701,7 @@ DrawDuelHUD:
 	call WriteByteToBGMap0
 	inc b
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	add SYM_0 - 1
 	call WriteByteToBGMap0
 	inc b
@@ -2717,7 +2717,7 @@ DrawDuelHUD:
 	; print the Active Pokemon's card name and level text
 	pop de
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	ret z
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -2753,7 +2753,7 @@ DrawDuelHUD:
 
 	; print HP as #/# (current HP/max HP)
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld hl, wHUDEnergyAndHPBarsX
 	ld b, [hl]
@@ -2761,7 +2761,7 @@ DrawDuelHUD:
 	ld c, [hl] ; wHUDEnergyAndHPBarsY
 	inc c ; [wHUDEnergyAndHPBarsY] + 1
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 100
 	jr nc, .threedigits
 	dec b
@@ -2799,7 +2799,7 @@ DrawDuelHUD:
 	ld c, [hl] ; wHUDEnergyAndHPBarsY
 	inc c
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .check_defender
 	ld a, SYM_PLUSPOWER
@@ -2811,7 +2811,7 @@ DrawDuelHUD:
 	dec b
 .check_defender
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	inc c
@@ -2889,7 +2889,7 @@ PracticeDuel_PutStaryuInBench:
 ;	carry = set:  if the Player didn't put Staryu on the Bench
 PracticeDuel_VerifyInitialPlay:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 2
 	ret z
 	ldtx hl, ChooseStaryuPracticeDuelText
@@ -5144,12 +5144,12 @@ _HasAlivePokemonInPlayArea:
 	ld [wExcludeArenaPokemon], a
 	ld b, a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	sub b
 	ld c, a
 	ld a, DUELVARS_ARENA_CARD_HP
 	add b
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld b, 0
 	inc c
 	xor a
@@ -5239,7 +5239,7 @@ DisplayPlayAreaScreen:
 	jr z, .asm_6091
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	jr z, .asm_6022
 	call GetCardIDFromDeckIndex
@@ -5257,7 +5257,7 @@ DisplayPlayAreaScreen:
 	jr z, .asm_60b5
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .skip_ahead
 .asm_60ac
@@ -5431,7 +5431,7 @@ PrintPlayAreaCardList:
 	ld de, wDuelTempList
 	call SetListPointer
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld b, $00
 .print_cards_info_loop
@@ -5446,7 +5446,7 @@ PrintPlayAreaCardList:
 	ld [wCurPlayAreaY], a
 	ld a, b
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call SetNextElementOfList
 	call PrintPlayAreaCardInformationAndLocation
 	pop bc
@@ -5520,7 +5520,7 @@ InitAndPrintPlayAreaCardInformationAndLocation:
 PrintPlayAreaCardInformationAndLocation:
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	ret z
 	call PrintPlayAreaCardInformation
@@ -5599,13 +5599,13 @@ PrintPlayAreaCardInformation:
 	inc b
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .zero_hp
 	ld e, a
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp 100
 	jr nc, .threedigits
 	dec b
@@ -5647,7 +5647,7 @@ PrintPlayAreaCardHeader:
 	; start by printing the Pokemon's name
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wCurPlayAreaY]
 	ld e, a
@@ -5685,7 +5685,7 @@ PrintPlayAreaCardHeader:
 	; print the 2x2 face down card image depending on the Pokemon's evolution stage
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_STAGE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	add a
 	ld e, a
 	ld d, $00
@@ -5724,7 +5724,7 @@ PrintPlayAreaCardHeader:
 	inc c
 	ld b, 2
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call CheckPrintCnfSlpPrz
 	inc b
 	call CheckPrintPoisoned
@@ -5735,7 +5735,7 @@ PrintPlayAreaCardHeader:
 	; finally check whether to print the PlusPower and/or Defender symbols
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	jr z, .not_pluspower
 	ld a, [wCurPlayAreaY]
@@ -5751,7 +5751,7 @@ PrintPlayAreaCardHeader:
 .not_pluspower
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z ; return if there are no attached Defender cards
 	ld a, [wCurPlayAreaY]
@@ -5934,7 +5934,7 @@ DisplayPlayAreaScreenToUsePkmnPower:
 .asm_649d
 	ldh a, [hCurMenuItem]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
 	call OpenCardPage_FromCheckPlayArea
@@ -5948,7 +5948,7 @@ DisplayPlayAreaScreenToUsePkmnPower:
 	ld de, wDuelTempList
 	call SetListPointer
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld b, $00
 .asm_64ca
@@ -5962,7 +5962,7 @@ DisplayPlayAreaScreenToUsePkmnPower:
 	ld [wCurPlayAreaY], a
 	ld a, b
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call SetNextElementOfList
 	call PrintPlayAreaCardHeader
 	call PrintPlayAreaCardLocation
@@ -6120,13 +6120,13 @@ SaveDuelStateToSRAM:
 	call BankswitchSRAM
 	push hl
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -6423,7 +6423,7 @@ LoadOpponentDeck:
 .valid_deck
 ; set opponent as controlled by AI
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld a, [wOpponentDeckID]
 	or DUELIST_TYPE_AI_OPP
 	ld [hl], a
@@ -6561,7 +6561,7 @@ HandleSpecialDuelMainSceneHotkeys:
 	ret
 .start_pressed
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp -1
 	jr z, .return_carry
 	call GetCardIDFromDeckIndex
@@ -6625,7 +6625,7 @@ SetLinkDuelTransmissionFrameFunction:
 PrintAttachedEnergyToPokemon:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardNameToTxRam2_b
 	ldh a, [hTempCardIndex_ff98]
 	call LoadCardNameToTxRam2
@@ -6785,7 +6785,7 @@ OppAction_PlayBasicPokemonCard:
 	call PutHandPokemonCardInPlayArea
 	ldh [hTempPlayAreaLocation_ff9d], a
 	add DUELVARS_ARENA_CARD_STAGE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], 0
 	ldh a, [hTemp_ffa0]
 	ldtx hl, PlacedOnTheBenchText
@@ -6798,7 +6798,7 @@ OppAction_PlayBasicPokemonCard:
 ; required Energy cards and swaps the Active Pokemon with a Benched Pokemon
 OppAction_AttemptRetreat:
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	push af
 	call AttemptRetreat
 	ldtx hl, RetreatWasUnsuccessfulText
@@ -6861,7 +6861,7 @@ OppAction_BeginUseAttack:
 	call CheckSmokescreenSubstatus
 	jr c, .has_status
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr z, .has_status
@@ -6981,7 +6981,7 @@ OppAction_6b30:
 OppAction_UseMetronomeAttack:
 	call DrawDuelMainScene
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr z, .asm_6b56
@@ -7065,7 +7065,7 @@ HandleBetweenTurnsEvents:
 	call DrawWideTextBox_WaitForInput
 
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -7096,7 +7096,7 @@ HandleBetweenTurnsEvents:
 	call DiscardAttachedPluspowers
 	call SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
@@ -7117,7 +7117,7 @@ HandleBetweenTurnsEvents:
 ; and discards any PlusPower cards from the turn holder's play area
 DiscardAttachedPluspowers:
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld e, MAX_PLAY_AREA_POKEMON
 	xor a
 .unattach_pluspower_loop
@@ -7132,7 +7132,7 @@ DiscardAttachedPluspowers:
 ; and discards any Defender cards from the turn holder's play area
 DiscardAttachedDefenders:
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld e, MAX_PLAY_AREA_POKEMON
 	xor a
 .unattach_defender_loop
@@ -7180,7 +7180,7 @@ MoveCardToDiscardPileIfInArena:
 ;	carry = set:  if the turn holder's Active Pokemon is Asleep or Poisoned
 IsArenaPokemonAsleepOrPoisoned:
 	ld a, DUELVARS_ARENA_CARD_STATUS
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret z
 	; note that POISONED | DOUBLE_POISONED is the same as just DOUBLE_POISONED ($c0)
@@ -7360,7 +7360,7 @@ HandlePoisonDamage:
 	ld e, a
 	ld d, $00
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call SubtractHP
 	push hl
 	ld a, $8c
@@ -7630,7 +7630,7 @@ HandleBetweenTurnKnockOuts:
 ; preserves bc
 MoveAllTurnHolderKnockedOutPokemonToDiscardPile:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, a
 	ld l, DUELVARS_ARENA_CARD_HP
 	ld e, PLAY_AREA_ARENA
@@ -7656,7 +7656,7 @@ MoveAllTurnHolderKnockedOutPokemonToDiscardPile:
 ;	carry = set:  if the turn holder doesn't have any Benched Pokemon
 ReplaceKnockedOutPokemon:
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret nz
 	call ClearAllStatusConditions
@@ -7673,7 +7673,7 @@ ReplaceKnockedOutPokemon:
 
 .can_replace_pokemon
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DUELIST_TYPE_PLAYER
 	jr nz, .opponent
 
@@ -7701,7 +7701,7 @@ ReplaceKnockedOutPokemon:
 	ld e, PLAY_AREA_ARENA
 	call SwapPlayAreaPokemon
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ldtx hl, DuelistPlacedACardText
 	call DisplayCardDetailScreen
 	call ExchangeRNG
@@ -7752,7 +7752,7 @@ Func_6fa5:
 ;	[wNumberPrizeCardsToTake] = number of Knocked Out Pokemon in the turn holder's play area
 CountKnockedOutPokemon:
 	ld a, DUELVARS_ARENA_CARD_HP
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld d, h
 	ld e, DUELVARS_ARENA_CARD
 	ld b, PLAY_AREA_ARENA
@@ -7798,7 +7798,7 @@ TurnDuelistTakePrizes:
 	ld h, $00
 	call LoadTxRam3
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DUELIST_TYPE_PLAYER
 	jr nz, .opponent
 
@@ -7816,7 +7816,7 @@ TurnDuelistTakePrizes:
 .return_has_prizes
 	call ExchangeRNG
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	or a
 	ret nz
 	scf
@@ -7829,7 +7829,7 @@ TurnDuelistTakePrizes:
 	call CountPrizes
 	ld [wTempNumRemainingPrizeCards], a
 	ld a, DUELVARS_DUELIST_TYPE
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DUELIST_TYPE_LINK_OPP
 	jr z, .link_opponent
 	call AIDoAction_TakePrize
@@ -7840,7 +7840,7 @@ TurnDuelistTakePrizes:
 .link_opponent
 	call SerialRecv8Bytes
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], d
 	ld a, e
 	cp $ff
@@ -7872,7 +7872,7 @@ TurnDuelistTakePrizes:
 ;	carry = set:  if all of the turn holder's in-play Pokémon have been Knocked Out
 CheckIfTurnDuelistPlayAreaPokemonAreAllKnockedOut:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld l, DUELVARS_ARENA_CARD_HP
 .loop
@@ -7973,7 +7973,7 @@ InitVariablesToBeginTurn:
 ; preserves de
 SetAllPlayAreaPokemonCanEvolve:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld c, a
 	ld l, DUELVARS_ARENA_CARD_FLAGS
 .next_pkmn_loop
@@ -8085,7 +8085,7 @@ TakeAPrizes:
 	add hl, bc
 	ld b, [hl]
 	ld a, DUELVARS_PRIZES
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	ld [hl], b
 	ret
 

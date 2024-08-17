@@ -172,7 +172,7 @@ AIPerformScriptedTurn:
 	call AIAttachEnergyInHandToCardInBench
 
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	cp MACHOP

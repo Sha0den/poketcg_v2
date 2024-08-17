@@ -102,11 +102,11 @@ AIDoTurn_LegendaryMoltres:
 ; check if AI can play MoltresLv37
 ; from hand and if so, play it.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .skip_moltres ; skip if bench is full
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	cp DECK_SIZE - 9
 	jr nc, .skip_moltres ; skip if cards in deck <= 9
 	ld a, MUK
@@ -140,7 +140,7 @@ AIDoTurn_LegendaryMoltres:
 ; try attaching an energy card to it from the hand.
 ; otherwise, run normal AI energy attach routine.
 	ld a, DUELVARS_ARENA_CARD
-	call GetTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, MAGMAR_LV31
 	cp e
