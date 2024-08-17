@@ -30,15 +30,11 @@ _ResetAnimationQueue::
 PlayLoadedDuelAnimation::
 	ld a, [wDoFrameFunction + 0]
 	cp LOW(UpdateQueuedAnimations)
-	jr nz, .error
+	ret nz
 	ld a, [wDoFrameFunction + 1]
 	cp HIGH(UpdateQueuedAnimations)
-	jr z, .okay
-.error
-	debug_nop
-	ret
+	ret nz
 
-.okay
 	ld a, [wTempAnimation]
 	ld [wd4bf], a
 	cp DUEL_SPECIAL_ANIMS

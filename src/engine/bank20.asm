@@ -728,7 +728,7 @@ LoadPaletteDataFromHL:
 	push de
 	ld a, b
 	cp NUM_BACKGROUND_PALETTES + NUM_OBJECT_PALETTES ; total palettes available
-	jr nc, .fail_return
+	jr nc, .done
 
 	add a ; 2 * index
 	add a ; 4 * index
@@ -741,7 +741,7 @@ LoadPaletteDataFromHL:
 
 	ld a, c
 	cp $09
-	jr nc, .fail_return
+	jr nc, .done
 
 	add a ; 2 * size
 	add a ; 4 * size
@@ -754,12 +754,7 @@ LoadPaletteDataFromHL:
 	dec c
 	jr nz, .loop
 	call FlushAllPalettes
-	jr .success_return
-
-.fail_return
-	debug_nop
-
-.success_return
+.done
 	pop de
 	pop bc
 	pop hl

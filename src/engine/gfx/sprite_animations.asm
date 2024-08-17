@@ -70,7 +70,6 @@ CreateSpriteAndAnimBufferEntry:
 	ld [wWhichSprite], a
 	cp $10
 	jr nz, .findFirstEmptyAnimField
-	debug_nop
 	scf
 	jr .quit
 .foundEmptyAnimField
@@ -617,7 +616,6 @@ Func_12c05:
 	jr .quitSucceed
 
 .quitFail
-	debug_nop
 	xor a
 	scf
 .quitSucceed

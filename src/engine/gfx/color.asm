@@ -433,10 +433,6 @@ CopyPalsToSRAMBuffer:
 	ldh a, [hBankSRAM]
 
 	push af
-	cp BANK("SRAM1")
-	jr z, .ok
-	debug_nop
-.ok
 	ld a, BANK("SRAM1")
 	call BankswitchSRAM
 	ld hl, sGfxBuffer2
@@ -462,10 +458,6 @@ LoadPalsFromSRAMBuffer:
 	ldh a, [hBankSRAM]
 
 	push af
-	cp BANK("SRAM1")
-	jr z, .ok
-	debug_nop
-.ok
 	ld a, BANK("SRAM1")
 	call BankswitchSRAM
 	ld hl, sGfxBuffer2

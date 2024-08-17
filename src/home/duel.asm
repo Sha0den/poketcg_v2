@@ -43,7 +43,6 @@ CopyDeckData::
 	ld a, [hl]
 	or a
 	ret nz
-	debug_nop
 	scf
 	ret
 

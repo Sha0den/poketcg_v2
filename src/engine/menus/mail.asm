@@ -556,14 +556,12 @@ TryGivePCPack:
 	inc hl
 	dec c
 	jr nz, .findFreeSlotLoop
-	debug_nop
 	jr .quit
 
 .foundFreeSlot
 	ld a, b
 	or PACK_UNOPENED ; mark pack as unopened
 	ld [hl], a
-
 .quit
 	pop de
 	pop bc

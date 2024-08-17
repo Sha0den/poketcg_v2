@@ -90,7 +90,6 @@ LoadNPC:
 	dec c
 	jr nz, .findEmptyIndexLoop
 	ld hl, wLoadedNPCs
-	debug_nop
 	jr .exit
 .foundEmptyIndex
 	ld a, b

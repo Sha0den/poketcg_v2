@@ -233,7 +233,6 @@ GetSpriteAnimBufferProperty::
 GetSpriteAnimBufferProperty_SpriteInA::
 	cp SPRITE_ANIM_BUFFER_CAPACITY
 	jr c, .got_sprite
-	debug_nop
 	ld a, SPRITE_ANIM_BUFFER_CAPACITY - 1 ; default to last sprite
 .got_sprite
 	push bc

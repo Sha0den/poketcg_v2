@@ -48,7 +48,6 @@ GenerateBoosterNonEnergies:
 	or a
 	ret
 .no_valid_cards
-	debug_nop
 	scf
 	ret
 
@@ -284,7 +283,6 @@ DetermineBoosterCard:
 	or a
 	ret
 .no_valid_card_found
-	debug_nop
 	scf
 	ret
 

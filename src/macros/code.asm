@@ -58,10 +58,6 @@ MACRO get_event_value
 	db \1
 ENDM
 
-; the rst $38 handler is a single ret instruction
-; probably used for testing purposes during development
-DEF debug_nop EQUS "rst $38"
-
 ; Returns to the pointer in bc instead of where the stack was.
 MACRO retbc
 	push bc

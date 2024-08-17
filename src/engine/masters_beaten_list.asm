@@ -29,7 +29,6 @@ AddMasterBeatenToList:
 	inc hl
 	dec c
 	jr nz, .loop
-	debug_nop
 	jr .exit
 
 .found_empty_slot

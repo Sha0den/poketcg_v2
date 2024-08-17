@@ -4,7 +4,6 @@ Preload_Clerk9:
 	ld hl, .jump_table
 	cp 9
 	jp c, JumpToFunctionInTable
-	debug_nop
 	jr .less_than_three_medals
 
 .jump_table

@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 16, 2024:** 10 Files Changed
+- **August 17, 2024:** 13 Files Changed
+    - Remove the "debug_nop" rst
+
+<br/>
+
+- **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/df9b66c73c1c76d0ad48fbb1b6cf2228f6ea360a):** 10 Files Changed
     - Replace numerous instances of "call DisableSRAM/ret" with "jp SwapTurn"
 
 <br/>
@@ -555,13 +560,9 @@
 
 <br/>
 
-- **[April 17, 2024](https://github.com/Sha0den/improvedpoketcg/commit/673f4965565af76c3ff95c26988b2b024d04e380):** 1 File Changed
-    - Further Adjustments to box_messages.png
-
-<br/>
-
 - **[April 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/31a2cf426dfcccbd4d25b5af3d18a77845a01dc2):** 3 Files Changed
     - Update fullwidth and halfwidth font graphics and some of the box messages
+    - Further Adjustments to box_messages.png in [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/673f4965565af76c3ff95c26988b2b024d04e380)
 
 <br/>
 

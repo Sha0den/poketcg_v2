@@ -319,7 +319,6 @@ GetItemInLoadedNPCIndex::
 	push bc
 	cp LOADED_NPC_MAX
 	jr c, .asm_39b4
-	debug_nop
 	xor a
 .asm_39b4
 	add a
