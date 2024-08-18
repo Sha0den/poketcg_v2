@@ -76,7 +76,13 @@
 
 
 ## Code Optimization
-- **August 17, 2024:** 4 Files Changed
+- **August 18, 2024:** 5 Files Changed
+    - Move some functions from home/duel.asm and home/substatus.asm to engine/duel/core.asm
+    - Shuffle a few functions in the home bank
+
+<br/>
+
+- **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/c52579cdc587b88d8103dfb9bad141eeb8f67f89):** 4 Files Changed
     - Use in-lined bank switches instead of farcalls for a few home bank functions and do the opposite for a couple of rarely used functions that are related to Mankey's Peek
 
 <br/>

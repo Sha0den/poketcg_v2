@@ -8590,7 +8590,7 @@ PokemonBreeder_EvolveEffect:
 	call PlaySFX
 	ldtx hl, PokemonEvolvedIntoPokemonText
 	call DrawWideTextBox_WaitForInput
-	call ProcessPlayedPokemonCard
+	bank1call ProcessPlayedPokemonCard
 	pop af
 	ldh [hTempCardIndex_ff9f], a
 	ret

@@ -374,43 +374,6 @@ HandleAmnesiaSubstatus::
 	ret
 
 
-; output:
-;	carry = set:  if the turn holder's attack was unsuccessful due to Smokescreen
-HandleSmokescreenSubstatus::
-	call CheckSmokescreenSubstatus
-	ret nc ; return if the Active Pokemon isn't affected by Smokescreen
-	call TossCoin
-	ld [wGotHeadsFromSmokescreenCheck], a
-	ccf
-	ret nc ; return if heads
-	ldtx hl, AttackUnsuccessfulText
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
-
-
-; preserves bc
-; output:
-;	de = ID for TossCoin notification text
-;	carry = set:  if the turn holder's Active Pokemon is affected by Smokescreen
-CheckSmokescreenSubstatus::
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	get_turn_duelist_var
-	or a
-	ret z
-	ldtx de, SmokescreenCheckText
-	cp SUBSTATUS2_SMOKESCREEN
-	jr z, .card_is_affected
-	or a
-	ret
-.card_is_affected
-	ld a, [wGotHeadsFromSmokescreenCheck]
-	or a
-	ret nz
-	scf
-	ret
-
-
 ; preserves bc and de
 ; output:
 ;	hl = ID for notification text:  if the below condition is true
@@ -575,30 +538,6 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	ldtx hl, UnableDueToToxicGasText
-	ret
-
-
-; if the ID of the card provided in register a as a deck index is MUK,
-; then clear the changed type of all Active and Benched Pokemon.
-; input:
-;	a = deck index (0-59) to check
-ClearChangedTypesIfMuk::
-	call GetCardIDFromDeckIndex
-	ld a, e
-	cp MUK
-	ret nz ; return if the Pokemon isn't a Muk
-	call SwapTurn
-	call .zero_changed_types
-	call SwapTurn
-.zero_changed_types
-	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
-	get_turn_duelist_var
-	ld c, MAX_PLAY_AREA_POKEMON
-.zero_changed_types_loop
-	xor a
-	ld [hli], a
-	dec c
-	jr nz, .zero_changed_types_loop
 	ret
 
 
@@ -767,61 +706,3 @@ HandleStrikesBack_AgainstDamagingAttack::
 	pop de
 	pop hl
 	jp SwapTurn
-
-
-; used to bounce back an attack of the RESIDUAL category.
-; when MACHAMP is damaged, if its Strikes Back is active, the
-; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
-; output:
-;	carry = set:  if Machamp is unable to use its Pokemon Power
-HandleStrikesBack_AgainstResidualAttack::
-	ld a, [wTempNonTurnDuelistCardID]
-	cp MACHAMP
-	ret nz ; return if the Defending Pokemon isn't a Machamp
-	ld a, [wLoadedAttackCategory]
-	and RESIDUAL
-	ret nz
-	ld a, [wDealtDamage]
-	or a
-	ret z
-	call SwapTurn
-	call CheckCannotUseDueToStatus
-	call SwapTurn
-	ret c  ; return if Pokemon Power can't be used because of status or Toxic Gas
-	ld hl, 10 ; amount of damage to give the Attacking Pokemon
-	call ApplyStrikesBack_AgainstResidualAttack
-	jp nc, WaitForWideTextBoxInput
-	ret
-
-; output:
-;	carry = set:  if the Attacking Pokemon was Knocked Out
-ApplyStrikesBack_AgainstResidualAttack::
-	push hl
-	call LoadTxRam3
-	ld a, [wTempTurnDuelistCardID]
-	ld e, a
-	ld d, $0
-	call LoadCardDataToBuffer2_FromCardID
-	ld hl, wLoadedCard2Name
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	call LoadTxRam2
-	ld a, DUELVARS_ARENA_CARD_HP
-	get_turn_duelist_var
-	pop de
-	push af
-	push hl
-	call SubtractHP
-	ldtx hl, ReceivesDamageDueToStrikesBackText
-	call DrawWideTextBox_PrintText
-	pop hl
-	pop af
-	or a
-	ret z
-	call WaitForWideTextBoxInput
-	xor a ; PLAY_AREA_ARENA
-	call PrintPlayAreaCardKnockedOutIfNoHP
-	bank1call DrawDuelHUDs
-	scf
-	ret

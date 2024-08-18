@@ -301,10 +301,6 @@ MoveDiscardPileCardToHand::
 	ret
 
 
-PowersOf2::
-	db $01, $02, $04, $08, $10, $20, $40, $80
-
-
 ; fills wDuelTempList with the turn holder's discard pile cards (their 0-59 deck indices)
 ; output:
 ;	carry = set:  if there weren't any cards in the turn holder's discard pile
@@ -445,29 +441,6 @@ CreateHandCardList::
 	ret nz
 .set_carry
 	scf
-	ret
-
-
-; sorts the turn holder's hand cards by ID (highest to lowest ID)
-; makes use of wDuelTempList (what de is initially pointing to)
-SortHandCardsByID::
-	call FindLastCardInHand
-.loop
-	ld a, [hld]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-	ld a, $ff
-	ld [de], a
-	call SortCardsInDuelTempListByID
-	call FindLastCardInHand
-.loop2
-	ld a, [de]
-	inc de
-	ld [hld], a
-	dec b
-	jr nz, .loop2
 	ret
 
 
@@ -644,6 +617,87 @@ GetCardIDFromDeckIndex_bc::
 	ret
 
 
+; preserves af, bc, and hl
+; input:
+;	a = deck index (0-59) of the card to identify
+; output:
+;	de = card ID from input deck index
+GetCardIDFromDeckIndex::
+	push af
+	push hl
+	call _GetCardIDFromDeckIndex
+	ld e, a
+	ld d, $0
+	pop hl
+	pop af
+	ret
+
+
+; preserves bc and de
+; input:
+;	a = deck index (0-59) of the card to identify
+; output:
+;	a = card ID from input deck index
+_GetCardIDFromDeckIndex::
+	push de
+	ld e, a
+	ld d, $0
+	ld hl, wPlayerDeck
+	ldh a, [hWhoseTurn]
+	cp PLAYER_TURN
+	jr z, .load_card_from_deck
+	ld hl, wOpponentDeck
+.load_card_from_deck
+	add hl, de
+	ld a, [hl]
+	pop de
+	ret
+
+
+; loads the data of a card to wLoadedCard1 by using its deck index
+; preserves all registers except af
+; input:
+;	a = card's deck index (0-59)
+; output:
+;	a = card's ID
+;	wLoadedCard1 (65 bytes) = all of the card's data
+LoadCardDataToBuffer1_FromDeckIndex::
+	push hl
+	push de
+	push bc
+	push af
+	call GetCardIDFromDeckIndex
+	call LoadCardDataToBuffer1_FromCardID
+	pop af
+	ld hl, wLoadedCard1
+.after_load
+	bank1call ConvertSpecialTrainerCardToPokemon
+	ld a, e
+	pop bc
+	pop de
+	pop hl
+	ret
+
+
+; loads the data of a card to wLoadedCard2 by using its deck index
+; preserves all registers except af
+; input:
+;	a = card's deck index (0-59)
+; output:
+;	a = card's ID
+;	wLoadedCard2 (65 bytes) = all of the card's data
+LoadCardDataToBuffer2_FromDeckIndex::
+	push hl
+	push de
+	push bc
+	push af
+	call GetCardIDFromDeckIndex
+	call LoadCardDataToBuffer2_FromCardID
+	pop af
+	ld hl, wLoadedCard2
+	jr LoadCardDataToBuffer1_FromDeckIndex.after_load
+
+
 ; preserves all registers except af
 ; input:
 ;	a = deck index (0-59) of the card to add to wDuelTempList
@@ -680,22 +734,6 @@ GetCardInDuelTempList::
 	call GetCardIDFromDeckIndex
 	pop hl
 	ldh a, [hTempCardIndex_ff98]
-	ret
-
-
-; preserves af, bc, and hl
-; input:
-;	a = deck index (0-59) of the card to identify
-; output:
-;	de = card ID from input deck index
-GetCardIDFromDeckIndex::
-	push af
-	push hl
-	call _GetCardIDFromDeckIndex
-	ld e, a
-	ld d, $0
-	pop hl
-	pop af
 	ret
 
 
@@ -753,75 +791,6 @@ CountCardsInDuelTempList::
 	jr nz, .loop
 	ld a, b
 	pop bc
-	pop hl
-	ret
-
-
-; preserves bc and de
-; input:
-;	a = deck index (0-59) of the card to identify
-; output:
-;	a = card ID from input deck index
-_GetCardIDFromDeckIndex::
-	push de
-	ld e, a
-	ld d, $0
-	ld hl, wPlayerDeck
-	ldh a, [hWhoseTurn]
-	cp PLAYER_TURN
-	jr z, .load_card_from_deck
-	ld hl, wOpponentDeck
-.load_card_from_deck
-	add hl, de
-	ld a, [hl]
-	pop de
-	ret
-
-
-; loads the data of a card to wLoadedCard1 by using its deck index
-; preserves all registers except af
-; input:
-;	a = card's deck index (0-59)
-; output:
-;	a = card's ID
-;	wLoadedCard1 (65 bytes) = all of the card's data
-LoadCardDataToBuffer1_FromDeckIndex::
-	push hl
-	push de
-	push bc
-	push af
-	call GetCardIDFromDeckIndex
-	call LoadCardDataToBuffer1_FromCardID
-	pop af
-	ld hl, wLoadedCard1
-	bank1call ConvertSpecialTrainerCardToPokemon
-	ld a, e
-	pop bc
-	pop de
-	pop hl
-	ret
-
-
-; loads the data of a card to wLoadedCard2 by using its deck index
-; preserves all registers except af
-; input:
-;	a = card's deck index (0-59)
-; output:
-;	a = card's ID
-;	wLoadedCard2 (65 bytes) = all of the card's data
-LoadCardDataToBuffer2_FromDeckIndex::
-	push hl
-	push de
-	push bc
-	push af
-	call GetCardIDFromDeckIndex
-	call LoadCardDataToBuffer2_FromCardID
-	pop af
-	ld hl, wLoadedCard2
-	bank1call ConvertSpecialTrainerCardToPokemon
-	ld a, e
-	pop bc
-	pop de
 	pop hl
 	ret
 
@@ -1341,82 +1310,6 @@ GetNonTurnDuelistVariable::
 	ret
 
 
-; when playing a Pokemon card, initializes some variables according to the
-; card being played and checks if the card has Pokemon Power, to show it to
-; the player, and possibly to use it if it triggers when the card is played.
-; input:
-;	[hTempCardIndex_ff98] = deck index of the Pokemon being played
-ProcessPlayedPokemonCard::
-	ldh a, [hTempCardIndex_ff98]
-	call ClearChangedTypesIfMuk
-	ldh a, [hTempCardIndex_ff98]
-	ld d, a
-	ld e, $00
-	call CopyAttackDataAndDamage_FromDeckIndex
-	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
-	ldh a, [hTempCardIndex_ff98]
-	ldh [hTempCardIndex_ff9f], a
-	call GetCardIDFromDeckIndex
-	ld a, e
-	ld [wTempTurnDuelistCardID], a
-	ld a, [wLoadedAttackCategory]
-	cp POKEMON_POWER
-	ret nz
-	bank1call DisplayUsePokemonPowerScreen
-	ldh a, [hTempCardIndex_ff98]
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld hl, wLoadedCard1Name
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	call LoadTxRam2
-	ldtx hl, HavePokemonPowerText
-	call DrawWideTextBox_WaitForInput
-	call ExchangeRNG
-	ld a, [wLoadedCard1ID]
-	cp MUK
-	jr z, .use_pokemon_power
-	ld a, $01 ; check only Muk
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
-	jr nc, .use_pokemon_power
-	bank1call DisplayUsePokemonPowerScreen
-	ldtx hl, UnableDueToToxicGasText
-	call DrawWideTextBox_WaitForInput
-	jp ExchangeRNG
-
-.use_pokemon_power
-	ld hl, wLoadedAttackEffectCommands
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
-	call CheckMatchingCommand
-	ret c ; return if command not found
-	bank1call DrawDuelMainScene
-	ldh a, [hTempCardIndex_ff9f]
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld de, wLoadedCard1Name
-	ld hl, wTxRam2
-	ld a, [de]
-	inc de
-	ld [hli], a
-	ld a, [de]
-	ld [hli], a
-	ld de, wLoadedAttackName
-	ld a, [de]
-	inc de
-	ld [hli], a
-	ld a, [de]
-	ld [hl], a
-	ldtx hl, WillUseThePokemonPowerText
-	call DrawWideTextBox_WaitForInput
-	call ExchangeRNG
-	xor a
-	ld [wce7e], a
-	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
-	jp TryExecuteEffectCommandFunction
-
-
 ; input:
 ;	a = card ID of the Pokemon with the information to copy
 ;	e = 0:  copy the first attack
@@ -1520,158 +1413,6 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	ret
 
 
-; uses a Pokemon Power
-UsePokemonPower::
-	xor a
-	ld [wce7e], a
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	call TryExecuteEffectCommandFunction
-	jr c, DisplayUsePokemonPowerScreen_WaitForInput
-	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
-	call TryExecuteEffectCommandFunction
-	ret c
-	ld a, OPPACTION_USE_PKMN_POWER
-	call SetOppAction_SerialSendDuelData
-	call ExchangeRNG
-	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
-	call SetOppAction_SerialSendDuelData
-	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
-	call TryExecuteEffectCommandFunction
-	ld a, OPPACTION_DUEL_MAIN_SCENE
-	jp SetOppAction_SerialSendDuelData
-
-; input:
-;	hl = text ID
-; output:
-;	carry = set
-DisplayUsePokemonPowerScreen_WaitForInput::
-	push hl
-	bank1call DisplayUsePokemonPowerScreen
-	pop hl
-;	fallthrough
-
-; input:
-;	hl = text ID
-; output:
-;	carry = set
-DrawWideTextBox_WaitForInput_ReturnCarry::
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
-
-
-; preserves bc and de
-ClearNonTurnTemporaryDuelvars_ResetCarry::
-	bank1call ClearNonTurnTemporaryDuelvars
-	or a
-	ret
-
-; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
-; output:
-;	carry = set:  if the effect command returned with carry set
-UseAttackOrPokemonPower::
-	ld a, [wSelectedAttack]
-	ld [wPlayerAttackingAttackIndex], a
-	ldh a, [hTempCardIndex_ff9f]
-	ld [wPlayerAttackingCardIndex], a
-	ld a, [wTempCardID_ccc2]
-	ld [wPlayerAttackingCardID], a
-	ld a, [wLoadedAttackCategory]
-	cp POKEMON_POWER
-	jr z, UsePokemonPower
-	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
-	call TryExecuteEffectCommandFunction
-	jr c, DrawWideTextBox_WaitForInput_ReturnCarry
-	call CheckSmokescreenSubstatus
-	jr c, .sand_attack_smokescreen
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	call TryExecuteEffectCommandFunction
-	ret c
-	call SendAttackDataToLinkOpponent
-	jr .next
-.sand_attack_smokescreen
-	call SendAttackDataToLinkOpponent
-	call HandleSmokescreenSubstatus
-	jr c, ClearNonTurnTemporaryDuelvars_ResetCarry
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	call TryExecuteEffectCommandFunction
-	ret c
-.next
-	ld a, OPPACTION_USE_ATTACK
-	call SetOppAction_SerialSendDuelData
-	ld a, EFFECTCMDTYPE_DISCARD_ENERGY
-	call TryExecuteEffectCommandFunction
-	call CheckSelfConfusionDamage
-	jp c, HandleConfusionDamageToSelf
-	call DrawDuelMainScene_PrintPokemonsAttackText
-	call WaitForWideTextBoxInput
-	call ExchangeRNG
-	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
-	call TryExecuteEffectCommandFunction
-	ld a, OPPACTION_ATTACK_ANIM_AND_DAMAGE
-	call SetOppAction_SerialSendDuelData
-;	fallthrough
-
-PlayAttackAnimation_DealAttackDamage::
-	xor a
-	ld [wce7e], a
-	ld a, [wLoadedAttackCategory]
-	and RESIDUAL
-	jr nz, .deal_damage
-	call SwapTurn
-	call HandleNoDamageOrEffectSubstatus
-	call SwapTurn
-.deal_damage
-	xor a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
-	call TryExecuteEffectCommandFunction
-	call ApplyDamageModifiers_DamageToTarget
-	call LastChanceToNegateFinalDamage
-	ld hl, wDealtDamage
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ld b, PLAY_AREA_ARENA
-	ld a, [wDamageEffectiveness]
-	ld c, a
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetNonTurnDuelistVariable
-	push de
-	push hl
-	bank1call PlayAttackAnimation
-	bank1call PlayStatusConditionQueueAnimations
-	call WaitAttackAnimation
-	pop hl
-	pop de
-	call SubtractHP
-	ld a, [wDuelDisplayedScreen]
-	cp DUEL_MAIN_SCENE
-	jr nz, .skip_draw_huds
-	push hl
-	bank1call DrawDuelHUDs
-	pop hl
-.skip_draw_huds
-	call PrintKnockedOutIfHLZero
-;	fallthrough
-
-HandleAfterDamageEffects::
-	ld a, [wTempNonTurnDuelistCardID]
-	push af
-	ld a, EFFECTCMDTYPE_AFTER_DAMAGE
-	call TryExecuteEffectCommandFunction
-	pop af
-	ld [wTempNonTurnDuelistCardID], a
-	call HandleStrikesBack_AgainstResidualAttack
-	bank1call ApplyStatusConditionQueue
-	call Func_1bb4
-	bank1call UpdateArenaCardLastTurnDamage
-	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
-	or a
-	ret
-
-
 ; if [wLoadedAttackAnimation] != 0, wait until the animation is over
 ; preserves all registers except af
 WaitAttackAnimation::
@@ -1682,25 +1423,6 @@ WaitAttackAnimation::
 	call DoFrame
 	call CheckAnyAnimationPlaying
 	jr c, .anim_loop
-	ret
-
-
-; called when an Attacking Pokemon deals damage to itself due to confusion.
-; displays the corresponding animation and deals 20 damage to the Attacking Pokemon.
-HandleConfusionDamageToSelf::
-	bank1call DrawDuelMainScene
-	ld a, 1
-	ld [wIsDamageToSelf], a
-	ldtx hl, DamageToSelfDueToConfusionText
-	call DrawWideTextBox_PrintText
-	ld a, ATK_ANIM_CONFUSION_HIT
-	ld [wLoadedAttackAnimation], a
-	ld a, 20 ; damage
-	call DealConfusionDamageToSelf
-	call Func_1bb4
-	bank1call HandleDestinyBondAndBetweenTurnKnockOuts
-	bank1call ClearNonTurnTemporaryDuelvars
-	or a
 	ret
 
 
@@ -1728,115 +1450,6 @@ SendAttackDataToLinkOpponent::
 	ldh [hTempCardIndex_ff9f], a
 	pop af
 	ldh [hTemp_ffa0], a
-	ret
-
-
-; formerly Func_189d
-; checks for anything else that might prevent the attack's damage.
-; damage is set to 0 if anything is found.
-; input:
-;	de = damage being dealt by the attack
-LastChanceToNegateFinalDamage::
-	ld a, [wLoadedAttackCategory]
-	bit RESIDUAL_F, a
-	ret nz
-	ld a, [wNoDamageOrEffect]
-	or a
-	ret nz
-	ld a, e
-	or d
-	jr nz, .attack_opponent
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetNonTurnDuelistVariable
-	or a
-	jr nz, .attack_opponent
-	ld a, [wStatusConditionQueueIndex]
-	or a
-	ret z
-.attack_opponent
-	push de
-	call SwapTurn
-	xor a
-	ld [wTempPlayAreaLocation_cceb], a
-	call HandleTransparency
-	call SwapTurn
-	pop de
-	ret nc
-	bank1call DrawDuelMainScene
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
-	call GetNonTurnDuelistVariable
-	ld [hl], $0
-	ld de, 0
-	ret
-
-
-; flips a coin to see whether or not a Confused Pokemon will attack itself
-; output:
-;	carry = set:  if the coin was tails (Pokemon will attack itself)
-;	[wGotHeadsFromConfusionCheck] = 0:  if the coin was heads (Pokemon won't attack itself)
-;	[wGotHeadsFromConfusionCheck] = 1:  if the coin was tails (Pokemon will attack itself)
-CheckSelfConfusionDamage::
-	xor a
-	ld [wGotHeadsFromConfusionCheck], a
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	cp CONFUSED
-	jr z, .confused
-	or a
-	ret
-.confused
-	ldtx de, ConfusionCheckDamageText
-	call TossCoin
-	jr c, PlayTrainerCard.done ; return nc if heads
-	ld a, 1
-	ld [wGotHeadsFromConfusionCheck], a
-	scf
-	ret
-
-
-; plays the Trainer card with deck index (0-59) at hTempCardIndex_ff98.
-; a Trainer card is like an attack effect, with its own effect commands.
-; input:
-;	[hTempCardIndex_ff98] = deck index of the Trainer card
-; output:
-;	carry = set:  if the Trainer card wasn't played
-PlayTrainerCard::
-	call CheckCantUseTrainerDueToHeadache
-	jr c, .cant_use
-	ldh a, [hWhoseTurn]
-	ld h, a
-	ldh a, [hTempCardIndex_ff98]
-	ldh [hTempCardIndex_ff9f], a
-	call LoadNonPokemonCardEffectCommands
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
-	call TryExecuteEffectCommandFunction
-	jr nc, .can_use
-.cant_use
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
-.can_use
-	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
-	call TryExecuteEffectCommandFunction
-	jr c, .done
-	ld a, OPPACTION_PLAY_TRAINER
-	call SetOppAction_SerialSendDuelData
-	bank1call DisplayUsedTrainerCardDetailScreen
-	call ExchangeRNG
-	ld a, EFFECTCMDTYPE_DISCARD_ENERGY
-	call TryExecuteEffectCommandFunction
-	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
-	call TryExecuteEffectCommandFunction
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	call SetOppAction_SerialSendDuelData
-	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
-	call TryExecuteEffectCommandFunction
-	ldh a, [hTempCardIndex_ff9f]
-	call MoveHandCardToDiscardPile
-	call ExchangeRNG
-.done
-	or a
 	ret
 
 
@@ -1994,24 +1607,6 @@ SwapTurn::
 	ret
 
 
-; converts a color to its equivalent WR_* (weakness/resistance) value
-; preserves all registers except af
-TranslateColorToWR::
-	push hl
-	add LOW(InvertedPowersOf2)
-	ld l, a
-	ld a, HIGH(InvertedPowersOf2)
-	adc $0
-	ld h, a
-	ld a, [hl]
-	pop hl
-	ret
-
-
-InvertedPowersOf2::
-	db $80, $40, $20, $10, $08, $04, $02, $01
-
-
 ; doubles wDamage if the turn holder's Active Pokemon has Weakness
 ; to its own type/color and reduces wDamage by 30 if the turn holder's
 ; Active Pokemon has Resistance to its own type/color.
@@ -2161,7 +1756,7 @@ PrintPlayAreaCardKnockedOutIfNoHP::
 
 
 ; input:
-;	hl = Pokemon's remaining HP value
+;	[hl] = Pokemon's remaining HP value
 ; output:
 ;	carry = set:  if the Pokemon was Knocked Out
 PrintKnockedOutIfHLZero::
@@ -2299,47 +1894,6 @@ DealDamageToPlayAreaPokemon::
 	pop de
 	pop hl
 	ret
-
-
-; draws the main duel screen, then prints the "<Pokemon Lvxx>'s <attack>" text
-; The Pokemon's name is the turn holder's Active Pokemon,
-; and the attack's name is taken from wLoadedAttackName.
-DrawDuelMainScene_PrintPokemonsAttackText::
-	bank1call DrawDuelMainScene
-;	fallthrough
-
-; prints the "<Pokemon Lvxx>'s <attack>" text
-; The Pokemon's name is the turn holder's Active Pokemon,
-; and the attack's name is taken from wLoadedAttackName.
-PrintPokemonsAttackText::
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, 18
-	call CopyCardNameAndLevel
-	ld [hl], TX_END
-	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
-	ld hl, wTxRam2
-	xor a
-	ld [hli], a
-	ld [hli], a
-	ld a, [wLoadedAttackName]
-	ld [hli], a ; wTxRam2_b
-	ld a, [wLoadedAttackName + 1]
-	ld [hli], a
-	ldtx hl, PokemonsAttackText
-	jp DrawWideTextBox_PrintText
-
-
-Func_1bb4::
-	call FinishQueuedAnimations
-	bank1call DrawDuelMainScene
-	bank1call DrawDuelHUDs
-	xor a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	call PrintFailedEffectText
-	call WaitForWideTextBoxInput
-	jp ExchangeRNG
 
 
 ; prints one of the ThereWasNoEffectFrom*Text if wEffectFailed contains EFFECT_FAILED_NO_EFFECT,
@@ -2490,6 +2044,9 @@ CheckLoadedAttackFlag::
 	pop hl
 	ret
 
+PowersOf2::
+	db $01, $02, $04, $08, $10, $20, $40, $80
+
 
 ; uses a card's deck index to check whether or not it is a Basic Pokemon
 ; preserves all registers except af
@@ -2546,4 +2103,5 @@ CheckDeckIndexForBasicPokemon::
 ;	ld [hl], a
 ;	ld a, NO_DAMAGE_OR_EFFECT_ATTACK
 ;	ld [wNoDamageOrEffect], a
-;	jp HandleAfterDamageEffects
+;	bank1call HandleAfterDamageEffects
+;	ret

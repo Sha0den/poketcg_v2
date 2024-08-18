@@ -109,6 +109,23 @@ GetCardResistance::
 	ret
 
 
+; converts a color to its equivalent WR_* (weakness/resistance) value
+; preserves all registers except af
+TranslateColorToWR::
+	push hl
+	add LOW(InvertedPowersOf2)
+	ld l, a
+	ld a, HIGH(InvertedPowersOf2)
+	adc $0
+	ld h, a
+	ld a, [hl]
+	pop hl
+	ret
+
+InvertedPowersOf2::
+	db $80, $40, $20, $10, $08, $04, $02, $01
+
+
 ; checks if the turn holder's CHARIZARD's Energy Burn is active,
 ; and if so, it turns all Energy (except for Double Colorless Energy)
 ; at wAttachedEnergies into Fire Energy

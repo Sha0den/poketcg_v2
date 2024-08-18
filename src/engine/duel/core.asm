@@ -730,6 +730,29 @@ OpenPlayerHandScreen:
 	jp DuelMainInterface
 
 
+; sorts the turn holder's hand cards by ID (highest to lowest ID)
+; makes use of wDuelTempList (what de is initially pointing to)
+SortHandCardsByID:
+	call FindLastCardInHand
+.loop
+	ld a, [hld]
+	ld [de], a
+	inc de
+	dec b
+	jr nz, .loop
+	ld a, $ff
+	ld [de], a
+	call SortCardsInDuelTempListByID
+	call FindLastCardInHand
+.loop2
+	ld a, [de]
+	inc de
+	ld [hld], a
+	dec b
+	jr nz, .loop2
+	ret
+
+
 ; input:
 ;	c = type of Energy card being played (TYPE_ENERGY_* constant)
 ;	[hTempCardIndex_ff98] = Energy card's deck index (0-59)
@@ -883,6 +906,51 @@ PlayPokemonCard:
 	call PrintPlayAreaCardList_EnableLCD
 	call PrintPokemonEvolvedIntoPokemon
 	call ProcessPlayedPokemonCard
+.done
+	or a
+	ret
+
+
+; plays the Trainer card with deck index (0-59) at hTempCardIndex_ff98.
+; a Trainer card is like an attack effect, with its own effect commands.
+; input:
+;	[hTempCardIndex_ff98] = deck index of the Trainer card being played
+; output:
+;	carry = set:  if the Trainer card wasn't played
+PlayTrainerCard:
+	call CheckCantUseTrainerDueToHeadache
+	jr c, .cant_use
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ldh a, [hTempCardIndex_ff98]
+	ldh [hTempCardIndex_ff9f], a
+	call LoadNonPokemonCardEffectCommands
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
+	call TryExecuteEffectCommandFunction
+	jr nc, .can_use
+.cant_use
+	call DrawWideTextBox_WaitForInput
+	scf
+	ret
+.can_use
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+	call TryExecuteEffectCommandFunction
+	jr c, .done
+	ld a, OPPACTION_PLAY_TRAINER
+	call SetOppAction_SerialSendDuelData
+	call DisplayUsedTrainerCardDetailScreen
+	call ExchangeRNG
+	ld a, EFFECTCMDTYPE_DISCARD_ENERGY
+	call TryExecuteEffectCommandFunction
+	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
+	call TryExecuteEffectCommandFunction
+	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
+	call SetOppAction_SerialSendDuelData
+	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
+	call TryExecuteEffectCommandFunction
+	ldh a, [hTempCardIndex_ff9f]
+	call MoveHandCardToDiscardPile
+	call ExchangeRNG
 .done
 	or a
 	ret
@@ -7037,6 +7105,36 @@ LoadCardNameToTxRam2_b:
 	ret
 
 
+; draws the main duel screen, then prints the "<Pokemon Lvxx>'s <attack>" text
+; The Pokemon's name is the turn holder's Active Pokemon,
+; and the attack's name is taken from wLoadedAttackName.
+DrawDuelMainScene_PrintPokemonsAttackText:
+	call DrawDuelMainScene
+;	fallthrough
+
+; prints the "<Pokemon Lvxx>'s <attack>" text
+; The Pokemon's name is the turn holder's Active Pokemon,
+; and the attack's name is taken from wLoadedAttackName.
+PrintPokemonsAttackText:
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld a, 18
+	call CopyCardNameAndLevel
+	ld [hl], TX_END
+	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
+	ld hl, wTxRam2
+	xor a
+	ld [hli], a
+	ld [hli], a
+	ld a, [wLoadedAttackName]
+	ld [hli], a ; wTxRam2_b
+	ld a, [wLoadedAttackName + 1]
+	ld [hli], a
+	ldtx hl, PokemonsAttackText
+	jp DrawWideTextBox_PrintText
+
+
 ; applies and/or refreshes status conditions and other events that trigger between turns
 HandleBetweenTurnsEvents:
 	call IsArenaPokemonAsleepOrPoisoned
@@ -8190,6 +8288,258 @@ PlayStatusConditionQueueAnimations::
 	jr .loop
 
 
+; when playing a Pokemon card, initializes some variables according to the
+; card being played and checks if the card has Pokemon Power, to show it to
+; the player, and possibly to use it if it triggers when the card is played.
+; input:
+;	[hTempCardIndex_ff98] = deck index of the Pokemon being played
+ProcessPlayedPokemonCard::
+	ldh a, [hTempCardIndex_ff98]
+	call ClearChangedTypesIfMuk
+	ldh a, [hTempCardIndex_ff98]
+	ld d, a
+	ld e, $00
+	call CopyAttackDataAndDamage_FromDeckIndex
+	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
+	ldh a, [hTempCardIndex_ff98]
+	ldh [hTempCardIndex_ff9f], a
+	call GetCardIDFromDeckIndex
+	ld a, e
+	ld [wTempTurnDuelistCardID], a
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	ret nz
+	call DisplayUsePokemonPowerScreen
+	ldh a, [hTempCardIndex_ff98]
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld hl, wLoadedCard1Name
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ldtx hl, HavePokemonPowerText
+	call DrawWideTextBox_WaitForInput
+	call ExchangeRNG
+	ld a, [wLoadedCard1ID]
+	cp MUK
+	jr z, .use_pokemon_power
+	ld a, $01 ; check only Muk
+	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	jr nc, .use_pokemon_power
+	call DisplayUsePokemonPowerScreen
+	ldtx hl, UnableDueToToxicGasText
+	call DrawWideTextBox_WaitForInput
+	jp ExchangeRNG
+
+.use_pokemon_power
+	ld hl, wLoadedAttackEffectCommands
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
+	call CheckMatchingCommand
+	ret c ; return if command not found
+	call DrawDuelMainScene
+	ldh a, [hTempCardIndex_ff9f]
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld de, wLoadedCard1Name
+	ld hl, wTxRam2
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	ld [hli], a
+	ld de, wLoadedAttackName
+	ld a, [de]
+	inc de
+	ld [hli], a
+	ld a, [de]
+	ld [hl], a
+	ldtx hl, WillUseThePokemonPowerText
+	call DrawWideTextBox_WaitForInput
+	call ExchangeRNG
+	xor a
+	ld [wce7e], a
+	ld a, EFFECTCMDTYPE_PKMN_POWER_TRIGGER
+	jp TryExecuteEffectCommandFunction
+
+
+; if the ID of the card provided in register a as a deck index is MUK,
+; then clear the changed type of all Active and Benched Pokemon.
+; input:
+;	a = deck index (0-59) to check
+ClearChangedTypesIfMuk:
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp MUK
+	ret nz ; return if the Pokemon isn't a Muk
+	call SwapTurn
+	call .zero_changed_types
+	call SwapTurn
+.zero_changed_types
+	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
+	get_turn_duelist_var
+	ld c, MAX_PLAY_AREA_POKEMON
+.zero_changed_types_loop
+	xor a
+	ld [hli], a
+	dec c
+	jr nz, .zero_changed_types_loop
+	ret
+
+
+; uses a Pokemon Power
+UsePokemonPower:
+	xor a
+	ld [wce7e], a
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+	call TryExecuteEffectCommandFunction
+	jr c, DisplayUsePokemonPowerScreen_WaitForInput
+	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
+	call TryExecuteEffectCommandFunction
+	ret c
+	ld a, OPPACTION_USE_PKMN_POWER
+	call SetOppAction_SerialSendDuelData
+	call ExchangeRNG
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	call SetOppAction_SerialSendDuelData
+	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
+	call TryExecuteEffectCommandFunction
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	jp SetOppAction_SerialSendDuelData
+
+; input:
+;	hl = text ID
+; output:
+;	carry = set
+DisplayUsePokemonPowerScreen_WaitForInput:
+	push hl
+	call DisplayUsePokemonPowerScreen
+	pop hl
+;	fallthrough
+
+; input:
+;	hl = text ID
+; output:
+;	carry = set
+DrawWideTextBox_WaitForInput_ReturnCarry:
+	call DrawWideTextBox_WaitForInput
+	scf
+	ret
+
+
+; preserves bc and de
+ClearNonTurnTemporaryDuelvars_ResetCarry:
+	call ClearNonTurnTemporaryDuelvars
+	or a
+	ret
+
+; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
+; output:
+;	carry = set:  if the effect command returned with carry set
+UseAttackOrPokemonPower::
+	ld a, [wSelectedAttack]
+	ld [wPlayerAttackingAttackIndex], a
+	ldh a, [hTempCardIndex_ff9f]
+	ld [wPlayerAttackingCardIndex], a
+	ld a, [wTempCardID_ccc2]
+	ld [wPlayerAttackingCardID], a
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	jr z, UsePokemonPower
+	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
+	call TryExecuteEffectCommandFunction
+	jr c, DrawWideTextBox_WaitForInput_ReturnCarry
+	call CheckSmokescreenSubstatus
+	jr c, .sand_attack_smokescreen
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+	call TryExecuteEffectCommandFunction
+	ret c
+	call SendAttackDataToLinkOpponent
+	jr .next
+.sand_attack_smokescreen
+	call SendAttackDataToLinkOpponent
+	call HandleSmokescreenSubstatus
+	jr c, ClearNonTurnTemporaryDuelvars_ResetCarry
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+	call TryExecuteEffectCommandFunction
+	ret c
+.next
+	ld a, OPPACTION_USE_ATTACK
+	call SetOppAction_SerialSendDuelData
+	ld a, EFFECTCMDTYPE_DISCARD_ENERGY
+	call TryExecuteEffectCommandFunction
+	call CheckSelfConfusionDamage
+	jp c, HandleConfusionDamageToSelf
+	call DrawDuelMainScene_PrintPokemonsAttackText
+	call WaitForWideTextBoxInput
+	call ExchangeRNG
+	ld a, EFFECTCMDTYPE_REQUIRE_SELECTION
+	call TryExecuteEffectCommandFunction
+	ld a, OPPACTION_ATTACK_ANIM_AND_DAMAGE
+	call SetOppAction_SerialSendDuelData
+;	fallthrough
+
+PlayAttackAnimation_DealAttackDamage::
+	xor a
+	ld [wce7e], a
+	ld a, [wLoadedAttackCategory]
+	and RESIDUAL
+	jr nz, .deal_damage
+	call SwapTurn
+	call HandleNoDamageOrEffectSubstatus
+	call SwapTurn
+.deal_damage
+	xor a
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
+	call TryExecuteEffectCommandFunction
+	call ApplyDamageModifiers_DamageToTarget
+	call LastChanceToNegateFinalDamage
+	ld hl, wDealtDamage
+	ld [hl], e
+	inc hl
+	ld [hl], d
+	ld b, PLAY_AREA_ARENA
+	ld a, [wDamageEffectiveness]
+	ld c, a
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetNonTurnDuelistVariable
+	push de
+	push hl
+	call PlayAttackAnimation
+	call PlayStatusConditionQueueAnimations
+	call WaitAttackAnimation
+	pop hl
+	pop de
+	call SubtractHP
+	ld a, [wDuelDisplayedScreen]
+	cp DUEL_MAIN_SCENE
+	jr nz, .skip_draw_huds
+	push hl
+	call DrawDuelHUDs
+	pop hl
+.skip_draw_huds
+	call PrintKnockedOutIfHLZero
+;	fallthrough
+
+HandleAfterDamageEffects::
+	ld a, [wTempNonTurnDuelistCardID]
+	push af
+	ld a, EFFECTCMDTYPE_AFTER_DAMAGE
+	call TryExecuteEffectCommandFunction
+	pop af
+	ld [wTempNonTurnDuelistCardID], a
+	call HandleStrikesBack_AgainstResidualAttack
+	call ApplyStatusConditionQueue
+	call Func_1bb4
+	call UpdateArenaCardLastTurnDamage
+	call HandleDestinyBondAndBetweenTurnKnockOuts
+	or a
+	ret
+
+
 ; this is a simple version of PlayAttackAnimation_DealAttackDamage that doesn't
 ; take into account status conditions, damage modifiers, etc, for damage calculation.
 ; used for confusion damage to self and for damage to Benched Pokemon, for example
@@ -8260,6 +8610,196 @@ PlayAttackAnimation::
 	pop hl
 	pop af
 	ldh [hWhoseTurn], a
+	ret
+
+
+; preserves bc
+; output:
+;	de = ID for TossCoin notification text
+;	carry = set:  if the turn holder's Active Pokemon is affected by Smokescreen
+CheckSmokescreenSubstatus:
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
+	get_turn_duelist_var
+	or a
+	ret z
+	ldtx de, SmokescreenCheckText
+	cp SUBSTATUS2_SMOKESCREEN
+	jr z, .card_is_affected
+	or a
+	ret
+.card_is_affected
+	ld a, [wGotHeadsFromSmokescreenCheck]
+	or a
+	ret nz
+	scf
+	ret
+
+
+; output:
+;	carry = set:  if the turn holder's attack was unsuccessful due to Smokescreen
+HandleSmokescreenSubstatus:
+	call CheckSmokescreenSubstatus
+	ret nc ; return if the Active Pokemon isn't affected by Smokescreen
+	call TossCoin
+	ld [wGotHeadsFromSmokescreenCheck], a
+	ccf
+	ret nc ; return if heads
+	ldtx hl, AttackUnsuccessfulText
+	call DrawWideTextBox_WaitForInput
+	scf
+	ret
+
+
+; flips a coin to see whether or not a Confused Pokemon will attack itself
+; output:
+;	carry = set:  if the coin was tails (Pokemon will attack itself)
+;	[wGotHeadsFromConfusionCheck] = 0:  if the coin was heads (Pokemon won't attack itself)
+;	[wGotHeadsFromConfusionCheck] = 1:  if the coin was tails (Pokemon will attack itself)
+CheckSelfConfusionDamage:
+	xor a
+	ld [wGotHeadsFromConfusionCheck], a
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	get_turn_duelist_var
+	and CNF_SLP_PRZ
+	cp CONFUSED
+	jr z, .confused
+	or a
+	ret
+.confused
+	ldtx de, ConfusionCheckDamageText
+	call TossCoin
+	jr c, HandleConfusionDamageToSelf.no_carry ; return nc if heads
+	ld a, 1
+	ld [wGotHeadsFromConfusionCheck], a
+	scf
+	ret
+
+
+; called when an Attacking Pokemon deals damage to itself due to confusion.
+; displays the corresponding animation and deals 20 damage to the Attacking Pokemon.
+HandleConfusionDamageToSelf:
+	call DrawDuelMainScene
+	ld a, 1
+	ld [wIsDamageToSelf], a
+	ldtx hl, DamageToSelfDueToConfusionText
+	call DrawWideTextBox_PrintText
+	ld a, ATK_ANIM_CONFUSION_HIT
+	ld [wLoadedAttackAnimation], a
+	ld a, 20 ; damage
+	call DealConfusionDamageToSelf
+	call Func_1bb4
+	call HandleDestinyBondAndBetweenTurnKnockOuts
+	call ClearNonTurnTemporaryDuelvars
+.no_carry
+	or a
+	ret
+
+
+Func_1bb4:
+	call FinishQueuedAnimations
+	call DrawDuelMainScene
+	call DrawDuelHUDs
+	xor a
+	ldh [hTempPlayAreaLocation_ff9d], a
+	call PrintFailedEffectText
+	call WaitForWideTextBoxInput
+	jp ExchangeRNG
+
+
+; formerly Func_189d
+; checks for anything else that might prevent the attack's damage.
+; damage is set to 0 if anything is found.
+; input:
+;	de = damage being dealt by the attack
+LastChanceToNegateFinalDamage:
+	ld a, [wLoadedAttackCategory]
+	bit RESIDUAL_F, a
+	ret nz
+	ld a, [wNoDamageOrEffect]
+	or a
+	ret nz
+	ld a, e
+	or d
+	jr nz, .attack_opponent
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
+	call GetNonTurnDuelistVariable
+	or a
+	jr nz, .attack_opponent
+	ld a, [wStatusConditionQueueIndex]
+	or a
+	ret z
+.attack_opponent
+	push de
+	call SwapTurn
+	xor a
+	ld [wTempPlayAreaLocation_cceb], a
+	call HandleTransparency
+	call SwapTurn
+	pop de
+	ret nc
+	call DrawDuelMainScene
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
+	call GetNonTurnDuelistVariable
+	ld [hl], $0
+	ld de, 0
+	ret
+
+
+; used to bounce back an attack of the RESIDUAL category.
+; when MACHAMP is damaged, if its Strikes Back is active, the
+; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
+; output:
+;	carry = set:  if Machamp is unable to use its Pokemon Power
+HandleStrikesBack_AgainstResidualAttack:
+	ld a, [wTempNonTurnDuelistCardID]
+	cp MACHAMP
+	ret nz ; return if the Defending Pokemon isn't a Machamp
+	ld a, [wLoadedAttackCategory]
+	and RESIDUAL
+	ret nz
+	ld a, [wDealtDamage]
+	or a
+	ret z
+	call SwapTurn
+	call CheckCannotUseDueToStatus
+	call SwapTurn
+	ret c  ; return if Pokemon Power can't be used because of status or Toxic Gas
+	ld hl, 10 ; amount of damage to give the Attacking Pokemon
+	call ApplyStrikesBack_AgainstResidualAttack
+	jp nc, WaitForWideTextBoxInput
+	ret
+
+; output:
+;	carry = set:  if the Attacking Pokemon was Knocked Out
+ApplyStrikesBack_AgainstResidualAttack:
+	push hl
+	call LoadTxRam3
+	ld a, [wTempTurnDuelistCardID]
+	ld e, a
+	ld d, $0
+	call LoadCardDataToBuffer2_FromCardID
+	ld hl, wLoadedCard2Name
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ld a, DUELVARS_ARENA_CARD_HP
+	get_turn_duelist_var
+	pop de
+	push af
+	push hl
+	call SubtractHP
+	ldtx hl, ReceivesDamageDueToStrikesBackText
+	call DrawWideTextBox_PrintText
+	pop hl
+	pop af
+	or a
+	ret z
+	call WaitForWideTextBoxInput
+	xor a ; PLAY_AREA_ARENA
+	call PrintPlayAreaCardKnockedOutIfNoHP
+	call DrawDuelHUDs
+	scf
 	ret
 
 
