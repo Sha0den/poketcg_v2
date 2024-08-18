@@ -457,7 +457,7 @@ GetTextOffsetFromTextID::
 	rla
 	rl h
 	rla
-	add BANK("Text 1")
+	add BANK(TextOffsets)
 	rst BankswitchROM
 	res 7, d
 	set 6, d ; $4000 ≤ de ≤ $7fff

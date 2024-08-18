@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 18, 2024:** 5 Files Changed
+- **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a3f730b15cf5587a098b6af4a107684e67988294):** 5 Files Changed
     - Move some functions from home/duel.asm and home/substatus.asm to engine/duel/core.asm
     - Shuffle a few functions in the home bank
 
@@ -547,7 +547,6 @@
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
-    - Text pointers were later adjusted in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/fe4c091b38639bc5b52078c9ac153a0eac12ae01)
 
 <br/>
 
@@ -652,6 +651,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **August 18, 2024:** 1 File Changed
+    - Revert the textpointers because it screws up the printing of some empty texts (plus everything works fine without making any adjustments)
+    - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/fe4c091b38639bc5b52078c9ac153a0eac12ae01)*
+
+<br/>
+
 - **[August 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/af31753844fcabe625eab1a1439ade00567086f9):** 1 File Changed
     - Change a conditional return to a conditional jump to avoid missing a couple of pops
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/23905f186bfe79e892321a09135ca051a55c5c18)*
