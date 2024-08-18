@@ -465,9 +465,9 @@ _DrawYourOrOppPlayAreaScreen::
 	call PrintTextNoDelay
 	jr .draw
 .swap
-	call SwapTurn
+	rst SwapTurn
 	call PrintTextNoDelay
-	call SwapTurn
+	rst SwapTurn
 
 .draw
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
@@ -535,10 +535,10 @@ DrawInPlayAreaScreen:
 	ld hl, PlayAreaIconCoordinates.player2
 	call DrawInPlayArea_Icons
 
-	call SwapTurn
+	rst SwapTurn
 	ldh a, [hWhoseTurn]
 	ld [wCheckMenuPlayAreaWhichDuelist], a
-	call SwapTurn
+	rst SwapTurn
 
 ; opponent's Prize cards
 	ld hl, PrizeCardsCoordinateData_InPlayArea.opponent
@@ -549,10 +549,10 @@ DrawInPlayAreaScreen:
 	ld c, 3
 	call DrawPlayArea_BenchCards
 
-	call SwapTurn
+	rst SwapTurn
 	ld hl, PlayAreaIconCoordinates.opponent2
 	call DrawInPlayArea_Icons
-	call SwapTurn
+	rst SwapTurn
 ;	fallthrough
 
 ; draws the card graphics for both player's Active Pokemon
@@ -596,7 +596,7 @@ DrawInPlayArea_ActiveCardGfx:
 	pop af
 
 ; load card gfx
-	call SwapTurn
+	rst SwapTurn
 	call LoadCardDataToBuffer1_FromDeckIndex
 	lb de, $95, $00
 	ld hl, wLoadedCard1Gfx
@@ -606,7 +606,7 @@ DrawInPlayArea_ActiveCardGfx:
 	lb bc, $30, TILE_SIZE
 	call LoadCardGfx
 	bank1call SetBGP7OrSGB2ToCardPalette
-	call SwapTurn
+	rst SwapTurn
 
 .draw
 	ld a, [wArenaCardsInPlayArea]
@@ -632,7 +632,7 @@ DrawInPlayArea_ActiveCardGfx:
 	ret z
 
 ; draws the opponent's Active Pokemon
-	call SwapTurn
+	rst SwapTurn
 	ld a, $50 ; starting tile number (v0Tiles2 + $50 tiles)
 	lb de, 6, 2 ; screen coordinates for top left tile
 	lb hl, 6, 1
@@ -666,10 +666,10 @@ DrawYourOrOppPlayArea_ActiveCardGfx:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	jr .draw
 .swap
-	call SwapTurn
+	rst SwapTurn
 	ld a, d
 	call LoadCardDataToBuffer1_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 
 .draw
 	ld de, v0Tiles1 + $20 tiles ; destination offset of loaded gfx
@@ -1359,7 +1359,7 @@ _HandlePeekSelection::
 	or a
 	jr z, .draw_menu_1
 ; if wIsSwapTurnPending is TRUE, swap turn
-	call SwapTurn
+	rst SwapTurn
 	xor a
 	ld [wIsSwapTurnPending], a
 
@@ -1559,7 +1559,7 @@ ENDR
 	inc hl
 	ld [hl], d
 
-	call SwapTurn
+	rst SwapTurn
 	ld a, TRUE
 	ld [wIsSwapTurnPending], a ; mark pending to swap turn
 	jp .loop_input_2
@@ -1604,7 +1604,7 @@ _DrawAIPeekScreen::
 	jr z, .draw_play_area
 
 ; AI chose the hand
-	call SwapTurn
+	rst SwapTurn
 	ld a, TRUE
 	ld [wIsSwapTurnPending], a ; mark pending to swap turn
 	ldh a, [hWhoseTurn]
@@ -2000,7 +2000,7 @@ _DrawPlayAreaToPlacePrizeCards::
 	lb bc, 4, 3 ; width and height of image (in tiles)
 	call FillRectangle
 
-	call SwapTurn
+	rst SwapTurn
 	ld a, TRUE
 	ld [wIsSwapTurnPending], a ; mark pending to swap turn
 	ldh a, [hWhoseTurn]

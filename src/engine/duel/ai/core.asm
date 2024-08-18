@@ -110,7 +110,7 @@ SubFromAIScore:
 ; loads defending Pokémon's weakness/resistance
 ; and the number of prize cards in both sides
 LoadDefendingPokemonColorWRAndPrizeCards:
-	call SwapTurn
+	rst SwapTurn
 	call GetArenaCardColor
 	call TranslateColorToWR
 	ld [wAIPlayerColor], a
@@ -120,7 +120,7 @@ LoadDefendingPokemonColorWRAndPrizeCards:
 	ld [wAIPlayerResistance], a
 	call CountPrizes
 	ld [wAIPlayerPrizeCount], a
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
 	ld [wAIOpponentPrizeCount], a
 	ret
@@ -1206,9 +1206,9 @@ CheckDamageToMrMime:
 	push af
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
-	call SwapTurn
+	rst SwapTurn
 	call GetCardIDFromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, e
 	cp MR_MIME
 	pop bc
@@ -1699,7 +1699,7 @@ INCLUDE "engine/duel/ai/special_attacks.asm"
 LookForCardThatIsKnockedOutOnDevolution:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	push af
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld b, a
@@ -2243,9 +2243,9 @@ CheckIfDefendingPokemonCanKnockOutWithAttack:
 	push af
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
-	call SwapTurn
+	rst SwapTurn
 	call CheckIfSelectedAttackIsUnusable
-	call SwapTurn
+	rst SwapTurn
 	pop bc
 	ld a, b
 	ldh [hTempPlayAreaLocation_ff9d], a

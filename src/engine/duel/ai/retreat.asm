@@ -287,9 +287,9 @@ AIDecideWhetherToRetreat:
 .check_defending_id
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
-	call SwapTurn
+	rst SwapTurn
 	call GetCardIDFromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, e
 	cp MR_MIME
 	jr z, .mr_mime_or_hitmonlee
@@ -550,9 +550,9 @@ AIDecideBenchPokemonToSwitchTo:
 .check_mr_mime
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
-	call SwapTurn
+	rst SwapTurn
 	call LoadCardDataToBuffer2_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	cp MR_MIME
 	jr nz, .check_defending_weak
 	xor a

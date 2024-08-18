@@ -243,9 +243,9 @@ AIDecide_Potion2:
 ; if player is at last prize, start loop with active card.
 ; otherwise start loop at first bench Pokémon.
 .count_prizes
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	dec a
 	jr z, .start_from_active
 	ld e, PLAY_AREA_BENCH_1
@@ -278,9 +278,9 @@ AIDecide_Potion2:
 
 ; bench card
 	push de
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	dec a
 	or a
 	jr z, .check_random
@@ -443,9 +443,9 @@ AIDecide_SuperPotion2:
 ; if player is at last prize, start loop with active card.
 ; otherwise start loop at first bench Pokémon.
 .count_prizes
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	dec a
 	jr z, .start_from_active
 	ld e, PLAY_AREA_BENCH_1
@@ -485,9 +485,9 @@ AIDecide_SuperPotion2:
 
 ; bench card
 	push de
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	dec a
 	or a
 	jr z, .check_random
@@ -605,9 +605,9 @@ AIDecide_Defender1:
 ; only continue if that attack is useable.
 	farcall CheckIfAnyDefendingPokemonAttackDealsSameDamageAsHP
 	jr nc, .no_carry
-	call SwapTurn
+	rst SwapTurn
 	farcall CheckIfSelectedAttackIsUnusable
-	call SwapTurn
+	rst SwapTurn
 	jr c, .no_carry
 
 	ld a, [wSelectedAttack]
@@ -624,9 +624,9 @@ AIDecide_Defender1:
 	sub b
 	ld [wSelectedAttack], a
 	push de
-	call SwapTurn
+	rst SwapTurn
 	farcall CheckIfSelectedAttackIsUnusable
-	call SwapTurn
+	rst SwapTurn
 	pop de
 	jr c, .switch_back
 
@@ -787,14 +787,14 @@ AIDecide_Pluspower1:
 ; get defending Pokémon's info and check
 ; its No Damage or Effect substatus.
 ; if substatus is active, return.
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
 	call HandleNoDamageOrEffectSubstatus
-	call SwapTurn
+	rst SwapTurn
 	jr c, .no_carry
 
 ; check both attacks and decide which one
@@ -862,11 +862,11 @@ AIDecide_Pluspower1:
 	add 10 ; add Pluspower boost
 	cp 30 ; no danger in preventing damage
 	ret c
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, e
 	cp MR_MIME
 	ret z
@@ -901,11 +901,11 @@ AIDecide_Pluspower2:
 	add 10 ; add Pluspower boost
 	cp 30 ; no danger in preventing damage
 	ret c
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, e
 	cp MR_MIME
 	ret z
@@ -1072,9 +1072,9 @@ AIDecide_GustOfWind:
 	call GetArenaCardColor
 	call TranslateColorToWR
 	ld b, a
-	call SwapTurn
+	rst SwapTurn
 	call GetArenaCardWeakness
-	call SwapTurn
+	rst SwapTurn
 	and b
 	jr nz, .no_carry
 
@@ -1106,9 +1106,9 @@ AIDecide_GustOfWind:
 	inc e
 	dec d
 	jr z, .check_bench_hp
-	call SwapTurn
+	rst SwapTurn
 	call GetPlayAreaCardAttachedEnergies
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wTotalAttachedEnergies]
 	or a
 	jr nz, .loop_1 ; skip if has energy attached
@@ -1184,9 +1184,9 @@ AIDecide_GustOfWind:
 	ld a, [hli]
 	cp $ff
 	jr z, .no_carry
-	call SwapTurn
+	rst SwapTurn
 	call LoadCardDataToBuffer1_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wLoadedCard1Weakness]
 	and b
 	jr nz, .check_can_damage
@@ -1442,7 +1442,7 @@ AIDecide_EnergyRemoval:
 ; loop each card and check if it has enough energy to use any attack
 ; if it does, then proceed to pick an energy card to remove
 .check_bench_energy
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wce0f]
 	ld e, a
 .loop_1
@@ -1696,12 +1696,12 @@ AIDecide_SuperEnergyRemoval:
 
 .can_ko
 	; start checking from the bench
-	call SwapTurn
+	rst SwapTurn
 	ld e, PLAY_AREA_BENCH_1
 	jr .loop_3
 .cannot_ko
 	; start checking from the arena card
-	call SwapTurn
+	rst SwapTurn
 	ld e, PLAY_AREA_ARENA
 
 ; loop each card and check if it has enough energy to use any attack
@@ -1738,7 +1738,7 @@ AIDecide_SuperEnergyRemoval:
 	ld [wce1c], a
 	ld a, b
 	ld [wce1d], a
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wce0f]
 	push af
 	call AIPickEnergyCardToDiscard
@@ -3748,7 +3748,7 @@ AIDecide_FullHeal:
 ; returns carry if player's Arena card
 ; is card in register a
 .CheckPlayerArenaCard:
-	call SwapTurn
+	rst SwapTurn
 	ld b, PLAY_AREA_ARENA
 	call LookForCardIDInPlayArea_Bank8
 	jp SwapTurn
@@ -4049,9 +4049,9 @@ AIDecide_ScoopUp:
 	push af
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
-	call SwapTurn
+	rst SwapTurn
 	call GetCardIDFromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, e
 	cp SNORLAX
 	pop bc
@@ -4621,9 +4621,9 @@ AIPlay_PokemonFlute:
 
 AIDecide_PokemonFlute:
 ; if player has no Discard Pile, skip.
-	call SwapTurn
+	rst SwapTurn
 	call CreateDiscardPileCardList
-	call SwapTurn
+	rst SwapTurn
 	jr c, .no_carry
 
 ; if player's Play Area is already full, skip.
@@ -4648,9 +4648,9 @@ AIDecide_PokemonFlute:
 	jr z, .done
 
 	ld b, a
-	call SwapTurn
+	rst SwapTurn
 	call LoadCardDataToBuffer1_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 ; skip this card if it's not Pokemon card
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
@@ -4700,9 +4700,9 @@ AIDecide_PokemonFlute:
 	cp $ff
 	jr z, .no_carry
 	ld b, a
-	call SwapTurn
+	rst SwapTurn
 	call LoadCardDataToBuffer1_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
 	jr nc, .loop_2

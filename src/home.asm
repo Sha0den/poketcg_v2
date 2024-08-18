@@ -44,12 +44,22 @@ SECTION "rst28", ROM0
 	ds 5
 
 SECTION "rst30", ROM0
-	ret
-	ds 7
-
+; returns [hWhoseTurn] <-- ([hWhoseTurn] ^ $1)
+;   As a side effect, this also returns a duelist variable in a similar manner to
+;   GetNonTurnDuelistVariable, but this function seems to only ever be called to
+;   swap the turn value.
+; preserves all registers
+SwapTurn::
+	push af
+	push hl
+	call GetNonTurnDuelistVariable
+	ld a, h
+	ldh [hWhoseTurn], a
 SECTION "rst38", ROM0
+	pop hl
+	pop af
 	ret
-	ds 7
+	ds 5
 
 ; interrupts
 SECTION "vblank", ROM0

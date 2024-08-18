@@ -181,10 +181,10 @@ OpenInPlayAreaScreen::
 	cp -1
 	ret z
 
-	call SwapTurn
+	rst SwapTurn
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
-	call SwapTurn
+	rst SwapTurn
 
 .display_card_name
 	ld a, 18
@@ -199,7 +199,7 @@ OpenInPlayAreaScreen::
 	cp INPLAYAREA_OPP_ACTIVE
 	jp c, PrintTextNoDelay ; print on player's side
 	; print on opponent's side
-	call SwapTurn
+	rst SwapTurn
 	call PrintTextNoDelay
 	jp SwapTurn
 
@@ -259,7 +259,7 @@ OpenInPlayAreaScreen_NonTurnHolderPlayArea:
 	call GetNonTurnDuelistVariable
 	cp -1
 	ret z
-	call SwapTurn
+	rst SwapTurn
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
 	xor a

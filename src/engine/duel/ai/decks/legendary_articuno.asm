@@ -83,9 +83,9 @@ AIActionTable_LegendaryArticuno:
 ; 3 energy cards before moving on to Articuno,
 ; and then to Dewgong and Seel
 ScoreLegendaryArticunoCards:
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	cp 3
 	ret c
 

@@ -1080,9 +1080,9 @@ EmptyPlayAreaSlot::
 ; shifts play area Pokemon of both players to the first available play area (arena + benchx) slots
 ; preserves bc
 ShiftAllPokemonToFirstPlayAreaSlots::
-	call SwapTurn
+	rst SwapTurn
 	call ShiftTurnPokemonToFirstPlayAreaSlots
-	call SwapTurn
+	rst SwapTurn
 ;	fallthrough
 
 ; shifts play area Pokemon of the turn holder to the first available play area (arena + benchx) slots
@@ -1394,13 +1394,13 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
-	call SwapTurn
+	rst SwapTurn
 	xor a
 	ld [wccec], a
 	ld [wStatusConditionQueueIndex], a
@@ -1558,9 +1558,9 @@ ApplyDamageModifiers_DamageToTarget::
 	call GetPlayAreaCardColor
 	call TranslateColorToWR
 	ld b, a
-	call SwapTurn
+	rst SwapTurn
 	call GetArenaCardWeakness
-	call SwapTurn
+	rst SwapTurn
 	and b
 	jr z, .not_weak
 	sla e
@@ -1568,9 +1568,9 @@ ApplyDamageModifiers_DamageToTarget::
 	ld hl, wDamageEffectiveness
 	set WEAKNESS, [hl]
 .not_weak
-	call SwapTurn
+	rst SwapTurn
 	call GetArenaCardResistance
-	call SwapTurn
+	rst SwapTurn
 	and b
 	jr z, .check_pluspower_and_defender ; jump if Pokemon has no Resistance
 	ld hl, -30 ; Resistance is always -30 in this game
@@ -1582,29 +1582,14 @@ ApplyDamageModifiers_DamageToTarget::
 .check_pluspower_and_defender
 	ld b, CARD_LOCATION_ARENA
 	call ApplyAttachedPluspower
-	call SwapTurn
+	rst SwapTurn
 	ld b, CARD_LOCATION_ARENA
 	call ApplyAttachedDefender
 	call HandleDamageReduction
 	bit 7, d
-	jr z, SwapTurn ; no underflow
+	jp z, SwapTurn ; no underflow
 	ld de, 0; caps damage to 0
-;	fallthrough
-
-; returns [hWhoseTurn] <-- ([hWhoseTurn] ^ $1)
-;   As a side effect, this also returns a duelist variable in a similar manner to
-;   GetNonTurnDuelistVariable, but this function seems to only ever be called to
-;   swap the turn value.
-; preserves all registers
-SwapTurn::
-	push af
-	push hl
-	call GetNonTurnDuelistVariable
-	ld a, h
-	ldh [hWhoseTurn], a
-	pop hl
-	pop af
-	ret
+	jp SwapTurn
 
 
 ; doubles wDamage if the turn holder's Active Pokemon has Weakness
@@ -1838,10 +1823,10 @@ DealDamageToPlayAreaPokemon::
 	call ApplyAttachedPluspower
 	jr .next
 .turn_swapped
-	call SwapTurn
+	rst SwapTurn
 	ld b, CARD_LOCATION_ARENA
 	call ApplyAttachedPluspower
-	call SwapTurn
+	rst SwapTurn
 .next
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER

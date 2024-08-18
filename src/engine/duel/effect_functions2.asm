@@ -1259,7 +1259,7 @@ HandleProphecyPlayerSelection:
 	call GetNonTurnDuelistVariable
 	cp DECK_SIZE
 	jr nc, .select_deck ; no cards, go back to deck selection
-	call SwapTurn
+	rst SwapTurn
 	call HandleProphecyScreen
 	call .ProphecyLoopOrder
 	jp SwapTurn

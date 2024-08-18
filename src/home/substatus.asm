@@ -502,10 +502,10 @@ CountPokemonIDInBothPlayAreas::
 	ld [wTempPokemonID_ce7c], a
 	call CountPokemonIDInPlayArea
 	ld c, a
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wTempPokemonID_ce7c]
 	call CountPokemonIDInPlayArea
-	call SwapTurn
+	rst SwapTurn
 	add c
 	or a
 	scf
@@ -675,7 +675,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 	push hl
 	push de
 	; subtract 10 HP from Attacking Pokemon (turn holder's Active Pokemon)
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex

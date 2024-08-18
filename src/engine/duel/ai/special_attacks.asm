@@ -181,9 +181,9 @@ HandleSpecialAIAttacks:
 ; with that same color.
 ; if none are found, returns score of $80 + 2.
 .ChainLightning:
-	call SwapTurn
+	rst SwapTurn
 	call GetArenaCardColor
-	call SwapTurn
+	rst SwapTurn
 	ld b, a
 	ld a, DUELVARS_BENCH
 	get_turn_duelist_var
@@ -276,9 +276,9 @@ HandleSpecialAIAttacks:
 	jr z, .encourage_mix_up
 	dec a
 	ret z
-	call SwapTurn
+	rst SwapTurn
 	call CreateHandCardList
-	call SwapTurn
+	rst SwapTurn
 	or a
 	ret z ; return if no hand cards (again)
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -292,9 +292,9 @@ HandleSpecialAIAttacks:
 	ld a, [hli]
 	cp $ff
 	jr z, .tally_basic_cards
-	call SwapTurn
+	rst SwapTurn
 	call LoadCardDataToBuffer2_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
 	jr nc, .loop_mix_up_hand
@@ -318,9 +318,9 @@ HandleSpecialAIAttacks:
 	cp $ff
 	jp z, .zero_score
 	push hl
-	call SwapTurn
+	rst SwapTurn
 	call CheckForEvolutionInList
-	call SwapTurn
+	rst SwapTurn
 	pop hl
 	jr nc, .loop_mix_up_play_area
 
@@ -368,9 +368,9 @@ HandleSpecialAIAttacks:
 
 .count_prizes
 	push de
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	pop de
 	cp d
 	jp c, .zero_score
@@ -394,10 +394,10 @@ HandleSpecialAIAttacks:
 ; has any energy cards attached, and if so,
 ; return a score of $80 + 3.
 .HyperBeam:
-	call SwapTurn
+	rst SwapTurn
 	ld e, PLAY_AREA_ARENA
 	call CountNumberOfEnergyCardsAttached
-	call SwapTurn
+	rst SwapTurn
 	or a
 	jr z, .hyper_beam_neutral
 	ld a, $83

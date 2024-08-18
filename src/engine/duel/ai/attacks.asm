@@ -195,7 +195,7 @@ GetAIScoreOfAttack:
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
@@ -208,7 +208,7 @@ GetAIScoreOfAttack:
 ; If none of those are true, render the attack unusable.
 ; also if it's a PKMN power, consider it unusable as well.
 	call HandleNoDamageOrEffectSubstatus
-	call SwapTurn
+	rst SwapTurn
 	jr nc, .check_if_can_ko
 
 	; player is under No Damage substatus
@@ -382,10 +382,10 @@ GetAIScoreOfAttack:
 	jr nc, .dismiss_high_recoil_atk
 	; prize count < 4
 	ld b, 20 ; damage dealt to bench
-	call SwapTurn
+	rst SwapTurn
 	xor a
 	call .check_if_kos_bench
-	call SwapTurn
+	rst SwapTurn
 	jr c, .encourage_high_recoil_atk
 
 ; generic checks for all other deck IDs.
@@ -414,10 +414,10 @@ GetAIScoreOfAttack:
 
 .check_bench_kos
 	push bc
-	call SwapTurn
+	rst SwapTurn
 	xor a
 	call .check_if_kos_bench
-	call SwapTurn
+	rst SwapTurn
 	pop bc
 	jr c, .wins_the_duel
 	push de
@@ -547,9 +547,9 @@ GetAIScoreOfAttack:
 .check_status_effect
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
-	call SwapTurn
+	rst SwapTurn
 	call GetCardIDFromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ld a, e
 	; skip if player has Snorlax
 	cp SNORLAX
@@ -698,9 +698,9 @@ GetAIScoreOfAttack:
 	jr .loop
 .exit_loop
 	push de
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	pop de
 	cp d
 	ret c

@@ -640,10 +640,10 @@ HandleAIShift:
 	call GetArenaCardColor
 	call TranslateColorToWR
 	ld b, a
-	call SwapTurn
+	rst SwapTurn
 	call GetArenaCardWeakness
 	ld [wAIDefendingPokemonWeakness], a
-	call SwapTurn
+	rst SwapTurn
 	or a
 	ret z ; return if Defending Pokemon has no weakness
 	and b
@@ -653,9 +653,9 @@ HandleAIShift:
 ; the same color as the Player's card weakness
 	call .CheckWhetherTurnDuelistHasColor
 	jr c, .found
-	call SwapTurn
+	rst SwapTurn
 	call .CheckWhetherTurnDuelistHasColor
-	call SwapTurn
+	rst SwapTurn
 	ret nc ; return if no color found
 
 .found
@@ -769,9 +769,9 @@ HandleAIPeek:
 	jr .use_peek
 
 .check_player_hand
-	call SwapTurn
+	rst SwapTurn
 	call CreateHandCardList
-	call SwapTurn
+	rst SwapTurn
 	or a
 	ret z ; return if no cards in Hand
 ; shuffle list and pick the first entry to Peek
@@ -873,7 +873,7 @@ HandleAICurse:
 	ld e, PLAY_AREA_ARENA
 	lb bc, 0, $ff
 	ld h, PLAY_AREA_ARENA
-	call SwapTurn
+	rst SwapTurn
 .loop_play_area_1
 	push bc
 	call GetCardDamageAndMaxHP
@@ -948,7 +948,7 @@ HandleAICurse:
 .use_curse
 	ld a, e
 	ldh [hAIPkmnPowerEffectParam], a
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wce08]
 	ldh [hTempCardIndex_ff9f], a
 	ld a, OPPACTION_USE_PKMN_POWER

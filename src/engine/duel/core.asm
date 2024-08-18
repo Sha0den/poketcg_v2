@@ -37,9 +37,9 @@ StartDuel_VSAIOpp::
 	ld a, [wNPCDuelDeckID]
 	ld [wOpponentDeckID], a
 	call LoadPlayerDeck
-	call SwapTurn
+	rst SwapTurn
 	call LoadOpponentDeck
-	call SwapTurn
+	rst SwapTurn
 	jr StartDuel
 
 
@@ -98,7 +98,7 @@ MainDuelLoop:
 	jr z, .practice_duel
 
 .next_turn
-	call SwapTurn
+	rst SwapTurn
 	jr MainDuelLoop
 
 .practice_duel
@@ -265,9 +265,9 @@ HandleTurn:
 	jr z, .player_turn
 
 ; opponent's turn
-	call SwapTurn
+	rst SwapTurn
 	call IsClairvoyanceActive
-	call SwapTurn
+	rst SwapTurn
 	call c, DisplayPlayerDrawCardScreen
 	jr DuelMainInterface
 
@@ -334,9 +334,9 @@ DuelMenuShortcut_PlayerDiscardPile:
 
 ; triggered by pressing B + START in the duel menu
 DuelMenuShortcut_OpponentActivePokemon:
-	call SwapTurn
+	rst SwapTurn
 	call OpenActivePokemonScreen
-	call SwapTurn
+	rst SwapTurn
 	jr DuelMainInterface
 
 
@@ -633,7 +633,7 @@ OpenVariousPlayAreaScreens_FromSelectPresses:
 	ret c
 	call .Func_45a9
 	ret c
-	call SwapTurn
+	rst SwapTurn
 	call .Func_45a9
 	jp SwapTurn
 
@@ -655,7 +655,7 @@ OpenVariousPlayAreaScreens_FromSelectPresses:
 
 ; draws the screen that lists the opponent's play area Pokemon
 OpenNonTurnHolderPlayAreaScreen:
-	call SwapTurn
+	rst SwapTurn
 	call OpenTurnHolderPlayAreaScreen
 	jp SwapTurn
 
@@ -668,7 +668,7 @@ OpenTurnHolderPlayAreaScreen:
 
 ; draws the non-turn holder's discard pile screen
 OpenNonTurnHolderDiscardPileScreen:
-	call SwapTurn
+	rst SwapTurn
 	call OpenTurnHolderDiscardPileScreen
 	jp SwapTurn
 
@@ -676,7 +676,7 @@ OpenNonTurnHolderDiscardPileScreen:
 ; draws the non-turn holder's hand screen. simpler version of OpenPlayerHandScreen
 ; used only for checking the cards rather than for playing them.
 OpenNonTurnHolderHandScreen_Simple:
-	call SwapTurn
+	rst SwapTurn
 	call OpenTurnHolderHandScreen_Simple
 	jp SwapTurn
 
@@ -1895,10 +1895,10 @@ DuelHorizontalSeparatorCGBPalData:
 ; and the number of cards left in each player's deck.
 ; this is called when drawing the results screen at the end of a duel.
 PrintDuelResultStats:
-	call SwapTurn
+	rst SwapTurn
 	lb de, 1, 1
 	call .PrintDuelistResultStats
-	call SwapTurn
+	rst SwapTurn
 	lb de, 8, 8
 ;	fallthrough
 
@@ -2008,15 +2008,15 @@ DisplayCardListDetails:
 HandleDuelSetup:
 ; init variables and shuffle cards
 	call InitializeDuelVariables
-	call SwapTurn
+	rst SwapTurn
 	call InitializeDuelVariables
-	call SwapTurn
+	rst SwapTurn
 	call PlayShuffleAndDrawCardsAnimation_BothDuelists
 	call ShuffleDeckAndDrawSevenCards
 	ldh [hTemp_ffa0], a
-	call SwapTurn
+	rst SwapTurn
 	call ShuffleDeckAndDrawSevenCards
-	call SwapTurn
+	rst SwapTurn
 	ld c, a
 
 ; check if any Basic Pokémon cards were drawn
@@ -2041,14 +2041,14 @@ HandleDuelSetup:
 	jr .hand_cards_ok
 
 .opp_drew_no_basic_pkmn
-	call SwapTurn
+	rst SwapTurn
 .ensure_opp_basic_pkmn_loop
 	call DisplayNoBasicPokemonInHandScreenAndText
 	call InitializeDuelVariables
 	call PlayShuffleAndDrawCardsAnimation_TurnDuelist
 	call ShuffleDeckAndDrawSevenCards
 	jr c, .ensure_opp_basic_pkmn_loop
-	call SwapTurn
+	rst SwapTurn
 	jr .hand_cards_ok
 
 .neither_drew_basic_pkmn
@@ -2056,10 +2056,10 @@ HandleDuelSetup:
 	call DrawWideTextBox_WaitForInput
 	call DisplayNoBasicPokemonInHandScreen
 	call InitializeDuelVariables
-	call SwapTurn
+	rst SwapTurn
 	call DisplayNoBasicPokemonInHandScreen
 	call InitializeDuelVariables
-	call SwapTurn
+	rst SwapTurn
 	call PrintReturnCardsToDeckDrawAgain
 	jr HandleDuelSetup
 
@@ -2069,9 +2069,9 @@ HandleDuelSetup:
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a
 	call ChooseInitialArenaAndBenchPokemon
-	call SwapTurn
+	rst SwapTurn
 	call ChooseInitialArenaAndBenchPokemon
-	call SwapTurn
+	rst SwapTurn
 	jp c, .error
 	call DrawPlayAreaToPlacePrizeCards
 	ldtx hl, PlacingThePrizesText
@@ -2091,9 +2091,9 @@ HandleDuelSetup:
 
 	ldh [hWhoseTurn], a
 	call InitTurnDuelistPrizes
-	call SwapTurn
+	rst SwapTurn
 	call InitTurnDuelistPrizes
-	call SwapTurn
+	rst SwapTurn
 	call EmptyScreen
 	ld a, BOXMSG_COIN_TOSS
 	call DrawDuelBoxMessage
@@ -2112,7 +2112,7 @@ HandleDuelSetup:
 	ldtx de, IfHeadsDuelistPlaysFirstText
 	call TossCoin
 	jr c, .play_first ; jump if heads
-	call SwapTurn
+	rst SwapTurn
 	ldtx hl, YouPlaySecondText
 .play_first
 	call DrawWideTextBox_WaitForInput
@@ -2130,7 +2130,7 @@ HandleDuelSetup:
 	ldtx de, IfHeadsDuelistPlaysFirstText
 	call TossCoin
 	jr c, .play_second ; jump if heads
-	call SwapTurn
+	rst SwapTurn
 	ldtx hl, YouPlayFirstText
 .play_second
 	call DrawWideTextBox_WaitForInput
@@ -2664,14 +2664,14 @@ DrawDuelMainScene::
 	ld de, v0Tiles1 + $50 tiles
 	call LoadPlayAreaCardGfx
 	call SetBGP7OrSGB2ToCardPalette
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	ld de, v0Tiles1 + $20 tiles
 	call LoadPlayAreaCardGfx
 	call SetBGP6OrSGB3ToCardPalette
 	call FlushAllPalettesOrSendPal23Packet
-	call SwapTurn
+	rst SwapTurn
 ; next, draw the Pokemon in the Arena
 ;.place_player_arena_pkmn
 	ld a, DUELVARS_ARENA_CARD
@@ -2685,7 +2685,7 @@ DrawDuelMainScene::
 	call FillRectangle
 	call ApplyBGP7OrSGB2ToCardImage
 .place_opponent_arena_pkmn
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp -1
@@ -2697,7 +2697,7 @@ DrawDuelMainScene::
 	call FillRectangle
 	call ApplyBGP6OrSGB3ToCardImage
 .place_other_elements
-	call SwapTurn
+	rst SwapTurn
 	ld hl, DuelEAndHPTileData
 	call WriteDataBlocksToBGMap0
 	call DrawDuelHorizontalSeparator
@@ -2733,7 +2733,7 @@ DrawDuelHUDs::
 	call CheckPrintPoisoned
 	inc c
 	call CheckPrintDoublePoisoned ; if double poisoned, print a second poison icon
-	call SwapTurn
+	rst SwapTurn
 	lb de, 7, 0 ; coordinates for printing the opponent's Active Pokemon's name and info icons
 	lb bc, 3, 1 ; coordinates for drawing the opponent's attached Energy symbols and HP display
 	call GetNonTurnDuelistVariable
@@ -6192,13 +6192,13 @@ SaveDuelStateToSRAM:
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempTurnDuelistCardID], a
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ld [wTempNonTurnDuelistCardID], a
-	call SwapTurn
+	rst SwapTurn
 	pop hl
 	push hl
 	call EnableSRAM
@@ -6469,10 +6469,10 @@ LoadOpponentDeck:
 .normal_sam_duel
 	xor a
 	ld [wOpponentDeckID], a
-	call SwapTurn
+	rst SwapTurn
 	ld a, PRACTICE_PLAYER_DECK
 	call LoadDeck
-	call SwapTurn
+	rst SwapTurn
 	ld hl, wRNG1
 	ld a, $57
 	ld [hli], a
@@ -6980,14 +6980,14 @@ OppAction_PlayAttackAnimationDealAttackDamage:
 OppAction_ForceSwitchActive:
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	call SwapTurn
+	rst SwapTurn
 	call HasAlivePokemonInBench
 	ld a, $01
 	ld [wPlayAreaSelectAction], a
 .force_selection
 	call OpenPlayAreaScreenForSelection
 	jr c, .force_selection ; must choose, B button can't be used to exit
-	call SwapTurn
+	rst SwapTurn
 	jp SerialSendByte
 
 
@@ -7059,9 +7059,9 @@ OppAction_UseMetronomeAttack:
 .asm_6b56
 	call SerialRecv8Bytes
 	push bc
-	call SwapTurn
+	rst SwapTurn
 	call CopyAttackDataAndDamage_FromDeckIndex
-	call SwapTurn
+	rst SwapTurn
 	ldh a, [hTempCardIndex_ff9f]
 	ld [wPlayerAttackingCardIndex], a
 	ld a, [wSelectedAttack]
@@ -7141,12 +7141,12 @@ HandleBetweenTurnsEvents:
 	jr c, .something_to_handle
 	cp PARALYZED
 	jr z, .something_to_handle
-	call SwapTurn
+	rst SwapTurn
 	call IsArenaPokemonAsleepOrPoisoned
-	call SwapTurn
+	rst SwapTurn
 	jr c, .something_to_handle
 	call DiscardAttachedPluspowers
-	call SwapTurn
+	rst SwapTurn
 	call DiscardAttachedDefenders
 	jp SwapTurn
 
@@ -7192,7 +7192,7 @@ HandleBetweenTurnsEvents:
 
 .discard_pluspower
 	call DiscardAttachedPluspowers
-	call SwapTurn
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardIDFromDeckIndex
@@ -7207,7 +7207,7 @@ HandleBetweenTurnsEvents:
 	call HandleSleepCheck
 .asm_6c3a
 	call DiscardAttachedDefenders
-	call SwapTurn
+	rst SwapTurn
 	jp HandleBetweenTurnKnockOuts
 
 
@@ -7304,7 +7304,7 @@ RedrawTurnDuelistsMainSceneOrDuelHUD:
 	ldh a, [hWhoseTurn]
 	cp [hl]
 	jp z, DrawDuelMainScene
-	call SwapTurn
+	rst SwapTurn
 	call DrawDuelMainScene
 	jp SwapTurn
 
@@ -7319,10 +7319,10 @@ PlayBetweenTurnsAnimation:
 	ld a, [wWhoseTurn]
 	cp PLAYER_TURN
 	jr z, .store_duelist_turn
-	call SwapTurn
+	rst SwapTurn
 	ldh a, [hWhoseTurn]
 	ld [wDuelAnimDuelistSide], a
-	call SwapTurn
+	rst SwapTurn
 	jr .asm_6ccb
 
 .store_duelist_turn
@@ -7349,7 +7349,7 @@ RedrawTurnDuelistsDuelHUD:
 	ldh a, [hWhoseTurn]
 	cp [hl]
 	jp z, DrawDuelHUDs
-	call SwapTurn
+	rst SwapTurn
 	call DrawDuelHUDs
 	jp SwapTurn
 
@@ -7628,9 +7628,9 @@ HandleBetweenTurnKnockOuts:
 	call .ClearDamageReductionSubstatus2OfKnockedOutPokemon
 	xor a
 	ld [wDuelFinishParam], a
-	call SwapTurn
+	rst SwapTurn
 	call .Func_6ef6
-	call SwapTurn
+	rst SwapTurn
 	ld a, [wDuelFinishParam]
 	or a
 	jr z, .asm_6e86
@@ -7638,16 +7638,16 @@ HandleBetweenTurnKnockOuts:
 	jr c, .asm_6e86
 	call CountKnockedOutPokemon
 	ld c, a
-	call SwapTurn
+	rst SwapTurn
 	call CountPrizes
-	call SwapTurn
+	rst SwapTurn
 	dec a
 	cp c
 	jr c, .asm_6e86
 	ld a, c
-	call SwapTurn
+	rst SwapTurn
 	call TakeAPrizes
-	call SwapTurn
+	rst SwapTurn
 	ld a, TURN_PLAYER_WON
 	jr .set_duel_finished
 .asm_6e86
@@ -7655,16 +7655,16 @@ HandleBetweenTurnKnockOuts:
 	ld a, [wDuelFinishParam]
 	cp TRUE
 	jr nz, .asm_6e9f
-	call SwapTurn
+	rst SwapTurn
 	call CheckIfTurnDuelistPlayAreaPokemonAreAllKnockedOut
-	call SwapTurn
+	rst SwapTurn
 	jr c, .asm_6e9f
 	ld a, TURN_PLAYER_LOST
 	jr .set_duel_finished
 .asm_6e9f
-	call SwapTurn
+	rst SwapTurn
 	call .Func_6eff
-	call SwapTurn
+	rst SwapTurn
 	call .Func_6eff
 	ld a, [wDuelFinishParam]
 	or a
@@ -7673,9 +7673,9 @@ HandleBetweenTurnKnockOuts:
 .asm_6eb2
 	push af
 	call MoveAllTurnHolderKnockedOutPokemonToDiscardPile
-	call SwapTurn
+	rst SwapTurn
 	call MoveAllTurnHolderKnockedOutPokemonToDiscardPile
-	call SwapTurn
+	rst SwapTurn
 	call ShiftAllPokemonToFirstPlayAreaSlots
 	pop af
 	ret
@@ -7700,9 +7700,9 @@ HandleBetweenTurnKnockOuts:
 ; clears SUBSTATUS2_CANNOT_ATTACK_THIS, SUBSTATUS2_REDUCE_BY_10,
 ; and SUBSTATUS2_REDUCE_BY_20 for each Active Pokemon with 0 HP
 .ClearDamageReductionSubstatus2OfKnockedOutPokemon:
-	call SwapTurn
+	rst SwapTurn
 	call .clear
-	call SwapTurn
+	rst SwapTurn
 .clear
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
@@ -7829,11 +7829,11 @@ Func_6fa5:
 	call CountKnockedOutPokemon
 	ret nc ; return if there are no Knocked Out Pokemon
 	; at least one Pokemon is Knocked Out
-	call SwapTurn
+	rst SwapTurn
 	call TurnDuelistTakePrizes
-	call SwapTurn
+	rst SwapTurn
 	ret nc ; return if the turn holder hasn't drawn all of their Prizes
-	call SwapTurn
+	rst SwapTurn
 	call DrawDuelMainScene
 	ldtx hl, TookAllThePrizesText
 	call DrawWideTextBox_WaitForInput
@@ -8373,9 +8373,9 @@ ClearChangedTypesIfMuk:
 	ld a, e
 	cp MUK
 	ret nz ; return if the Pokemon isn't a Muk
-	call SwapTurn
+	rst SwapTurn
 	call .zero_changed_types
-	call SwapTurn
+	rst SwapTurn
 .zero_changed_types
 	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
 	get_turn_duelist_var
@@ -8487,9 +8487,9 @@ PlayAttackAnimation_DealAttackDamage::
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
 	jr nz, .deal_damage
-	call SwapTurn
+	rst SwapTurn
 	call HandleNoDamageOrEffectSubstatus
-	call SwapTurn
+	rst SwapTurn
 .deal_damage
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -8730,11 +8730,11 @@ LastChanceToNegateFinalDamage:
 	ret z
 .attack_opponent
 	push de
-	call SwapTurn
+	rst SwapTurn
 	xor a
 	ld [wTempPlayAreaLocation_cceb], a
 	call HandleTransparency
-	call SwapTurn
+	rst SwapTurn
 	pop de
 	ret nc
 	call DrawDuelMainScene
@@ -8760,9 +8760,9 @@ HandleStrikesBack_AgainstResidualAttack:
 	ld a, [wDealtDamage]
 	or a
 	ret z
-	call SwapTurn
+	rst SwapTurn
 	call CheckCannotUseDueToStatus
-	call SwapTurn
+	rst SwapTurn
 	ret c  ; return if Pokemon Power can't be used because of status or Toxic Gas
 	ld hl, 10 ; amount of damage to give the Attacking Pokemon
 	call ApplyStrikesBack_AgainstResidualAttack

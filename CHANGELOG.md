@@ -76,6 +76,11 @@
 
 
 ## Code Optimization
+- **August 18, 2024:** 21 Files Changed
+    - Make 'SwapTurn' a restart vector and replace each "call" with "rst" (you could also replace each "jp" with "rst" and a "ret" to free up even more space, at the cost of 4 cycles per byte saved)
+
+<br/>
+
 - **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a3f730b15cf5587a098b6af4a107684e67988294):** 5 Files Changed
     - Move some functions from home/duel.asm and home/substatus.asm to engine/duel/core.asm
     - Shuffle a few functions in the home bank
@@ -651,7 +656,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **August 18, 2024:** 1 File Changed
+- **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/cbfce31cab1e997d446cd57bbed99990fb7ca27a):** 1 File Changed
     - Revert the textpointers because it screws up the printing of some empty texts (plus everything works fine without making any adjustments)
     - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/fe4c091b38639bc5b52078c9ac153a0eac12ae01)*
 

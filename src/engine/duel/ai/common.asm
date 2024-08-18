@@ -2,7 +2,7 @@
 ; sets carry if there's any Pokemon other
 ; than MewtwoLv53.
 CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
-	call SwapTurn
+	rst SwapTurn
 	ld e, 0
 .loop_deck
 	ld a, e
