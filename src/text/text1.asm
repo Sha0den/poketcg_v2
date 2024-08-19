@@ -1,3 +1,6 @@
+NullText:
+	done
+
 HandText:
 	text "Hand"
 	done
@@ -145,7 +148,7 @@ UnableDueToSleepText:
 
 UnableDueToParalysisText:
 	text "Your Active Pokémon is Paralyzed."
-	line "You cannot attack or retreat"
+	line "You cannot attack or retreat."
 	done
 
 Received10DamageDueToPoisonText:

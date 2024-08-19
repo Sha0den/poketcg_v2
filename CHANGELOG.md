@@ -76,7 +76,7 @@
 
 
 ## Code Optimization
-- **August 18, 2024:** 3 Files Changed
+- **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/b0b4de78bbb026b745ce87d569f2ebff752c6974):** 3 Files Changed
     - Delete a few unnecessary functions from home/duel_menu.asm
 
 <br/>
@@ -557,6 +557,7 @@
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
+    - Text pointers were later adjusted in another commit.
 
 <br/>
 
