@@ -12,6 +12,12 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **August 17, 2024:** 4 Files Changed
+    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Make-AI-understand-attacks-with-any-energy-cost-combinations) to give the AI the ability to read more complex Energy requirements in attack costs (more than 2 types of Energy)
+    - This isn't exactly a bug since there were no multicolored attacks in the base game
+
+<br/>
+
 - **[June 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/114f2463ef738e36f6cbdc36eaceb5a9676d6f69):** 2 Files Changed
     - Change some mistaken calls to bank1calls
 
@@ -31,6 +37,7 @@
 <br/>
 
 - **[May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/3e7fab86d81231648bee2b0256eef81262d78f24):** 17 Files Changed (bugs_and_glitches.md was also removed)
+    - Apply new graphics fixes in [bugs_and_glitches.md](https://github.com/pret/poketcg/blob/master/bugs_and_glitches.md#graphics). More specifically:
     - Fix the lower left tiles of the pool area in the Water Club using the wrong color
     - Fix the emblems in the Club entrances using some incorrect tiles
     - Fix a problem with the frame data being used for NPCs with a green palette
@@ -50,6 +57,7 @@
 <br/>
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/05c13dd163f6c073fbcb7c455d05b762beec6a8d):** 24 Files Changed
+    - Apply all of the changes currently laid out in [bugs_and_glitches.md](https://github.com/pret/poketcg/blob/master/bugs_and_glitches.md). More specifically:
     - Fix the AI repeating the Active Pokémon score bonus when attaching an Energy card
     - Fix designated cards not being set aside when the AI places Prize cards
     - Apply the AI score modifiers for retreating
@@ -557,7 +565,7 @@
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
-    - Text pointers were later adjusted in another commit.
+    - Text pointers were later adjusted in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/09f3400366b809053a31210ddc368f6273896608)
 
 <br/>
 

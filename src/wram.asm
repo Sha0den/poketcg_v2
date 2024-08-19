@@ -1075,11 +1075,11 @@ wAIRetreatScore:: ; cdb4
 wAIDuelVarsEnd::
 
 ; store information related to the current loaded attack for AI calculations
-wTempLoadedAttackEnergyCost:: ; cdb5
-	ds $1
-wTempLoadedAttackEnergyNeededType:: ; cdb6
-	ds $1
-wTempLoadedAttackEnergyNeededAmount:: ; cdb7
+wTempLoadedAttackEnergyCost::
+	ds NUM_TYPES / 2
+wTempLoadedAttackEnergyNeededAmount::
+	ds NUM_TYPES / 2
+wTempLoadedAttackEnergyNeededTotal::
 	ds $1
 
 ; used for the AI to store various details about a given card
@@ -1112,7 +1112,7 @@ wFirstAttackAIScore:: ; cdbf
 ENDU
 
 ; Unused wram bytes?
-	ds $a
+	ds $4
 
 ; information about the Defending Pokémon and
 ; the Prize card count on both sides for AI:

@@ -448,7 +448,7 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	ld a, b
 	or a
 	jr z, .check_colorless_needed
-	ld a, e
+	farcall GetEnergyCardNeeded
 	call LookForCardIDInHand
 	jr c, .check_colorless_needed
 	ld a, 4
@@ -516,7 +516,7 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	ld a, b
 	or a
 	jr z, .check_colorless_needed_evo
-	ld a, e
+	farcall GetEnergyCardNeeded
 	call LookForCardIDInHand
 	jr c, .check_colorless_needed_evo
 	ld a, 2
@@ -823,7 +823,7 @@ AITryToPlayEnergyCard:
 
 ; in this case, Pokémon needs a specific basic energy card.
 ; look for basic energy card needed in hand and play it.
-	ld a, e
+	farcall GetEnergyCardNeeded
 	call LookForCardIDInHand
 	ldh [hTemp_ffa0], a
 	jr nc, .play_energy_card

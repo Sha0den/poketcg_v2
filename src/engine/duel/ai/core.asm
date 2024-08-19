@@ -373,7 +373,6 @@ CheckIfSelectedAttackIsUnusable:
 ; output:
 ;	b = basic energy still needed
 ;	c = colorless energy still needed
-;	e = output of ConvertColorToEnergyCardID, or $0 if not an attack
 ;	carry set if no attack
 ;	       OR if it's a Pokémon Power
 ;	       OR if not enough energy for attack
@@ -394,7 +393,6 @@ CheckEnergyNeededForAttack:
 	jr nz, .is_attack
 .no_attack
 	lb bc, 0, 0
-	ld e, c
 	scf
 	ret
 
@@ -402,54 +400,86 @@ CheckEnergyNeededForAttack:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
+;	fallthrough
+
+CalculateEnergyNeededForAttack:
 	call HandleEnergyBurn
 
+	; fill wTempLoadedAttackEnergyCost
+	ld hl, wLoadedAttackEnergyCost
+	ld de, wTempLoadedAttackEnergyCost
+	ld bc, NUM_TYPES / 2
+	call CopyDataHLtoDE
+
+	; clear wTempLoadedAttackEnergyNeededAmount
+	; and wTempLoadedAttackEnergyNeededTotal
+	ld hl, wTempLoadedAttackEnergyNeededAmount
+	ld c, NUM_TYPES / 2 + 1
 	xor a
-	ld [wTempLoadedAttackEnergyCost], a
-	ld [wTempLoadedAttackEnergyNeededAmount], a
-	ld [wTempLoadedAttackEnergyNeededType], a
+.loop_clear
+	ld [hli], a
+	dec c
+	jr nz, .loop_clear
 
 	ld hl, wAttachedEnergies
 	ld de, wLoadedAttackEnergyCost
-	ld b, 0
-	ld c, (NUM_TYPES / 2) - 1
-
+	ld c, FIRE
 .loop
-	; check all basic energy cards except colorless
-	ld a, [de]
-	swap a
+	; check all Basic Energy cards
 	call CheckIfEnoughParticularAttachedEnergy
-	ld a, [de]
 	call CheckIfEnoughParticularAttachedEnergy
 	inc de
-	dec c
+	ld a, c
+	cp NUM_TYPES
 	jr nz, .loop
 
-; running CheckIfEnoughParticularAttachedEnergy back to back like this
-; overwrites the results of a previous call of this function,
-; however, no attack in the game has energy requirements for two
-; different energy types (excluding colorless), so this routine
-; will always just return the result for one type of basic energy,
-; while all others will necessarily have an energy cost of 0
-; if attacks are added to the game with energy requirements of
-; two different basic energy types, then this routine only accounts
-; for the type with the highest index
+	; count Basic Energy cards in use
+	ld hl, wTempLoadedAttackEnergyCost
+	ld de, wTempLoadedAttackEnergyNeededAmount
+	ld c, 0
+	ld a, (NUM_TYPES / 2) - 1
+.loop_tally_energies_in_use
+	push af
+	ld a, [de] ; needed amount
+	swap a
+	and %1111
+	ld b, a
+	ld a, [wTempLoadedAttackEnergyNeededTotal]
+	add b
+	ld [wTempLoadedAttackEnergyNeededTotal], a
+	ld a, [hl] ; Energy cost
+	swap a
+	and %1111
+	sub b
+	add c
+	ld c, a
+	ld a, [de] ; needed amount
+	inc de
+	and %1111
+	ld b, a
+	ld a, [wTempLoadedAttackEnergyNeededTotal]
+	add b
+	ld [wTempLoadedAttackEnergyNeededTotal], a
+	ld a, [hli] ; Energy cost
+	and %1111
+	sub b
+	add c
+	ld c, a
+	pop af
+	dec a
+	jr nz, .loop_tally_energies_in_use
 
 	; colorless
-	ld a, [de]
+	ld a, [hl]
 	swap a
 	and %00001111
 	ld b, a ; colorless energy still needed
-	ld a, [wTempLoadedAttackEnergyCost]
-	ld hl, wTempLoadedAttackEnergyNeededAmount
-	sub [hl]
-	ld c, a ; basic energy still needed
 	ld a, [wTotalAttachedEnergies]
 	sub c
 	sub b
 	jr c, .not_enough
 
-	ld a, [wTempLoadedAttackEnergyNeededAmount]
+	ld a, [wTempLoadedAttackEnergyNeededTotal]
 	or a
 	ret z
 
@@ -460,12 +490,8 @@ CheckEnergyNeededForAttack:
 	cpl
 	inc a
 	ld c, a ; colorless energy still needed
-	ld a, [wTempLoadedAttackEnergyNeededAmount]
+	ld a, [wTempLoadedAttackEnergyNeededTotal]
 	ld b, a ; basic energy still needed
-	ld a, [wTempLoadedAttackEnergyNeededType]
-	call ConvertColorToEnergyCardID
-	ld e, a
-	ld d, 0
 	scf
 	ret
 
@@ -475,33 +501,72 @@ CheckEnergyNeededForAttack:
 ; and this amount is stored in wTempLoadedAttackEnergyCost
 ; sets carry flag if not enough energy of this type attached
 ; input:
-;	a    = this energy cost of attack (lower nibble)
+;	c    = TYPE_* constant
+;	[de] = attack's Energy cost
 ;	[hl] = attached energy
 ; output:
 ;	carry set if not enough of this energy type attached
 CheckIfEnoughParticularAttachedEnergy:
+	ld a, c
+	rrca ; carry set if odd
+	ld a, [de]
+	jr c, .no_swap1
+	swap a
+.no_swap1
 	and %00001111
 	jr nz, .check
 .has_enough
 	inc hl
-	inc b
-	or a
+	inc c
 	ret
 
 .check
-	ld [wTempLoadedAttackEnergyCost], a
 	sub [hl]
 	jr z, .has_enough
 	jr c, .has_enough
 
 	; not enough energy
-	ld [wTempLoadedAttackEnergyNeededAmount], a
-	ld a, b
-	ld [wTempLoadedAttackEnergyNeededType], a
+	push hl
+	push bc
+	ld hl, wTempLoadedAttackEnergyNeededAmount
+	ld b, $00
+	rr c ; /2
+	jr c, .no_swap2
+	swap a
+.no_swap2
+	add hl, bc
+	or [hl]
+	ld [hl], a
+	pop bc
+	pop hl
+
 	inc hl
-	inc b
-	scf
+	inc c
 	ret
+
+
+; finds the first needed Energy card
+; from wTempLoadedAttackEnergyNeededAmount
+GetEnergyCardNeeded:
+	push bc
+	ld hl, wTempLoadedAttackEnergyNeededAmount
+	ld c, FIRE
+.loop_find_type
+	ld a, c
+	rrca ; carry set if odd
+	ld a, [hli]
+	jr c, .no_swap
+	dec hl
+	swap a
+.no_swap
+	and %1111
+	jr nz, .found_type
+	inc c
+	jr .loop_find_type ; we assume this loop will terminate
+.found_type
+	ld a, c
+	pop bc
+; fallthrough
 
 ; input:
 ;	a = energy type
@@ -840,7 +905,7 @@ CheckEnergyNeededForAttackAfterDiscard:
 	dec [hl]
 	ld hl, wTotalAttachedEnergies
 	dec [hl]
-	jr .asm_1570c
+	jp CalculateEnergyNeededForAttack
 ; decrease attached colorless by 2.
 .colorless
 	ld hl, wAttachedEnergies + COLORLESS
@@ -849,60 +914,7 @@ CheckEnergyNeededForAttackAfterDiscard:
 	ld hl, wTotalAttachedEnergies
 	dec [hl]
 	dec [hl]
-
-.asm_1570c
-	call HandleEnergyBurn
-	xor a
-	ld [wTempLoadedAttackEnergyCost], a
-	ld [wTempLoadedAttackEnergyNeededAmount], a
-	ld [wTempLoadedAttackEnergyNeededType], a
-	ld hl, wAttachedEnergies
-	ld de, wLoadedAttackEnergyCost
-	ld b, 0
-	ld c, (NUM_TYPES / 2) - 1
-.loop
-	; check all basic energy cards except colorless
-	ld a, [de]
-	swap a
-	call CheckIfEnoughParticularAttachedEnergy
-	ld a, [de]
-	call CheckIfEnoughParticularAttachedEnergy
-	inc de
-	dec c
-	jr nz, .loop
-
-	ld a, [de]
-	swap a
-	and $0f
-	ld b, a ; colorless energy still needed
-	ld a, [wTempLoadedAttackEnergyCost]
-	ld hl, wTempLoadedAttackEnergyNeededAmount
-	sub [hl]
-	ld c, a ; basic energy still needed
-	ld a, [wTotalAttachedEnergies]
-	sub c
-	sub b
-	jr c, .not_enough_energy
-
-	ld a, [wTempLoadedAttackEnergyNeededAmount]
-	or a
-	ret z
-
-; being here means the energy cost isn't satisfied,
-; including with colorless energy
-	xor a
-.not_enough_energy
-	cpl
-	inc a
-	ld c, a ; colorless energy still needed
-	ld a, [wTempLoadedAttackEnergyNeededAmount]
-	ld b, a ; basic energy still needed
-	ld a, [wTempLoadedAttackEnergyNeededType]
-	call ConvertColorToEnergyCardID
-	ld e, a
-	ld d, 0
-	scf
-	ret
+	jp CalculateEnergyNeededForAttack
 
 ; zeroes a bytes starting at hl
 ClearMemory_Bank5:
@@ -1312,7 +1324,7 @@ LookForEnergyNeededInHand:
 	ld a, b
 	or a
 	jr z, .one_colorless
-	ld a, e
+	call GetEnergyCardNeeded
 	call LookForCardIDInHandList_Bank5
 	ret c
 	or a
@@ -1360,7 +1372,7 @@ LookForEnergyNeededForAttackInHand:
 	ld a, b
 	or a
 	jr z, .one_colorless
-	ld a, e
+	call GetEnergyCardNeeded
 	call LookForCardIDInHandList_Bank5
 	ret c
 	or a
@@ -2029,33 +2041,70 @@ CheckIfNoSurplusEnergyForAttack:
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
 	call HandleEnergyBurn
+
+	; fill wTempLoadedAttackEnergyCost
+	ld hl, wLoadedAttackEnergyCost
+	ld de, wTempLoadedAttackEnergyCost
+	ld b, NUM_TYPES / 2
+	call CopyNBytesFromHLToDE
+
+	; clear wTempLoadedAttackEnergyNeededAmount
+	ld hl, wTempLoadedAttackEnergyNeededAmount
+	ld c, NUM_TYPES / 2
 	xor a
-	ld [wTempLoadedAttackEnergyCost], a
-	ld [wTempLoadedAttackEnergyNeededAmount], a
-	ld [wTempLoadedAttackEnergyNeededType], a
+.loop_clear
+	ld [hli], a
+	dec c
+	jr nz, .loop_clear
 	ld hl, wAttachedEnergies
 	ld de, wLoadedAttackEnergyCost
-	ld b, 0
-	ld c, (NUM_TYPES / 2) - 1
+	ld c, FIRE
 .loop
-	; check all basic energy cards except colorless
-	ld a, [de]
-	swap a
-	call CalculateParticularAttachedEnergyNeeded
-	ld a, [de]
-	call CalculateParticularAttachedEnergyNeeded
+	; check all Basic Energy cards
+	call CheckIfEnoughParticularAttachedEnergy
+	call CheckIfEnoughParticularAttachedEnergy
 	inc de
-	dec c
-	jr nz, .loop
+	ld a, c
+	cp NUM_TYPES
+	jr z, .loop
+
+	; count Basic Energy cards in use
+	ld hl, wTempLoadedAttackEnergyCost
+	ld de, wTempLoadedAttackEnergyNeededAmount
+	ld c, 0
+	ld a, (NUM_TYPES / 2) - 1
+.loop_tally_energies_in_use
+	push af
+	ld a, [de] ; needed amount
+	swap a
+	and %1111
+	ld b, a
+	ld a, [hl] ; Energy cost
+	swap a
+	and %1111
+	sub b
+	add c
+	ld c, a
+	ld a, [de] ; needed amount
+	inc de
+	and %1111
+	ld b, a
+	ld a, [hli] ; Energy cost
+	and %1111
+	sub b
+	add c
+	ld c, a
+	pop af
+	dec a
+	jr nz, .loop_tally_energies_in_use
 
 	; colorless
 	ld a, [de]
 	swap a
-	and %00001111
-	ld b, a
-	ld hl, wTempLoadedAttackEnergyCost
+	and %1111
+	ld b, a ; Colorless Energy still needed
 	ld a, [wTotalAttachedEnergies]
-	sub [hl]
+	sub c
 	sub b
 	ret c ; return if not enough energy
 

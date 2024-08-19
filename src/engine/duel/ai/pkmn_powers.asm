@@ -164,7 +164,7 @@ HandleAIEnergyTrans:
 	ld a, b
 	or a
 	jr z, .attack_false
-	ld a, e
+	farcall GetEnergyCardNeeded
 	cp GRASS_ENERGY
 	jr nz, .attack_false
 	ld c, b
