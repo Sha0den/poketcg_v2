@@ -6780,7 +6780,7 @@ Peek_SelectEffect:
 
 ; player
 	call FinishQueuedAnimations
-	call HandlePeekSelection
+	farcall HandlePeekSelection
 	ldh [hAIPkmnPowerEffectParam], a
 	call SerialSend8Bytes
 	ret
@@ -6808,7 +6808,7 @@ Peek_SelectEffect:
 	rst SwapTurn
 	ldh a, [hAIPkmnPowerEffectParam]
 	xor $80
-	call DrawAIPeekScreen
+	farcall DrawAIPeekScreen
 	rst SwapTurn
 	ldtx hl, CardPeekWasUsedOnText
 	jp DrawWideTextBox_WaitForInput
@@ -8365,8 +8365,7 @@ Maintenance_ReturnToDeckAndDrawEffect:
 	call ShuffleCardsInDeck
 
 ; draw one card
-	ld a, 1
-	bank1call DisplayDrawNCardsScreen
+	bank1call DisplayDrawOneCardScreen
 	call DrawCardFromDeck
 	ldh [hTempCardIndex_ff98], a
 	call AddCardToHand

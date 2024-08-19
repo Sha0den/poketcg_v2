@@ -44,27 +44,6 @@ DrawYourOrOppPlayAreaScreen_Bank0::
 	jp BankswitchROM
 
 
-DrawPlayersPrizeAndBenchCards::
-	ldh a, [hBankROM]
-	push af
-	ld a, BANK(_DrawPlayersPrizeAndBenchCards)
-	rst BankswitchROM
-	call _DrawPlayersPrizeAndBenchCards
-	pop af
-	jp BankswitchROM
-
-
-HandlePeekSelection::
-	farcall _HandlePeekSelection
-	ret
-
-
-DrawAIPeekScreen::
-	ld b, a
-	farcall _DrawAIPeekScreen
-	ret
-
-
 ; input:
 ;	a = number of prize cards that the player needs to select
 SelectPrizeCards::

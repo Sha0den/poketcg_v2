@@ -851,8 +851,9 @@ GetDuelInitialPrizesUpperBitsSet:
 	ret
 
 
+; currently an unreferenced function
 ; draws the player's Benched Pokemon and Prizes
-_DrawPlayersPrizeAndBenchCards::
+DrawPlayersPrizeAndBenchCards::
 	xor a
 	ld [wTileMapFill], a
 	call ZeroObjectPositionsAndToggleOAMCopy
@@ -1340,7 +1341,7 @@ DisplayCheckMenuCursor_YourOrOppPlayArea:
 
 
 ; handles the selection menus for the Peek Pokemon Power
-_HandlePeekSelection::
+HandlePeekSelection::
 	call Set_OBJ_8x8
 	call LoadCursorTile
 ; reset wce5c and wIsSwapTurnPending
@@ -1590,7 +1591,10 @@ PeekOppPlayAreaTransitionTable:
 	cursor_transition $08, $60, $00, $06, $06, $01, $00 ; opponent's deck
 
 
-_DrawAIPeekScreen::
+; input:
+;	a = AI_PEEK_TARGET_* constant
+DrawAIPeekScreen::
+	ld b, a
 	push bc
 	call Set_OBJ_8x8
 	call LoadCursorTile

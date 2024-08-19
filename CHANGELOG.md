@@ -76,7 +76,12 @@
 
 
 ## Code Optimization
-- **August 18, 2024:** 21 Files Changed
+- **August 18, 2024:** 3 Files Changed
+    - Delete a few unnecessary functions from home/duel_menu.asm
+
+<br/>
+
+- **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/106e2372bfa6f430e41d4544375d32a16519c479):** 21 Files Changed
     - Make 'SwapTurn' a restart vector and replace each "call" with "rst" (you could also replace each "jp" with "rst" and a "ret" to free up even more space, at the cost of 4 cycles per byte saved)
 
 <br/>
