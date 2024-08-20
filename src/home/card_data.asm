@@ -90,7 +90,7 @@ LoadCardDataToHL_FromCardID::
 	ret
 
 
-; preserves bc and hl
+; preserves all registers except af
 ; input:
 ;	e = card ID
 ; output:

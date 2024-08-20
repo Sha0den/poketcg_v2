@@ -5634,15 +5634,11 @@ ShuffleAttachedEnergyEffect:
 	jr z, .next_card_location
 
 ; is a card that is in the turn holder's play area
-	push hl
 	push de
-	push bc
 	ld a, l
 	call GetCardIDFromDeckIndex
 	call GetCardType
-	pop bc
 	pop de
-	pop hl
 	and TYPE_ENERGY
 	jr z, .next_card_location
 ; is an Energy card attached to a Pokemon in the turn holder's play area
@@ -6174,11 +6170,9 @@ EnergyTransCheck:
 	ld a, [hl]
 	and CARD_LOCATION_PLAY_AREA
 	jr z, .next
-	push hl
 	ld a, l
 	call GetCardIDFromDeckIndex
 	call GetCardType
-	pop hl
 	cp TYPE_ENERGY_GRASS
 	ret z ; return if it's a Grass Energy
 .next
@@ -6301,11 +6295,9 @@ CheckIfCardHasGrassEnergyAttached:
 	cp e
 	jr nz, .next
 	push de
-	push hl
 	ld a, l
 	call GetCardIDFromDeckIndex
 	call GetCardType
-	pop hl
 	pop de
 	cp TYPE_ENERGY_GRASS
 	jr z, .no_carry
@@ -6547,13 +6539,11 @@ Firegiver_AddToHandEffect:
 	ld a, [hl]
 	cp CARD_LOCATION_DECK
 	jr nz, .next
-	push hl
 	push de
 	ld a, l
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	pop de
-	pop hl
 	cp TYPE_ENERGY_FIRE
 	jr nz, .next
 	ld a, l

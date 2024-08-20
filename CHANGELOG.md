@@ -84,7 +84,13 @@
 
 
 ## Code Optimization
-- **August 20, 2024:** 13 Files Changed
+- **August 20, 2024:** 4 Files Changed
+    - Fix register preservation comments for 'BankPushROM', 'BankPushROM2', and 'GetCardType'
+    - Adjust push/pop instructions surrounding calls to 'GetCardType'
+
+<br/>
+
+- **[August 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/164c470aaa69b572173ec9f5194a5990eed8cf74):** 13 Files Changed
     - Try to standardize the function comments that are used in the unsorted engine files
     - Plus some labeling/corrections/optimizations/shuffling of functions in said files
 

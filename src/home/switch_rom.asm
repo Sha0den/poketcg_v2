@@ -1,7 +1,7 @@
 ; switches to rombank (a + top2 of h shifted down),
 ; set top2 of h to 01 (switchable ROM bank area),
 ; returns old rombank ID on top-of-stack
-; preserves ?
+; preserves all registers
 ; input:
 ;	a/h/l = used to figure out which ROM bank to switch to
 BankpushROM::
@@ -42,7 +42,7 @@ BankpushROM::
 
 ; switches to rombank a,
 ; returns old rombank ID on top-of-stack
-; preserves ?
+; preserves all registers
 ; input:
 ;	a = ROM bank to switch to
 BankpushROM2::
