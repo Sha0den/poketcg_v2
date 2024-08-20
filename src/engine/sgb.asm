@@ -1,3 +1,4 @@
+; preserves hl
 SetMainSGBBorder:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -12,6 +13,8 @@ SetMainSGBBorder:
 	ld a, b
 	jr SetSGBBorder
 
+
+; preserves bc and hl
 SetIntroSGBBorder:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -19,11 +22,13 @@ SetIntroSGBBorder:
 	ld a, $0
 ;	fallthrough
 
-; sets SGB border corresponding with value in register a
-; $0 = intro
-; $1 = medals (gold)
-; $2 = medals (blue)
-; $3 = debug
+; sets SGB border corresponding with the value in register a
+; preserves bc and hl
+; input:
+;	a = $0:  use the intro border
+;	a = $1:  use the gold medals border
+;	a = $2:  use the blue medals border
+;	a = $3:  use the debug border
 SetSGBBorder:
 	push hl
 	push bc
@@ -47,17 +52,10 @@ SetSGBBorder:
 	dw SGBBorderMedalsGfxPointers, SGBData_BorderMedals4, SGBData_BorderMedals5
 	dw SGBBorderDebugGfxPointers,  SGBData_BorderDebug3,  SGBData_BorderDebug4
 
-AtrcEnPacket_Disable:
-	sgb ATRC_EN, 1 ; sgb_command, length
-	db 1
-	ds $0e
 
-; disable Controller Set-up Screen
-IconEnPacket:
-	sgb ICON_EN, 3 ; sgb_command, length
-	db $01
-	ds $0e
-
+; preserves bc and hl
+; input:
+;	hl = pointer for a SetSGBBorder.SGBBorders entry
 DecompressAndSendSGBBorder:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -85,15 +83,16 @@ DecompressAndSendSGBBorder:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	hl = pointer for a SetSGBBorder.SGBBorders entry
 Func_700a3:
 	push hl
 	push bc
 	push de
 	push hl
 	call Func_70136
-	pop hl
-
-	push hl
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -136,17 +135,18 @@ ChrTrnPacket_BGTiles2:
 	db 1
 	ds $0e
 
-; de = pals
-; hl = map
+
+; preserves all registers except af
+; input:
+;	de = SGB data pointer (palettes?)
+;	hl = SGB data pointer (map?)
 SetMainSGBBorderPalsAndMap:
 	push hl
 	push bc
 	push de
 	push hl
 	push de
-	push hl ; input hl
 	call Func_70136
-	pop hl
 	ld de, v0Tiles1
 	call DecompressSGBData
 
@@ -169,6 +169,8 @@ PctTrnPacket:
 	sgb PCT_TRN, 1 ; sgb_command, length
 	ds $0f
 
+
+; preserves all registers except af
 Func_70136:
 	push hl
 	push bc
@@ -204,13 +206,15 @@ Func_70136:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	hl = SGB data pointer
 SendSGBBorder:
 	push hl
 	push bc
 	push de
-	push hl
 	call EnableLCD
-	pop hl
 	call SendSGB
 	ld a, [wd41d]
 	ldh [hSCX], a
@@ -227,6 +231,7 @@ SendSGBBorder:
 	pop hl
 	ret
 
+
 ; MASK_EN on
 MaskEnPacket_Freeze_Bank1c:
 	sgb MASK_EN, 1 ; sgb_command, length
@@ -239,6 +244,8 @@ MaskEnPacket_Cancel_Bank1c:
 	db MASK_EN_CANCEL_MASK
 	ds $0e
 
+
+; preserves bc and hl
 Func_701c0:
 	push hl
 	push bc
@@ -265,7 +272,12 @@ Func_701c0:
 	pop hl
 	ret
 
+
 ; decompresses data pointed by hl to de
+; preserves de
+; input:
+;	hl = SGB data pointer
+;	de = buffer to place decompressed data
 DecompressSGBData:
 	ld a, [hli]
 	ld c, a
@@ -282,6 +294,7 @@ DecompressSGBData:
 	pop bc
 	pop de
 	jp DecompressData
+
 
 ; fills a 20x13 rectangle in v0BGMap0
 ; with values ascending bytes starting at $80
@@ -302,8 +315,11 @@ PrepareBGMapForSendingSGBBorder:
 	jr nz, .asm_70208
 	ret
 
+
 ; iterates all the medals obtained by the player
 ; and fills the corresponding medal slot in the SGB border
+; input:
+;	hl = SGB data pointer
 FillSGBBorderMedalSlots:
 ; exit if not SGBData_BorderMedals5
 	ld a, l
@@ -449,8 +465,10 @@ ENDM
 	border_medal_tile v0Tiles1 + $53c, $74, $10
 	assert_table_length NUM_MEDALS
 
+
 ; decompresses palette data depending on wCurMapSGBPals
-; then sends it as SGB packet
+; and then sends it as an SGB packet
+; preserves all registers except af
 SetSGB2AndSGB3MapPalette:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -508,6 +526,10 @@ SetSGB2AndSGB3MapPalette:
 	dw SGBData_MapPals9  ; MAP_SGB_PALS_9
 	dw SGBData_MapPals10 ; MAP_SGB_PALS_10
 
+
+; preserves all registers except af
+; input:
+;	hl = SGB data pointer
 Func_703cb:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -536,6 +558,10 @@ Func_703cb:
 	pop hl
 	ret
 
+
+; preserves all registers except af
+; input:
+;	hl = SGB data pointer
 DecompressSGBPalette:
 	push hl
 	push bc
@@ -557,7 +583,12 @@ DecompressSGBPalette:
 	pop hl
 	ret
 
+
 ; sends an SGB packet related with palettes
+; preserves all registers except af
+; input:
+;	bc = screen coordinates for drawing a portrait
+;	hl = SGB data pointer
 SendSGBPortraitPalettes:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -576,7 +607,7 @@ SendSGBPortraitPalettes:
 	ld bc, $8
 	call CopyDataHLtoDE
 
-	pop hl
+	pop hl ; input hl
 	call DecompressSGBPalette
 	ld hl, wLoadedPalData + 2
 	ld de, wTempSGBPacket + $9
@@ -591,7 +622,7 @@ SendSGBPortraitPalettes:
 	call Func_704c7
 	call SendSGB
 
-	pop hl
+	pop hl ; input hl
 	ld c, $0f
 	ld a, l
 	cp LOW(SGBData_PlayerPortraitPals)
@@ -604,7 +635,7 @@ SendSGBPortraitPalettes:
 .asm_7046a
 	ld a, c
 	ld [wTempSGBPacket + $3], a
-	pop bc
+	pop bc ; input bc
 	ld hl, wTempSGBPacket
 	push hl
 	ld a, $21
@@ -627,20 +658,22 @@ SendSGBPortraitPalettes:
 	xor a
 	ld [wTempSGBPacket + $e], a
 	ld [wTempSGBPacket + $f], a
-	pop hl
+	pop hl ; wTempSGBPacket
 	call SendSGB
 	pop de
 	pop bc
 	pop hl
 	ret
 
-; send an ATTR_BLK SGB packet
+
+; sends an ATTR_BLK SGB packet
+; preserves all registers except af
 ; input:
-; b = x1 (left)
-; c = y1 (upper)
-; d = block width
-; e = block height
-; l = %00xxyyzz, palette number for: outside block, block border, inside block
+;	b = x1 (left)
+;	c = y1 (upper)
+;	d = block width
+;	e = block height
+;	l = %00xxyyzz, palette number for: outside block, block border, inside block
 Func_70498:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -671,16 +704,18 @@ Func_70498:
 	dec a
 	add c
 	ld [hli], a ; y2
-	pop hl
+	pop hl ; wTempSGBPacket
 	call SendSGB
 	pop de
 	pop bc
 	pop hl
 	ret
 
-; set color 0 to default white rgb(28, 28, 24)
+
+; sets color 0 to default background color (rgb 28, 28, 24)
+; preserves all registers
 ; input:
-; hl = pointer to start of SGB packet
+;	hl = pointer to start of SGB packet
 Func_704c7:
 	push af
 	push hl
@@ -692,6 +727,7 @@ Func_704c7:
 	pop hl
 	pop af
 	ret
+
 
 SGBData_BorderDebug4:
 	dw $800 ; length
@@ -1011,12 +1047,27 @@ SGBData_TitleScreen:
 	dw $40 ; length
 	INCBIN "data/sgb_data/title_screen_pals.bin.lz"
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
+;
+;AtrcEnPacket_Disable:
+;	sgb ATRC_EN, 1 ; sgb_command, length
+;	db 1
+;	ds $0e
+;
+;
+; disable Controller Set-up Screen
+;IconEnPacket:
+;	sgb ICON_EN, 3 ; sgb_command, length
+;	db $01
+;	ds $0e
+;
+;
 ; forces SGB border intro
+; preserves bc
 ;Func_7006f:
 ;	ld a, [wConsole]
 ;	cp CONSOLE_SGB
@@ -1024,5 +1075,4 @@ SGBData_TitleScreen:
 ;	ld de, SGBData_BorderIntro3
 ;	ld hl, SGBData_BorderIntro4
 ;	call SetMainSGBBorderPalsAndMap
-;	call Func_701c0
-;	ret
+;	jp Func_701c0

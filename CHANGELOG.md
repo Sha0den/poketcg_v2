@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **August 17, 2024:** 4 Files Changed
+- **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/1d61b53fe1d2b03d15fedbe902dd3035080b35cd):** 4 Files Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Make-AI-understand-attacks-with-any-energy-cost-combinations) to give the AI the ability to read more complex Energy requirements in attack costs (more than 2 types of Energy)
     - This isn't exactly a bug since there were no multicolored attacks in the base game
 
@@ -84,6 +84,12 @@
 
 
 ## Code Optimization
+- **August 20, 2024:** 13 Files Changed
+    - Try to standardize the function comments that are used in the unsorted engine files
+    - Plus some labeling/corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
 - **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/b0b4de78bbb026b745ce87d569f2ebff752c6974):** 3 Files Changed
     - Delete a few unnecessary functions from home/duel_menu.asm
 

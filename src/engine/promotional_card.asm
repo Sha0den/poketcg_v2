@@ -1,8 +1,8 @@
 ; shows screen with the promotional card and received text
-; depending on input a
-; if $0 = Legendary Molters, Articuno, Zapdos and Dragonite cards
-; otherwise, a card ID
-_ShowPromotionalCardScreen:
+; input:
+;	a = card ID (unless a = 0)
+;	a = 0:  show Legendary Moltres, Articuno, Zapdos and Dragonite cards
+ShowPromotionalCardScreen::
 	push af
 	lb de, $38, $9f
 	call SetupText

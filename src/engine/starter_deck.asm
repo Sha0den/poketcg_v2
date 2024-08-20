@@ -1,11 +1,9 @@
 ; adds the chosen starter deck to the player's first deck configuration
 ; and also adds to the collection its corresponding extra cards
 ; input:
-; - a = starter deck chosen
-;   $0 = Charmander
-;   $1 = Squirtle
-;   $2 = Bulbasaur
-_AddStarterDeck:
+;	a = $0:  Charmander and Friends starter deck
+;	a = $1:  Squirtle and Friends starter deck
+;	a = $2:  Bulbasaur and Friends starter deck
 AddStarterDeck::
 	add a
 	ld e, a
@@ -77,9 +75,9 @@ AddStarterDeck::
 	db SQUIRTLE_AND_FRIENDS_DECK_ID,   SQUIRTLE_EXTRA_DECK_ID
 	db BULBASAUR_AND_FRIENDS_DECK_ID,  BULBASAUR_EXTRA_DECK_ID
 
-; clears saved data (card Collection/saved decks/Card Pop! data/etc)
-; then adds the starter decks as saved decks
-; marks all cards in Collection as not owned
+
+; clears saved data (card collection/saved decks/Card Pop! data/etc)
+; then adds the starter decks as saved decks and marks all cards as not owned
 InitSaveData::
 ; clear card and deck save data
 	call EnableSRAM
@@ -106,7 +104,7 @@ InitSaveData::
 	ld hl, sSavedDeck3
 	call CopyDeckNameAndCards
 
-; marks all cards in Collection to not owned
+; change every card in the collection to not owned
 	call EnableSRAM
 	ld hl, sCardCollection
 	ld a, CARD_NOT_OWNED
@@ -149,9 +147,11 @@ InitSaveData::
 	farcall InitPromotionalCardAndDeckCounterSaveData
 	jp DisableSRAM
 
+
+; preserves all registers except af
 ; input:
-;    a = Deck ID
-;    hl = destination to copy
+;	a = deck ID (*_DECK constant)
+;	hl = where to copy (in SRAM)
 CopyDeckNameAndCards:
 	push de
 	push bc

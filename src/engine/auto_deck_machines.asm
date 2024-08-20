@@ -38,7 +38,12 @@ ReadAutoDeckConfiguration:
 	jr nz, .loop_decks
 	jp DisableSRAM
 
-; outputs in de the saved deck with index b
+
+; preserves bc and hl
+; input:
+;	b = deck slot in Auto Deck Machine
+; output:
+;	de = pointer for sAutoDeckX, where X is b + 1
 .GetPointerToSRAMAutoDeck
 	push hl
 	ld l, b
@@ -51,8 +56,11 @@ ReadAutoDeckConfiguration:
 	pop hl
 	ret
 
-; writes the deck configuration in SRAM
-; by reading the given deck card list
+; writes the deck configuration in SRAM by reading the given deck list
+; preserves bc and de
+; input
+;	de = pointer for sAutoDeck*
+;	hl = deck list pointer in AutoDeckMachineEntries
 .ReadDeckConfiguration
 	push hl
 	push bc
@@ -87,6 +95,10 @@ ReadAutoDeckConfiguration:
 	inc hl
 	ret
 
+; preserves bc
+; input:
+;	de = pointer for sAutoDeck*
+;	hl = deck name pointer in AutoDeckMachineEntries
 .ReadDeckName
 	push hl
 	push bc
@@ -112,16 +124,17 @@ ReadAutoDeckConfiguration:
 	inc hl
 	ret
 
+
 ; tries out all combinations of dismantling the player's decks
 ; in order to build the deck in wSelectedDeckMachineEntry
-; if none of the combinations work, return carry set
-; otherwise, return in a which deck flags should be dismantled
+; output:
+;	a = which deck(s) would need to be dismantled
+;	carry = set:  if none of the combinations work
 CheckWhichDecksToDismantleToBuildSavedDeck:
 	xor a
 	ld [wDecksToBeDismantled], a
 
-; first check if it can be built by
-; only dismantling a single deck
+; first check if it can be built by only dismantling a single deck
 	ld a, DECK_1
 .loop_single_built_decks
 	call .CheckIfCanBuild
@@ -150,7 +163,7 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 	call .CheckIfCanBuild
 	ret nc
 
-; all but one deck combinations
+; next check all three deck combinations
 	ld a, $ff ^ DECK_4
 .loop_three_deck_combinations
 	call .CheckIfCanBuild
@@ -160,16 +173,14 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 	jr nz, .loop_three_deck_combinations
 
 ; finally check if can be built by dismantling all decks
-	call .CheckIfCanBuild
-	ret nc
+;	fallthrough
 
-; none of the combinations work
-	scf
-	ret
-
-; returns carry if wSelectedDeckMachineEntry cannot be built
-; by dismantling the decks given by register a
-; a = DECK_* flags
+; preserves af
+; input:
+;	a = DECK_* flags
+; output:
+;	carry = set:  if wSelectedDeckMachineEntry cannot be built by
+;	              dismantling the decks from input
 .CheckIfCanBuild
 	push af
 	ld hl, wSelectedDeckMachineEntry

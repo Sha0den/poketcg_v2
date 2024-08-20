@@ -1,7 +1,7 @@
-; refresh the cursor's position based on the currently selected map
-; and refresh the player's position based on the starting map
+; refreshes the cursor's position based on the currently selected map
+; and refreshes the player's position based on the starting map
 ; but only if the player is not being animated across the overworld
-; preserves bc, de, and hl
+; preserves all registers except af
 OverworldMap_UpdatePlayerAndCursorSprites:
 	push hl
 	push bc
@@ -27,6 +27,7 @@ OverworldMap_UpdatePlayerAndCursorSprites:
 	pop hl
 	ret
 
+
 ; if no selection has been made yet, call OverworldMap_HandleKeyPress
 ; if the player is being animated across the screen, call OverworldMap_UpdatePlayerWalkingAnimation
 ; if the player has finished walking, call OverworldMap_LoadSelectedMap
@@ -40,7 +41,7 @@ OverworldMap_Update:
 	jp nz, OverworldMap_UpdatePlayerWalkingAnimation
 ;	fallthrough if player finished walking
 
-; preserves bc, de, and hl
+; preserves all registers except af
 OverworldMap_LoadSelectedMap:
 	push hl
 	push bc
@@ -65,8 +66,9 @@ OverworldMap_LoadSelectedMap:
 	pop hl
 	ret
 
-; update the map selection if the DPad is pressed
-; or finalize the selection if the A button is pressed
+
+; updates the map selection if the DPad is pressed
+; or finalizes the selection if the A button is pressed
 ; preserves de
 OverworldMap_HandleKeyPress:
 	ldh a, [hKeysPressed]
@@ -104,7 +106,7 @@ OverworldMap_HandleKeyPress:
 	call OverworldMap_UpdateCursorAnimation
 ;	fallthrough
 
-; begin walking the player across the overworld
+; begins walking the player across the overworld
 ; from wOverworldMapStartingPosition to wOverworldMapSelection
 ; preserves de
 OverworldMap_BeginPlayerMovement:
@@ -146,7 +148,9 @@ OverworldMap_BeginPlayerMovement:
 	ld [wOverworldMapPlayerMovementCounter], a
 	ret
 
+
 INCLUDE "data/overworld_map/cursor_transitions.asm"
+
 
 ; set the active sprite (player or cursor) at the appropriate map position
 ; input:
@@ -162,6 +166,7 @@ OverworldMap_SetSpritePosition:
 	ld a, e
 	ld [hl], a
 	ret
+
 
 ; preserves bc and hl
 ; input:
@@ -191,9 +196,11 @@ OverworldMap_GetMapPosition:
 	pop hl
 	ret
 
+
 INCLUDE "data/overworld_map/map_positions.asm"
 
-; preserves bc, de, and hl
+
+; preserves all registers except af
 OverworldMap_PrintMapName:
 	push hl
 	push de
@@ -213,7 +220,8 @@ OverworldMap_PrintMapName:
 	pop hl
 	ret
 
-; preserves bc, de, and hl
+
+; preserves all registers except af
 ; output:
 ;	a = [wOverworldMapSelection]
 ;	a = OWMAP_MYSTERY_HOUSE (only if [wOverworldMapSelection] = OWMAP_ISHIHARAS_HOUSE
@@ -234,7 +242,9 @@ OverworldMap_GetOWMapID:
 	pop bc
 	ret
 
+
 INCLUDE "data/overworld_map/overworld_warps.asm"
+
 
 ; preserves de
 OverworldMap_InitVolcanoSprite:
@@ -254,6 +264,7 @@ OverworldMap_InitVolcanoSprite:
 .not_cgb
 	ld a, b
 	jp StartNewSpriteAnimation
+
 
 ; preserves de
 OverworldMap_InitCursorSprite:
@@ -283,9 +294,9 @@ OverworldMap_InitCursorSprite:
 	set SPRITE_ANIM_FLAG_UNSKIPPABLE, [hl]
 	ret
 
-; add the x/y speed to the current sprite position,
-; accounting for sub-pixel position
-; and decrement [wOverworldMapPlayerMovementCounter]
+
+; adds the x/y speed to the current sprite position, accounting for
+; sub-pixel position and decrements [wOverworldMapPlayerMovementCounter]
 OverworldMap_ContinuePlayerWalkingAnimation:
 	ld a, [wOverworldMapPlayerHorizontalSubPixelPosition]
 	ld d, a
@@ -314,9 +325,9 @@ OverworldMap_ContinuePlayerWalkingAnimation:
 	dec [hl]
 	ret
 
-; update the player walking across the overworld
-; either by advancing along the current path
-; or determining the next direction to move along the path
+
+; updates the player walking across the overworld, either by advancing along
+; the current path or by determining the next direction to move along the path
 OverworldMap_UpdatePlayerWalkingAnimation:
 	ld a, [wPlayerSpriteIndex]
 	ld [wWhichSprite], a
@@ -365,15 +376,16 @@ OverworldMap_UpdatePlayerWalkingAnimation:
 	ld [wOverworldMapPlayerMovementPtr + 1], a
 ;	fallthrough
 
+; preserves hl
 ; input:
 ;	b = target x position
 ;	c = target y position
+;	[wWhichSprite] = sprite ID (SPRITE_* constant)
 OverworldMap_InitNextPlayerVelocity:
 	push hl
 	push bc
 	ld c, SPRITE_ANIM_COORD_X
 	call GetSpriteAnimBufferProperty
-
 	pop bc
 	ld a, b
 	sub [hl] ; a = target x - current x
@@ -414,9 +426,9 @@ OverworldMap_InitNextPlayerVelocity:
 	ld c, a
 
 .positive2
-; if the absolute value of wOverworldMapPlayerPathVerticalMovement is larger than
-; the absolute value of wOverworldMapPlayerPathHorizontalMovement, this is dominantly
-; a north/south movement. otherwise, an east/west movement
+; if the absolute value of wOverworldMapPlayerPathVerticalMovement is larger
+; than the absolute value of wOverworldMapPlayerPathHorizontalMovement,
+; this is dominantly a north/south movement. otherwise, it's east/west.
 	ld a, b
 	cp c
 	jr c, .north_south
@@ -432,6 +444,7 @@ OverworldMap_InitNextPlayerVelocity:
 	pop hl
 	ret
 
+
 ; input:
 ;	b = absolute value of horizontal movement distance
 ;	c = absolute value of vertical movement distance
@@ -444,7 +457,7 @@ OverworldMap_InitPlayerEastWestMovement:
 	ld e, a
 	ld d, 0
 
-; overwrite wOverworldMapPlayerPathHorizontalMovement with either -1.0 or +1.0
+; overwrites wOverworldMapPlayerPathHorizontalMovement with either -1.0 or +1.0
 ; always move east/west by 1 pixel per frame
 	ld hl, wOverworldMapPlayerPathHorizontalMovement
 	xor a
@@ -458,7 +471,7 @@ OverworldMap_InitPlayerEastWestMovement:
 .west
 	ld [hl], a
 
-; divide (total vertical distance * $100) by total horizontal distance
+; divides (total vertical distance * $100) by total horizontal distance
 	ld b, c ; vertical distance in high byte
 	ld c, 0
 	call DivideBCbyDE
@@ -483,6 +496,7 @@ OverworldMap_InitPlayerEastWestMovement:
 	ld [wPlayerDirection], a
 	ret
 
+
 ; input:
 ;	b = absolute value of horizontal movement distance
 ;	c = absolute value of vertical movement distance
@@ -495,7 +509,7 @@ OverworldMap_InitPlayerNorthSouthMovement:
 	ld e, a
 	ld d, 0
 
-; overwrite wOverworldMapPlayerPathVerticalMovement with either -1.0 or +1.0
+; overwrites wOverworldMapPlayerPathVerticalMovement with either -1.0 or +1.0
 ; always move north/south by 1 pixel per frame
 	ld hl, wOverworldMapPlayerPathVerticalMovement
 	xor a
@@ -509,7 +523,7 @@ OverworldMap_InitPlayerNorthSouthMovement:
 .north
 	ld [hl], a
 
-; divide (total horizontal distance * $100) by total vertical distance
+; divides (total horizontal distance * $100) by total vertical distance
 ; horizontal distance in high byte
 	ld c, 0
 	call DivideBCbyDE
@@ -524,7 +538,7 @@ OverworldMap_InitPlayerNorthSouthMovement:
 	ld a, b
 	ld [wOverworldMapPlayerPathHorizontalMovement + 1], a
 
-; set player direction
+; sets the direction of the player
 	ld hl, wOverworldMapPlayerPathVerticalMovement + 1
 	ld a, SOUTH
 	bit 7, [hl]
@@ -533,6 +547,7 @@ OverworldMap_InitPlayerNorthSouthMovement:
 .south2
 	ld [wPlayerDirection], a
 	ret
+
 
 ; preserves de and hl
 ; output:

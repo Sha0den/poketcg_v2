@@ -1,7 +1,8 @@
+; preserves all registers except af
 ; input:
-; a = scene ID (SCENE_* constant)
-; b = base X position of scene in tiles
-; c = base Y position of scene in tiles
+;	a = scene ID (SCENE_* constant)
+;	b = base X position of scene in tiles
+;	c = base Y position of scene in tiles
 _LoadScene::
 	push hl
 	push bc
@@ -145,8 +146,11 @@ _LoadScene::
 	pop hl
 	ret
 
+
 INCLUDE "data/scenes.asm"
 
+
+; preserves all registers except af
 LoadScene_LoadCompressedSGBPacket:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -163,6 +167,8 @@ LoadScene_LoadCompressedSGBPacket:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 LoadScene_LoadSGBPacket:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
@@ -196,6 +202,8 @@ LoadScene_LoadSGBPacket:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 LoadScene_SetGameBoyPrinterAttrBlk:
 	push hl
 	push bc
@@ -219,6 +227,8 @@ SGBPacket_GameBoyPrinter:
 	ds 6 ; data set 2
 	ds 2 ; data set 3
 
+
+; preserves all registers except af
 LoadScene_SetCardPopAttrBlk:
 	push hl
 	push bc
@@ -242,6 +252,11 @@ SGBPacket_CardPop:
 	ds 6 ; data set 2
 	ds 2 ; data set 3
 
+
+; preserves bc and de
+; input:
+;	bc = coordinates at which to begin drawing the portrait
+;	[wCurPortrait] = which portrait to draw (*_PIC constant)
 _DrawPortrait::
 	ld a, [wd291]
 	push af
@@ -290,8 +305,15 @@ _DrawPortrait::
 	ld [wd291], a
 	ret
 
+
 INCLUDE "data/duel/portraits.asm"
 
+
+; preserves all registers except af
+; input:
+;	a = scene ID (SCENE_* constant)
+;	b = base X position of scene in tiles
+;	c = base Y position of scene in tiles
 LoadBoosterGfx:
 	push hl
 	push bc
@@ -299,12 +321,10 @@ LoadBoosterGfx:
 	ld e, a
 	ld a, [wCurTilemap]
 	push af
-	push bc
 	ld a, e
 	call _LoadScene
 	call FlushAllPalettes
 	call SetBoosterLogoOAM
-	pop bc
 	pop af
 	ld [wCurTilemap], a
 	pop de
@@ -312,6 +332,9 @@ LoadBoosterGfx:
 	pop hl
 	ret
 
+
+; immediately returns if not playing on a Game Boy Color
+; preserves all registers except af
 SetBoosterLogoOAM:
 	ld a, [wConsole]
 	cp CONSOLE_CGB
@@ -319,13 +342,11 @@ SetBoosterLogoOAM:
 	push hl
 	push bc
 	push de
-	push bc
 	xor a
 	ld [wd4cb], a
 	ld [wd4ca], a
 	ld a, SPRITE_BOOSTER_PACK_OAM
 	farcall Func_8025b
-	pop bc
 	call ZeroObjectPositions
 	ld hl, BoosterLogoOAM
 	ld c, [hl]

@@ -35,6 +35,7 @@ PlayCreditsSequence::
 	ld [wDoFrameFunction + 1], a
 	ret
 
+
 Func_1d705:
 	call DisableLCD
 	farcall LoadConsolePaletteData
@@ -45,6 +46,7 @@ Func_1d705:
 	call SetDoFrameFunction
 	; fallthrough
 
+; preserves all registers except af
 .Func_1d720
 	ld a, $91
 	ld [wd647], a
@@ -56,6 +58,7 @@ Func_1d705:
 	call SetWindowOn
 	; fallthrough
 
+; preserves all registers except af
 .Func_1d73a
 	push hl
 	di
@@ -76,6 +79,8 @@ Func_1d705:
 	pop hl
 	ret
 
+
+; preserves all registers
 Func_1d758:
 	push hl
 	ld hl, rSTAT
@@ -85,6 +90,8 @@ Func_1d758:
 	pop hl
 	ret
 
+
+; preserves all registers except af
 Func_1d765:
 	push hl
 	push bc
@@ -180,10 +187,11 @@ Func_1d765:
 	pop hl
 	ret
 
+
 Func_1d7ee:
-	xor a
-	lb de, 0, 32
-	lb bc, 20, 18
+	xor a         ; starting tile number (SYM_SPACE)
+	lb de, 0, 32  ; screen coordinates for top left tile (off screen)
+	lb bc, 20, 18 ; width and height of image in tiles (screen size)
 	lb hl, 0, 0
 	call FillRectangle
 	ret

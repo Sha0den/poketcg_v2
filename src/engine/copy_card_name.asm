@@ -1,5 +1,8 @@
-; copy the name and level of the card at wLoadedCard1 to wDefaultText
-; a = length in number of tiles (the resulting string will be padded with spaces to match it)
+; copies the name and level of the card at wLoadedCard1 to wDefaultText
+; preserves bc and de
+; input:
+;	a = length in number of tiles (the resulting string will be padded with spaces to match it)
+;	wLoadedCard1 = contains a card_data_struct
 _CopyCardNameAndLevel::
 	push bc
 	push de
@@ -17,12 +20,12 @@ _CopyCardNameAndLevel::
 	jr z, _CopyCardNameAndLevel_HalfwidthText
 
 ; the name doesn't start with TX_HALFWIDTH
-; this doesn't appear to be ever the case (unless caller manipulates wLoadedCard1Name)
+; this doesn't appear to ever be the case (unless caller manipulates wLoadedCard1Name)
 	ld a, [wCardNameLength]
 	ld c, a
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
-	jr nc, .level_done ; jump if energy or trainer
+	jr nc, .level_done ; skip level if Energy or Trainer card
 	ld a, [wLoadedCard1Level]
 	or a
 	jr z, .level_done
