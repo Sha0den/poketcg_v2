@@ -84,7 +84,16 @@
 
 
 ## Code Optimization
-- **August 20, 2024:** 4 Files Changed
+- **August 20, 2024:** 13 Files Changed
+    - Comment out some unnecessary loads and make use of a new function in the home bank: 'GetCardTypeFromDeckIndex_SaveDE'
+    - Remove some redundant code in the engine/duel/ai files (e.g. unnecessary push/pop)
+    - Replace some jp's in said files with jr's or inlined code and eliminate tail calls
+    - Rearrange a couple of functions in said files
+    - Rename 'CopyHandCardList' and 'CopyBuffer' to 'CopyListWithFFTerminatorFromHLToDE_Bank5' and 'CopyListWithFFTerminatorFromHLToDE_Bank8'
+
+<br/>
+
+- **[August 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/a1ace62a57cc82e42ec2d866818b6022bc42add1):** 4 Files Changed
     - Fix register preservation comments for 'BankPushROM', 'BankPushROM2', and 'GetCardType'
     - Adjust push/pop instructions surrounding calls to 'GetCardType'
 
@@ -133,7 +142,7 @@
 <br/>
 
 - **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/df9b66c73c1c76d0ad48fbb1b6cf2228f6ea360a):** 10 Files Changed
-    - Replace numerous instances of "call DisableSRAM/ret" with "jp SwapTurn"
+    - Replace numerous instances of "call DisableSRAM/ret" with "jp DisableSRAM"
 
 <br/>
 

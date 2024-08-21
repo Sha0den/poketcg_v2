@@ -12,7 +12,6 @@ AIProcessAndTryToPlayEnergy:
 	ld a, [wAIEnergyAttachLogicFlags]
 	or a
 	jp nz, RetrievePlayAreaAIScoreFromBackup
-	or a
 	ret
 
 ; have AI choose an energy card to play, but do not play it.
@@ -243,7 +242,7 @@ AIProcessEnergyCards:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	pop de
 	cp d
 	jr c, .check_id_score
@@ -326,7 +325,7 @@ AIProcessEnergyCards:
 ; for each card has been calculated.
 ; now to determine the highest score.
 	call FindPlayAreaCardWithHighestAIScore
-	jp nc, .not_found
+	jr nc, .not_found
 
 	ld a, [wAIEnergyAttachLogicFlags]
 	or a
@@ -986,7 +985,7 @@ CheckSpecificDecksToAttachDoubleColorless:
 	ld a, e
 	ret
 
-;
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------

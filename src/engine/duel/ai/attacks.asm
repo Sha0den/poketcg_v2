@@ -20,24 +20,6 @@ AIProcessButDontUseAttack:
 	ld [de], a
 	jr AIProcessAttacks
 
-; copies wTempPlayAreaAIScore to wPlayAreaAIScore
-; and loads wAIScore with value in wTempAIScore.
-RetrievePlayAreaAIScoreFromBackup:
-	push af
-	ld de, wPlayAreaAIScore
-	ld hl, wTempPlayAreaAIScore
-	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-
-	ld a, [hl]
-	ld [wAIScore], a
-	pop af
-	ret
 
 ; have AI choose and execute an attack.
 ; return carry if an attack was chosen and attempted.
@@ -110,7 +92,7 @@ AIProcessAttacks:
 ; set carry and reset Play Area AI score
 ; to the previous values.
 	scf
-	jp RetrievePlayAreaAIScoreFromBackup
+	jr RetrievePlayAreaAIScoreFromBackup
 
 .execute
 	ld a, AI_TRAINER_CARD_PHASE_14
@@ -152,19 +134,37 @@ AIProcessAttacks:
 	scf
 	ret
 
-.dont_attack
-	ld a, [wAIExecuteProcessedAttack]
-	or a
-	jr z, .failed_to_use
-; reset Play Area AI score
-; to the previous values.
-	jp RetrievePlayAreaAIScoreFromBackup
-
-; return no carry if no viable attack.
+; return no carry if there was no viable attack.
 .failed_to_use
 	ld hl, wAIRetreatScore
 	inc [hl]
 	or a
+	ret
+
+.dont_attack
+	ld a, [wAIExecuteProcessedAttack]
+	or a
+	jr z, .failed_to_use
+;	fallthrough to reset Play Area AI score to the previous values
+
+; copies wTempPlayAreaAIScore to wPlayAreaAIScore
+; and loads wAIScore with value in wTempAIScore.
+; preserves af
+RetrievePlayAreaAIScoreFromBackup:
+	push af
+	ld de, wPlayAreaAIScore
+	ld hl, wTempPlayAreaAIScore
+	ld b, MAX_PLAY_AREA_POKEMON
+.loop
+	ld a, [hli]
+	ld [de], a
+	inc de
+	dec b
+	jr nz, .loop
+
+	ld a, [hl]
+	ld [wAIScore], a
+	pop af
 	ret
 
 ; determines the AI score of attack index in a
@@ -294,10 +294,8 @@ GetAIScoreOfAttack:
 	call CalculateByteTensDigit
 	call SubFromAIScore
 
-	push de
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
 	call CheckLoadedAttackFlag
-	pop de
 	jr c, .high_recoil
 
 	; if LOW_RECOIL KOs self, decrease AI score
@@ -413,12 +411,10 @@ GetAIScoreOfAttack:
 	; fallthrough
 
 .check_bench_kos
-	push bc
 	rst SwapTurn
 	xor a
 	call .check_if_kos_bench
 	rst SwapTurn
-	pop bc
 	jr c, .wins_the_duel
 	push de
 	ld a, 1
@@ -438,7 +434,6 @@ GetAIScoreOfAttack:
 
 ; subtract from AI score number of own benched Pokémon KO'd
 .count_own_ko_bench
-	push bc
 	ld a, d
 	or a
 	jr z, .count_player_ko_bench
@@ -447,7 +442,6 @@ GetAIScoreOfAttack:
 
 ; add to AI score number of player benched Pokémon KO'd
 .count_player_ko_bench
-	pop bc
 	ld a, b
 	call AddToAIScore
 
@@ -697,11 +691,9 @@ GetAIScoreOfAttack:
 	inc d
 	jr .loop
 .exit_loop
-	push de
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
-	pop de
 	cp d
 	ret c
 	jr z, .set_carry

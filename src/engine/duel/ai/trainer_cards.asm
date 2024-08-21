@@ -6,7 +6,7 @@ _AIProcessHandTrainerCards:
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wTempHandCardList
-	call CopyBuffer
+	call CopyListWithFFTerminatorFromHLToDE_Bank8
 	ld hl, wTempHandCardList
 
 .loop_hand
@@ -60,12 +60,12 @@ _AIProcessHandTrainerCards:
 ; if Headache effects prevent playing card
 ; move on to the next item in list.
 	call CheckCantUseTrainerDueToHeadache
-	jp c, .next_in_data
+	jr c, .next_in_data
 
 	call LoadNonPokemonCardEffectCommands
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
-	jp c, .next_in_data
+	jr c, .next_in_data
 
 ; AI can randomly choose not to play card.
 	farcall AIChooseRandomlyNotToDoAction
@@ -118,7 +118,7 @@ _AIProcessHandTrainerCards:
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wTempHandCardList
-	call CopyBuffer
+	call CopyListWithFFTerminatorFromHLToDE_Bank8
 	ld hl, wTempHandCardList
 ; clear the AI_FLAG_MODIFIED_HAND flag
 	ld a, [wPreviousAIFlags]
@@ -277,7 +277,6 @@ AIDecide_Potion2:
 	jr z, .active_card
 
 ; bench card
-	push de
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
@@ -289,7 +288,6 @@ AIDecide_Potion2:
 	cp 3
 ; 7/10 chance of returning carry.
 .check_random
-	pop de
 	jr c, .no_carry
 	ld a, e
 	scf
@@ -303,9 +301,6 @@ AIDecide_Potion2:
 	jr c, .no_carry
 	ld a, e
 	scf
-	ret
-.no_carry
-	or a
 	ret
 
 ; return carry if either of the attacks are usable
@@ -329,6 +324,7 @@ AIDecide_Potion2:
 	jr c, .set_carry
 .false
 	pop de
+.no_carry
 	or a
 	ret
 .set_carry
@@ -403,7 +399,7 @@ AIDecide_SuperPotion1:
 ; returns carry if card has energies attached.
 .check_attached_energy
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	ret z
 	scf
@@ -466,7 +462,7 @@ AIDecide_SuperPotion2:
 	ld d, a
 	call .check_attached_energy
 	jr nc, .next
-	call .check_boost_if_taken_damage
+	call AIDecide_Potion2.check_boost_if_taken_damage
 	jr c, .next
 	call .check_energy_cost
 	jr c, .next
@@ -484,7 +480,6 @@ AIDecide_SuperPotion2:
 	jr z, .active_card
 
 ; bench card
-	push de
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
@@ -496,7 +491,6 @@ AIDecide_SuperPotion2:
 	cp 3
 ; 7/10 chance of returning carry.
 .check_random
-	pop de
 	jr c, .no_carry
 	ld a, e
 	scf
@@ -511,41 +505,14 @@ AIDecide_SuperPotion2:
 	ld a, e
 	scf
 	ret
-.no_carry
-	or a
-	ret
 
 ; returns carry if card has energies attached.
 .check_attached_energy
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	ret z
 	scf
-	ret
-
-; return carry if either of the attacks are usable
-; and have the BOOST_IF_TAKEN_DAMAGE effect.
-.check_boost_if_taken_damage
-	push de
-	xor a ; FIRST_ATTACK_OR_PKMN_POWER
-	ld [wSelectedAttack], a
-	farcall CheckIfSelectedAttackIsUnusable
-	jr c, .second_attack_1
-	ld a, ATTACK_FLAG3_ADDRESS | BOOST_IF_TAKEN_DAMAGE_F
-	call CheckLoadedAttackFlag
-	jr c, .true
-.second_attack_1
-	ld a, SECOND_ATTACK
-	ld [wSelectedAttack], a
-	farcall CheckIfSelectedAttackIsUnusable
-	jr c, .false
-	ld a, ATTACK_FLAG3_ADDRESS | BOOST_IF_TAKEN_DAMAGE_F
-	call CheckLoadedAttackFlag
-	jr c, .true
-.false
-	pop de
-	or a
 	ret
 
 ; returns carry if discarding energy card renders any attack unusable,
@@ -575,6 +542,12 @@ AIDecide_SuperPotion2:
 .true
 	pop de
 	scf
+	ret
+
+.false
+	pop de
+.no_carry
+	or a
 	ret
 
 AIPlay_Defender:
@@ -680,6 +653,7 @@ AIDecide_Defender2:
 	ld a, ATTACK_FLAG1_ADDRESS | LOW_RECOIL_F
 	call CheckLoadedAttackFlag
 	jr c, .recoil
+.no_carry
 	or a
 	ret
 
@@ -740,9 +714,6 @@ AIDecide_Defender2:
 	jr c, .no_carry
 	jr z, .no_carry
 	scf
-	ret
-.no_carry
-	or a
 	ret
 
 AIPlay_Pluspower:
@@ -832,7 +803,7 @@ AIDecide_Pluspower1:
 ; defending Pokémon with Pluspower boost.
 .check_ko_with_pluspower
 	farcall CheckIfSelectedAttackIsUnusable
-	jr c, .unusable
+	jr c, .no_carry
 	ld a, [wSelectedAttack]
 	farcall EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
@@ -851,9 +822,6 @@ AIDecide_Pluspower1:
 	ret nz ; does not KO
 	scf
 	ret ; KOs with Pluspower boost
-.unusable
-	or a
-	ret
 
 ; returns carry if Pluspower boost does
 ; not exceed 30 damage when facing Mr. Mime.
@@ -916,7 +884,7 @@ AIDecide_Pluspower2:
 ; return carry if attack is useable but cannot KO.
 .check_can_ko
 	farcall CheckIfSelectedAttackIsUnusable
-	jr c, .unusable
+	jr c, .no_carry
 	ld a, [wSelectedAttack]
 	farcall EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
@@ -929,20 +897,17 @@ AIDecide_Pluspower2:
 ; can't KO.
 	scf
 	ret
-.unusable
-	or a
-	ret
 
 ; return carry 7/10 of the time if
 ; attack is useable and minimum damage > 0.
 .check_random
 	farcall CheckIfSelectedAttackIsUnusable
-	jr c, .unusable
+	jr c, .no_carry
 	ld a, [wSelectedAttack]
 	farcall EstimateDamage_VersusDefendingCard
 	ld a, [wAIMinDamage]
 	cp 10
-	jr c, .unusable
+	jr c, .no_carry
 	ld a, 10
 	call Random
 	cp 3
@@ -1109,7 +1074,7 @@ AIDecide_GustOfWind:
 	rst SwapTurn
 	call GetPlayAreaCardAttachedEnergies
 	rst SwapTurn
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr nz, .loop_1 ; skip if has energy attached
 	call .CheckIfCanDamageBenchedCard
@@ -1489,7 +1454,7 @@ AIDecide_EnergyRemoval:
 	ld d, a
 	call .CheckIfCardHasEnergyAttached
 	jr nc, .next_2
-	call .FindHighestDamagingAttack
+	call FindHighestDamagingAttack
 .next_2
 	inc e
 	jr .loop_2
@@ -1519,7 +1484,7 @@ AIDecide_EnergyRemoval:
 ; returns carry if this card has any energy cards attached
 .CheckIfCardHasEnergyAttached
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	ret z
 	scf
@@ -1562,57 +1527,6 @@ AIDecide_EnergyRemoval:
 	farcall CheckIfNoSurplusEnergyForAttack
 	pop de
 	ccf
-	ret
-
-; stores in wce06 the highest damaging attack
-; for the card in play area location in e
-; and stores this card's location in wce08
-.FindHighestDamagingAttack
-	push de
-	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
-
-	xor a ; FIRST_ATTACK_OR_PKMN_POWER
-	farcall EstimateDamage_VersusDefendingCard
-	ld a, [wDamage]
-	or a
-	jr z, .skip_1
-	ld e, a
-	ld a, [wce06]
-	cp e
-	jr nc, .skip_1
-	ld a, e
-	ld [wce06], a ; store this damage value
-	pop de
-	ld a, e
-	ld [wce08], a ; store this location
-	jr .second_attack
-
-.skip_1
-	pop de
-
-.second_attack
-	push de
-	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
-
-	ld a, SECOND_ATTACK
-	farcall EstimateDamage_VersusDefendingCard
-	ld a, [wDamage]
-	or a
-	jr z, .skip_2
-	ld e, a
-	ld a, [wce06]
-	cp e
-	jr nc, .skip_2
-	ld a, e
-	ld [wce06], a ; store this damage value
-	pop de
-	ld a, e
-	ld [wce08], a ; store this location
-	ret
-.skip_2
-	pop de
 	ret
 
 AIPlay_SuperEnergyRemoval:
@@ -1767,7 +1681,7 @@ AIDecide_SuperEnergyRemoval:
 	jr c, .next_2
 	call .CheckIfNotEnoughEnergyToAttack
 	jr c, .next_2
-	call .FindHighestDamagingAttack
+	call FindHighestDamagingAttack
 .next_2
 	inc e
 	jr .loop_4
@@ -1785,7 +1699,7 @@ AIDecide_SuperEnergyRemoval:
 ; fewer than 2 energy
 .CheckIfFewerThanTwoEnergyCards
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	cp 2
 	ret c ; return if fewer than 2 attached cards
 
@@ -1846,57 +1760,6 @@ AIDecide_SuperEnergyRemoval:
 	jr c, .enough_energy
 	pop de
 	scf
-	ret
-
-; stores in wce06 the highest damaging attack
-; for the card in play area location in e
-; and stores this card's location in wce08
-.FindHighestDamagingAttack
-	push de
-	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
-
-	xor a ; FIRST_ATTACK_OR_PKMN_POWER
-	farcall EstimateDamage_VersusDefendingCard
-	ld a, [wDamage]
-	or a
-	jr z, .skip_1
-	ld e, a
-	ld a, [wce06]
-	cp e
-	jr nc, .skip_1
-	ld a, e
-	ld [wce06], a ; store this damage value
-	pop de
-	ld a, e
-	ld [wce08], a ; store this location
-	jr .second_attack
-
-.skip_1
-	pop de
-
-.second_attack
-	push de
-	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
-
-	ld a, SECOND_ATTACK
-	farcall EstimateDamage_VersusDefendingCard
-	ld a, [wDamage]
-	or a
-	jr z, .skip_2
-	ld e, a
-	ld a, [wce06]
-	cp e
-	jr nc, .skip_2
-	ld a, e
-	ld [wce06], a ; store this damage value
-	pop de
-	ld a, e
-	ld [wce08], a ; store this location
-	ret
-.skip_2
-	pop de
 	ret
 
 AIPlay_PokemonBreeder:
@@ -1980,7 +1843,7 @@ AIDecide_PokemonBreeder:
 ; count number of energy cards attached and keep
 ; the lowest 4 bits (capped at $0f)
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	cp $10
 	jr c, .not_maxed_out
 	ld a, %00001111
@@ -2101,6 +1964,7 @@ AIDecide_PokemonBreeder:
 	or a
 	jr nz, .evolution_was_found
 ; no evolution was found before
+.done
 	or a
 	ret
 
@@ -2162,10 +2026,6 @@ AIDecide_PokemonBreeder:
 	ld [wce1a], a
 	ld a, [wce07]
 	scf
-	ret
-
-.done
-	or a
 	ret
 
 ; return carry if card is evolving to DragoniteLv41 and if
@@ -2434,9 +2294,7 @@ AIDecide_ProfessorOak:
 ; loop through the whole deck to check if there's
 ; a card that can evolve this Pokemon.
 .loop_deck_evolution
-	push de
 	call CheckIfCanEvolveInto
-	pop de
 	jr nc, .can_evolve
 .evolution_not_in_hand
 	inc d
@@ -2556,18 +2414,14 @@ AIDecide_ProfessorOak:
 .HandleWondersOfScienceDeck
 	ld a, GRIMER
 	call LookForCardIDInHandList_Bank8
-	jr c, .found_grimer_or_muk
+	jr c, .no_carry
 	ld a, MUK
 	call LookForCardIDInHandList_Bank8
-	jr c, .found_grimer_or_muk
+	jr c, .no_carry
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	jp .check_cards_deck
-
-.found_grimer_or_muk
-	or a
-	ret
 
 AIPlay_EnergyRetrieval:
 	ld a, [wCurrentAIFlags]
@@ -2617,12 +2471,12 @@ AIDecide_EnergyRetrieval:
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	call FindDuplicateCards
-	jp c, .no_carry
+	jr c, .no_carry
 
 	ld [wce06], a
 	ld a, CARD_LOCATION_DISCARD_PILE
 	call FindBasicEnergyCardsInLocation
-	jp c, .no_carry
+	jr c, .no_carry
 
 ; some basic energy cards were found in Discard Pile
 	ld a, $ff
@@ -2780,9 +2634,7 @@ FindDuplicateCards:
 	jr nz, .loop_inner
 
 ; found two cards with same ID
-	push bc
 	call GetCardType
-	pop bc
 	cp TYPE_ENERGY
 	jr c, .not_energy
 
@@ -3099,7 +2951,7 @@ AIDecide_PokemonCenter:
 ; and add it to the total.
 ; if there's overflow, return no carry.
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	ld b, a
 	ld a, [wce0f]
 	add b
@@ -3475,7 +3327,7 @@ AIDecide_Pokedex:
 .next_card
 	ld a, [hli]
 	ld c, a
-	call .GetCardType
+	call GetCardTypeFromDeckIndex_SaveDE
 
 ; load this card's deck index and type in memory
 ; wce08 = card types
@@ -3578,15 +3430,6 @@ AIDecide_Pokedex:
 	scf
 	ret
 
-.GetCardType
-	push bc
-	push de
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
-	pop bc
-	ret
-
 ; picks order of the cards in deck from the effects of Pokedex.
 ; prioritizes energy cards, then Pokemon cards, then Trainer cards.
 ; stores the resulting order in wce1a.
@@ -3605,7 +3448,7 @@ PickPokedexCards:
 .next_card
 	ld a, [hli]
 	ld c, a
-	call .GetCardType
+	call GetCardTypeFromDeckIndex_SaveDE
 
 ; load this card's deck index and type in memory
 ; wce08 = card types
@@ -3706,15 +3549,6 @@ PickPokedexCards:
 
 .done
 	scf
-	ret
-
-.GetCardType
-	push bc
-	push de
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
-	pop bc
 	ret
 
 AIPlay_FullHeal:
@@ -4068,7 +3902,8 @@ AIDecide_ScoopUp:
 	pop bc
 	ld a, b
 	jr z, .no_energy
-	jp .no_carry
+	or a
+	ret
 
 .no_energy
 ; has decided to Scoop Up benched card,
@@ -4102,7 +3937,8 @@ AIDecide_ScoopUp:
 	ld b, PLAY_AREA_BENCH_1
 	call LookForCardIDInPlayArea_Bank8
 	jr c, .check_attached_energy
-	jp .no_carry
+	or a
+	ret
 
 AIPlay_Maintenance:
 	ld a, [wCurrentAIFlags]
@@ -4139,7 +3975,7 @@ AIDecide_Maintenance:
 	call FindAndRemoveCardFromList
 ; if duplicates are not found, return no carry.
 	call FindDuplicateCards
-	jp c, .no_carry
+	jr c, .no_carry
 
 ; store the first duplicate card and remove it from the list.
 ; run duplicate check again.
@@ -4148,7 +3984,7 @@ AIDecide_Maintenance:
 	call FindAndRemoveCardFromList
 ; if duplicates are not found, return no carry.
 	call FindDuplicateCards
-	jp c, .no_carry
+	jr c, .no_carry
 
 ; store the second duplicate card and return carry.
 	ld [wce1b], a
@@ -4449,7 +4285,7 @@ AIDecide_ItemFinder:
 	call FindAndRemoveCardFromList
 ; find any duplicates, if not found, return no carry.
 	call FindDuplicateCards
-	jp c, .no_carry
+	jr c, .no_carry
 
 ; store the duplicate found in wce1a and
 ; remove it from the hand list.
@@ -4458,7 +4294,7 @@ AIDecide_ItemFinder:
 	call FindAndRemoveCardFromList
 ; find duplicates again, if not found, return no carry.
 	call FindDuplicateCards
-	jp c, .no_carry
+	jr c, .no_carry
 
 ; store the duplicate found in wce1b.
 ; output the card to be recovered from the Discard Pile.
@@ -4800,9 +4636,7 @@ AIDecide_Pokeball:
 	ret c
 	ld e, JIGGLYPUFF_LV12
 	ld a, CARD_LOCATION_DECK
-	call LookForCardIDInLocation
-	ret c
-	ret
+	jp LookForCardIDInLocation
 
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
@@ -4817,9 +4651,7 @@ AIDecide_Pokeball:
 	ret c
 	ld e, ONIX
 	ld a, CARD_LOCATION_DECK
-	call LookForCardIDInLocation
-	ret c
-	ret
+	jp LookForCardIDInLocation
 
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
@@ -4842,9 +4674,7 @@ AIDecide_Pokeball:
 	ret c
 	ld e, FLYING_PIKACHU
 	ld a, CARD_LOCATION_DECK
-	call LookForCardIDInLocation
-	ret c
-	ret
+	jp LookForCardIDInLocation
 
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
@@ -4968,9 +4798,7 @@ AIDecide_Pokeball:
 	ret c
 	ld a, NIDORINA
 	ld b, NIDOQUEEN
-	call LookForCardIDInDeck_GivenCardIDInHand
-	ret c
-	ret
+	jp LookForCardIDInDeck_GivenCardIDInHand
 
 AIPlay_ComputerSearch:
 	ld a, [wCurrentAIFlags]
@@ -5288,21 +5116,21 @@ AIDecide_ComputerSearch_FireCharge:
 	ld e, CHANSEY
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation
-	jp nc, .no_carry
+	jr nc, .no_carry
 	ld [wce06], a
 	jr .find_discard_cards
 .tauros
 	ld e, TAUROS
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation
-	jp nc, .no_carry
+	jr nc, .no_carry
 	ld [wce06], a
 	jr .find_discard_cards
 .jigglypuff
 	ld e, JIGGLYPUFF_LV12
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation
-	jp nc, .no_carry
+	jr nc, .no_carry
 	ld [wce06], a
 	; fallthrough
 
@@ -5784,7 +5612,7 @@ AIDecide_PokemonTrader_PowerGenerator:
 	ld b, PIKACHU_LV12
 	ld a, RAICHU_LV40
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
-	jp c, .find_duplicates
+	jr c, .find_duplicates
 	ld a, PIKACHU_LV14
 	ld b, RAICHU_LV40
 	call LookForCardIDInDeck_GivenCardIDInHand

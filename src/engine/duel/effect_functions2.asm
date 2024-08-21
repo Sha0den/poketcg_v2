@@ -260,10 +260,7 @@ FindBasicEnergy:
 ; output:
 ;	carry = set:  if the card is a Basic Energy card
 CheckDeckIndexForBasicEnergy:
-	push de
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
 	jr c, .no_carry ; it's a Pokemon
 	cp TYPE_ENERGY + NUM_COLORED_TYPES

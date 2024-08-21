@@ -5,7 +5,7 @@ AIDecidePlayPokemonCard:
 	call SortTempHandByIDList
 	ld hl, wDuelTempList
 	ld de, wHandTempList
-	call CopyHandCardList
+	call CopyListWithFFTerminatorFromHLToDE_Bank5
 	ld hl, wHandTempList
 
 .next_hand_card
@@ -105,7 +105,7 @@ AIDecideEvolution:
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wHandTempList
-	call CopyHandCardList
+	call CopyListWithFFTerminatorFromHLToDE_Bank5
 	ld hl, wHandTempList
 
 .next_hand_card
@@ -511,7 +511,7 @@ AIDecideSpecialEvolutions:
 	jr c, .lower_score
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	cp 3
 	jr c, .lower_score
 

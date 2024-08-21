@@ -654,6 +654,19 @@ _GetCardIDFromDeckIndex::
 	ret
 
 
+; preserves all registers except af
+; input:
+;	a = deck index of the card to identify
+; output:
+;	a = type ID of the card from input (TYPE_* constant)
+GetCardTypeFromDeckIndex_SaveDE::
+	push de
+	call GetCardIDFromDeckIndex
+	call GetCardType
+	pop de
+	ret
+
+
 ; loads the data of a card to wLoadedCard1 by using its deck index
 ; preserves all registers except af
 ; input:
@@ -1196,7 +1209,7 @@ SwapPlayAreaPokemon::
 ;	e = play area location offset (PLAY_AREA_* constant)
 ; output:
 ;	[wAttachedEnergies] = how many Energy of each type is attached to the Pokemon
-;	[wTotalAttachedEnergies] = total amount of Energy attached to the Pokemon
+;	[wTotalAttachedEnergies] & a = total amount of Energy attached to the Pokemon
 GetPlayAreaCardAttachedEnergies::
 	push hl
 	push de

@@ -105,7 +105,7 @@ AIPickEnergyCardToDiscard:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr z, .no_energy
 
@@ -135,11 +135,9 @@ AIPickEnergyCardToDiscard:
 	inc hl
 	jr .loop
 
-.found
-	ld a, [hl]
-	ret
 .not_found
 	ld hl, wDuelTempList
+.found
 	ld a, [hl]
 	ret
 .no_energy
@@ -163,7 +161,7 @@ PickAttachedEnergyCardToRemove:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr z, .no_energy
 
@@ -202,19 +200,15 @@ PickAttachedEnergyCardToRemove:
 	cp $ff
 	jr z, .default
 	farcall CheckIfEnergyIsUseful
-	jr c, .found
+	jr c, .found ; the current Energy card is useful, so pick that
 	inc hl
 	jr .loop_2
-
-; return the energy card that was found
-.found
-	ld a, [hl]
-	ret
 
 ; if none were found with the above criteria,
 ; just return the first option
 .default
 	ld hl, wDuelTempList
+.found
 	ld a, [hl]
 	ret
 
@@ -241,7 +235,7 @@ PickTwoAttachedEnergyCards:
 	ld e, a
 	farcall CountNumberOfEnergyCardsAttached
 	cp 2
-	jp c, .not_enough
+	jr c, PickAttachedEnergyCardToRemove.no_energy
 
 ; load card data and store its type
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -332,19 +326,20 @@ PickTwoAttachedEnergyCards:
 	ld a, [wTempAI]
 	ret
 
-; return $ff if no energy cards attached
-.not_enough
-	ld a, $ff
-	ret
 
-; copies $ff terminated buffer from hl to de
-CopyBuffer:
+; copies an $ff-terminated list from hl to de
+; preserves bc
+; input:
+;	hl = address from which to start copying the data
+;	de = where to copy the data
+CopyListWithFFTerminatorFromHLToDE_Bank8:
 	ld a, [hli]
 	ld [de], a
 	cp $ff
 	ret z
 	inc de
-	jr CopyBuffer
+	jr CopyListWithFFTerminatorFromHLToDE_Bank8
+
 
 ; zeroes a bytes starting at hl
 ClearMemory_Bank8:
@@ -679,10 +674,7 @@ RemoveFromListDifferentCardOfGivenType:
 
 ; get this card's type
 	ldh [hTempCardIndex_ff98], a
-	push de
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
 	jr c, .pkmn_card
 	cp TYPE_TRAINER
@@ -877,9 +869,7 @@ FindDuplicatePokemonCards:
 
 ; found two cards with same ID,
 ; if they are Pokemon cards, store its deck index.
-	push bc
 	call GetCardType
-	pop bc
 	cp TYPE_ENERGY
 	jr nc, .loop_hand_outer
 	ld a, c
@@ -914,4 +904,55 @@ AICheckIfAttackIsHighRecoil:
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
 	call CheckLoadedAttackFlag
 	ccf
+	ret
+
+; stores in wce06 the highest damaging attack
+; for the card in play area location in e
+; and stores this card's location in wce08
+FindHighestDamagingAttack:
+	push de
+	ld a, e
+	ldh [hTempPlayAreaLocation_ff9d], a
+
+	xor a ; FIRST_ATTACK_OR_PKMN_POWER
+	farcall EstimateDamage_VersusDefendingCard
+	ld a, [wDamage]
+	or a
+	jr z, .skip_1
+	ld e, a
+	ld a, [wce06]
+	cp e
+	jr nc, .skip_1
+	ld a, e
+	ld [wce06], a ; store this damage value
+	pop de
+	ld a, e
+	ld [wce08], a ; store this location
+	jr .second_attack
+
+.skip_1
+	pop de
+
+.second_attack
+	push de
+	ld a, e
+	ldh [hTempPlayAreaLocation_ff9d], a
+
+	ld a, SECOND_ATTACK
+	farcall EstimateDamage_VersusDefendingCard
+	ld a, [wDamage]
+	or a
+	jr z, .skip_2
+	ld e, a
+	ld a, [wce06]
+	cp e
+	jr nc, .skip_2
+	ld a, e
+	ld [wce06], a ; store this damage value
+	pop de
+	ld a, e
+	ld [wce08], a ; store this location
+	ret
+.skip_2
+	pop de
 	ret

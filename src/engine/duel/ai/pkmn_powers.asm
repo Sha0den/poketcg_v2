@@ -172,9 +172,7 @@ HandleAIEnergyTrans:
 .count_if_enough
 ; if there's enough Grass energy cards in Bench
 ; to satisfy the attack energy cost, return carry.
-	push bc
 	call .CountGrassEnergyInBench
-	pop bc
 	cp c
 	jr c, .attack_false
 	ld a, c
@@ -243,9 +241,7 @@ HandleAIEnergyTrans:
 	ld a, b
 	sub c
 	ld c, a
-	push bc
 	call .CountGrassEnergyInBench
-	pop bc
 	cp c
 	jr c, .retreat_false ; return if less cards than needed
 
@@ -509,7 +505,7 @@ HandleAIStepIn:
 	ldh a, [hTemp_ffa0]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	cp 4
 	ccf
 	ret nc ; Dragonite doesn't have enough Energy to attack
@@ -696,11 +692,9 @@ HandleAIShift:
 	ld a, [hli]
 	cp $ff
 	jr z, .false
-	push bc
 	ld a, c
 	call GetPlayAreaCardColor
 	call TranslateColorToWR
-	pop bc
 	and b
 	jr nz, .true
 	inc c

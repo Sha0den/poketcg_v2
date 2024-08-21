@@ -191,10 +191,8 @@ HandleSpecialAIAttacks:
 	ld a, [hli]
 	cp $ff
 	jr z, .chain_lightning_success
-	push bc
 	call GetCardIDFromDeckIndex
 	call GetCardType
-	pop bc
 	cp b
 	jr nz, .loop_chain_lightning_bench
 	; return zero score
@@ -367,11 +365,9 @@ HandleSpecialAIAttacks:
 	jr .loop_earthquake
 
 .count_prizes
-	push de
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
-	pop de
 	cp d
 	jp c, .zero_score
 	jp z, .zero_score

@@ -55,7 +55,7 @@ FindHighestBenchScore:
 	ld e, c
 	ld d, c
 	ld hl, wPlayAreaAIScore + 1
-	jp .next
+	jr .next
 
 .loop
 	ld a, [hli]
@@ -216,7 +216,6 @@ CheckIfEnergyIsUseful:
 	jr z, .set_carry
 
 .check_type
-	ld d, $00 ; unnecessary?
 	call GetCardType
 	ld d, a
 	ld a, [wTempCardType]
@@ -292,8 +291,7 @@ AIPickPrizeCards:
 	ld a, e
 	add DUELVARS_PRIZE_CARDS
 	get_turn_duelist_var
-	call AddCardToHand
-	ret
+	jp AddCardToHand
 
 .prize_flags
 	db $1 << 0
@@ -362,8 +360,7 @@ CheckIfSelectedAttackIsUnusable:
 	call CheckEnergyNeededForAttack
 	ret c ; can't be used
 	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_5_F
-	call CheckLoadedAttackFlag
-	ret
+	jp CheckLoadedAttackFlag
 
 ; load selected attack from Pokémon in hTempPlayAreaLocation_ff9d
 ; and checks if there is enough energy to execute the selected attack
@@ -651,8 +648,7 @@ CheckIfCardCanBePlayed:
 	ret c
 	call LoadNonPokemonCardEffectCommands
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
-	call TryExecuteEffectCommandFunction
-	ret
+	jp TryExecuteEffectCommandFunction
 
 ; loads all the energy cards
 ; in hand in wDuelTempList
@@ -672,10 +668,7 @@ CreateEnergyCardListFromHand:
 
 .loop
 	ld a, [hli]
-	push de
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	and TYPE_ENERGY
 	jr z, .decrease
 	dec hl
@@ -978,7 +971,7 @@ CalculateBDividedByA_Bank5:
 ;	a = number of energy cards attached
 CountNumberOfEnergyCardsAttached:
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	ret z
 
@@ -1197,14 +1190,18 @@ TrySetUpBossStartingPlayArea:
 
 INCLUDE "engine/duel/ai/retreat.asm"
 
-; Copy cards from wDuelTempList in hl to wHandTempList in de
-CopyHandCardList:
+; copies an $ff-terminated list from hl to de
+; preserves bc
+; input:
+;	hl = list to copy
+;	de = where to copy
+CopyListWithFFTerminatorFromHLToDE_Bank5:
 	ld a, [hli]
 	ld [de], a
 	cp $ff
 	ret z
 	inc de
-	jr CopyHandCardList
+	jr CopyListWithFFTerminatorFromHLToDE_Bank5
 
 INCLUDE "engine/duel/ai/hand_pokemon.asm"
 
@@ -2673,10 +2670,7 @@ Func_175a8:
 HandleLegendaryArticunoEnergyScoring:
 	ld a, [wOpponentDeckID]
 	cp LEGENDARY_ARTICUNO_DECK_ID
-	jr z, .articuno_deck
-	ret
-.articuno_deck
-	call ScoreLegendaryArticunoCards
+	jp z, ScoreLegendaryArticunoCards
 	ret
 
 

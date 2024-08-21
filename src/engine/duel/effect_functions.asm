@@ -2822,7 +2822,7 @@ AISelectConversionColor:
 .loop_energy
 	push de
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr z, .skip_pkmn_energy
 	ld a, e
@@ -2896,7 +2896,7 @@ DiscardEnergyDefendingPokemon_PlayerSelection:
 ;	rst SwapTurn
 ;	ld e, PLAY_AREA_ARENA
 ;	call GetPlayAreaCardAttachedEnergies
-;	ld a, [wTotalAttachedEnergies]
+;;	ld a, [wTotalAttachedEnergies] ; already loaded
 ;	or a
 ;	jr z, .no_energy
 ;
@@ -4222,7 +4222,7 @@ FlipEachEnergyFor20_AIEffect:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	call SetDamageToATimes20
 	inc h
 	jr nz, .capped
@@ -4534,11 +4534,8 @@ CreateListOfEnergyAttachedToActive:
 	ld a, [hl]
 	cp CARD_LOCATION_ARENA
 	jr nz, .next
-	push de
 	ld a, l
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp b
 	jr nz, .next ; is same as input type?
 	ld a, l
@@ -5634,11 +5631,8 @@ ShuffleAttachedEnergyEffect:
 	jr z, .next_card_location
 
 ; is a card that is in the turn holder's play area
-	push de
 	ld a, l
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	and TYPE_ENERGY
 	jr z, .next_card_location
 ; is an Energy card attached to a Pokemon in the turn holder's play area
@@ -6294,11 +6288,8 @@ CheckIfCardHasGrassEnergyAttached:
 	ld a, [hl]
 	cp e
 	jr nz, .next
-	push de
 	ld a, l
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY_GRASS
 	jr z, .no_carry
 .next
@@ -6539,11 +6530,8 @@ Firegiver_AddToHandEffect:
 	ld a, [hl]
 	cp CARD_LOCATION_DECK
 	jr nz, .next
-	push de
 	ld a, l
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY_FIRE
 	jr nz, .next
 	ld a, l
@@ -7747,7 +7735,7 @@ HandlePokemonAndEnergySelectionScreen:
 	ret c ; exit if the B button was pressed
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr nz, .has_energy
 	ldtx hl, NoEnergyCardsAttachedText
@@ -7791,7 +7779,7 @@ SuperEnergyRemoval_PlayerSelection:
 	jp c, SwapTurn ; exit if the B button was pressed
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr nz, .has_energy ; has at least 1 attached Energy card
 	; no Energy, loop back
@@ -9287,7 +9275,7 @@ SuperPotion_PlayerSelection:
 	ldh a, [hCurMenuItem]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr nz, .got_pkmn
 	; no Energy cards attached to that Pokemon

@@ -3,7 +3,7 @@
 AIDecideWhetherToRetreat:
 	ld a, [wGotHeadsFromConfusionCheckDuringRetreat]
 	or a
-	jp nz, .no_carry
+	jr nz, .no_carry_1
 	xor a
 	ld [wAIPlayEnergyCardForRetreat], a
 	call CheckCantRetreatDueToAttackEffect
@@ -12,7 +12,9 @@ AIDecideWhetherToRetreat:
 	xor a
 	ld [wAIScore], a
 	ld [wAIRetreatScore], a
-	jp .no_carry
+.no_carry_1
+	or a
+	ret
 .no_acid
 	call LoadDefendingPokemonColorWRAndPrizeCards
 	ld a, $80 ; initial retreat score
@@ -49,7 +51,7 @@ AIDecideWhetherToRetreat:
 	call CheckIfAnyAttackKnocksOutDefendingCard
 	jr nc, .active_cant_ko_1
 	call CheckIfSelectedAttackIsUnusable
-	jp nc, .active_cant_use_atk
+	jr nc, .active_cant_use_atk
 	call LookForEnergyNeededForAttackInHand
 	jr nc, .active_cant_ko_1
 
@@ -277,7 +279,7 @@ AIDecideWhetherToRetreat:
 	call CheckIfAnyAttackKnocksOutDefendingCard
 	jr nc, .active_cant_ko_2
 	call CheckIfSelectedAttackIsUnusable
-	jp nc, .check_defending_id
+	jr nc, .check_defending_id
 .active_cant_ko_2
 	ld a, 40
 	call AddToAIScore
@@ -403,7 +405,7 @@ AIDecideWhetherToRetreat:
 	ld a, [wAIScore]
 	cp 131
 	jr nc, .set_carry
-.no_carry
+.no_carry_2
 	or a
 	ret
 
@@ -419,7 +421,7 @@ AIDecideWhetherToRetreat:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp $ff
-	jr z, .no_carry
+	jr z, .no_carry_2
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
 	push de
@@ -506,7 +508,7 @@ AIDecideBenchPokemonToSwitchTo:
 	ld [wcdda], a
 	call CountPrizes
 	cp 2
-	jp nc, .check_defending_weak
+	jr nc, .check_defending_weak
 	ld a, 10
 	call AddToAIScore
 
@@ -540,7 +542,7 @@ AIDecideBenchPokemonToSwitchTo:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr nz, .check_mr_mime
 	ld a, 1
@@ -783,9 +785,9 @@ AITryToRetreat:
 	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp ASLEEP
-	jp z, .check_id
+	jr z, .check_id
 	cp PARALYZED
-	jp z, .check_id
+	jr z, .check_id
 
 ; if an energy card hasn't been played yet,
 ; checks if the Pokémon needs just one more energy to retreat
@@ -859,7 +861,7 @@ AITryToRetreat:
 	call CreateArenaOrBenchEnergyCardList
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
-	ld a, [wTotalAttachedEnergies]
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	ld c, a
 	ld a, [wTempCardRetreatCost]
 	cp c
@@ -873,7 +875,7 @@ AITryToRetreat:
 	ld [hli], a
 	cp $ff
 	jr nz, .loop_1
-	jp .retreat
+	jr .retreat
 
 .set_carry
 	scf
@@ -989,7 +991,8 @@ AITryToRetreat:
 	jr nc, .has_bench
 	; doesn't have any bench
 	pop af
-	jp .set_carry
+	scf
+	ret
 
 .has_bench
 	ld a, DUELVARS_ARENA_CARD

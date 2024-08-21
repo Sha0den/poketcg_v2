@@ -7864,10 +7864,7 @@ CountKnockedOutPokemon:
 	jr nz, .next ; jump if this Pokemon's HP isn't 0
 	; this Pokemon's HP has just become 0
 	ld a, [de]
-	push de
-	call GetCardIDFromDeckIndex
-	call GetCardType
-	pop de
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_TRAINER
 	jr z, .next ; jump if this is a Trainer card (Clefairy Doll or Mysterious Fossil)
 	inc b
