@@ -94,4 +94,5 @@ Tilesets:
 	tileset JessicaGfx,                     36 ; TILESET_JESSICA
 	tileset StephanieGfx,                   36 ; TILESET_STEPHANIE
 	tileset AaronGfx,                       36 ; TILESET_AARON
+	tileset MintGfx,                        36 ; TILESET_MINT
 	assert_table_length NUM_TILESETS

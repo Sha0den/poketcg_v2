@@ -84,7 +84,7 @@
 
 
 ## Code Optimization
-- **August 20, 2024:** 13 Files Changed
+- **[August 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0f1b7a282f8738c11b20a3ca9be823c0c7e47ba0):** 13 Files Changed
     - Comment out some unnecessary loads and make use of a new function in the home bank: 'GetCardTypeFromDeckIndex_SaveDE'
     - Remove some redundant code in the engine/duel/ai files (e.g. unnecessary push/pop)
     - Replace some jp's in said files with jr's or inlined code and eliminate tail calls
@@ -646,6 +646,11 @@
 
 
 ## New Features
+- **August 22, 2024:** 22 Files Changed
+    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Add-female-player-character) to add the option to play as Mint, the female protagonist from the sequel
+
+<br/>
+
 - **[June 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/3cccfcb07e93fa73d4bc0ab4978a295d98321e4a):** 2 Files Changed
     - Display lowercase halfwidth font characters
     - Increase size of half_width.png to account for future additions

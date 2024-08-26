@@ -2991,13 +2991,16 @@ TextOffsets::
 	textpointer GamblerDescription                                 ; 0x0bab
 	textpointer RecycleName                                        ; 0x0bac
 	textpointer RecycleDescription                                 ; 0x0bad
-	textpointer NewIntroText1                                      ; 0x0bae
-	textpointer NewIntroText2                                      ; 0x0baf
-	textpointer NewIntroText3                                      ; 0x0bb0
-	textpointer ChooseBasicPokemonText                             ; 0x0bb1
-	textpointer ChooseBasicPokemonFromDeckText                     ; 0x0bb2
-	textpointer ChooseEvolutionCardText                            ; 0x0bb3
-	textpointer ChooseEvolutionCardFromDeckText                    ; 0x0bb4
-	textpointer ChooseTrainerCardText                              ; 0x0bb5
-	textpointer ChooseTrainerCardFromDeckText                      ; 0x0bb6
-	textpointer Draw2CardsText                                     ; 0x0bb7
+	textpointer AreYouBoyOrGirlText                                ; 0x0bae
+	textpointer BoyText                                            ; 0x0baf
+	textpointer GirlText                                           ; 0x0bb0
+	textpointer NewIntroText1                                      ; 0x0bb1
+	textpointer NewIntroText2                                      ; 0x0bb2
+	textpointer NewIntroText3                                      ; 0x0bb3
+	textpointer ChooseBasicPokemonText                             ; 0x0bb4
+	textpointer ChooseBasicPokemonFromDeckText                     ; 0x0bb5
+	textpointer ChooseEvolutionCardText                            ; 0x0bb6
+	textpointer ChooseEvolutionCardFromDeckText                    ; 0x0bb7
+	textpointer ChooseTrainerCardText                              ; 0x0bb8
+	textpointer ChooseTrainerCardFromDeckText                      ; 0x0bb9
+	textpointer Draw2CardsText                                     ; 0x0bba

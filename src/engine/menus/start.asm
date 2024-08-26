@@ -53,6 +53,9 @@ HandleTitleScreen:
 
 .start_menu
 	call CheckIfHasSaveData
+	ld a, [wHasSaveData]
+	or a
+	call nz, LoadEventsFromSRAM
 	call HandleStartMenu
 
 ; new game
@@ -73,7 +76,7 @@ HandleTitleScreen:
 	cp START_MENU_CARD_POP
 	jr nz, .continue_duel
 	call ShowCardPopCGBDisclaimer
-	jr c, HandleTitleScreen
+	jp c, HandleTitleScreen
 .continue_duel
 	xor a
 	ld [wDoFrameFunction + 0], a
@@ -102,6 +105,15 @@ CheckIfHasSaveData:
 	ld [wHasDuelSaveData], a
 	farcall ValidateBackupGeneralSaveData
 	ret
+
+
+LoadEventsFromSRAM:
+	ld hl, sEventVars
+	ld de, wEventVars
+	ld bc, EVENT_VAR_BYTES
+	call EnableSRAM
+	call CopyDataHLtoDE
+	jp DisableSRAM
 
 
 ; handles printing the Start Menu and getting the player's input and choice

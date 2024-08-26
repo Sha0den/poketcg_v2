@@ -1,3 +1,15 @@
+AreYouBoyOrGirlText:
+	text "     Are you a boy or a girl?"
+	done
+
+BoyText:
+	text "Boy"
+	done
+
+GirlText:
+	text "Girl"
+	done
+
 NewIntroText1:
 	text "Oh! Why the rush, <RAMNAME>?"
 	line "What? "

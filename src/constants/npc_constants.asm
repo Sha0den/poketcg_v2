@@ -77,6 +77,7 @@ DEF NPC_DATA_LENGTH EQU const_value
 	const STEPHANIE_PIC ; $28
 	const AARON_PIC     ; $29
 	const LINK_OPP_PIC  ; $2a
+	const MINT_PIC      ; $2b
 DEF NUM_PICS EQU const_value
 
 	const_def 1

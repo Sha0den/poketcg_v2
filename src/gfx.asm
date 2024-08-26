@@ -1363,6 +1363,24 @@ FightingGfx::
 	dw $04
 	INCBIN "gfx/titlescreen/energies/fighting.2bpp"
 
+MintGfx::
+	dw 36
+	INCBIN "gfx/duelists/mint.2bpp"
+
+OWMintGfx::
+	dw $14
+	INCBIN "gfx/overworld_sprites/mint.2bpp"
+
+Palette161::
+	db 0
+	db 1
+
+	rgb 31, 27, 22 ; light peach, used for Mint's skin
+	rgb 27, 16,  9 ; light brown, used for Mint's hair
+	rgb  0, 12, 31 ; blue, used for Mint's clothing and background
+	rgb  5,  0,  0 ; dark brown, used for outline and shading
+
+
 SECTION "Anims 1", ROMX
 	INCLUDE "data/duel/animations/anims1.asm"
 

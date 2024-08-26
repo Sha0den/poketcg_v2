@@ -121,4 +121,5 @@ Sprites:
 	gfx_pointer LightningGfx,        $04 ; SPRITE_LIGHTNING
 	gfx_pointer PsychicGfx,          $04 ; SPRITE_PSYCHIC
 	gfx_pointer FightingGfx,         $04 ; SPRITE_FIGHTING
+	gfx_pointer OWMintGfx,           $14 ; SPRITE_OW_MINT
 	assert_table_length NUM_SPRITES

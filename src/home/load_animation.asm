@@ -279,7 +279,13 @@ LoadScene::
 ; input:
 ;	bc = coordinates at which to begin drawing the portrait
 DrawPlayerPortrait::
+	ld a, EVENT_PLAYER_GENDER
+	farcall GetEventValue
+	or a
 	ld a, PLAYER_PIC
+	jr z, .got_pic
+	ld a, MINT_PIC
+.got_pic
 	ld [wCurPortrait], a
 	ld a, TILEMAP_PLAYER
 ;	fallthrough

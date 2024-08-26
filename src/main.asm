@@ -61,6 +61,7 @@ INCLUDE "engine/menus/main_menu.asm"
 INCLUDE "engine/menus/wait_keys.asm"
 INCLUDE "engine/gfx/default_palettes.asm"
 INCLUDE "engine/menus/naming.asm"
+INCLUDE "engine/menus/choose_gender.asm"
 
 SECTION "Sprite Animations", ROMX
 INCLUDE "engine/gfx/sprite_animations.asm"
