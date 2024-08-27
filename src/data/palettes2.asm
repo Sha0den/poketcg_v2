@@ -514,24 +514,30 @@ Palette118::
 	rgb 19,  0, 25
 	rgb  0,  0,  0
 
+
+; applied to a link opponent's duel portrait
 Palette120::
 	db 0
 	db 1
 
-	rgb 28, 28, 28
-	rgb 20, 24, 16
-	rgb  0, 12,  0
-	rgb  0,  1,  0
+	rgb 31, 28, 23 ; light peach, used for player's skin and highlights
+	rgb 27, 16,  9 ; light brown, used for shading
+	rgb  0, 17,  0 ; green, used for player's clothing and the background
+	rgb  0,  0,  0 ; black, used for player's hair and outlines
 
+
+; applied to Ronald's duelist portrait
 Palette121::
 	db 0
 	db 1
 
-	rgb 24, 24, 28
-	rgb 12, 16, 28
-	rgb  4,  8, 28
-	rgb  0,  0, 12
+	rgb 31, 28, 23 ; light peach, used for Ronald's skin/T-shirt and highlights
+	rgb 28, 16, 12 ; dark peach, used for shading
+	rgb  4,  8, 28 ; blue, used for Ronald's hair and the background
+	rgb  0,  0, 12 ; dark blue, used for Ronald's shirt and outlines
 
+
+; applied to Tech Sam's duelist portrait
 Palette122::
 	db 0
 	db 1
@@ -541,6 +547,8 @@ Palette122::
 	rgb  4, 12,  8
 	rgb  0,  4,  0
 
+
+; applied to Strange Life-form Imakuni?'s duelist portrait
 Palette123::
 	db 0
 	db 1
@@ -550,6 +558,8 @@ Palette123::
 	rgb 20,  8,  0
 	rgb  4,  0,  0
 
+
+; applied to Grass Club Master Nikki's duelist portrait
 Palette124::
 	db 0
 	db 1
@@ -559,6 +569,8 @@ Palette124::
 	rgb  8, 12,  0
 	rgb  5,  0,  0
 
+
+; applied to Science Club Master Rick's duelist portrait
 Palette125::
 	db 0
 	db 1
@@ -568,6 +580,8 @@ Palette125::
 	rgb  8, 12,  0
 	rgb  5,  0,  0
 
+
+; applied to Fire Club Master Ken's duelist portrait
 Palette126::
 	db 0
 	db 1
@@ -577,6 +591,8 @@ Palette126::
 	rgb 28,  4,  0
 	rgb  5,  0,  0
 
+
+; applied to Water Club Master Amy's duelist portrait
 Palette127::
 	db 0
 	db 1
@@ -586,6 +602,8 @@ Palette127::
 	rgb  5,  5, 29
 	rgb  5,  0,  0
 
+
+; applied to Lightning Club Master Isaac's duelist portrait
 Palette128::
 	db 0
 	db 1
@@ -595,6 +613,8 @@ Palette128::
 	rgb 14, 11,  0
 	rgb  3,  1,  1
 
+
+; applied to Fighting Club Master Mitch's duelist portrait
 Palette129::
 	db 0
 	db 1
@@ -604,6 +624,8 @@ Palette129::
 	rgb 28, 10,  0
 	rgb  4,  1,  0
 
+
+; applied to Rock Club Master Gene's duelist portrait
 Palette130::
 	db 0
 	db 1
@@ -613,6 +635,8 @@ Palette130::
 	rgb 18,  8,  0
 	rgb  4,  0,  0
 
+
+; applied to Psychic Club Master Murray's duelist portrait
 Palette131::
 	db 0
 	db 1
@@ -622,6 +646,8 @@ Palette131::
 	rgb 10,  0, 18
 	rgb  5,  0,  0
 
+
+; applied to Grand Master Courtney's duelist portrait
 Palette132::
 	db 0
 	db 1
@@ -631,6 +657,8 @@ Palette132::
 	rgb 28,  4,  0
 	rgb  5,  0,  0
 
+
+; applied to Grand Master Steve's duelist portrait
 Palette133::
 	db 0
 	db 1
@@ -640,6 +668,8 @@ Palette133::
 	rgb 28, 12,  0
 	rgb  2,  2,  0
 
+
+; applied to Grand Master Jack's duelist portrait
 Palette134::
 	db 0
 	db 1
@@ -649,6 +679,8 @@ Palette134::
 	rgb  5,  5, 29
 	rgb  0,  0,  2
 
+
+; applied to Grand Master Rod's duelist portrait
 Palette135::
 	db 0
 	db 1
@@ -658,6 +690,8 @@ Palette135::
 	rgb  0, 17, 10
 	rgb  0,  3,  0
 
+
+; applied to Science Club Member Joseph's duelist portrait
 Palette136::
 	db 0
 	db 1
@@ -667,6 +701,8 @@ Palette136::
 	rgb  0, 12,  0
 	rgb  0,  1,  0
 
+
+; applied to Science Club Member David's duelist portrait
 Palette137::
 	db 0
 	db 1
@@ -676,6 +712,8 @@ Palette137::
 	rgb  0, 12,  0
 	rgb  0,  1,  0
 
+
+; applied to Science Club Member Erik's duelist portrait
 Palette138::
 	db 0
 	db 1
@@ -685,6 +723,8 @@ Palette138::
 	rgb  0, 12,  0
 	rgb  0,  1,  0
 
+
+; applied to Fire Club Member John's duelist portrait
 Palette139::
 	db 0
 	db 1
@@ -694,6 +734,8 @@ Palette139::
 	rgb 28,  4,  0
 	rgb  4,  0,  0
 
+
+; applied to Fire Club Member Adam's duelist portrait
 Palette140::
 	db 0
 	db 1
@@ -703,6 +745,8 @@ Palette140::
 	rgb 28,  4,  0
 	rgb  4,  0,  0
 
+
+; applied to Fire Club Member Jonathan's duelist portrait
 Palette141::
 	db 0
 	db 1
@@ -712,6 +756,8 @@ Palette141::
 	rgb 28,  4,  0
 	rgb  4,  0,  0
 
+
+; applied to Water Club Member Joshua's duelist portrait
 Palette142::
 	db 0
 	db 1
@@ -721,6 +767,8 @@ Palette142::
 	rgb  8,  8, 20
 	rgb  0,  0,  4
 
+
+; applied to Lightning Club Member Nicholas's duelist portrait
 Palette143::
 	db 0
 	db 1
@@ -730,6 +778,8 @@ Palette143::
 	rgb  8,  8,  4
 	rgb  2,  1,  1
 
+
+; applied to Lightning Club Member Brandon's duelist portrait
 Palette144::
 	db 0
 	db 1
@@ -739,6 +789,8 @@ Palette144::
 	rgb  8,  8,  4
 	rgb  2,  1,  1
 
+
+; applied to Rock Club Member Matthew's duelist portrait
 Palette145::
 	db 0
 	db 1
@@ -748,6 +800,8 @@ Palette145::
 	rgb 24,  8,  4
 	rgb  2,  0,  0
 
+
+; applied to Rock Club Member Ryan's duelist portrait
 Palette146::
 	db 0
 	db 1
@@ -757,6 +811,8 @@ Palette146::
 	rgb 24,  8,  4
 	rgb  2,  0,  0
 
+
+; applied to Rock Club Member Andrew's duelist portrait
 Palette147::
 	db 0
 	db 1
@@ -766,6 +822,8 @@ Palette147::
 	rgb 24,  8,  4
 	rgb  2,  0,  0
 
+
+; applied to Fighting Club Member Chris's duelist portrait
 Palette148::
 	db 0
 	db 1
@@ -775,6 +833,8 @@ Palette148::
 	rgb 12,  4,  8
 	rgb  2,  0,  0
 
+
+; applied to Fighting Club Member Michael's duelist portrait
 Palette149::
 	db 0
 	db 1
@@ -784,6 +844,8 @@ Palette149::
 	rgb 12,  4,  8
 	rgb  2,  0,  0
 
+
+; applied to Psychic Club Member Daniel's duelist portrait
 Palette150::
 	db 0
 	db 1
@@ -793,6 +855,8 @@ Palette150::
 	rgb 16,  8, 12
 	rgb  2,  1,  1
 
+
+; applied to Psychic Club Member Robert's duelist portrait
 Palette151::
 	db 0
 	db 1
@@ -802,6 +866,8 @@ Palette151::
 	rgb 16,  8, 12
 	rgb  2,  1,  1
 
+
+; applied to Grass Club Member Brittany's duelist portrait
 Palette152::
 	db 0
 	db 1
@@ -811,6 +877,8 @@ Palette152::
 	rgb  8, 16,  4
 	rgb  0,  2,  0
 
+
+; applied to Grass Club Member Kristin's duelist portrait
 Palette153::
 	db 0
 	db 1
@@ -820,6 +888,8 @@ Palette153::
 	rgb  8, 16,  4
 	rgb  0,  2,  0
 
+
+; applied to Grass Club Member Heather's duelist portrait
 Palette154::
 	db 0
 	db 1
@@ -829,6 +899,8 @@ Palette154::
 	rgb  8, 16,  4
 	rgb  0,  2,  0
 
+
+; applied to Water Club Member Sara's duelist portrait
 Palette155::
 	db 0
 	db 1
@@ -838,6 +910,8 @@ Palette155::
 	rgb  8,  8, 20
 	rgb  0,  0,  2
 
+
+; applied to Water Club Member Amanda's duelist portrait
 Palette156::
 	db 0
 	db 1
@@ -847,6 +921,8 @@ Palette156::
 	rgb  8,  8, 20
 	rgb  0,  0,  2
 
+
+; applied to Lightning Club Member Jennifer's duelist portrait
 Palette157::
 	db 0
 	db 1
@@ -856,6 +932,8 @@ Palette157::
 	rgb  8,  8,  4
 	rgb  2,  1,  1
 
+
+; applied to Fighting Club Member Jessica's duelist portrait
 Palette158::
 	db 0
 	db 1
@@ -865,6 +943,8 @@ Palette158::
 	rgb 12,  4,  8
 	rgb  1,  0,  0
 
+
+; applied to Psychic Club Member Stephanie's duelist portrait
 Palette159::
 	db 0
 	db 1
@@ -874,6 +954,8 @@ Palette159::
 	rgb 16,  8, 12
 	rgb  2,  1,  1
 
+
+; applied to Tech Aaron's duelist portrait
 Palette160::
 	db 0
 	db 1

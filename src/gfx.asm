@@ -1371,14 +1371,15 @@ OWMintGfx::
 	dw $14
 	INCBIN "gfx/overworld_sprites/mint.2bpp"
 
+; applied to Mint's duelist portrait
 Palette161::
 	db 0
 	db 1
 
-	rgb 31, 27, 22 ; light peach, used for Mint's skin
-	rgb 27, 16,  9 ; light brown, used for Mint's hair
-	rgb  0, 12, 31 ; blue, used for Mint's clothing and background
-	rgb  5,  0,  0 ; dark brown, used for outline and shading
+	rgb 31, 28, 23 ; light peach, used for Mint's skin and highlights
+	rgb 27, 16,  9 ; light brown, used for Mint's hair and shading
+	rgb  0, 12, 31 ; blue, used for Mint's clothing and the background
+	rgb  5,  0,  0 ; dark brown, used for shading Mint's hair and outlines
 
 
 SECTION "Anims 1", ROMX
@@ -1399,14 +1400,15 @@ Palette31::
 	rgb 31, 24,  6
 	rgb 11,  3,  0
 
+; applied to Mark's duelist portrait
 Palette119::
 	db 0
 	db 1
 
-	rgb 28, 28, 24
-	rgb 28, 16, 12
-	rgb 28,  4,  8
-	rgb  0,  0,  8
+	rgb 31, 28, 23 ; light peach, used for Mark's skin/T-shirt and highlights
+	rgb 28, 16, 12 ; dark peach, used for shading Mark's skin
+	rgb 28,  4,  8 ; red, used for Mark's bandana/outer shirt and the background
+	rgb  0,  0,  8 ; blue/black, used for Mark's hair and outlines
 
 SECTION "Anims 4", ROMX
 	INCLUDE "data/duel/animations/anims4.asm"

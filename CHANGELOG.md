@@ -162,6 +162,13 @@
 
 <br/>
 
+- **[August 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/576581a7aac4bb8e1da6ab8c1076aabbe927e3fb):** 8 Files Changed
+    - Create engine/menus/gift_center.core.asm and move gift center functions in engine/menus/deck_configuration and engine/menu/deck_machine.asm to the new file
+    - Organize functions in engine/menus/printer.asm (after importing PrinterMenu_DeckConfiguration)
+    - Move and label unrelated menu parameter data from engine/menus/gift_center.asm to engine/menus/labels.asm
+
+<br/>
+
 - **[August 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/018fa95ded992eda2701e3377412adbe0c05a421):** 5 Files Changed
     - Move 'CopyNBytesFromHLToDE' from engine/menu/deck_configuration.asm to home/copy.asm
     - Refactor several functions to make use of the new home bank function
@@ -174,9 +181,20 @@
 
 <br/>
 
+- **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/133b38fda44d1fee37d11d7ed805e47a3c616221):** 5 Files Changed
+    - Move coss toss functions from engine/duel.core.asm to a separate file that's linked with a less important bank
+    - Align the printed coin tally numbers
+
+<br/>
+
 - **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/edc9a809d7096e625af1e26e41cea6bc2b79693f):** 11 Files Changed
     - Refactor and better organize all functions associated with writing numbers
     - [This commit](https://github.com/Sha0den/poketcg_v2/commit/c1249198e62a2e53fecb4c4feabf0c1097870614) swapped the FULLWIDTH3 fonts for TX_SYMBOL fonts in the fullwidth text functions, to avoid overwriting the numbers on screen with other font tiles once VRAM runs out of space for new font tiles
+
+<br/>
+
+- **[August 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/0a96c62b8cb2588b01647e867eef0ce7ceee8721):** 1 File Changed
+    - Comment out some unreferenced data in home/sgb.asm
 
 <br/>
 
@@ -259,9 +277,24 @@
 
 <br/>
 
+- **[July 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/87cc896a64a7a987321b9fd94c8773aa509a6108):** 1 File Changed
+    - Restructure home/math.asm
+
+<br/>
+
 - **[July 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/b96a8555722cb16b35f7eb082f695f283dd28805):** 3 Files Changed
     - Try to standardize the function comments that are used in the effect functions files
     - Plus some corrections/optimizations/shuffling of functions in said files
+
+<br/>
+
+- **[July 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/b070252710fa41169a8ef69c36b2757ec928537e):** 1 File Changed
+    - Add some more comments to home/substatus.asm
+
+<br/>
+
+- **[June 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/a05fc6a1988ee931da2ba9e8cef6a197d77f5ef3):** 9 Files Changed
+    - Remove some now unreferenced material and put it where it belongs (in debug files)
 
 <br/>
 
@@ -298,9 +331,21 @@
 
 <br/>
 
+- **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/15bf474bae975ce662a989f5f4410f84b5a7906b):** 3 Files Changed
+    - Move debug.asm from engine/menus and debug_player_coordinates.asm from engine/overworld to engine/unused
+
+<br/>
+
 - **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0e5c4e7ac27f6c5fee1642ec227dc8edf24d5a11):** 4 Files Changed
     - Try to standardize the function comments that are used in the engine/gfx files
     - Remove several unnecessary push/pops in engine/gfx/sprite_animations.asm
+
+<br/>
+
+- **[June 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/45a08ab02dd879c4c6cc03672c4c3d7b8cde3957):** 7 Files Changed (Plus 5 Files Relocated)
+    - Comment out a few more unreferenced functions in the home bank
+    - Move debug_sprites, unused_copyright.asm, and unused_save_validation.asm from engine to engine/unused
+    - Move debug_main.asm and unknown.asm from engine/menus to engine/unused
 
 <br/>
 
@@ -311,6 +356,23 @@
 
 - **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/afee23873ee49f2ace256d0319fc28d8b95e0b96):** 6 Files Changed
     - Delete ResetDoFrameFunction functions, and replace each call with the requisite lines of code
+
+<br/>
+
+- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a852ba61fb251f4076828524a41d14d2b2d616cd):** 21 Files Changed (4 of these were removed from the repository)
+    - Shuffle some functions in the home bank for better organization
+    - Delete the redundant JPHblankCopyDataHLtoDE function
+    - Add a missing colon to fix a build error from the commit below this one
+
+<br/>
+
+- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/f5c84e957054bc2548219821aa6a2ec4d196d3a6):** 5 Files Changed
+    - Shuffle some functions in the home bank that are related to printing numbers (and use more accurate labels)
+
+<br/>
+
+- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7b97cccbcd62933c6bd8ade0834cf9aca1fca6f):** 3 Files Changed
+    - Reorganize the functions in home/substatus.asm
 
 <br/>
 
@@ -452,15 +514,14 @@
 
 
 ## Miscellaneous Changes
-- **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/d7050ca9cd207220c60d520d1c2f70f2175eb35c):** 3 Files Changed
-    - Make the phantom cards (Venusaur Lv64 and Mew Lv15) obtainable without using Card Pop! by adding them to the list of possible Challenge Cup prizes
+- **August 27, 2024:** 4 Files Changed
+    - Update the palettes and icons for Ronald's and the Player's duelist portraits (most changes were taken from the sequel's portraits)
+    - Identify palettes that are used for all of the duelist portraits
 
 <br/>
 
-- **[August 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/576581a7aac4bb8e1da6ab8c1076aabbe927e3fb):** 8 Files Changed
-    - Create engine/menus/gift_center.core.asm and move gift center functions in engine/menus/deck_configuration and engine/menu/deck_machine.asm to the new file
-    - Organize functions in engine/menus/printer.asm (after importing PrinterMenu_DeckConfiguration)
-    - Move and label unrelated menu parameter data from engine/menus/gift_center.asm to engine/menus/labels.asm
+- **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/d7050ca9cd207220c60d520d1c2f70f2175eb35c):** 3 Files Changed
+    - Make the phantom cards (Venusaur Lv64 and Mew Lv15) obtainable without using Card Pop! by adding them to the list of possible Challenge Cup prizes
 
 <br/>
 
@@ -470,63 +531,8 @@
 
 <br/>
 
-- **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/133b38fda44d1fee37d11d7ed805e47a3c616221):** 5 Files Changed
-    - Move coss toss functions from engine/duel.core.asm to a separate file that's linked with a less important bank
-    - Align the printed coin tally numbers
-
-<br/>
-
-- **[August 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/0a96c62b8cb2588b01647e867eef0ce7ceee8721):** 1 File Changed
-    - Comment out some unreferenced data in home/sgb.asm
-
-<br/>
-
 - **[August 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/0849ad946e2b0cef4a08988d983e7e3f3516c674):** 1 File Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Remove-AI-artificial-delay) to remove the artificial delay applied to many of the AI's actions
-
-<br/>
-
-- **[July 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/87cc896a64a7a987321b9fd94c8773aa509a6108):** 1 File Changed
-    - Restructure home/math.asm
-
-<br/>
-
-- **[July 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/b070252710fa41169a8ef69c36b2757ec928537e):** 1 File Changed
-    - Add some more comments to home/substatus.asm
-
-<br/>
-
-- **[June 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/a05fc6a1988ee931da2ba9e8cef6a197d77f5ef3):** 9 Files Changed
-    - Remove some now unreferenced material and put it where it belongs (in debug files)
-
-<br/>
-
-- **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/15bf474bae975ce662a989f5f4410f84b5a7906b):** 3 Files Changed
-    - Move debug.asm from engine/menus and debug_player_coordinates.asm from engine/overworld to engine/unused
-
-<br/>
-
-- **[June 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/45a08ab02dd879c4c6cc03672c4c3d7b8cde3957):** 7 Files Changed (Plus 5 Files Relocated)
-    - Comment out a few more unreferenced functions in the home bank
-    - Move debug_sprites, unused_copyright.asm, and unused_save_validation.asm from engine to engine/unused
-    - Move debug_main.asm and unknown.asm from engine/menus to engine/unused
-
-<br/>
-
-- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a852ba61fb251f4076828524a41d14d2b2d616cd):** 21 Files Changed (4 of these were removed from the repository)
-    - Shuffle some functions in the home bank for better organization
-    - Delete the redundant JPHblankCopyDataHLtoDE function
-    - Add a missing colon to fix a build error from the commit below this one
-
-<br/>
-
-- **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/f5c84e957054bc2548219821aa6a2ec4d196d3a6):** 5 Files Changed
-    - Shuffle some functions in the home bank that are related to printing numbers (and use more accurate labels)
-
-<br/>
-
-- **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7b97cccbcd62933c6bd8ade0834cf9aca1fca6f):** 3 Files Changed
-    - Reorganize the functions in home/substatus.asm
 
 <br/>
 
@@ -646,7 +652,7 @@
 
 
 ## New Features
-- **August 22, 2024:** 22 Files Changed
+- **[August 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/f621d292bce067b1f346896554dde4f944a1949d):** 22 Files Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Add-female-player-character) to add the option to play as Mint, the female protagonist from the sequel
 
 <br/>
