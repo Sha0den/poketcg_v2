@@ -1,7 +1,6 @@
 GrassClubEntranceAfterDuel:
 	ld hl, GrassClubEntranceAfterDuelTable
-	call FindEndOfDuelScript
-	ret
+;	fallthrough
 
 FindEndOfDuelScript:
 	ld c, 0

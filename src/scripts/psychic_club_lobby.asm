@@ -1,7 +1,6 @@
 PsychicClubLobbyAfterDuel:
 	ld hl, .after_duel_table
-	call FindEndOfDuelScript
-	ret
+	jp FindEndOfDuelScript
 
 .after_duel_table
 	db NPC_ROBERT

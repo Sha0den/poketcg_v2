@@ -213,7 +213,3 @@ Script_Ronald:
 
 .ows_dc60
 	print_text_quit_fully Text0743
-
-	; could be a commented function, or could be placed by mistake from
-	; someone thinking that the Ronald script ended with more code execution
-	ret

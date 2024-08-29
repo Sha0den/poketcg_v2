@@ -1,7 +1,6 @@
 RockClubAfterDuel:
 	ld hl, .after_duel_table
-	call FindEndOfDuelScript
-	ret
+	jp FindEndOfDuelScript
 
 .after_duel_table
 	db NPC_RYAN
@@ -119,4 +118,3 @@ Script_LostToGene:
 
 .ows_e09a
 	print_text_quit_fully Text07b0
-	ret

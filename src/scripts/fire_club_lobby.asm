@@ -1,7 +1,6 @@
 FireClubLobbyAfterDuel:
 	ld hl, .after_duel_table
-	call FindEndOfDuelScript
-	ret
+	jp FindEndOfDuelScript
 
 .after_duel_table
 	db NPC_JESSICA
@@ -10,15 +9,14 @@ FireClubLobbyAfterDuel:
 	dw Script_LostToJessicaInFireClubLobby
 	db $00
 
-FireClubPressedA:
-	ld hl, SlowpokePaintingObjectTable
-	call FindExtraInteractableObjects
-	ret
-
 SlowpokePaintingObjectTable:
 	db 16, 2, NORTH
 	dw Script_ee76
 	db $00
+
+FireClubPressedA:
+	ld hl, SlowpokePaintingObjectTable
+;	fallthrough
 
 ; Given a table with data of the form:
 ;	X, Y, Dir, Script

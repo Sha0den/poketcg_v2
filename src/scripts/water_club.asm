@@ -12,8 +12,7 @@ WaterClubMovePlayer:
 
 WaterClubAfterDuel:
 	ld hl, .after_duel_table
-	call FindEndOfDuelScript
-	ret
+	jp FindEndOfDuelScript
 
 .after_duel_table
 	db NPC_SARA
@@ -77,7 +76,7 @@ Script_BeatAmanda:
 	start_script
 	max_out_event_value EVENT_BEAT_AMANDA
 	print_npc_text AmandaPlayerWon1Text
-	give_booster_packs BOOSTER_MYSTERY_LIGHTNING_COLORLESS, BOOSTER_MYSTERY_LIGHTNING_COLORLESS, NO_BOOSTER
+	give_booster_packs BOOSTER_MYSTERY_WATER_COLORLESS, BOOSTER_MYSTERY_WATER_COLORLESS, NO_BOOSTER
 	print_npc_text AmandaPlayerWon2Text
 	quit_script_fully
 

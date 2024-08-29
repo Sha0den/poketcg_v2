@@ -1,7 +1,6 @@
 HallOfHonorLoadMap:
 	ld a, SFX_LEGENDARY_CARDS
-	call PlaySFX
-	ret
+	jp PlaySFX
 
 Script_fbe1:
 	start_script

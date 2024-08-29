@@ -188,7 +188,7 @@ NPCMovement_e90f:
 Preload_Ronald3InClubEntrance:
 	get_event_value EVENT_RONALD_SECOND_DUEL_STATE
 	ld e, 5 ; medal requirement for ronald duel
-	jp Func_e8a0
+	jr Func_e8a0
 
 Script_SecondRonaldDuel:
 	start_script

@@ -19,7 +19,7 @@
 <br/>
 
 - **[June 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/114f2463ef738e36f6cbdc36eaceb5a9676d6f69):** 2 Files Changed
-    - Change some mistaken calls to bank1calls
+    - Replace many uses of `call` with `bank1call` when dealing with functions in bank $01 from the home bank. (It's probably best not to assume that bank 1 will always be loaded.)
 
 <br/>
 
@@ -84,24 +84,30 @@
 
 
 ## Code Optimization
-- **August 29, 2024:** 5 Files Changed (1 was deleted)
+- **August 29, 2024:** 23 Files Changed
+    - Remove some unnecessary `ret` instructions in the src/scripts files
+    - Fix Amanda's booster pack rewards (now Water-focused instead of Lightning)
+
+<br/>
+
+- **[August 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/66b1e80c8853588458ca4579d3c7885501986444):** 5 Files Changed (1 was deleted)
     - Move all palette data into a single file/bank
     - Add comments to explain what each palette set is used for
 
 <br/>
 
 - **[August 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0f1b7a282f8738c11b20a3ca9be823c0c7e47ba0):** 13 Files Changed
-    - Comment out some unnecessary loads and make use of a new function in the home bank: 'GetCardTypeFromDeckIndex_SaveDE'
-    - Remove some redundant code in the engine/duel/ai files (e.g. unnecessary push/pop)
-    - Replace some jp's in said files with jr's or inlined code and eliminate tail calls
+    - Comment out some unnecessary loads and make use of a new function in the home bank: `GetCardTypeFromDeckIndex_SaveDE`
+    - Remove some redundant code in the engine/duel/ai files (e.g. unnecessary stack pushes and pops)
+    - Replace some uses of `jp` in said files with `jr` or inlined code and eliminate tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
     - Rearrange a couple of functions in said files
-    - Rename 'CopyHandCardList' and 'CopyBuffer' to 'CopyListWithFFTerminatorFromHLToDE_Bank5' and 'CopyListWithFFTerminatorFromHLToDE_Bank8'
+    - Rename `CopyHandCardList` and `CopyBuffer` to `CopyListWithFFTerminatorFromHLToDE_Bank5` and `CopyListWithFFTerminatorFromHLToDE_Bank8`
 
 <br/>
 
 - **[August 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/a1ace62a57cc82e42ec2d866818b6022bc42add1):** 4 Files Changed
-    - Fix register preservation comments for 'BankPushROM', 'BankPushROM2', and 'GetCardType'
-    - Adjust push/pop instructions surrounding calls to 'GetCardType'
+    - Fix register preservation comments for `BankPushROM`, `BankPushROM2`, and `GetCardType`
+    - Adjust push/pop instructions surrounding calls to `GetCardType`
 
 <br/>
 
@@ -117,7 +123,7 @@
 <br/>
 
 - **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/106e2372bfa6f430e41d4544375d32a16519c479):** 21 Files Changed
-    - Make 'SwapTurn' a restart vector and replace each "call" with "rst" (you could also replace each "jp" with "rst" and a "ret" to free up even more space, at the cost of 4 cycles per byte saved)
+    - Make `SwapTurn` a restart vector and replace each `call` with `rst` (you could also replace each `jp` with `rst` and a subsequent `ret` to free up even more space, at the cost of 4 cycles per byte saved)
 
 <br/>
 
@@ -128,32 +134,32 @@
 <br/>
 
 - **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/c52579cdc587b88d8103dfb9bad141eeb8f67f89):** 4 Files Changed
-    - Use in-lined bank switches instead of farcalls for a few home bank functions and do the opposite for a couple of rarely used functions that are related to Mankey's Peek
+    - Use in-lined bank switches instead of `farcall` for a few home bank functions and do the opposite for a couple of rarely used functions that are related to Mankey's Peek
 
 <br/>
 
 - **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/f8ae74bb130f69e77980961ec34160fae067097a):** 26 Files Changed
-    - Make 'BankSwitchROM' a restart vector and replace each "call" with "rst" (you could also replace each "jp" with "rst" and a "ret" to free up even more space in the home bank, at the cost of 4 cycles per byte saved)
+    - Make `BankSwitchROM` a restart vector and replace each `call` with `rst` (you could also replace each `jp` with `rst` and a subsequent `ret` to free up even more space in the home bank, at the cost of 4 cycles per byte saved)
 
 <br/>
 
 - **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/aa5f126fcf7589bd10738cf0bb732f05b4624dfe):** 28 Files Changed
-    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Save-space-and-improve-performance-with-RST-vectors) to make 'GetTurnDuelistVariable' a restart vector and replace each "call GetTurnDuelistVariable" with an rst macro
+    - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Save-space-and-improve-performance-with-RST-vectors) to make `GetTurnDuelistVariable` a restart vector and replace each `call GetTurnDuelistVariable` with an rst macro
 
 <br/>
 
 - **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/b7df77baf845c570e40bc1cd8c5e9e8c1353b035):** 13 Files Changed
-    - Remove the "debug_nop" rst
+    - Remove all references to the `debug_nop` restart vector
 
 <br/>
 
 - **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/df9b66c73c1c76d0ad48fbb1b6cf2228f6ea360a):** 10 Files Changed
-    - Replace numerous instances of "call DisableSRAM/ret" with "jp DisableSRAM"
+    - Replace numerous instances of `call DisableSRAM` and a later `ret` with `jp DisableSRAM`
 
 <br/>
 
 - **[August 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/ce71442afc97cd8bcdf2a3cfb4dbed17d723717e):** 7 Files Changed
-    - Replace numerous instances of "call SwapTurn/ret" with "jp SwapTurn"
+    - Replace numerous instances of `call SwapTurn` and a later `ret` with `jp SwapTurn`
 
 <br/>
 
@@ -163,26 +169,26 @@
 <br/>
 
 - **[August 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/6c2492884a48e725b65165e9e8e7eff305bcff3c):** 5 Files Changed
-    - Return 'FillBGMapLineWithA' and 'FillDEWithA' to engine/menu/deck_configuration.asm
-    - Remove some unnecessary push af/pop af surrounding calls of 'BCCoordToBGMap0Address'
+    - Return `FillBGMapLineWithA` and `FillDEWithA` to engine/menu/deck_configuration.asm
+    - Remove some unnecessary `push af` and `pop af` instructions surrounding calls of `BCCoordToBGMap0Address`
 
 <br/>
 
 - **[August 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/576581a7aac4bb8e1da6ab8c1076aabbe927e3fb):** 8 Files Changed
     - Create engine/menus/gift_center.core.asm and move gift center functions in engine/menus/deck_configuration and engine/menu/deck_machine.asm to the new file
-    - Organize functions in engine/menus/printer.asm (after importing PrinterMenu_DeckConfiguration)
+    - Organize functions in engine/menus/printer.asm (after importing `PrinterMenu_DeckConfiguration`)
     - Move and label unrelated menu parameter data from engine/menus/gift_center.asm to engine/menus/labels.asm
 
 <br/>
 
 - **[August 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/018fa95ded992eda2701e3377412adbe0c05a421):** 5 Files Changed
-    - Move 'CopyNBytesFromHLToDE' from engine/menu/deck_configuration.asm to home/copy.asm
+    - Move `CopyNBytesFromHLToDE` from engine/menu/deck_configuration.asm to home/copy.asm
     - Refactor several functions to make use of the new home bank function
 
 <br/>
 
 - **[August 13, 2024](https://github.com/Sha0den/poketcg_v2/commit/855f1eab2e27b35620a5e16e965e223d4b215993):** 16 Files Changed
-    - Add 'InitTextPrinting_PrintTextNoDelay' and 'InitTextPrinting_ProcessText' functions
+    - Add `InitTextPrinting_PrintTextNoDelay` and `InitTextPrinting_ProcessText` functions
     - Edit some of the comments in home/menus.asm, home/print_text.asm, and home_process_text.asm, plus a few minor optimizations
 
 <br/>
@@ -206,7 +212,7 @@
 
 - **[August 8, 2024](https://github.com/Sha0den/poketcg_v2/commit/75be99262d8db5f3222698eb5abbe832d5993fe2):** 10 Files Changed
     - Standardize the functions responsible for playing the confirm/cancel sound effects
-    - Eliminate some unnecessary farcalls
+    - Eliminate some unnecessary uses of `farcall`
 
 <br/>
 
@@ -217,12 +223,12 @@
 <br/>
 
 - **[August 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/37fd5f8676a6a3d2583fd40baf6b1bdff03437ba):** 8 Files Changed
-    - Eliminate 8 farcalls by moving HandleAIMewtwoDeckStrategy from engine/duel/ai/common.asm to engine/duel/ai/core.asm
+    - Eliminate 8 uses of `farcall` by moving `HandleAIMewtwoDeckStrategy` from engine/duel/ai/common.asm to engine/duel/ai/core.asm
 
 <br/>
 
 - **[August 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/a7e60b10a884b3c9bed2ff089cc6c32769e50b3a):** 6 Files Changed (1 was simply deleted)
-    - Some refactoring to make use of the DoAFrames function
+    - Some refactoring to make use of the `DoAFrames` function
     - Plus some minor home bank clean up
 
 <br/>
@@ -268,12 +274,12 @@
 <br/>
 
 - **[July 25, 2024](https://github.com/Sha0den/poketcg_v2/commit/64e64318ae0c40f6aa22eea5b8f3b4c7a7931a9a):** 2 Files Changed
-    - Delete BankswitchVRAM function and replace every bank20 call/jp with the inlined code
+    - Delete the `BankswitchVRAM` function and replace every bank20 `call BankswitchVRAM` and `jp BankswitchVRAM` with the inlined code
 
 <br/>
 
 - **[July 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/a796362f634cac719181ae8cfb6ba055db1d1344):** 9 Files Changed
-    - Eliminate some redundant pushes and pops (mostly in ai files)
+    - Eliminate some redundant stack pushes and pops (mostly in ai files)
 
 <br/>
 
@@ -317,11 +323,11 @@
 <br/>
 
 - **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/fbbd4f3f7422ba5a9abcd6878e842c0aec178e02):** 19 Files Changed
-    - Delete "Func_7415", "SetNoLineSeparation", and "SetOneLineSeparation" from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
-    - Move "Func_61a1" to engine/duel/effect_functions.asm
-    - Move "ZeroObjectPositionsAndToggleOAMCopy" to home/objects.asm
-    - Move "WaitAttackAnimation" to home/duel.asm
-    - Move "SetCardListHeader" and "SetCardListInfoBoxText" to home/menus.asm
+    - Delete `Func_7415`, `SetNoLineSeparation`, and `SetOneLineSeparation` from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
+    - Move `Func_61a1` to engine/duel/effect_functions.asm
+    - Move `ZeroObjectPositionsAndToggleOAMCopy` to home/objects.asm
+    - Move `WaitAttackAnimation` to home/duel.asm
+    - Move `SetCardListHeader` and `SetCardListInfoBoxText` to home/menus.asm
 
 <br/>
 
@@ -344,7 +350,7 @@
 
 - **[June 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0e5c4e7ac27f6c5fee1642ec227dc8edf24d5a11):** 4 Files Changed
     - Try to standardize the function comments that are used in the engine/gfx files
-    - Remove several unnecessary push/pops in engine/gfx/sprite_animations.asm
+    - Remove several unnecessary stack pushes and pops in engine/gfx/sprite_animations.asm
 
 <br/>
 
@@ -356,18 +362,18 @@
 <br/>
 
 - **[June 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b85afde883a2f142ba237b4077cc256d2d4b976):** 1 File Changed
-    - Delete JPWriteByteToBGMap0 and add a slight optimization for PrintDuelResultStats
+    - Delete `JPWriteByteToBGMap0` and add a slight optimization for `PrintDuelResultStats`
 
 <br/>
 
 - **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/afee23873ee49f2ace256d0319fc28d8b95e0b96):** 6 Files Changed
-    - Delete ResetDoFrameFunction functions, and replace each call with the requisite lines of code
+    - Delete `ResetDoFrameFunction` functions, and replace each call with the requisite lines of code
 
 <br/>
 
 - **[June 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/a852ba61fb251f4076828524a41d14d2b2d616cd):** 21 Files Changed (4 of these were removed from the repository)
     - Shuffle some functions in the home bank for better organization
-    - Delete the redundant JPHblankCopyDataHLtoDE function
+    - Delete the redundant `JPHblankCopyDataHLtoDE` function
     - Add a missing colon to fix a build error from the commit below this one
 
 <br/>
@@ -384,13 +390,13 @@
 
 - **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d):** 51 Files Changed
     - Try to standardize the function comments that are used in the home bank files
-    - Also eliminate some redundant code and update a few more ld's to ldh's
+    - Also eliminate some redundant code and swap out a few more `ld` instructions with `ldh`
     - Further adjustments made in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/acf60372628574a3e4c5d03c47c1ee058f1fe5ec)
 
 <br/>
 
 - **[June 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/d289b673ae0d6f90b464b754b03736d6769da9c1):** 6 Files Changed
-    - Remove some unnecessary farcalls and use "ldh" for "ld [hff__], a"
+    - Remove some unnecessary uses of `farcall` (instead of `call`) and `ld [hff__], a` (instead of `ldh [hff__]`)
 
 <br/>
 
@@ -405,20 +411,20 @@
 <br/>
 
 - **[June 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/043ab5b4aa51c1164b2745cd367bb38ab703197e):** 40 Files Changed
-    - Eliminate most tail calls in the non-ai engine files (replacing a call ret with a fallthrough/jr/jp)
-    - Rearrange some functions in the non-ai engine files to replace some jp's with jr's or fallthroughs
+    - Eliminate most tail calls in the non-ai engine files (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
+    - Rearrange some functions in the non-ai engine files to replace some uses of `jp` with `jr` or a fallthrough
 
 <br/>
 
 - **[June 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/7ee531a00d768ea38ac6abcd5854b6a22d002f1c):** 22 Files Changed
-    - Rearrange some functions in the home bank to replace some jp's with jr's or fallthroughs
-    - Eliminate remaining home bank tail calls (replacing a call ret with a fallthrough/jr/jp)
-        - *Intentially ignored BankpopROM tail calls (that function can't be jumped to)*
+    - Rearrange some functions in the home bank to replace some uses of `jp` with `jr` or a fallthrough
+    - Eliminate remaining home bank tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
+        - *Intentially ignored `BankpopROM` tail calls (that function can't be jumped to)*
 
 <br/>
 
 - **[May 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/d9cbaa4bd90be37a382faa9cd81c903b1f92d66f):** 35 Files Changed
-    - Refactor code to minimize use of unconditional jr's
+    - Refactor code to minimize use of unconditional `jr` instructions
     - Other minor optimizations, most of which involve jumps
 
 <br/>
@@ -433,7 +439,7 @@
 
 - **[May 17, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ebd54a7d1dff4084a149f63f822959c088e70e8f):** 3 Files Changed
     - Review most of the code comments in the effect functions files
-    - Replace many jp's with jr's and fallthroughs, moving functions as necessary
+    - Replace many uses of `jp` with `jr` and fallthroughs, moving functions as necessary
     - Refactor several effect functions
 
 <br/>
@@ -450,8 +456,8 @@
 
 - **[May 8, 2024](https://github.com/Sha0den/improvedpoketcg/commit/569060cc0e7d3ffd3a56d4e556aa25c4387d5edd):** 36 Files Changed
     - Remove some redundant code
-    - Replace some jp's with jr's
-    - Replace some conditional jumps to returns with conditional returns (e.g. "ret z" instead of "jr z, .done")
+    - Use `jr` instead of `jp` for numerous shorter jumps
+    - Replace some conditional jumps to returns with conditional returns (e.g. `ret z` instead of `jr z, .done`)
     - Refactor some code in src/engine/duel/effect_functions.asm and effect_functions2.asm
     - Removed references to Sand Attack substatus (since it was merged with Smokescreen substatus)
     - *The changes to AIDecide_GustOfWind crash the game ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/4602ebf753565eeef9c9d46d8355182c05b531f7))*
@@ -464,8 +470,8 @@
 <br/>
 
 - **[May 6, 2024](https://github.com/Sha0den/improvedpoketcg/commit/4da8cb3a494cfec17fbe2de9a57e4c2e3c6924c6):** 9 Files Changed (1 is Bug Fix)
-    - Eliminate some home bank tail calls (replacing a call ret with a fallthrough/jr/jp)
-    - Replace some conditional jumps to returns with conditional returns (e.g. "ret z" instead of "jr z, .done")
+    - Eliminate some home bank tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
+    - Replace some conditional jumps to returns with conditional returns (e.g. `ret z` instead of `jr z, .done`)
     - Remove some redundant code
     - Refactor some code in src/engine/duel/effect_functions.asm
     - Add a couple of division functions to src/home/math.asm
@@ -481,7 +487,7 @@
     - Comment out most unreferenced functions and move them to a section at the end of each file
     - Unlink debug_main.asm, debug_sprites.asm, unknown.asm, unused_copyright.asm, and unused_save_validation.asm from src/main.asm and src/layout.link
     - Remove some redundant lines of code
-    - Replace some conditional jumps to returns with conditional returns (e.g. "ret z" instead of "jr z, .done")
+    - Replace some conditional jumps to returns with conditional returns (e.g. `ret z` instead of `jr z, .done`)
     - Replace various conditional jumps to set carry subroutines in the home bank with jumps to the ReturnCarry function
 
 <br/>
@@ -496,16 +502,16 @@
     - Comment out many unreferenced functions in the home bank
     - Remove src/home/ai.asm and src/home/damage.asm and unlink them from src/home.asm
     - Transfer some functions out of the home banks
-    - Eliminate some same bank tail calls (replacing a call ret with a fallthrough/jr/jp)
-    - Replace some mistaken farcalls/bank1calls with calls
+    - Eliminate some same bank tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
+    - Replace some mistaken uses of `farcalls` and `bank1call` with `call`
     - *Relocating some of the home bank functions led to some crashes ([Reversion #1](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f), [Reversion #2](https://github.com/Sha0den/improvedpoketcg/commit/c3e01965877e98d425d696233ba56e8e43fa0a91), [Reversion #3](https://github.com/Sha0den/poketcg_v2/commit/0982afa57559a557f3ddbf6ecabe43151c00f2dd))*
 
 <br/>
 
 - **[April 29, 2024](https://github.com/Sha0den/improvedpoketcg/commit/eb4497ad2cef51dbe3690b09196b2e5046ae7ab7):** 14 Files Changed
     - Remove some redundant lines of code
-    - Eliminate some same bank tail calls (replacing a call ret with a fallthrough/jr/jp)
-    - Replace some conditional jumps to returns with conditional returns (e.g. "ret z" instead of "jr z, .done")
+    - Eliminate some same bank tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
+    - Replace some conditional jumps to returns with conditional returns (e.g. `ret z` instead of `jr z, .done`)
 
 <br/>
 
@@ -562,7 +568,7 @@
     - Replace hand_cards icon with a deck_box icon I made (used to represent the active deck)
     - Also add a deck icon next to the other completed decks on the deck selection screens
     - Revise/add code comments and perform minor code optimizations in both engine/menus/deck_configuration.asm and engine/menus/deck/selection.asm
-    - Replace all uses of "ld a, [hff__]" in the repository with "ldh a, [hff__]"
+    - Replace all uses of `ld a, [hff__]` in the repository with `ldh a, [hff__]`
     - Alter the number fonts stored in gfx/fonts/full_width?/0_2_digits_kanji1.png
 
 <br/>
@@ -623,7 +629,7 @@
 <br/>
 
 - **[May 6, 2024](https://github.com/Sha0den/improvedpoketcg/commit/8b73cb2b06e28ab4d1c0b7148f1198c6a8ef4443):** 1 File Changed
-    - Change the name of the rom file produced by this repository from poketcg.gbc to poketcg_v2.gbc
+    - Change the name of the rom file produced by this repository from "poketcg.gbc" to "poketcg_v2.gbc"
 
 <br/>
 
@@ -698,7 +704,7 @@
 <br/>
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/669e9b7f0d1b8ec54eb66012354434a5cb7ca7f3):** 1 File Changed
-    - Cards can now have weakness or resistance to colorless (Use WR_COLORLESS)
+    - Cards can now have Weakness or Resistance to Colorless (Use WR_COLORLESS)
 
 
 
@@ -721,13 +727,13 @@
 <br/>
 
 - **[June 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/0350841247da35c6b11c79f88f58ca5a1f1050bb):** 1 File Changed
-    - Use "farcall" when CheckIfCanEvolveInto_BasicToStage2 is accessed by the AI Logic 2 bank
+    - Use `farcall` when `CheckIfCanEvolveInto_BasicToStage2` is accessed by the AI Logic 2 bank
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/1ffe5922e6bcbe14ffd91422067e636788b4ebd2)*
 
 <br/>
 
 - **[May 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/4602ebf753565eeef9c9d46d8355182c05b531f7):** 1 File Changed
-    - Revert a change to AIDecide_GustOfWind that was causing the game to crash
+    - Revert a change to `AIDecide_GustOfWind` that was causing the game to crash
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/569060cc0e7d3ffd3a56d4e556aa25c4387d5edd)*
 
 <br/>
@@ -758,13 +764,13 @@
 <br/>
 
 - **[May 8, 2024](https://github.com/Sha0den/improvedpoketcg/commit/c3e01965877e98d425d696233ba56e8e43fa0a91):** 2 Files Changed
-    - Put Func_3bb5 back in the home bank
+    - Put `Func_3bb5` back in the home bank
     - *This is a possible bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1)*
 
 <br/>
 
 - **[May 7, 2024](https://github.com/Sha0den/improvedpoketcg/commit/eb38cd2a5b1b9b91d3c2a83baefe7a5a29917d2f):** 4 Files Changed
-    - Put AIDoAction functions back in the home bank
+    - Put `AIDoAction` functions back in the home bank
     - *This is a major bug fix for [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/16f4361737eba3e68d5829d45276c6521bedc7d1)*
 
 <br/>
