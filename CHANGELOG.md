@@ -84,6 +84,12 @@
 
 
 ## Code Optimization
+- **August 29, 2024:** 5 Files Changed (1 was deleted)
+    - Move all palette data into a single file/bank
+    - Add comments to explain what each palette set is used for
+
+<br/>
+
 - **[August 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/0f1b7a282f8738c11b20a3ca9be823c0c7e47ba0):** 13 Files Changed
     - Comment out some unnecessary loads and make use of a new function in the home bank: 'GetCardTypeFromDeckIndex_SaveDE'
     - Remove some redundant code in the engine/duel/ai files (e.g. unnecessary push/pop)
@@ -514,7 +520,7 @@
 
 
 ## Miscellaneous Changes
-- **August 27, 2024:** 4 Files Changed
+- **[August 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/f6a9e26233234a45d170ad9776bd6e0b48f58408):** 4 Files Changed
     - Update the palettes and icons for Ronald's and the Player's duelist portraits (most changes were taken from the sequel's portraits)
     - Identify palettes that are used for all of the duelist portraits
 

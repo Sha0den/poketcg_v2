@@ -31,6 +31,7 @@ INCBIN "gfx/duel/dmg_sgb_symbols.2bpp"
 DuelCgbSymbolGraphics::
 INCBIN "gfx/duel/cgb_symbols.2bpp", $0, $808
 
+
 SECTION "Gfx 2", ROMX
 
 INCBIN "gfx/duel/cgb_symbols.2bpp", $808, $8
@@ -40,6 +41,7 @@ INCBIN "gfx/duel/other.2bpp"
 
 DuelBoxMessages::
 INCBIN "gfx/duel/box_messages.2bpp"
+
 
 SECTION "Gfx 3", ROMX
 
@@ -502,6 +504,7 @@ AnimData12::
 	frame_data 2, 8, 0, 0
 	frame_data 0, 0, 0, 0
 
+
 SECTION "Gfx 4", ROMX
 
 OverworldMapTiles::
@@ -552,9 +555,6 @@ AnimData2::
 	frame_data 6, 16, 0, 0
 	frame_data 0, 0, 0, 0
 
-Palette109::
-	db 1, %11100100
-	db 0
 
 SECTION "Gfx 5", ROMX
 
@@ -630,6 +630,7 @@ AnimData11::
 	frame_data 1, 8, 0, 0
 	frame_data 0, 0, 0, 0
 
+
 SECTION "Gfx 6", ROMX
 
 CardPopGfx::
@@ -688,6 +689,7 @@ DuelHealGfx::
 	dw $2
 	INCBIN "gfx/duel/anims/heal.2bpp"
 
+
 SECTION "Gfx 7", ROMX
 
 Laboratory1Gfx::
@@ -744,6 +746,7 @@ AnimData5::
 	frame_data 4, 16, 0, 0
 	frame_data 0, 0, 0, 0
 
+
 SECTION "Gfx 8", ROMX
 
 JapaneseTitleScreen2Gfx::
@@ -777,6 +780,7 @@ DuelWaterDropGfx::
 DuelSnowGfx::
 	dw $1
 	INCBIN "gfx/duel/anims/snow.2bpp"
+
 
 SECTION "Gfx 9", ROMX
 
@@ -899,6 +903,7 @@ OWLegendaryCardGfx::
 DuelDrainGfx::
 	dw $2
 	INCBIN "gfx/duel/anims/drain.2bpp"
+
 
 SECTION "Gfx 10", ROMX
 
@@ -1074,14 +1079,6 @@ DuelSmallStarGfx::
 	dw $4
 	INCBIN "gfx/duel/anims/small_star.2bpp"
 
-Palette117::
-	db 0
-	db 1
-
-	rgb 27, 27, 24
-	rgb 31, 31,  0
-	rgb 31,  0,  0
-	rgb  0,  8, 19
 
 SECTION "Gfx 11", ROMX
 
@@ -1289,6 +1286,7 @@ AnimData6::
 	frame_data 6, 16, 0, 0
 	frame_data 0, 0, 0, 0
 
+
 SECTION "Gfx 12", ROMX
 
 DuelBallGfx::
@@ -1371,53 +1369,26 @@ OWMintGfx::
 	dw $14
 	INCBIN "gfx/overworld_sprites/mint.2bpp"
 
-; applied to Mint's duelist portrait
-Palette161::
-	db 0
-	db 1
-
-	rgb 31, 28, 23 ; light peach, used for Mint's skin and highlights
-	rgb 27, 16,  9 ; light brown, used for Mint's hair and shading
-	rgb  0, 12, 31 ; blue, used for Mint's clothing and the background
-	rgb  5,  0,  0 ; dark brown, used for shading Mint's hair and outlines
-
 
 SECTION "Anims 1", ROMX
 	INCLUDE "data/duel/animations/anims1.asm"
 
+
 SECTION "Anims 2", ROMX
 	INCLUDE "data/duel/animations/anims2.asm"
+
 
 SECTION "Anims 3", ROMX
 	INCLUDE "data/duel/animations/anims3.asm"
 
-Palette31::
-	db 1, %11010010
-	db 1
-
-	rgb  0,  0,  0
-	rgb 31, 31,  7
-	rgb 31, 24,  6
-	rgb 11,  3,  0
-
-; applied to Mark's duelist portrait
-Palette119::
-	db 0
-	db 1
-
-	rgb 31, 28, 23 ; light peach, used for Mark's skin/T-shirt and highlights
-	rgb 28, 16, 12 ; dark peach, used for shading Mark's skin
-	rgb 28,  4,  8 ; red, used for Mark's bandana/outer shirt and the background
-	rgb  0,  0,  8 ; blue/black, used for Mark's hair and outlines
 
 SECTION "Anims 4", ROMX
 	INCLUDE "data/duel/animations/anims4.asm"
 
-SECTION "Palettes1", ROMX
+
+SECTION "Palettes", ROMX
 	INCLUDE "data/palettes1.asm"
 
-SECTION "Palettes2", ROMX
-	INCLUDE "data/palettes2.asm"
 
 SECTION "Card Gfx 1", ROMX
 
