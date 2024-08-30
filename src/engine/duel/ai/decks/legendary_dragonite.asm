@@ -117,7 +117,7 @@ AIDoTurn_LegendaryDragonite:
 	call CreateEnergyCardListFromHand
 	jr c, .skip_energy_attach_1
 	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	or a
 	jr nz, .attach_normally
 	xor a

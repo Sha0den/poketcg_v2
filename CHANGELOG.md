@@ -84,7 +84,13 @@
 
 
 ## Code Optimization
-- **August 30, 2024:** 2 Files Changed
+- **August 30, 2024:** 13 Files Changed
+    - Update comments and labels for the 7 pairs of identical functions in engine/duel/ai/core.asm and engine/duel/ai/common.asm (and add an 8th)
+    - Shuffle some data around in both of these files
+
+<br/>
+
+- **[August 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/8335d834594459e06b086ecb5d5b799d71436bb0):** 2 Files Changed
     - Consolidate some identical functions in engine/duel/ai/trainer_cards.asm
 
 <br/>

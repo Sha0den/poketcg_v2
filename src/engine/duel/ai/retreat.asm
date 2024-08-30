@@ -533,7 +533,7 @@ AIDecideBenchPokemonToSwitchTo:
 	ld a, [wSelectedAttack]
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	srl a
 	call AddToAIScore
 
@@ -678,7 +678,7 @@ AIDecideBenchPokemonToSwitchTo:
 	ld b, a
 	ld a, 4
 	call CalculateBDividedByA_Bank5
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	call AddToAIScore
 
 ; raise AI score if
@@ -759,7 +759,7 @@ AIDecideBenchPokemonToSwitchTo:
 	ld a, [wSelectedAttack]
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	inc a
 	jp AddToAIScore
 
@@ -797,7 +797,7 @@ AITryToRetreat:
 	or a
 	jr nz, .check_id
 	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	push af
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a

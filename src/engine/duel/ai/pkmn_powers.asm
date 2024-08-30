@@ -231,7 +231,7 @@ HandleAIEnergyTrans:
 	call GetPlayAreaCardRetreatCost
 	ld b, a
 	ld e, PLAY_AREA_ARENA
-	farcall CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank8
 	cp b
 	jr nc, .retreat_false ; return if enough to retreat
 
@@ -830,7 +830,7 @@ HandleAIStrangeBehavior:
 	pop af
 
 ; loop counters chosen to transfer and use Pkmn Power
-	call ConvertHPToCounters
+	call ConvertHPToDamageCounters_Bank8
 	ld e, a
 .loop_counters
 	; 30 frame delay
@@ -1078,7 +1078,7 @@ HandleAIDamageSwap:
 	or a
 	ret z ; return if no damage
 
-	call ConvertHPToCounters
+	call ConvertHPToDamageCounters_Bank8
 	ld [wce06], a
 	ld a, ALAKAZAM
 	ld b, PLAY_AREA_BENCH_1
@@ -1192,7 +1192,7 @@ HandleAIDamageSwap:
 	ld d, c ; store damage
 	push de
 	ld e, c
-	farcall CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank8
 	pop de
 	or a
 	jr nz, .next_play_area ; ignore cards with attached energy

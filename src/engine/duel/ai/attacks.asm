@@ -253,7 +253,7 @@ GetAIScoreOfAttack:
 	ld [wTempAI], a
 	or a
 	jr z, .no_damage
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	call AddToAIScore
 	jr .check_recoil
 .no_damage
@@ -291,7 +291,7 @@ GetAIScoreOfAttack:
 	ld [wDamage], a
 	call ApplyDamageModifiers_DamageToSelf
 	ld a, e
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	call SubFromAIScore
 
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
@@ -511,7 +511,7 @@ GetAIScoreOfAttack:
 	cp 1
 	jr z, .tally_heal_score
 	ld a, [wTempAI]
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	ld b, a
 	ld a, [wLoadedAttackEffectParam]
 	cp 3
@@ -522,7 +522,7 @@ GetAIScoreOfAttack:
 .asm_16cec
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	cp b
 	jr c, .tally_heal_score
 	ld a, b
@@ -530,7 +530,7 @@ GetAIScoreOfAttack:
 	push af
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	pop bc
 	cp b ; wLoadedAttackEffectParam
 	jr c, .add_heal_score

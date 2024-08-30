@@ -314,7 +314,7 @@ AIDecideEvolution:
 	jr z, .check_mysterious_fossil
 	srl a
 	srl a
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	call SubFromAIScore
 
 ; if is Mysterious Fossil or
@@ -421,7 +421,7 @@ AIDecideSpecialEvolutions:
 .charmeleon
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	cp 3
 	jr c, .not_enough_energy
 	push af
@@ -443,7 +443,7 @@ AIDecideSpecialEvolutions:
 	or a ; active card
 	ret z
 	ld e, a
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	cp 2
 	ret c
 	ld a, 3

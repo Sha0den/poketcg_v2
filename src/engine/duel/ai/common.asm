@@ -233,7 +233,7 @@ PickTwoAttachedEnergyCards:
 	call CreateArenaOrBenchEnergyCardList
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
-	farcall CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank8
 	cp 2
 	jr c, PickAttachedEnergyCardToRemove.no_energy
 
@@ -327,6 +327,41 @@ PickTwoAttachedEnergyCards:
 	ret
 
 
+; returns in a the number of Energy cards attached to Pokémon
+; at the play area location in e. assumes that Colorless are paired,
+; meaning that every Colorless Energy card provides 2 Colorless Energy.
+; preserves all registers except af
+; input:
+;	e = play area location offset to check (PLAY_AREA_* constant)
+; output:
+;	a = number of Energy cards attached to the Pokémon in the given location
+CountNumberOfEnergyCardsAttached_Bank8:
+	call GetPlayAreaCardAttachedEnergies
+;	ld a, [wTotalAttachedEnergies] ; already loaded
+	or a
+	ret z
+
+	xor a
+	push hl
+	push bc
+	ld b, NUM_COLORED_TYPES
+	ld hl, wAttachedEnergies
+; sum all of the attached Energy cards
+.loop
+	add [hl]
+	inc hl
+	dec b
+	jr nz, .loop
+
+	ld b, [hl]
+	srl b
+; counts Colorless and halves it
+	add b
+	pop bc
+	pop hl
+	ret
+
+
 ; copies an $ff-terminated list from hl to de
 ; preserves bc
 ; input:
@@ -341,7 +376,13 @@ CopyListWithFFTerminatorFromHLToDE_Bank8:
 	jr CopyListWithFFTerminatorFromHLToDE_Bank8
 
 
-; zeroes a bytes starting at hl
+; zeroes a bytes starting from hl.
+; this function is identical to 'ClearNBytesFromHL' in Bank $2,
+; as well as ClearMemory_Bank5' and 'ClearMemory_Bank6'.
+; preserves all registers
+; input:
+;	a = number of bytes to clear
+;	hl = where to begin erasing
 ClearMemory_Bank8:
 	push af
 	push bc
@@ -356,6 +397,7 @@ ClearMemory_Bank8:
 	pop bc
 	pop af
 	ret
+
 
 ; counts number of energy cards found in hand
 ; and outputs result in a
@@ -376,25 +418,31 @@ CountOppEnergyCardsInHand:
 	or a
 	ret
 
-; converts HP in a to number of equivalent damage counters
+
+; converts an HP value or amount of damage to the number of equivalent damage counters
+; preserves all registers except af
 ; input:
-;	a = HP
+;	a = number to convert to damage counters
 ; output:
 ;	a = number of damage counters
-ConvertHPToCounters:
+ConvertHPToDamageCounters_Bank8:
 	push bc
 	ld c, 0
 .loop
 	sub 10
-	jr c, .carry
+	jr c, .done
 	inc c
 	jr .loop
-.carry
+.done
 	ld a, c
 	pop bc
 	ret
 
+
 ; calculates floor(hl / 10)
+; preserves bc and de
+; input:
+;	hl = number
 CalculateWordTensDigit:
 	push bc
 	push de
@@ -410,12 +458,19 @@ CalculateWordTensDigit:
 	pop bc
 	ret
 
-; returns in a division of b by a
+
+; returns in a the division of b by a, rounded down
+; preserves all registers except af
+; input:
+;	b = dividend
+;	a = divisor
+; output:
+;	a = quotient (without remainder)
 CalculateBDividedByA_Bank8:
 	push bc
 	ld c, a
-	ld a, b
-	ld b, c
+	ld a, b ; a = input b
+	ld b, c ; b = input a
 	ld c, 0
 .loop
 	sub b
@@ -427,17 +482,17 @@ CalculateBDividedByA_Bank8:
 	pop bc
 	ret
 
-; returns in a the deck index of the first
-; instance of card with ID equal to the ID in e
-; in card location a.
-; returns carry if found.
+
 ; input:
-;   a = CARD_LOCATION_*
+;   a = CARD_LOCATION_* constant
 ;   e = card ID to look for
-LookForCardIDInLocation:
+; output:
+;	a & e = deck index of a matching card, if any
+;	carry = set:  if the given card was found in the given location
+LookForCardIDInLocation_Bank8:
 	ld b, a
 	ld c, e
-;	lb de, $00, 0 ; d is never used
+;	lb de, 0, 0 ; d is never used
 	ld e, 0
 .loop
 	ld a, DUELVARS_CARD_LOCATIONS
@@ -461,18 +516,19 @@ LookForCardIDInLocation:
 ; not found
 	or a
 	ret
+
 .found
 	ld a, e
 	scf
 	ret
 
-; return carry if card ID loaded in a is found in hand
-; and outputs in a the deck index of that card
+
+; checks the AI's hand for a specific card
 ; input:
 ;	a = card ID
 ; output:
-;	a = card deck index, if found
-;	carry set if found
+;	a = deck index for a copy of the given card in the turn holder's hand ($ff if none)
+;	carry = set:  if the given card ID was found in the turn holder's hand
 LookForCardIDInHandList_Bank8:
 	ld [wTempCardIDToLook], a
 	call CreateHandCardList
@@ -482,7 +538,6 @@ LookForCardIDInHandList_Bank8:
 	ld a, [hli]
 	cp $ff
 	ret z
-
 	ldh [hTempCardIndex_ff98], a
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld b, a
@@ -493,6 +548,64 @@ LookForCardIDInHandList_Bank8:
 	ldh a, [hTempCardIndex_ff98]
 	scf
 	ret
+
+
+; checks the AI's play area for a specific card.
+; preserves de
+; input:
+;	a = card ID
+;	b = play area location offset to start with (PLAY_AREA_* constant)
+; output:
+;	a = the given card's play area location offset (first copy, more might exist)
+;	carry = set:  if the given card ID was found in the turn holder's play area
+LookForCardIDInPlayArea_Bank8:
+	ld [wTempCardIDToLook], a
+.loop
+	ld a, DUELVARS_ARENA_CARD
+	add b
+	get_turn_duelist_var
+	cp $ff
+	ret z
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld c, a
+	ld a, [wTempCardIDToLook]
+	cp c
+	jr z, .found
+	inc b
+	ld a, MAX_PLAY_AREA_POKEMON
+	cp b
+	jr nz, .loop
+
+	ld b, $ff
+	or a
+	ret
+
+.found
+	ld a, b
+	scf
+	ret
+
+
+; checks the AI's hand and play area for a specific card.
+; input:
+;	a = card ID
+; output:
+;	carry = set:  if the given card ID was found in the turn holder's hand or
+;	              if the given card ID was found in the turn holder's play area
+LookForCardIDInHandAndPlayArea:
+	ld b, a
+	push bc
+	call LookForCardIDInHandList_Bank8
+	pop bc
+	ret c
+
+	ld a, b
+	ld b, PLAY_AREA_ARENA
+	call LookForCardIDInPlayArea_Bank8
+	ret c
+	or a
+	ret
+
 
 ; searches in deck for card ID 1 in a, and
 ; if found, searches in Hand/Play Area for card ID 2 in b, and
@@ -516,7 +629,7 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 ; look for the card ID 1 in deck
 	ld e, a
 	ld a, CARD_LOCATION_DECK
-	call LookForCardIDInLocation
+	call LookForCardIDInLocation_Bank8
 	ret nc
 
 ; was found, store its deck index in memory
@@ -543,24 +656,6 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 	or a
 	ret
 
-; returns carry if card ID in a
-; is found in Play Area or in hand
-; input:
-;	a = card ID
-LookForCardIDInHandAndPlayArea:
-	ld b, a
-	push bc
-	call LookForCardIDInHandList_Bank8
-	pop bc
-	ret c
-
-	ld a, b
-	ld b, PLAY_AREA_ARENA
-	call LookForCardIDInPlayArea_Bank8
-	ret c
-	or a
-	ret
-
 ; searches in deck for card ID 1 in a, and
 ; if found, searches in Hand Area for card ID 2 in b, and
 ; if found, searches for card ID 1 in Hand/Play Area, and
@@ -583,7 +678,7 @@ LookForCardIDInDeck_GivenCardIDInHand:
 ; look for the card ID 1 in deck
 	ld e, a
 	ld a, CARD_LOCATION_DECK
-	call LookForCardIDInLocation
+	call LookForCardIDInLocation_Bank8
 	ret nc
 
 ; was found, store its deck index in memory
@@ -607,43 +702,6 @@ LookForCardIDInDeck_GivenCardIDInHand:
 
 .no_carry
 	or a
-	ret
-
-; returns carry if card ID in a
-; is found in Play Area, starting with
-; location in b
-; input:
-;	a = card ID
-;	b = PLAY_AREA_* to start with
-; output:
-;	a = PLAY_AREA_* of found card
-;	carry set if found
-LookForCardIDInPlayArea_Bank8:
-	ld [wTempCardIDToLook], a
-.loop
-	ld a, DUELVARS_ARENA_CARD
-	add b
-	get_turn_duelist_var
-	cp $ff
-	ret z
-
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld c, a
-	ld a, [wTempCardIDToLook]
-	cp c
-	jr z, .is_same
-
-	inc b
-	ld a, MAX_PLAY_AREA_POKEMON
-	cp b
-	jr nz, .loop
-	ld b, $ff
-	or a
-	ret
-
-.is_same
-	ld a, b
-	scf
 	ret
 
 ; runs through list avoiding card in e.
@@ -746,7 +804,7 @@ LookForCardIDToTradeWithDifferentHandCard:
 	ld a, [wTempAI]
 	ld e, a
 	ld a, CARD_LOCATION_DECK
-	call LookForCardIDInLocation
+	call LookForCardIDInLocation_Bank8
 	jr nc, .no_carry
 
 ; store its deck index

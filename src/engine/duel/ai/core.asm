@@ -1,3 +1,14 @@
+INCLUDE "engine/duel/ai/damage_calculation.asm"
+INCLUDE "engine/duel/ai/deck_ai.asm"
+INCLUDE "engine/duel/ai/init.asm"
+INCLUDE "engine/duel/ai/retreat.asm"
+INCLUDE "engine/duel/ai/hand_pokemon.asm"
+INCLUDE "engine/duel/ai/energy.asm"
+INCLUDE "engine/duel/ai/attacks.asm"
+INCLUDE "engine/duel/ai/special_attacks.asm"
+INCLUDE "engine/duel/ai/boss_deck_set_up.asm"
+
+
 ; returns carry if damage dealt from any of
 ; a card's attacks KOs defending Pokémon
 ; outputs index of the attack that KOs
@@ -689,16 +700,56 @@ CreateEnergyCardListFromHand:
 	ccf
 	ret
 
-; looks for card ID in hand and
-; sets carry if a card wasn't found
-; as opposed to LookForCardIDInHandList_Bank5
-; this function doesn't create a list
-; and preserves hl, de and bc
+
+; input:
+;   a = CARD_LOCATION_* constant
+;   e = card ID to look for
+; output:
+;	a & e = deck index of a matching card, if any
+;	carry = set:  if the given card was found in the given location
+LookForCardIDInLocation_Bank5:
+	ld b, a
+	ld c, e
+;	lb de, 0, 0 ; d is never used
+	ld e, 0
+.loop
+	ld a, DUELVARS_CARD_LOCATIONS
+	add e
+	get_turn_duelist_var
+	cp b
+	jr nz, .next
+	ld a, e
+	push de
+	call GetCardIDFromDeckIndex
+	ld a, e
+	pop de
+	cp c
+	jr z, .found
+.next
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop
+
+; not found
+	or a
+	ret
+
+.found
+	ld a, e
+	scf
+	ret
+
+
+; checks the AI's hand for a specific card.
+; unlike 'LookForCardIDInHandList_Bank5', this function doesn't create a list,
+; the conditions for carry are reversed, and it preserves bc, de, and hl.
+; preserves all registers except af
 ; input:
 ;	a = card ID
 ; output:
-;	a = card deck index, if found
-;	carry set if NOT found
+;	a = deck index for a copy of the given card in the turn holder's hand ($ff if none)
+;	carry = set:  if the given card was NOT found in the hand
 LookForCardIDInHand:
 	push hl
 	push de
@@ -736,23 +787,15 @@ LookForCardIDInHand:
 	or a
 	ret
 
-INCLUDE "engine/duel/ai/damage_calculation.asm"
 
-AIProcessHandTrainerCards:
-	farcall _AIProcessHandTrainerCards
-	ret
-
-INCLUDE "engine/duel/ai/deck_ai.asm"
-
-; return carry if card ID loaded in a is found in hand
-; and outputs in a the deck index of that card
-; as opposed to LookForCardIDInHand, this function
-; creates a list in wDuelTempList
+; checks the AI's hand for a specific card.
+; unlike 'LookForCardIDInHand', this function creates a list in wDuelTempList,
+; the conditions for carry are reversed, and none of the registers are preserved.
 ; input:
 ;	a = card ID
 ; output:
-;	a = card deck index, if found
-;	carry set if found
+;	a = deck index for a copy of the given card in the turn holder's hand ($ff if none)
+;	carry = set:  if the given card ID was found in the turn holder's hand
 LookForCardIDInHandList_Bank5:
 	ld [wTempCardIDToLook], a
 	call CreateHandCardList
@@ -773,18 +816,17 @@ LookForCardIDInHandList_Bank5:
 	scf
 	ret
 
-; returns carry if card ID in a
-; is found in Play Area, starting with
-; location in b
+
+; checks the AI's play area for a specific card.
+; preserves de
 ; input:
 ;	a = card ID
-;	b = PLAY_AREA_* to start with
+;	b = play area location offset to start with (PLAY_AREA_* constant)
 ; output:
-;	a = PLAY_AREA_* of found card
-;	carry set if found
+;	a = the given card's play area location offset (first copy, more might exist)
+;	carry = set:  if the given card ID was found in the turn holder's play area
 LookForCardIDInPlayArea_Bank5:
 	ld [wTempCardIDToLook], a
-
 .loop
 	ld a, DUELVARS_ARENA_CARD
 	add b
@@ -804,6 +846,7 @@ LookForCardIDInPlayArea_Bank5:
 	ld b, $ff
 	or a
 	ret
+
 .found
 	ld a, b
 	scf
@@ -844,7 +887,6 @@ AIAttachEnergyInHandToCardInBench:
 	ld b, PLAY_AREA_BENCH_1
 	jr AIAttachEnergyInHandToCardInPlayArea.attach
 
-INCLUDE "engine/duel/ai/init.asm"
 
 ; load selected attack from Pokémon in hTempPlayAreaLocation_ff9d,
 ; gets an energy card to discard and subsequently
@@ -909,7 +951,28 @@ CheckEnergyNeededForAttackAfterDiscard:
 	dec [hl]
 	jp CalculateEnergyNeededForAttack
 
-; zeroes a bytes starting at hl
+
+; copies an $ff-terminated list from hl to de
+; preserves bc
+; input:
+;	hl = address from which to start copying the data
+;	de = where to copy the data
+CopyListWithFFTerminatorFromHLToDE_Bank5:
+	ld a, [hli]
+	ld [de], a
+	cp $ff
+	ret z
+	inc de
+	jr CopyListWithFFTerminatorFromHLToDE_Bank5
+
+
+; zeroes a bytes starting from hl.
+; this function is identical to 'ClearNBytesFromHL' in Bank $2,
+; as well as ClearMemory_Bank6' and 'ClearMemory_Bank8'.
+; preserves all registers
+; input:
+;	a = number of bytes to clear
+;	hl = where to begin erasing
 ClearMemory_Bank5:
 	push af
 	push bc
@@ -925,8 +988,14 @@ ClearMemory_Bank5:
 	pop af
 	ret
 
-; returns in a the tens digit of value in a
-CalculateByteTensDigit:
+
+; converts an HP value or amount of damage to the number of equivalent damage counters
+; preserves all registers except af
+; input:
+;	a = number to convert to damage counters
+; output:
+;	a = number of damage counters
+ConvertHPToDamageCounters_Bank5:
 	push bc
 	ld c, 0
 .loop
@@ -939,16 +1008,19 @@ CalculateByteTensDigit:
 	pop bc
 	ret
 
-; returns in a the result of
-; dividing b by a, rounded down
+
+; returns in a the division of b by a, rounded down
+; preserves all registers except af
 ; input:
-;	a = divisor
 ;	b = dividend
+;	a = divisor
+; output:
+;	a = quotient (without remainder)
 CalculateBDividedByA_Bank5:
 	push bc
 	ld c, a
-	ld a, b
-	ld b, c
+	ld a, b ; a = input b
+	ld b, c ; b = input a
 	ld c, 0
 .loop
 	sub b
@@ -960,16 +1032,16 @@ CalculateBDividedByA_Bank5:
 	pop bc
 	ret
 
-; returns in a the number of energy cards attached
-; to Pokémon in location held by e
-; this assumes that colorless are paired so
-; that one colorless energy card provides 2 colorless energy
+
+; returns in a the number of Energy cards attached to Pokémon
+; at the play area location in e. assumes that Colorless are paired,
+; meaning that every Colorless Energy card provides 2 Colorless Energy.
 ; preserves all registers except af
 ; input:
-;	e = location to check, i.e. PLAY_AREA_*
+;	e = play area location offset to check (PLAY_AREA_* constant)
 ; output:
-;	a = number of energy cards attached
-CountNumberOfEnergyCardsAttached:
+;	a = number of Energy cards attached to the Pokémon in the given location
+CountNumberOfEnergyCardsAttached_Bank5:
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
@@ -980,7 +1052,7 @@ CountNumberOfEnergyCardsAttached:
 	push bc
 	ld b, NUM_COLORED_TYPES
 	ld hl, wAttachedEnergies
-; sum all the attached energies
+; sum all of the attached Energy cards
 .loop
 	add [hl]
 	inc hl
@@ -989,47 +1061,12 @@ CountNumberOfEnergyCardsAttached:
 
 	ld b, [hl]
 	srl b
-; counts colorless ad halves it
+; counts Colorless and halves it
 	add b
 	pop bc
 	pop hl
 	ret
 
-; returns carry if any card with ID in e is found
-; in card location in a
-; input:
-;	a = card location to look in;
-;	e = card ID to look for.
-; output:
-;	a = deck index of card found, if any
-CheckIfAnyCardIDinLocation:
-	ld b, a
-	ld c, e
-	lb de, 0, 0
-.loop
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
-	get_turn_duelist_var
-	cp b
-	jr nz, .next
-	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
-	cp c
-	jr z, .set_carry
-.next
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop
-	or a
-	ret
-.set_carry
-	ld a, e
-	scf
-	ret
 
 ; counts total number of energy cards in opponent's hand
 ; plus all the cards attached in Turn Duelist's Play Area.
@@ -1060,7 +1097,7 @@ CountOppEnergyCardsInHandAndAttached:
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 .loop_play_area
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	ld hl, wTempAI
 	add [hl]
 	ld [hl], a
@@ -1188,22 +1225,6 @@ TrySetUpBossStartingPlayArea:
 	or a
 	ret
 
-INCLUDE "engine/duel/ai/retreat.asm"
-
-; copies an $ff-terminated list from hl to de
-; preserves bc
-; input:
-;	hl = list to copy
-;	de = where to copy
-CopyListWithFFTerminatorFromHLToDE_Bank5:
-	ld a, [hli]
-	ld [de], a
-	cp $ff
-	ret z
-	inc de
-	jr CopyListWithFFTerminatorFromHLToDE_Bank5
-
-INCLUDE "engine/duel/ai/hand_pokemon.asm"
 
 ; check if player's active Pokémon is Mr Mime
 ; if it isn't, set carry
@@ -1691,11 +1712,6 @@ CheckForEvolutionInDeck:
 	scf
 	ret
 
-INCLUDE "engine/duel/ai/energy.asm"
-
-INCLUDE "engine/duel/ai/attacks.asm"
-
-INCLUDE "engine/duel/ai/special_attacks.asm"
 
 ; checks in other Play Area for non-basic cards.
 ; afterwards, that card is checked for damage,
@@ -1944,12 +1960,12 @@ AISelectSpecialAttackParameters:
 ; search for Psychic energy cards in Discard Pile
 	ld e, PSYCHIC_ENERGY
 	ld a, CARD_LOCATION_DISCARD_PILE
-	call CheckIfAnyCardIDinLocation
+	call LookForCardIDInLocation_Bank5
 	ldh [hTemp_ffa0], a
 	farcall CreateEnergyCardListFromDiscardPile_AllEnergy
 
 ; find any energy card different from
-; the one found by CheckIfAnyCardIDinLocation.
+; the one found by LookForCardIDInLocation_Bank5.
 ; since using this attack requires a Psychic energy card,
 ; and another one is in hTemp_ffa0,
 ; then any other energy card would account
@@ -1996,7 +2012,7 @@ AISelectSpecialAttackParameters:
 	ld e, LIGHTNING_ENERGY
 
 ; if none were found in Deck, return carry...
-	call CheckIfAnyCardIDinLocation
+	call LookForCardIDInLocation_Bank5
 	ldh [hTemp_ffa0], a
 	jr nc, .no_carry
 
@@ -2198,7 +2214,6 @@ CheckCardEvolutionInHandOrDeck:
 	scf
 	ret
 
-INCLUDE "engine/duel/ai/boss_deck_set_up.asm"
 
 ; returns carry if Pokemon at PLAY_AREA* in a
 ; can damage defending Pokémon with any of its attacks
@@ -2626,9 +2641,9 @@ Func_17583:
 	push hl
 	push de
 	call GetCardDamageAndMaxHP
-	call CalculateByteTensDigit
+	call ConvertHPToDamageCounters_Bank5
 	ld b, a
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	sla a
 	add $80
 	sub b
@@ -2715,6 +2730,11 @@ HandleAIAntiMewtwoDeckStrategy:
 	ret
 
 
+AIProcessHandTrainerCards:
+	farcall _AIProcessHandTrainerCards
+	ret
+
+
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
@@ -2761,7 +2781,7 @@ HandleAIAntiMewtwoDeckStrategy:
 ;	call LookForCardIDInPlayArea_Bank5
 ;	jr nc, .next_2
 ;	ld e, a
-;	call CountNumberOfEnergyCardsAttached
+;	call CountNumberOfEnergyCardsAttached_Bank5
 ;	pop hl
 ;	ld b, [hl]
 ;	cp b
@@ -2810,7 +2830,7 @@ HandleAIAntiMewtwoDeckStrategy:
 ;	call LookForCardIDInPlayArea_Bank5
 ;	jr nc, .next ; skip if not found in Play Area
 ;	ld e, a
-;	call CountNumberOfEnergyCardsAttached
+;	call CountNumberOfEnergyCardsAttached_Bank5
 ;	pop hl
 ;	cp [hl]
 ;	inc hl

@@ -126,7 +126,7 @@ AIDoTurn_LegendaryZapdos:
 	call CreateEnergyCardListFromHand
 	jr c, .skip_energy_attach
 	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached
+	call CountNumberOfEnergyCardsAttached_Bank5
 	or a
 	jr nz, .attach_normally
 	xor a ; PLAY_AREA_ARENA
