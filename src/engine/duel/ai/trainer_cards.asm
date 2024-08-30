@@ -149,6 +149,47 @@ _AIProcessHandTrainerCards:
 	pop hl
 	jp .loop_hand
 
+
+; plays a Trainer card that doesn't require any input variables
+AIPlay_TrainerCard_NoVars:
+	ld a, [wAITrainerCardToPlay]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
+	bank1call AIMakeDecision
+	ret
+
+
+; plays a Trainer card that requires 1 input variable
+; input:
+;	[wAITrainerCardParameter] = input for the Trainer card's effect commands (stored in hTemp_ffa0)
+AIPlay_TrainerCard_OneVar:
+	ld a, [wAITrainerCardToPlay]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, [wAITrainerCardParameter]
+	ldh [hTemp_ffa0], a
+	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
+	bank1call AIMakeDecision
+	ret
+
+
+; plays a Trainer card that requires 2 input variables
+; input:
+;	[wAITrainerCardParameter] = input for the Trainer card's effect commands (stored in hTemp_ffa0)
+;	[wce1a] = input for the Trainer card's effect commands (stored in hTempPlayAreaLocation_ffa1)
+AIPlay_TrainerCard_TwoVars:
+	ld a, [wAITrainerCardToPlay]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, [wAITrainerCardParameter]
+	ldh [hTemp_ffa0], a
+	ld a, [wce1a]
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
+	bank1call AIMakeDecision
+	ret
+
+
+
+
 ; makes AI use Potion card.
 AIPlay_Potion:
 	ld a, [wAITrainerCardToPlay]
@@ -165,6 +206,7 @@ AIPlay_Potion:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; if AI doesn't decide to retreat this card,
 ; check if defending Pokémon can KO active card
@@ -208,6 +250,7 @@ AIDecide_Potion1:
 .no_carry
 	or a
 	ret
+
 
 ; finds a card in Play Area to use Potion on.
 ; output:
@@ -332,6 +375,9 @@ AIDecide_Potion2:
 	scf
 	ret
 
+
+
+
 ; makes AI use Super Potion card.
 AIPlay_SuperPotion:
 	ld a, [wAITrainerCardToPlay]
@@ -351,6 +397,7 @@ AIPlay_SuperPotion:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; if AI doesn't decide to retreat this card and card has
 ; any energy cards attached, check if defending Pokémon can KO
@@ -404,6 +451,7 @@ AIDecide_SuperPotion1:
 	ret z
 	scf
 	ret
+
 
 ; finds a card in Play Area to use Super Potion on.
 ; output:
@@ -550,6 +598,9 @@ AIDecide_SuperPotion2:
 	or a
 	ret
 
+
+
+
 AIPlay_Defender:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
@@ -558,6 +609,7 @@ AIPlay_Defender:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; returns carry if using Defender can prevent a KO
 ; by the defending Pokémon.
@@ -644,6 +696,7 @@ AIDecide_Defender1:
 	or a
 	ret
 
+
 ; return carry if using Defender prevents Pokémon
 ; from being knocked out by an attack with recoil.
 AIDecide_Defender2:
@@ -716,6 +769,9 @@ AIDecide_Defender2:
 	scf
 	ret
 
+
+
+
 AIPlay_Pluspower:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_USED_PLUSPOWER
@@ -727,6 +783,7 @@ AIPlay_Pluspower:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; returns carry if using a Pluspower can KO defending Pokémon
 ; if active card cannot KO without the boost.
@@ -842,6 +899,7 @@ AIDecide_Pluspower1:
 	scf
 	ret
 
+
 ; returns carry 7/10 of the time
 ; if selected attack is useable, can't KO without Pluspower boost
 ; can damage Mr. Mime even with Pluspower boost
@@ -913,6 +971,9 @@ AIDecide_Pluspower2:
 	cp 3
 	ret
 
+
+
+
 AIPlay_Switch:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_USED_SWITCH
@@ -926,6 +987,7 @@ AIPlay_Switch:
 	xor a
 	ld [wAIRetreatScore], a
 	ret
+
 
 ; returns carry if the active card has less energy cards
 ; than the retreat cost and if AI can't play an energy
@@ -976,6 +1038,9 @@ AIDecide_Switch:
 	ccf
 	ret
 
+
+
+
 AIPlay_GustOfWind:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_USED_GUST_OF_WIND
@@ -987,6 +1052,7 @@ AIPlay_GustOfWind:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 AIDecide_GustOfWind:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -1355,12 +1421,11 @@ AIDecide_GustOfWind:
 	scf
 	ret
 
-AIPlay_Bill:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Bill uses 'AIPlay_TrainerCard_NoVars'
+
 
 ; return carry if cards in deck > 9
 AIDecide_Bill:
@@ -1369,16 +1434,11 @@ AIDecide_Bill:
 	cp DECK_SIZE - 9
 	ret
 
-AIPlay_EnergyRemoval:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, [wce1a]
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Energy Removal uses 'AIPlay_TrainerCard_TwoVars'
+
 
 ; picks an energy card in the player's Play Area to remove
 AIDecide_EnergyRemoval:
@@ -1529,6 +1589,9 @@ AIDecide_EnergyRemoval:
 	ccf
 	ret
 
+
+
+
 AIPlay_SuperEnergyRemoval:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
@@ -1547,6 +1610,7 @@ AIPlay_SuperEnergyRemoval:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; picks two energy cards in the player's Play Area to remove
 AIDecide_SuperEnergyRemoval:
@@ -1762,6 +1826,11 @@ AIDecide_SuperEnergyRemoval:
 	scf
 	ret
 
+
+
+
+; this function is almost identical to 'AIPlay_TrainerCard_TwoVars',
+; but the variables are swapped.
 AIPlay_PokemonBreeder:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
@@ -1772,6 +1841,7 @@ AIPlay_PokemonBreeder:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 AIDecide_PokemonBreeder:
 	call IsPrehistoricPowerActive
@@ -2113,6 +2183,9 @@ AIDecide_PokemonBreeder:
 	pop af
 	ret
 
+
+
+
 AIPlay_ProfessorOak:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_USED_PROFESSOR_OAK | AI_FLAG_MODIFIED_HAND
@@ -2122,6 +2195,7 @@ AIPlay_ProfessorOak:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; sets carry if AI determines a score of playing
 ; Professor Oak is over a certain threshold.
@@ -2423,6 +2497,9 @@ AIDecide_ProfessorOak:
 	get_turn_duelist_var
 	jp .check_cards_deck
 
+
+
+
 AIPlay_EnergyRetrieval:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_MODIFIED_HAND
@@ -2443,6 +2520,7 @@ AIPlay_EnergyRetrieval:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; checks whether AI can play Energy Retrieval and
 ; picks the energy cards from the discard pile,
@@ -2573,6 +2651,7 @@ AIDecide_EnergyRetrieval:
 	or a
 	ret
 
+
 ; remove an element from the list
 ; and shortens it accordingly
 ; input:
@@ -2594,6 +2673,7 @@ RemoveCardFromList:
 	pop hl
 	pop de
 	ret
+
 
 ; finds duplicates in card list in hl.
 ; if a duplicate of Pokemon cards are found, return in
@@ -2669,6 +2749,9 @@ FindDuplicateCards:
 	or a
 	ret
 
+
+
+
 AIPlay_SuperEnergyRetrieval:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_MODIFIED_HAND
@@ -2699,6 +2782,7 @@ AIPlay_SuperEnergyRetrieval:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 AIDecide_SuperEnergyRetrieval:
 ; return no carry if no cards in hand
@@ -2875,6 +2959,7 @@ AIDecide_SuperEnergyRetrieval:
 	or a
 	ret
 
+
 ; finds the card with deck index a in list hl,
 ; and removes it from the list.
 ; the card HAS to exist in the list, since this
@@ -2893,12 +2978,11 @@ FindAndRemoveCardFromList:
 	pop hl
 	ret
 
-AIPlay_PokemonCenter:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Pokemon Center uses 'AIPlay_TrainerCard_NoVars'
+
 
 AIDecide_PokemonCenter:
 	xor a
@@ -2989,12 +3073,11 @@ AIDecide_PokemonCenter:
 	or a
 	ret
 
-AIPlay_ImposterProfessorOak:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Imposter Professor Oak uses 'AIPlay_TrainerCard_NoVars'
+
 
 ; sets carry depending on player's number of cards
 ; in deck in in hand.
@@ -3025,14 +3108,11 @@ AIDecide_ImposterProfessorOak:
 	scf
 	ret
 
-AIPlay_EnergySearch:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Energy Search uses 'AIPlay_TrainerCard_OneVar'
+
 
 ; AI checks for playing Energy Search
 AIDecide_EnergySearch:
@@ -3264,6 +3344,9 @@ AIDecide_EnergySearch:
 	scf
 	ret
 
+
+
+
 AIPlay_Pokedex:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
@@ -3282,6 +3365,7 @@ AIPlay_Pokedex:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 AIDecide_Pokedex:
 	ld a, [wAIPokedexCounter]
@@ -3430,6 +3514,7 @@ AIDecide_Pokedex:
 	scf
 	ret
 
+
 ; picks order of the cards in deck from the effects of Pokedex.
 ; prioritizes energy cards, then Pokemon cards, then Trainer cards.
 ; stores the resulting order in wce1a.
@@ -3551,12 +3636,11 @@ PickPokedexCards:
 	scf
 	ret
 
-AIPlay_FullHeal:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Full Heal uses 'AIPlay_TrainerCard_NoVars'
+
 
 AIDecide_FullHeal:
 	ld a, DUELVARS_ARENA_CARD_STATUS
@@ -3661,14 +3745,11 @@ AIDecide_FullHeal:
 	or a
 	ret
 
-AIPlay_MrFuji:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Mr. Fuji uses 'AIPlay_TrainerCard_OneVar'
+
 
 ; AI logic for playing Mr Fuji
 AIDecide_MrFuji:
@@ -3731,16 +3812,11 @@ AIDecide_MrFuji:
 	scf
 	ret
 
-AIPlay_ScoopUp:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, [wce1a]
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Scoop Up uses 'AIPlay_TrainerCard_TwoVars'
+
 
 AIDecide_ScoopUp:
 	xor a
@@ -3940,6 +4016,9 @@ AIDecide_ScoopUp:
 	or a
 	ret
 
+
+
+
 AIPlay_Maintenance:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_MODIFIED_HAND
@@ -3953,6 +4032,7 @@ AIPlay_Maintenance:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; AI logic for playing Maintenance
 AIDecide_Maintenance:
@@ -4037,6 +4117,9 @@ AIDecide_Maintenance:
 	scf
 	ret
 
+
+
+
 AIPlay_Recycle:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
@@ -4053,6 +4136,7 @@ AIPlay_Recycle:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; lists cards to look for in the Discard Pile.
 ; has priorities for Ghost Deck, and a "default" priority list
@@ -4176,6 +4260,9 @@ AIDecide_Recycle:
 	ld [wce08 + 4], a
 	jr .loop_2
 
+
+
+
 AIPlay_Lass:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_MODIFIED_HAND
@@ -4185,6 +4272,7 @@ AIPlay_Lass:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 AIDecide_Lass:
 ; skip if player has less than 7 cards in hand
@@ -4216,6 +4304,10 @@ AIDecide_Lass:
 	scf
 	ret
 
+
+
+
+; this function is identical to AIPlay_ComputerSearch.
 AIPlay_ItemFinder:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_MODIFIED_HAND
@@ -4231,6 +4323,7 @@ AIPlay_ItemFinder:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; checks whether there's Energy Removal in Discard Pile.
 ; if so, find duplicate cards in hand to discard
@@ -4307,12 +4400,11 @@ AIDecide_ItemFinder:
 	or a
 	ret
 
-AIPlay_Imakuni:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Imakuni? uses 'AIPlay_TrainerCard_NoVars'
+
 
 ; only sets carry if Active card is not confused.
 AIDecide_Imakuni:
@@ -4326,6 +4418,9 @@ AIDecide_Imakuni:
 .confused
 	or a
 	ret
+
+
+
 
 AIPlay_Gambler:
 	ld a, [wCurrentAIFlags]
@@ -4364,6 +4459,7 @@ AIPlay_Gambler:
 	bank1call AIMakeDecision
 	ret
 
+
 ; checks whether to play Gambler.
 ; aside from Imakuni?, all other opponents only
 ; play this card if Player is running MewtwoLv53-only deck.
@@ -4399,14 +4495,11 @@ AIDecide_Gambler:
 	scf
 	ret
 
-AIPlay_Revive:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Revive uses 'AIPlay_TrainerCard_OneVar'
+
 
 ; checks certain cards in Discard Pile to use Revive on.
 ; suitable for Muscle For Brains deck only.
@@ -4446,14 +4539,11 @@ AIDecide_Revive:
 	or a
 	ret
 
-AIPlay_PokemonFlute:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Pokemon Flute uses 'AIPlay_TrainerCard_OneVar'
+
 
 AIDecide_PokemonFlute:
 ; if player has no Discard Pile, skip.
@@ -4551,12 +4641,11 @@ AIDecide_PokemonFlute:
 	scf
 	ret
 
-AIPlay_ClefairyDollOrMysteriousFossil:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Clefairy Doll and Mysterious Fossil use 'AIPlay_TrainerCard_NoVars'
+
 
 ; AI logic for playing Clefairy Doll
 AIDecide_ClefairyDollOrMysteriousFossil:
@@ -4589,6 +4678,9 @@ AIDecide_ClefairyDollOrMysteriousFossil:
 	or a
 	ret
 
+
+
+
 AIPlay_Pokeball:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
@@ -4606,6 +4698,7 @@ AIPlay_Pokeball:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 AIDecide_Pokeball:
 ; go to the routines associated with deck ID
@@ -4800,6 +4893,10 @@ AIDecide_Pokeball:
 	ld b, NIDOQUEEN
 	jp LookForCardIDInDeck_GivenCardIDInHand
 
+
+
+
+; this function is identical to AIPlay_ItemFinder.
 AIPlay_ComputerSearch:
 	ld a, [wCurrentAIFlags]
 	or AI_FLAG_MODIFIED_HAND
@@ -4815,6 +4912,7 @@ AIPlay_ComputerSearch:
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
+
 
 ; checks what Deck ID AI is playing and handle
 ; them in their own routine.
@@ -4838,6 +4936,7 @@ AIDecide_ComputerSearch:
 .no_carry
 	or a
 	ret
+
 
 AIDecide_ComputerSearch_RockCrusher:
 ; if number of cards in hand is equal to 3,
@@ -5017,6 +5116,7 @@ AIDecide_ComputerSearch_RockCrusher:
 	scf
 	ret
 
+
 AIDecide_ComputerSearch_WondersOfScience:
 ; if number of cards in hand < 5, target Professor Oak in deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
@@ -5091,6 +5191,7 @@ AIDecide_ComputerSearch_WondersOfScience:
 	scf
 	ret
 
+
 AIDecide_ComputerSearch_FireCharge:
 ; pick target card in deck from highest to lowest priority.
 ; if not found in hand, go to corresponding branch.
@@ -5157,6 +5258,7 @@ AIDecide_ComputerSearch_FireCharge:
 	scf
 	ret
 
+
 AIDecide_ComputerSearch_Anger:
 ; for each of the following cards,
 ; first run a check if there's a pre-evolution in
@@ -5217,16 +5319,11 @@ AIDecide_ComputerSearch_Anger:
 	scf
 	ret
 
-AIPlay_PokemonTrader:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
-	ld a, [wce1a]
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+
+
+
+; Pokemon Trader uses 'AIPlay_TrainerCard_TwoVars'
+
 
 AIDecide_PokemonTrader:
 ; each deck has their own routine for picking
@@ -5255,6 +5352,7 @@ AIDecide_PokemonTrader:
 	or a
 	ret
 
+
 AIDecide_PokemonTrader_LegendaryMoltres:
 ; look for MoltresLv37 card in deck to trade with a
 ; card in hand different from MoltresLv35.
@@ -5270,6 +5368,7 @@ AIDecide_PokemonTrader_LegendaryMoltres:
 .no_carry
 	or a
 	ret
+
 
 AIDecide_PokemonTrader_LegendaryArticuno:
 ; if has none of these cards in Hand or Play Area, proceed
@@ -5321,6 +5420,7 @@ AIDecide_PokemonTrader_LegendaryArticuno:
 .no_carry
 	or a
 	ret
+
 
 AIDecide_PokemonTrader_LegendaryDragonite:
 ; if has less than 5 cards of energy
@@ -5417,6 +5517,7 @@ AIDecide_PokemonTrader_LegendaryDragonite:
 	or a
 	ret
 
+
 AIDecide_PokemonTrader_LegendaryRonald:
 ; for each of the following cards,
 ; first run a check if there's a pre-evolution in
@@ -5484,6 +5585,7 @@ AIDecide_PokemonTrader_LegendaryRonald:
 	or a
 	ret
 
+
 AIDecide_PokemonTrader_BlisteringPokemon:
 ; for each of the following cards,
 ; first run a check if there's a pre-evolution in
@@ -5525,6 +5627,7 @@ AIDecide_PokemonTrader_BlisteringPokemon:
 .no_carry
 	or a
 	ret
+
 
 AIDecide_PokemonTrader_SoundOfTheWaves:
 ; for each of the following cards,
@@ -5598,6 +5701,7 @@ AIDecide_PokemonTrader_SoundOfTheWaves:
 .no_carry
 	or a
 	ret
+
 
 AIDecide_PokemonTrader_PowerGenerator:
 ; for each of the following cards,
@@ -5680,6 +5784,7 @@ AIDecide_PokemonTrader_PowerGenerator:
 	or a
 	ret
 
+
 AIDecide_PokemonTrader_FlowerGarden:
 ; for each of the following cards,
 ; first run a check if there's a pre-evolution in
@@ -5746,6 +5851,7 @@ AIDecide_PokemonTrader_FlowerGarden:
 	or a
 	ret
 
+
 AIDecide_PokemonTrader_StrangePower:
 ; looks for a Pokemon in hand to trade with Mr Mime in deck.
 ; inputting Mr Mime in register e for the function is redundant
@@ -5762,6 +5868,7 @@ AIDecide_PokemonTrader_StrangePower:
 .no_carry
 	or a
 	ret
+
 
 AIDecide_PokemonTrader_Flamethrower:
 ; for each of the following cards,

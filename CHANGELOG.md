@@ -84,7 +84,12 @@
 
 
 ## Code Optimization
-- **August 29, 2024:** 23 Files Changed
+- **August 30, 2024:** 2 Files Changed
+    - Consolidate some identical functions in engine/duel/ai/trainer_cards.asm
+
+<br/>
+
+- **[August 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/4366d412043bb39d3359bcf68eacda70fdf0edb6):** 23 Files Changed
     - Remove some unnecessary `ret` instructions in the src/scripts files
     - Fix Amanda's booster pack rewards (now Water-focused instead of Lightning)
 
