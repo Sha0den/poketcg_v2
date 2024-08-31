@@ -58,8 +58,7 @@ HandleAIEnergyTrans:
 	add b
 	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp VENUSAUR_LV67
 	jr z, .use_pkmn_power
 
@@ -99,10 +98,7 @@ HandleAIEnergyTrans:
 	ldh [hTempPlayAreaLocation_ffa1], a
 
 	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp GRASS_ENERGY
 	jr nz, .next_card
 
@@ -142,8 +138,7 @@ HandleAIEnergyTrans:
 .CheckEnoughGrassEnergyCardsForAttack
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp EXEGGUTOR
 	jr z, .is_exeggutor
 
@@ -207,10 +202,7 @@ HandleAIEnergyTrans:
 
 ; is in bench
 	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp GRASS_ENERGY
 	jr nz, .count_next
 	inc d
@@ -291,8 +283,7 @@ AIEnergyTransTransferEnergyToBench:
 	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
 	ld [wAIVenusaurLv67DeckIndex], a
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp VENUSAUR_LV67
 	jr z, .use_pkmn_power
 
@@ -338,10 +329,7 @@ AIEnergyTransTransferEnergyToBench:
 	jr nz, .next_card
 
 	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp GRASS_ENERGY
 	jr nz, .next_card
 
@@ -442,8 +430,7 @@ HandleAIPkmnPowers:
 ; TryExecuteEffectCommandFunction was successful,
 ; so check what Pkmn Power this is through card's ID.
 	pop af
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	push bc
 
 ; step in
@@ -978,8 +965,7 @@ HandleAICowardice:
 	add c
 	get_turn_duelist_var
 	ld [wce08], a
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	push bc
 	cp TENTACOOL
 	call z, .CheckWhetherToUseCowardice
@@ -1061,8 +1047,7 @@ HandleAIDamageSwap:
 ; only take damage off certain cards in Arena
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp ALAKAZAM
 	jr z, .ok
 	cp KADABRA
@@ -1151,10 +1136,7 @@ HandleAIDamageSwap:
 	ld a, c
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp CHANSEY
 	jr z, .found_candidate
 	cp KANGASKHAN

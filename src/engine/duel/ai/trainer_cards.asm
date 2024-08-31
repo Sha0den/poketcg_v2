@@ -808,8 +808,7 @@ AIDecide_Pluspower1:
 ; get active Pokémon's info.
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 
 ; get defending Pokémon's info and check
@@ -818,8 +817,7 @@ AIDecide_Pluspower1:
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	call HandleNoDamageOrEffectSubstatus
 	rst SwapTurn
@@ -890,9 +888,8 @@ AIDecide_Pluspower1:
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp MR_MIME
 	ret z
 ; damage is >= 30 but not Mr. Mime
@@ -912,31 +909,12 @@ AIDecide_Pluspower2:
 	jr nc, .no_carry
 	call .check_random
 	jr nc, .no_carry
-	call .check_mr_mime
+	call AIDecide_Pluspower1.check_mr_mime
 	jr nc, .no_carry
 	scf
 	ret
 .no_carry
 	or a
-	ret
-
-; returns carry if Pluspower boost does
-; not exceed 30 damage when facing Mr. Mime.
-.check_mr_mime
-	ld a, [wDamage]
-	add 10 ; add Pluspower boost
-	cp 30 ; no danger in preventing damage
-	ret c
-	rst SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	rst SwapTurn
-	ld a, e
-	cp MR_MIME
-	ret z
-; damage is >= 30 but not Mr. Mime
-	scf
 	ret
 
 ; return carry if attack is useable but cannot KO.
@@ -1083,8 +1061,7 @@ AIDecide_GustOfWind:
 	; skip if current active card is MEW_LV23 or MEWTWO_LV53
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MEW_LV23
 	jr z, .no_carry
 	cp MEWTWO_LV53
@@ -2108,13 +2085,10 @@ AIDecide_PokemonBreeder:
 	push bc
 	push de
 	push hl
-	push de
 
 ; check card ID
 	ld a, d
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp DRAGONITE_LV41
 	jr nz, .no_carry
 
@@ -2572,16 +2546,12 @@ AIDecide_EnergyRetrieval:
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 
 ; load this card's ID in wTempCardID
 ; and this card's Type in wTempCardType
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
-	pop de
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -2697,8 +2667,8 @@ FindDuplicateCards:
 	ld a, [hli]
 	cp $ff
 	jr z, .check_found
-	call GetCardIDFromDeckIndex
-	ld b, e
+	call _GetCardIDFromDeckIndex
+	ld b, a
 	push hl
 
 ; loop the rest of the list to find
@@ -2709,7 +2679,7 @@ FindDuplicateCards:
 	jr z, .loop_outer
 	ld c, a
 	call GetCardIDFromDeckIndex
-	ld a, e
+
 	cp b
 	jr nz, .loop_inner
 
@@ -2841,16 +2811,12 @@ AIDecide_SuperEnergyRetrieval:
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 
 ; load this card's ID in wTempCardID
 ; and this card's Type in wTempCardType
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
-	pop de
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -3183,15 +3149,11 @@ AIDecide_EnergySearch:
 .loop_play_area_1
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 	get_turn_duelist_var
 
 ; store ID and type of card
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
-	pop de
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -3234,15 +3196,11 @@ AIDecide_EnergySearch:
 .loop_play_area_2
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 	get_turn_duelist_var
 
 ; get card's ID and Type
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
-	pop de
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 
@@ -3297,15 +3255,11 @@ AIDecide_EnergySearch:
 .loop_play_area_3
 	ld a, DUELVARS_ARENA_CARD
 	add e
-	push de
 	get_turn_duelist_var
 
 ; get card's ID and Type
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
-	pop de
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 
@@ -3927,8 +3881,7 @@ AIDecide_ScoopUp:
 ; check Arena card
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp ARTICUNO_LV37
 	jr z, .articuno_or_chansey
 	cp CHANSEY
@@ -3960,9 +3913,8 @@ AIDecide_ScoopUp:
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp SNORLAX
 	pop bc
 	jr z, .no_carry
@@ -4661,8 +4613,7 @@ AIDecide_ClefairyDollOrMysteriousFossil:
 ; if the Arena card is Wigglytuff, return carry
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp WIGGLYTUFF
 	jr z, .set_carry
 

@@ -55,10 +55,7 @@ FindBasicEnergyCardsInLocation:
 
 ; is in the card location we're looking for
 	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	; only basic energy cards
 	; will set carry here
@@ -115,10 +112,8 @@ AIPickEnergyCardToDiscard:
 	ld a, DUELVARS_ARENA_CARD
 	add b
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -171,10 +166,8 @@ PickAttachedEnergyCardToRemove:
 	ld a, DUELVARS_ARENA_CARD
 	add b
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -185,8 +178,7 @@ PickAttachedEnergyCardToRemove:
 	ld a, [hl]
 	cp $ff
 	jr z, .check_useful
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	jr z, .found
 	inc hl
@@ -243,10 +235,8 @@ PickTwoAttachedEnergyCards:
 	ld a, DUELVARS_ARENA_CARD
 	add b
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -260,8 +250,7 @@ PickTwoAttachedEnergyCards:
 	ld a, [hl]
 	cp $ff
 	jr z, .check_useful
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	jr z, .found_double_colorless
 	inc hl
@@ -501,10 +490,7 @@ LookForCardIDInLocation_Bank8:
 	cp b
 	jr nz, .next
 	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp c
 	jr z, .found
 .next
@@ -911,8 +897,8 @@ FindDuplicatePokemonCards:
 	ld a, [hli]
 	cp $ff
 	jr z, .done
-	call GetCardIDFromDeckIndex
-	ld b, e
+	call _GetCardIDFromDeckIndex
+	ld b, a
 	push hl
 
 .loop_hand_inner

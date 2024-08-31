@@ -129,11 +129,11 @@ InvertedPowersOf2::
 ; checks if the turn holder's CHARIZARD's Energy Burn is active,
 ; and if so, it turns all Energy (except for Double Colorless Energy)
 ; at wAttachedEnergies into Fire Energy
+; preserves de
 HandleEnergyBurn::
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp CHARIZARD
 	ret nz
 	call CheckCannotUseDueToStatus

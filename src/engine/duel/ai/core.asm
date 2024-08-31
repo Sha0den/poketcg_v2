@@ -719,10 +719,7 @@ LookForCardIDInLocation_Bank5:
 	cp b
 	jr nz, .next
 	ld a, e
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp c
 	jr z, .found
 .next
@@ -752,7 +749,6 @@ LookForCardIDInLocation_Bank5:
 ;	carry = set:  if the given card was NOT found in the hand
 LookForCardIDInHand:
 	push hl
-	push de
 	push bc
 	ld b, a
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
@@ -764,8 +760,7 @@ LookForCardIDInHand:
 
 .loop
 	ld a, [hli]
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp b
 	jr z, .no_carry
 .next
@@ -773,7 +768,6 @@ LookForCardIDInHand:
 	jr nz, .loop
 
 	pop bc
-	pop de
 	pop hl
 	scf
 	ret
@@ -782,7 +776,6 @@ LookForCardIDInHand:
 	dec hl
 	ld a, [hl]
 	pop bc
-	pop de
 	pop hl
 	or a
 	ret
@@ -1124,9 +1117,8 @@ RemoveCardIDInList:
 	jr z, .no_carry
 
 	ldh [hTempCardIndex_ff98], a
-	call GetCardIDFromDeckIndex
-	ld a, c
-	cp e
+	call _GetCardIDFromDeckIndex
+	cp c
 	jr nz, .loop_1
 
 ; found
@@ -1237,9 +1229,8 @@ CheckDamageToMrMime:
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp MR_MIME
 	pop bc
 	jr nz, .set_carry
@@ -1441,10 +1432,7 @@ SortTempHandByIDList:
 	ldh [hTempCardIndex_ff98], a
 	cp -1
 	jr z, .loop_list_id
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp b
 	jr nz, .not_same
 
@@ -1479,10 +1467,7 @@ CheckEnergyFlagsNeededInList:
 	ld a, [hli]
 	cp $ff
 	jr z, .no_carry
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 
 ; fire
 	cp FIRE_ENERGY
@@ -1913,8 +1898,7 @@ AISelectSpecialAttackParameters:
 .SelectAttackParameters:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MEW_LV23
 	jr z, .DevolutionBeam
 	cp MEWTWO_ALT_LV60
@@ -2493,10 +2477,7 @@ RaiseAIScoreToAllMatchingIDsInBench:
 	ld a, [hli]
 	cp $ff
 	ret z
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp d
 	jr nz, .loop
 	ld c, e
@@ -2551,12 +2532,9 @@ Func_174f2:
 
 ; loads wcdf9 with card ID
 ; and call Func_17583
-	push de
 	ld a, [wcdf9]
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wcdf9], a
-	pop de
 	push hl
 	push de
 	call Func_17583

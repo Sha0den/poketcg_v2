@@ -596,9 +596,8 @@ AIDecidePlayLegendaryBirds:
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp SNORLAX
 	jr z, .subtract
 

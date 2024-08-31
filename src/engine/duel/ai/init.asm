@@ -37,9 +37,8 @@ InitAITurnVars:
 ; if the card is MewtwoLv53, it means the Player
 ; used its second attack, Barrier.
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp MEWTWO_LV53
 	jr nz, .check_flag
 	; Player used Barrier last turn
@@ -63,9 +62,8 @@ InitAITurnVars:
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp MEWTWO_LV53
 	jr nz, .reset
 	farcall CheckIfPlayerHasPokemonOtherThanMewtwoLv53

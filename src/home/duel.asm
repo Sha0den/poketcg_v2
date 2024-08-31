@@ -609,11 +609,9 @@ SortCardsInListByID_CheckForListTerminator::
 ; output:
 ;	bc = ID of card with deck index from input
 GetCardIDFromDeckIndex_bc::
-	push hl
 	call _GetCardIDFromDeckIndex
 	ld c, a
 	ld b, $0
-	pop hl
 	ret
 
 
@@ -624,22 +622,21 @@ GetCardIDFromDeckIndex_bc::
 ;	de = card ID from input deck index
 GetCardIDFromDeckIndex::
 	push af
-	push hl
 	call _GetCardIDFromDeckIndex
 	ld e, a
 	ld d, $0
-	pop hl
 	pop af
 	ret
 
 
-; preserves bc and de
+; preserves all registers except af
 ; input:
 ;	a = deck index (0-59) of the card to identify
 ; output:
 ;	a = card ID from input deck index
 _GetCardIDFromDeckIndex::
 	push de
+	push hl
 	ld e, a
 	ld d, $0
 	ld hl, wPlayerDeck
@@ -650,6 +647,7 @@ _GetCardIDFromDeckIndex::
 .load_card_from_deck
 	add hl, de
 	ld a, [hl]
+	pop hl
 	pop de
 	ret
 
@@ -1290,10 +1288,8 @@ CountCardIDInLocation::
 	cp b
 	jr nz, .unmatching_card_location_or_ID
 	ld a, l
-	push hl
 	call _GetCardIDFromDeckIndex
 	cp e
-	pop hl
 	jr nz, .unmatching_card_location_or_ID
 	inc c
 .unmatching_card_location_or_ID
@@ -1404,14 +1400,12 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	ldh [hTempCardIndex_ff9f], a
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	rst SwapTurn
 	xor a
@@ -1818,14 +1812,11 @@ DealDamageToPlayAreaPokemon::
 	push bc
 	xor a
 	ld [wNoDamageOrEffect], a
-	push de
 	ld a, [wTempPlayAreaLocation_cceb]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
-	pop de
 	ld a, [wTempPlayAreaLocation_cceb]
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .next
@@ -1946,6 +1937,7 @@ GetPlayAreaCardRetreatCost::
 ;	fallthrough
 
 ; finds the retreat cost of the card in wLoadedCard1
+; preserves de
 ; input:
 ;	wLoadedCard1 = all of the card's data
 ; output:
@@ -1958,13 +1950,13 @@ GetLoadedCard1RetreatCost::
 	ld a, [hli]
 	cp -1
 	jr z, .no_more_bench
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp DODRIO
 	jr nz, .not_dodrio
 	inc c
 .not_dodrio
 	jr .check_bench_loop
+
 .no_more_bench
 	ld a, c
 	or a
@@ -1972,6 +1964,7 @@ GetLoadedCard1RetreatCost::
 .muk_found
 	ld a, [wLoadedCard1RetreatCost] ; use the regular retreat cost
 	ret
+
 .dodrio_found
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas

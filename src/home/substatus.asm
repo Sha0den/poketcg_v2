@@ -289,8 +289,7 @@ HandleNShieldAndTransparency::
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MEW_LV8
 	jr z, .nshield
 	cp HAUNTER_LV17

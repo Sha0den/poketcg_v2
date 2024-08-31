@@ -86,10 +86,7 @@ LookForCardsInDeck:
 	ld a, [hli]
 	cp $ff
 	jr z, .set_carry
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp e
 	jr nz, .loop_deck_e ; skip if wrong card ID
 	or a
@@ -189,8 +186,7 @@ LookForCardsInDeck:
 	ld a, [hli]
 	cp $ff
 	jp z, .set_carry
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp NIDORANF
 	jr z, .found_nidoran
 	cp NIDORANM
@@ -811,8 +807,7 @@ AIFindNidoran:
 	ldh [hTemp_ffa0], a
 	cp $ff
 	ret z ; reached the end of the list
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp NIDORANF
 	ret z ; Nidoran found
 	cp NIDORANM
@@ -888,8 +883,7 @@ AIFindOddish:
 	ldh [hTemp_ffa0], a
 	cp $ff
 	ret z ; reached the end of the list
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp ODDISH
 	jr nz, .loop_deck ; card isn't an Oddish
 	ret ; Oddish found
@@ -963,8 +957,7 @@ AIFindBellsprout:
 	ldh [hTemp_ffa0], a
 	cp $ff
 	ret z ; reached the end of the list
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp BELLSPROUT
 	jr nz, .loop_deck ; card isn't a Bellsprout
 	ret ; Bellsprout found
@@ -1038,8 +1031,7 @@ AIFindKrabby:
 	ldh [hTemp_ffa0], a
 	cp $ff
 	ret z ; reached the end of the list
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp KRABBY
 	jr nz, .loop_deck ; card isn't a Krabby
 	ret ; Krabby found

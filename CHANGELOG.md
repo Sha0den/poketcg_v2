@@ -84,7 +84,12 @@
 
 
 ## Code Optimization
-- **August 30, 2024:** 13 Files Changed
+- **August 31, 2024:** 16 Files Changed
+    - Make `_GetCardIDFromDeckIndex` preserve hl and use it instead of `GetCardIDFromDeckIndex` when loading the ID into the a register
+
+<br/>
+
+- **[August 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/7ab6093a8da3e4428df536256b59b0fff77f5c64):** 13 Files Changed
     - Update comments and labels for the 7 pairs of identical functions in engine/duel/ai/core.asm and engine/duel/ai/common.asm (and add an 8th)
     - Shuffle some data around in both of these files
 

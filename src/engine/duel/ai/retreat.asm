@@ -185,12 +185,9 @@ AIDecideWhetherToRetreat:
 	ld a, 2
 	call AddToAIScore
 
-	push de
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp PORYGON
 	jr nz, .check_weakness_3
 
@@ -290,9 +287,8 @@ AIDecideWhetherToRetreat:
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	cp MR_MIME
 	jr z, .mr_mime_or_hitmonlee
 	cp HITMONLEE ; ??
@@ -394,8 +390,7 @@ AIDecideWhetherToRetreat:
 .check_active_id
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MYSTERIOUS_FOSSIL
 	jr z, .mysterious_fossil_or_clefairy_doll
 	cp CLEFAIRY_DOLL
@@ -822,8 +817,7 @@ AITryToRetreat:
 .check_id
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MYSTERIOUS_FOSSIL
 	jp z, .mysterious_fossil_or_clefairy_doll
 	cp CLEFAIRY_DOLL
@@ -908,10 +902,7 @@ AITryToRetreat:
 	cp $ff
 	jr z, .energy_not_same_color
 	ld [de], a
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	jr nz, .loop_2
 	ld a, [de]
@@ -959,10 +950,7 @@ AITryToRetreat:
 	jr z, .set_carry
 	ld [de], a
 	inc de
-	push de
-	call GetCardIDFromDeckIndex
-	ld a, e
-	pop de
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	jr nz, .not_double_colorless
 	dec c

@@ -173,8 +173,7 @@ AIPerformScriptedTurn:
 
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MACHOP
 	ld a, PLAY_AREA_BENCH_1
 	jr nz, .retreat

@@ -6189,14 +6189,12 @@ SaveDuelStateToSRAM:
 	push hl
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	rst SwapTurn
 	pop hl
@@ -7164,8 +7162,7 @@ HandleBetweenTurnsEvents:
 
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	ld l, DUELVARS_ARENA_CARD_STATUS
 	ld a, [hl]
@@ -7195,8 +7192,7 @@ HandleBetweenTurnsEvents:
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	ld l, DUELVARS_ARENA_CARD_STATUS
 	ld a, [hl]
@@ -8300,8 +8296,7 @@ ProcessPlayedPokemonCard::
 	call UpdateArenaCardIDsAndClearTwoTurnDuelVars
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempCardIndex_ff9f], a
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
@@ -8363,11 +8358,11 @@ ProcessPlayedPokemonCard::
 
 ; if the ID of the card provided in register a as a deck index is MUK,
 ; then clear the changed type of all Active and Benched Pokemon.
+; preserves de
 ; input:
 ;	a = deck index (0-59) to check
 ClearChangedTypesIfMuk:
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MUK
 	ret nz ; return if the Pokemon isn't a Muk
 	rst SwapTurn

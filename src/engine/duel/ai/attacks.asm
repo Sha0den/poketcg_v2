@@ -192,14 +192,12 @@ GetAIScoreOfAttack:
 	ld [wAICannotDamage], a
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 
 ; handle the case where the player has No Damage substatus.
@@ -351,8 +349,7 @@ GetAIScoreOfAttack:
 	ld b, 0
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp MAGNEMITE_LV13
 	jr z, .magnemite1
 	ld b, 10 ; bench damage
@@ -393,8 +390,7 @@ GetAIScoreOfAttack:
 .high_recoil_generic_checks
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp CHANSEY
 	jr z, .chansey
 	cp MAGNEMITE_LV13
@@ -542,9 +538,8 @@ GetAIScoreOfAttack:
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	rst SwapTurn
-	call GetCardIDFromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	ld a, e
 	; skip if player has Snorlax
 	cp SNORLAX
 	jp z, .handle_special_atks

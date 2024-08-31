@@ -848,8 +848,7 @@ AITryToPlayEnergyCard:
 	cp $ff
 	jr z, .look_for_any_energy
 	ldh [hTemp_ffa0], a
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	jr nz, .loop_1
 	jr .play_energy_card
@@ -867,8 +866,7 @@ AITryToPlayEnergyCard:
 	call CheckIfOpponentHasBossDeckID
 	jr nc, .load_card
 	push af
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	pop bc
 	jr z, .loop_2
@@ -981,9 +979,7 @@ CheckSpecificDecksToAttachDoubleColorless:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
-	ret
+	jp _GetCardIDFromDeckIndex
 
 
 ;----------------------------------------

@@ -3952,6 +3952,7 @@ EachBenched10MoreDamageEffect:
 
 
 ; increases attack damage by 20 for each Nidoking in the turn holder's play area
+; preserves de
 EachNidoking20MoreDamageEffect:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -3960,13 +3961,9 @@ EachNidoking20MoreDamageEffect:
 	ld a, [hl]
 	cp $ff
 	jr z, .done
-	call GetCardIDFromDeckIndex
-	ld a, e
+	call _GetCardIDFromDeckIndex
 	cp NIDOKING
 	jr nz, .next
-;	ld a, d
-;	cp $00 ; why check d? Card IDs are only 1 byte long
-;	jr nz, .next
 	inc c
 .next
 	inc hl
@@ -5766,7 +5763,17 @@ MorphEffect:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	ldh [hTempCardIndex_ff98], a
-	call _GetCardIDFromDeckIndex
+	push de
+	ld e, a
+	ld d, $0
+	ld hl, wPlayerDeck
+	ldh a, [hWhoseTurn]
+	cp PLAYER_TURN
+	jr z, .deck_loaded
+	ld hl, wOpponentDeck
+.deck_loaded
+	add hl, de
+	pop de
 	ld [hl], e
 
 ; overwrite HP to new card's maximum HP
@@ -9431,11 +9438,8 @@ SwitchEffect:
 ;	call CheckCannotUseDueToStatus
 ;	ret c ; can't use due to status or Toxic Gas
 ;	ld a, DUELVARS_ARENA_CARD
-;	push de
 ;	get_turn_duelist_var
-;	call GetCardIDFromDeckIndex
-;	ld a, e
-;	pop de
+;	call _GetCardIDFromDeckIndex
 ;	cp CHARIZARD
 ;	jp nz, SetCarryEF
 ;	or a
