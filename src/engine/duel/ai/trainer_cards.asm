@@ -3910,9 +3910,9 @@ AIDecide_ScoopUp:
 .articuno_bench
 ; skip if the defending card is Snorlax
 	push af
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
 	rst SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp SNORLAX

@@ -535,9 +535,9 @@ GetAIScoreOfAttack:
 	call AddToAIScore
 
 .check_status_effect
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
 	rst SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	; skip if player has Snorlax

@@ -84,7 +84,12 @@
 
 
 ## Code Optimization
-- **August 31, 2024:** 16 Files Changed
+- **August 31, 2024:** 6 Files Changed
+    - Replace `call GetNonTurnDuelistVariable` with the rst macro for `GetTurnDuelistVariable` when `SwapTurn` is being called immediately afterward
+
+<br/>
+
+- **[August 31, 2024](https://github.com/Sha0den/poketcg_v2/commit/ed2e448356415704766b786cfe3c065ea09d926f):** 16 Files Changed
     - Make `_GetCardIDFromDeckIndex` preserve hl and use it instead of `GetCardIDFromDeckIndex` when loading the ID into the a register
 
 <br/>

@@ -284,9 +284,9 @@ AIDecideWhetherToRetreat:
 	ld [wAIPlayEnergyCardForRetreat], a
 
 .check_defending_id
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
 	rst SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp MR_MIME
@@ -545,9 +545,9 @@ AIDecideBenchPokemonToSwitchTo:
 
 ; if can damage Mr Mime, raise AI score
 .check_mr_mime
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
 	rst SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	rst SwapTurn
 	cp MR_MIME

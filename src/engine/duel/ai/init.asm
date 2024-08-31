@@ -59,9 +59,9 @@ InitAITurnVars:
 ; at least 3 turns in a row.
 ; check if Player is running MewtwoLv53-only deck,
 ; if so, set wAIBarrierFlagCounter flag.
-	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
 	rst SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp MEWTWO_LV53
