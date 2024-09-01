@@ -379,8 +379,8 @@ FindTrainer:
 .read_input
 	bank1call DisplayCardList
 	jr c, .attempt_to_cancel ; the B button was pressed
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardIDFromDeckIndex
+	call GetCardType
 	cp TYPE_TRAINER
 	jr nz, .play_sfx ; not a Trainer card
 
@@ -403,8 +403,8 @@ FindTrainer:
 	ld a, [hli]
 	cp $ff
 	jr z, .exit
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardIDFromDeckIndex
+	call GetCardType
 	cp TYPE_TRAINER
 	jr nz, .next_card
 	jr .play_sfx ; found a Trainer card, return to selection process
@@ -455,8 +455,8 @@ FindAnyPokemon:
 	bank1call DisplayCardList
 	jr c, .attempt_to_cancel ; the B button was pressed
 	ldh a, [hTempCardIndex_ff98]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardIDFromDeckIndex
+	call GetCardType
 	cp TYPE_ENERGY
 	jr nc, .play_sfx ; not a Pokemon
 
@@ -479,8 +479,8 @@ FindAnyPokemon:
 	ld a, [hli]
 	cp $ff
 	jr z, .exit
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardIDFromDeckIndex
+	call GetCardType
 	cp TYPE_ENERGY
 	jr nc, .next_card
 	jr .play_sfx ; found a Pokemon, return to selection process
@@ -697,10 +697,10 @@ FindBasicFightingPokemon:
 	cp $ff
 	jr z, .exit
 	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard1Type]
+	ld a, [wLoadedCard2Type]
 	cp FIGHTING
 	jr nz, .next_card ; not a Fighting Pokemon, move on to the next card
-	ld a, [wLoadedCard1Stage]
+	ld a, [wLoadedCard2Stage]
 	or a
 	jr nz, .next_card
 	jr .play_sfx ; found a Basic Fighting Pokemon, return to selection process

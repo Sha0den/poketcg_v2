@@ -109,16 +109,14 @@ _CalculateDamage_VersusDefendingPokemon:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2ID]
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 
 	; load player's arena card data
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2ID]
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	rst SwapTurn
 
@@ -333,8 +331,7 @@ CalculateDamage_FromDefendingPokemon:
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2ID]
+	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 	rst SwapTurn
 
@@ -342,8 +339,7 @@ CalculateDamage_FromDefendingPokemon:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2ID]
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 
 	rst SwapTurn

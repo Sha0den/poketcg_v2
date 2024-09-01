@@ -325,7 +325,6 @@ AIDecideEvolution:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wLoadedCard1ID]
 	cp MYSTERIOUS_FOSSIL
 	jr z, .mysterious_fossil
 	ld a, [wLoadedCard1Unknown2]
@@ -395,6 +394,8 @@ AIDecideEvolution:
 ; determine AI score for evolving
 ; Charmeleon, Magikarp, Dragonair and Grimer
 ; in certain decks
+; input:
+;	[wLoadedCard2ID] = card ID of an evolving Pokemon to score
 AIDecideSpecialEvolutions:
 ; check if deck applies
 	ld a, [wOpponentDeckID]

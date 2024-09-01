@@ -799,10 +799,9 @@ LookForCardIDInHandList_Bank5:
 	cp $ff
 	ret z
 	ldh [hTempCardIndex_ff98], a
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld b, a
+	call GetCardIDFromDeckIndex
 	ld a, [wTempCardIDToLook]
-	cp b
+	cp e
 	jr nz, .loop
 
 	ldh a, [hTempCardIndex_ff98]
@@ -826,7 +825,7 @@ LookForCardIDInPlayArea_Bank5:
 	get_turn_duelist_var
 	cp $ff
 	ret z
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	ld c, a
 	ld a, [wTempCardIDToLook]
 	cp c
@@ -919,7 +918,7 @@ CheckEnergyNeededForAttackAfterDiscard:
 .is_attack
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	farcall AIPickEnergyCardToDiscard
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	jr z, .colorless
 

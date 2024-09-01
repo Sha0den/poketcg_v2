@@ -84,7 +84,12 @@
 
 
 ## Code Optimization
-- **August 31, 2024:** 6 Files Changed
+- **September 1, 2024:** 11 Files Changed
+    - Eliminate some unnecessary loading of card data to wram
+
+<br/>
+
+- **[August 31, 2024](https://github.com/Sha0den/poketcg_v2/commit/4ffe5340de65058833e822ae7e257e399ca4653f):** 6 Files Changed
     - Replace `call GetNonTurnDuelistVariable` with the rst macro for `GetTurnDuelistVariable` when `SwapTurn` is being called immediately afterward
 
 <br/>

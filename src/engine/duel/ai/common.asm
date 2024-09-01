@@ -525,10 +525,9 @@ LookForCardIDInHandList_Bank8:
 	cp $ff
 	ret z
 	ldh [hTempCardIndex_ff98], a
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld b, a
+	call GetCardIDFromDeckIndex
 	ld a, [wTempCardIDToLook]
-	cp b
+	cp e
 	jr nz, .loop
 
 	ldh a, [hTempCardIndex_ff98]
@@ -552,7 +551,7 @@ LookForCardIDInPlayArea_Bank8:
 	get_turn_duelist_var
 	cp $ff
 	ret z
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	ld c, a
 	ld a, [wTempCardIDToLook]
 	cp c
@@ -843,16 +842,15 @@ CheckIfHasCardIDInHand:
 	cp $ff
 	ret z
 	ldh [hTempCardIndex_ff98], a
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld b, a
+	call GetCardIDFromDeckIndex
 	ld a, [wTempCardIDToLook]
-	cp b
+	cp e
 	jr nz, .loop_hand
 	ld a, c
 	or a
 	jr nz, .set_carry
 	inc c
-	jr nz, .loop_hand
+	jr .loop_hand
 
 .set_carry
 	ldh a, [hTempCardIndex_ff98]

@@ -33,8 +33,7 @@ _AIProcessHandTrainerCards:
 	ld a, [hli]
 	ld [wAITrainerLogicCard], a
 	ld a, [wAITrainerCardToPlay]
-	call LoadCardDataToBuffer1_FromDeckIndex
-
+	call _GetCardIDFromDeckIndex
 	cp SWITCH
 	jr nz, .skip_switch_check
 
@@ -1620,7 +1619,7 @@ AIDecide_SuperEnergyRemoval:
 	ld a, [hli]
 	cp $ff
 	ret z
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
 	; any basic energy card
 	; will set carry flag here
@@ -1841,7 +1840,7 @@ AIDecide_PokemonBreeder:
 ; check if card in hand is any of the following
 ; stage 2 Pokemon cards
 	ld d, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	cp VENUSAUR_LV64
 	jr z, .found
 	cp VENUSAUR_LV67
@@ -2679,7 +2678,7 @@ FindDuplicateCards:
 	jr z, .loop_outer
 	ld c, a
 	call GetCardIDFromDeckIndex
-
+	ld a, e
 	cp b
 	jr nz, .loop_inner
 
@@ -4119,7 +4118,7 @@ AIDecide_Recycle:
 	jr z, .done
 
 	ld b, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 
 ; double colorless
 	cp DOUBLE_COLORLESS_ENERGY
@@ -4175,7 +4174,7 @@ AIDecide_Recycle:
 	jr z, .done
 
 	ld b, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 
 ; gastly2
 	cp GASTLY_LV17
@@ -4293,7 +4292,7 @@ AIDecide_ItemFinder:
 	cp $ff
 	jr z, .no_carry
 	ld b, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	cp ENERGY_REMOVAL
 	jr nz, .loop_discard_pile
 ; found, store this deck index
@@ -4309,8 +4308,8 @@ AIDecide_ItemFinder:
 	ld a, [hli]
 	cp $ff
 	jr z, .choose_discard
-	ld b, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	ld b, a ; useless?
+	call _GetCardIDFromDeckIndex
 	cp MR_MIME
 	jr nz, .pkmn_trader
 	call RemoveCardFromList
@@ -4473,7 +4472,7 @@ AIDecide_Revive:
 	cp $ff
 	jr z, .no_carry
 	ld b, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	cp HITMONCHAN
 	jr z, .set_carry
 	cp HITMONLEE
@@ -4922,7 +4921,7 @@ AIDecide_ComputerSearch_RockCrusher:
 	jr z, .check_discard_cards
 
 	ld c, a
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 
 ; if any of the following cards are in the hand,
 ; return no carry.
@@ -4943,9 +4942,7 @@ AIDecide_ComputerSearch_RockCrusher:
 
 ; if it's same as wAITrainerCardToPlay, skip this card.
 	ld a, [wAITrainerCardToPlay]
-	ld b, a
-	ld a, c
-	cp b
+	cp c
 	jr z, .loop_hand_1
 
 ; store this card index in memory

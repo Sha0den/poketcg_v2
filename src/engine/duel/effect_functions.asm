@@ -204,8 +204,7 @@ YourPokemon_AttachedEnergyCheck:
 	bit CARD_LOCATION_PLAY_AREA_F, a
 	jr z, .next_card ; skip if not in the play area
 	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	and TYPE_ENERGY
 	jr nz, NoCarryEF ; found an Energy card
 .next_card
@@ -1179,8 +1178,7 @@ CreateTrainerCardListFromDiscardPile:
 
 .check_trainer
 	ld a, [hl]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_TRAINER
 	jr nz, .next_card
 
@@ -2512,9 +2510,8 @@ Conversion2_AISelection:
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call GetCardTypeFromDeckIndex_SaveDE
 	rst SwapTurn
-	ld a, [wLoadedCard1Type]
 	cp COLORLESS
 	jr z, .is_colorless
 	ldh [hTemp_ffa0], a
@@ -2738,6 +2735,7 @@ ColorTileAndBGP:
 ; preserves bc
 ; input:
 ;	a = type (color) constant
+;	[wLoadedCard1Name] = text ID for a card name (2 bytes)
 LoadCardNameAndInputColor:
 	add a
 	ld e, a
@@ -2795,8 +2793,7 @@ AISelectConversionColor:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	ld d, a
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wLoadedCard1Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp COLORLESS
 	jr z, .skip_pkmn_atk ; skip Colorless Pokemon
 	ld e, FIRST_ATTACK_OR_PKMN_POWER
@@ -3421,7 +3418,6 @@ DevolutionBeam_DevolveEffect:
 	call LoadCardDataToBuffer1_FromDeckIndex
 
 ; check if card is affected
-	ld a, [wLoadedCard1ID]
 	ld [wTempNonTurnDuelistCardID], a
 	ld de, $0
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -5565,8 +5561,7 @@ OpponentHand_ReplacePokemonInEffect:
 	ld a, [hl]
 	cp $ff
 	jr z, .done_hand
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
 	jr nc, .next_hand ; skip if not a Pokemon
 ; found a Pokemon card to place in the deck
@@ -5597,8 +5592,7 @@ OpponentHand_ReplacePokemonInEffect:
 	ld hl, wDuelTempList
 .loop_deck
 	ld a, [hl]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
 	jr nc, .next_deck ; skip if not a Pokemon
 	dec c
@@ -7693,8 +7687,7 @@ EnergyRemoval_AISelection:
 	ld a, [hli]
 	cp $ff
 	jr z, .choose_random
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	and TYPE_PKMN
 	cp e
 	jr nz, .loop_energy
@@ -8176,8 +8169,7 @@ ItemFinder_DiscardAddToHandEffect:
 ImakuniEffect:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wLoadedCard1ID]
+	call _GetCardIDFromDeckIndex
 
 ; Clefairy Doll and Mysterious Fossil cannot become Confused
 	cp CLEFAIRY_DOLL
@@ -8745,8 +8737,7 @@ PokemonCenter_HealDiscardEnergyEffect:
 	cp e
 	jr nz, .next_card_deck ; skip if not attached to any card
 	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	and TYPE_ENERGY
 	jr z, .next_card_deck ; skip if not an Energy
 	ld a, l
@@ -8883,8 +8874,7 @@ PokemonTrader_PlayerDeckSelection:
 .read_input
 	bank1call DisplayCardList
 	jr c, .read_input ; must choose, B button can't be used to exit
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
 	jr nc, .read_input ; can't select non-Pokemon cards
 
@@ -8939,8 +8929,7 @@ CreatePokemonCardListFromHand:
 	ld de, wDuelTempList
 .loop
 	ld a, [hl]
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
 	jr nc, .next_hand_card ; skip if not a Pokemon
 	ld a, [hl]

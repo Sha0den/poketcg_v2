@@ -368,8 +368,7 @@ AIDecideWhetherToRetreat:
 	ld a, [hli]
 	cp $ff
 	jr z, .exit_loop_ko
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2ID]
+	call _GetCardIDFromDeckIndex
 	cp MYSTERIOUS_FOSSIL
 	jr z, .loop_ko_2
 	cp CLEFAIRY_DOLL
@@ -548,7 +547,7 @@ AIDecideBenchPokemonToSwitchTo:
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp MR_MIME
 	jr nz, .check_defending_weak

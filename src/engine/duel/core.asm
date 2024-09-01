@@ -1006,9 +1006,7 @@ CheckAbleToRetreat:
 	jr c, .unable_to_retreat
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	call LoadCardDataToBuffer1_FromCardID
-	ld a, [wLoadedCard1Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_TRAINER
 	jr z, .unable_to_retreat
 	call CheckIfEnoughEnergiesToRetreat
@@ -4194,6 +4192,7 @@ LoadPlayAreaCardGfx:
 ; load the graphics (tiles and palette) of the card loaded in wLoadedCard1 to de
 ; input:
 ;	de = where in vram to copy the card's graphic data
+;	[wLoadedCard1Gfx] = pointer for the card's graphic data (2 bytes)
 LoadLoaded1CardGfx:
 	ld hl, wLoadedCard1Gfx
 	ld a, [hli]
@@ -4859,7 +4858,7 @@ PrintUpArrowOnSecondDescriptionPage:
 
 
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	wLoadedCard1 = contains the Pokemon's card_data_struct
 DisplayCardPage_PokemonAttack2Page1:
 	ld hl, wLoadedCard1Atk2Name
 	ld de, wLoadedCard1Atk2Description
@@ -4869,7 +4868,7 @@ DisplayCardPage_PokemonAttack2Page1:
 
 
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	wLoadedCard1 = contains the Pokemon's card_data_struct
 DisplayCardPage_PokemonAttack2Page2:
 	ld hl, wLoadedCard1Atk2Name
 	ld de, wLoadedCard1Atk2Description + 2
@@ -4880,6 +4879,7 @@ DisplayCardPage_PokemonAttack2Page2:
 ; input:
 ;	[hl] = text ID for the attack name to print (2 bytes)
 ;	[de] = text ID for the attack description to print (2 bytes)
+;	wLoadedCard1 = contains the Pokemon's card_data_struct
 DisplayPokemonAttackCardPage:
 	push de
 	push hl

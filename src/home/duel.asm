@@ -389,8 +389,7 @@ CreateArenaOrBenchEnergyCardList::
 	cp c
 	jr nz, .skip_card ; jump if not in specified play area location
 	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	and 1 << TYPE_ENERGY_F
 	jr z, .skip_card ; jump if Pokemon or Trainer card
 	ld a, l
@@ -1234,8 +1233,7 @@ GetPlayAreaCardAttachedEnergies::
 	push hl
 	push de
 	ld a, l
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
+	call GetCardTypeFromDeckIndex_SaveDE
 	bit TYPE_ENERGY_F, a
 	jr z, .not_an_energy_card
 	and TYPE_PKMN ; zero bit 3 to extract the type
@@ -1737,8 +1735,7 @@ PrintPlayAreaCardKnockedOutIfNoHP::
 	ld a, e
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wLoadedCard1ID]
+	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 	call PrintKnockedOut
 	pop af
@@ -1759,6 +1756,8 @@ PrintKnockedOutIfHLZero::
 
 ; prints in a 20x6 text box that the Pokemon at wTempNonTurnDuelistCardID
 ; was Knocked Out and then waits 40 frames
+; input:
+;	[wTempNonTurnDuelistCardID] = card ID of the Pokemon that was KO'd
 ; output:
 ;	carry = set
 PrintKnockedOut::

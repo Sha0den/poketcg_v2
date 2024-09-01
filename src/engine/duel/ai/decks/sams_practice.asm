@@ -65,7 +65,7 @@ SetSamsStartingPlayArea:
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
 	ret z
-	call LoadCardDataToBuffer1_FromDeckIndex
+	call _GetCardIDFromDeckIndex
 	cp MACHOP
 	jr nz, .loop_hand
 	ldh a, [hTempCardIndex_ff98]
