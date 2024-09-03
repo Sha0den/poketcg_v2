@@ -3270,6 +3270,7 @@ IncrementDeckCardsInTempCollection:
 ; preserves bc
 PrintCardSelectionList:
 	push bc
+	call PrintPlayersCardsText
 	ld hl, wCardListCoords
 	ld e, [hl]
 	inc hl

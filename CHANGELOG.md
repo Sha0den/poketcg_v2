@@ -12,6 +12,12 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **September 3, 2024:** 2 Files Changed
+    - Prevent the header text on the card album and card list screens from being overwritten by new font tiles when scrolling the page
+    - This display glitch would only have occurred if the size of the card or booster pack lists were increased or the card names were altered
+
+<br/>
+
 - **[August 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/1d61b53fe1d2b03d15fedbe902dd3035080b35cd):** 4 Files Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Make-AI-understand-attacks-with-any-energy-cost-combinations) to give the AI the ability to read more complex Energy requirements in attack costs (more than 2 types of Energy)
     - This isn't exactly a bug since there were no multicolored attacks in the base game
@@ -84,7 +90,7 @@
 
 
 ## Code Optimization
-- **September 1, 2024:** 11 Files Changed
+- **[September 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/42156996bbfb3063a016f6319bf8bc051ec79866):** 11 Files Changed
     - Eliminate some unnecessary loading of card data to wram
 
 <br/>

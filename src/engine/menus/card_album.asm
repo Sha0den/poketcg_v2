@@ -276,11 +276,29 @@ CreateCardSetListAndInitListCoords:
 	ret
 
 
+BoosterNamesTextIDTable::
+	tx Item1ColosseumText        ; CARD_SET_COLOSSEUM
+	tx Item2EvolutionText        ; CARD_SET_EVOLUTION
+	tx Item3MysteryText          ; CARD_SET_MYSTERY
+	tx Item4LaboratoryText       ; CARD_SET_LABORATORY
+	tx Item5PromotionalCardText  ; CARD_SET_PROMOTIONAL
+
 ; prints the cards being shown in the Card Album screen
 ; for the corresponding Card Set
 ; preserves bc
 PrintCardSetListEntries:
 	push bc
+	ld a, [wSelectedCardSet]
+	add a
+	ld e, a
+	ld d, $0
+	ld hl, BoosterNamesTextIDTable
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	lb de, 1, 1
+	call InitTextPrinting_ProcessTextFromID
 	ld hl, wCardListCoords
 	ld e, [hl]
 	inc hl
