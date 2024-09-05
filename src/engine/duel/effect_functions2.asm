@@ -436,7 +436,7 @@ AIFindTrainer:
 
 
 ; output:
-;	[hTempList + 1] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 FindAnyPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChoosePokemonFromDeckText
@@ -462,7 +462,7 @@ FindAnyPokemon:
 
 ; a Pokemon was selected
 	ldh a, [hTempCardIndex_ff98]
-	ldh [hTempList + 1], a
+	ldh [hTemp_ffa0], a
 	or a
 	ret
 
@@ -488,7 +488,7 @@ FindAnyPokemon:
 ; no Pokemon in the deck, can safely exit screen
 .exit
 	ld a, $ff
-	ldh [hTempList + 1], a
+	ldh [hTemp_ffa0], a
 	or a
 	ret
 

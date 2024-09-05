@@ -396,7 +396,7 @@ DiscardEnergyDefendingPokemonEffectCommands:
 	db  $00
 
 OpponentSwitchesActive50PercentEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentSwitchesActive50Percent_SwitchEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentSwitchesActive_SwitchEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive50Percent_SelectEffect
 	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive50Percent_SelectEffect
 	db  $00
@@ -628,7 +628,7 @@ Recoil80EffectCommands:
 DiscardAttachedFireEnergyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, ActivePokemon_FireEnergyCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardAttachedFireEnergy_PlayerSelection
-	dbw EFFECTCMDTYPE_DISCARD_ENERGY, AlternateCardDiscardEffect
+	dbw EFFECTCMDTYPE_DISCARD_ENERGY, CardDiscardEffect
 	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardAttachedFireEnergy_AISelection
 	db  $00
 
@@ -1027,7 +1027,7 @@ PlusPowerEffectCommands:
 
 PokeBallEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PokeBall_AddToHandEffect
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AddCardFromDeckToHandEffect
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PokeBall_PlayerSelection
 	db  $00
 

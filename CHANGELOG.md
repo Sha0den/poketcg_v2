@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **September 3, 2024:** 2 Files Changed
+- **[September 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/686b3842584ef587fe3a73947eaf8521ca91b5db):** 2 Files Changed
     - Prevent the header text on the card album and card list screens from being overwritten by new font tiles when scrolling the page
     - This display glitch would only have occurred if the size of the card or booster pack lists were increased or the card names were altered
 
@@ -90,6 +90,11 @@
 
 
 ## Code Optimization
+- **September 5, 2024:** 3 Files Changed
+    - Make some changes to the effect functions files pertaining to hram labels and eliminate some unnecessary functions in the process.
+
+<br/>
+
 - **[September 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/42156996bbfb3063a016f6319bf8bc051ec79866):** 11 Files Changed
     - Eliminate some unnecessary loading of card data to wram
 
