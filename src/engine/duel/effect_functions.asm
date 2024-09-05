@@ -8411,6 +8411,7 @@ PokeBall_PlayerSelection:
 	call TossCoin
 	jr nc, .tails
 	farcall FindAnyPokemon
+	ret
 .tails
 	ld a, $ff
 	ldh [hTemp_ffa0], a

@@ -90,8 +90,9 @@
 
 
 ## Code Optimization
-- **September 5, 2024:** 3 Files Changed
+- **[September 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/623ad9e66c831b60fb67885debddb175175639cd):** 3 Files Changed
     - Make some changes to the effect functions files pertaining to hram labels and eliminate some unnecessary functions in the process.
+    - A missing `ret` was added in the next commit.
 
 <br/>
 
