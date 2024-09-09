@@ -97,21 +97,6 @@ GetMapScriptPointer::
 	ret
 
 
-; loads some configurations for the duel against
-; the NPC whose deck ID is stored in wNPCDuelDeckID.
-; this includes NPC portrait, his/her name text ID, and the number of prize cards.
-; this was used in testing since these configurations
-; are stored in the script-related NPC data for normal gameplay.
-; preserves all registers except af
-; input:
-;	[wNPCDuelDeckID] = NPC's deck ID (*_DECK constant)
-; output:
-;	carry = set:  if a duel configuration was found for the given NPC deck ID
-GetNPCDuelConfigurations::
-	farcall _GetNPCDuelConfigurations
-	ret
-
-
 ; finds a Script from the first byte and puts the next two bytes (usually arguments?) into cb
 RunOverworldScript::
 	ld hl, wScriptPointer
@@ -173,6 +158,21 @@ FinishQueuedAnimations::
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+; loads some configurations for the duel against
+; the NPC whose deck ID is stored in wNPCDuelDeckID.
+; this includes NPC portrait, his/her name text ID, and the number of prize cards.
+; this was used in testing since these configurations
+; are stored in the script-related NPC data for normal gameplay.
+; preserves all registers except af
+; input:
+;	[wNPCDuelDeckID] = NPC's deck ID (*_DECK constant)
+; output:
+;	carry = set:  if a duel configuration was found for the given NPC deck ID
+;GetNPCDuelConfigurations::
+;	farcall _GetNPCDuelConfigurations
+;	ret
+;
 ;
 ;Func_3b11::
 ;	ldh a, [hBankROM]

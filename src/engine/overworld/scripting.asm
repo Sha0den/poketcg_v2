@@ -737,11 +737,7 @@ SetScriptPointer:
 	ret
 
 
-; preserves de and hl (also true for the following 3 functions)
-GetScriptArgs5AfterPointer:
-	ld a, 5
-	jr GetScriptArgsAfterPointer
-
+; preserves de and hl (also true for the following 2 functions)
 GetScriptArgs1AfterPointer:
 	ld a, 1
 	jr GetScriptArgsAfterPointer

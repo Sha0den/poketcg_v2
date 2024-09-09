@@ -336,13 +336,6 @@ Func_c241:
 
 
 ; preserves all registers except af
-Func_c251:
-	ldh a, [hffb0]
-	push af
-	ld a, $1
-	jr Func_c258.asm_c25d
-
-; preserves all registers except af
 Func_c258:
 	ldh a, [hffb0]
 	push af

@@ -459,10 +459,6 @@ Func_8025b:
 ; preserves all registers except af
 LoadGfxDataFromTempPointerToVRAMBank:
 	call GetTileOffsetPointerAndSwitchVRAM
-	jr LoadGfxDataFromTempPointer
-
-LoadGfxDataFromTempPointerToVRAMBank_Tiles0ToTiles2:
-	call GetTileOffsetPointerAndSwitchVRAM_Tiles0ToTiles2
 ;	fallthrough
 
 ; loads graphics data pointed by wTempPointer in wTempPointerBank to wVRAMPointer
@@ -1326,195 +1322,6 @@ Func_80baa:
 	db $0a, $00, TILEMAP_CHALLENGE_MACHINE_MAP_EVENT, TILEMAP_CHALLENGE_MACHINE_MAP_EVENT_CGB
 
 
-; seems to be used to look at each OW NPC sprites
-; with functions to rotate NPC and animate them
-Func_80cd7:
-	call DisableLCD
-	call EmptyScreen
-	call ClearSpriteAnimations
-	xor a
-	ld [wd4ca], a
-	ld [wd4cb], a
-	ld a, PALETTE_0
-	call SetBGPAndLoadedPal
-	xor a
-	ld [wd4ca], a
-	ld [wd4cb], a
-	ld a, PALETTE_29
-	call LoadPaletteData
-	ld a, SOUTH
-	ld [wLoadNPCDirection], a
-	ld a, $01
-	ld [wLoadedNPCTempIndex], a
-	call .DrawNPCSprite
-	call .PrintNPCInfo
-	call EnableLCD
-.loop
-	call DoFrameIfLCDEnabled
-	call .HandleInput
-	call HandleAllSpriteAnimations
-	ldh a, [hKeysPressed]
-	and SELECT ; if select is pressed, exit
-	jr z, .loop
-	ret
-
-; A button makes NPC rotate
-; D-pad scrolls through the NPCs
-; from $01 to $2c
-; these are not aligned with the regular NPC indices
-.HandleInput
-	ldh a, [hKeysPressed]
-	and A_BUTTON
-	jr z, .no_a_button
-	ld a, [wLoadNPCDirection]
-	inc a ; rotate NPC
-	and %11
-	ld [wLoadNPCDirection], a
-	call ClearSpriteAnimations
-	call .DrawNPCSprite
-.no_a_button
-	ldh a, [hKeysPressed]
-	and D_PAD
-	ret z
-	farcall GetDirectionFromDPad
-	ld hl, .func_table
-	jp JumpToFunctionInTable
-
-.func_table
-	dw .up ; D_UP
-	dw .right ; D_RIGHT
-	dw .down ; D_DOWN
-	dw .left ; D_LEFT
-.up
-	ld a, 10
-	jr .decr_npc_id
-.down
-	ld a, 10
-	jr .incr_npc_id
-.right
-	ld a, 1
-	; fallthrough
-
-.incr_npc_id
-	ld c, a
-	ld a, [wLoadedNPCTempIndex]
-	cp $2c
-	jr z, .load_first_npc
-	add c
-	jr c, .load_last_npc
-	cp $2c
-	jr nc, .load_last_npc
-	jr .got_npc
-
-.left
-	ld a, 1
-	; fallthrough
-
-.decr_npc_id
-	ld c, a
-	ld a, [wLoadedNPCTempIndex]
-	cp $01
-	jr z, .load_last_npc
-	sub c
-	jr c, .load_first_npc
-	cp $01
-	jr c, .load_first_npc
-	jr .got_npc
-.load_first_npc
-	ld a, $01
-	jr .got_npc
-.load_last_npc
-	ld a, $2c
-
-.got_npc
-	ld [wLoadedNPCTempIndex], a
-	call ClearSpriteAnimations
-	call .DrawNPCSprite
-;	fallthrough
-
-.PrintNPCInfo
-	lb de, 0, 4
-	ldtx hl, SPRText
-	call InitTextPrinting_ProcessTextFromID
-	ld bc, FlushAllPalettes
-	ld a, [wLoadedNPCTempIndex]
-	jp WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-
-.DrawNPCSprite
-	ld a, [wLoadedNPCTempIndex]
-	ld c, a
-	add a
-	add c ; *3
-	ld c, a
-	ld b, $0
-	ld hl, .NPCSpriteAnimData - 3
-	add hl, bc
-	ld a, [hli]
-	cp $ff
-	ret z ; skip draw sprite
-	farcall CreateSpriteAndAnimBufferEntry
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	jr nz, .not_cgb
-	inc hl
-.not_cgb
-	ld a, [wLoadNPCDirection]
-	add [hl]
-	farcall StartNewSpriteAnimation
-	ld c, SPRITE_ANIM_COORD_X
-	call GetSpriteAnimBufferProperty
-	ld a, $48
-	ld [hli], a
-	ld a, $40
-	ld [hl], a ; SPRITE_ANIM_COORD_Y
-	ret
-
-.NPCSpriteAnimData
-	db SPRITE_OW_PLAYER,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_RED_NPC_UP       ; $01
-	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $02
-	db SPRITE_OW_RONALD,   SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_BLUE_NPC_UP      ; $03
-	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $04
-	db SPRITE_OW_DRMASON,  SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $05
-	db SPRITE_OW_ISHIHARA, SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_PURPLE_NPC_UP    ; $06
-	db SPRITE_OW_IMAKUNI,  SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $07
-	db SPRITE_OW_NIKKI,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_GREEN_NPC_UP     ; $08
-	db SPRITE_OW_RICK,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $09
-	db SPRITE_OW_KEN,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_RED_NPC_UP       ; $0a
-	db SPRITE_OW_AMY,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_BLUE_NPC_UP      ; $0b
-	db SPRITE_OW_ISAAC,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $0c
-	db SPRITE_OW_MITCH,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $0d
-	db SPRITE_OW_GENE,     SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_PURPLE_NPC_UP    ; $0e
-	db SPRITE_OW_MURRAY,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PINK_NPC_UP      ; $0f
-	db SPRITE_OW_COURTNEY, SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PINK_NPC_UP      ; $10
-	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $11
-	db SPRITE_OW_STEVE,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_INDIGO_NPC_UP    ; $12
-	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $13
-	db SPRITE_OW_JACK,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $14
-	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $15
-	db SPRITE_OW_ROD,      SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $16
-	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $17
-	db SPRITE_OW_BOY,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_YELLOW_NPC_UP    ; $18
-	db SPRITE_OW_LAD,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_GREEN_NPC_UP     ; $19
-	db SPRITE_OW_SPECS,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PURPLE_NPC_UP    ; $1a
-	db SPRITE_OW_BUTCH,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $1b
-	db SPRITE_OW_MANIA,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $1c
-	db SPRITE_OW_JOSHUA,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $1d
-	db SPRITE_OW_HOOD,     SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_RED_NPC_UP       ; $1e
-	db SPRITE_OW_TECH,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $1f
-	db SPRITE_OW_CHAP,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_GREEN_NPC_UP     ; $20
-	db SPRITE_OW_MAN,      SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $21
-	db SPRITE_OW_PAPPY,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PURPLE_NPC_UP    ; $22
-	db SPRITE_OW_GIRL,     SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_BLUE_NPC_UP      ; $23
-	db SPRITE_OW_LASS1,    SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_PURPLE_NPC_UP    ; $24
-	db SPRITE_OW_LASS2,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_RED_NPC_UP       ; $25
-	db SPRITE_OW_LASS3,    SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_GREEN_NPC_UP     ; $26
-	db SPRITE_OW_SWIMMER,  SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $27
-	db SPRITE_OW_CLERK,    SPRITE_ANIM_SGB_CLERK_NPC_UP, SPRITE_ANIM_CGB_CLERK_NPC_UP ; $28
-	db SPRITE_OW_GAL,      SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $29
-	db SPRITE_OW_WOMAN,    SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_RED_NPC_UP       ; $2a
-	db SPRITE_OW_GRANNY,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $2b
-	db SPRITE_OW_AMY,      SPRITE_ANIM_SGB_AMY_LAYING,   SPRITE_ANIM_CGB_AMY_LAYING   ; $2c
-
 SpriteNullAnimationPointer::
 	dw SpriteNullAnimationFrame
 
@@ -1525,6 +1332,11 @@ SpriteNullAnimationFrame:
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+;LoadGfxDataFromTempPointerToVRAMBank_Tiles0ToTiles2:
+;	call GetTileOffsetPointerAndSwitchVRAM_Tiles0ToTiles2
+;	jp LoadGfxDataFromTempPointer
+;
 ;
 ;Func_80238:
 ;	push hl
@@ -1607,3 +1419,193 @@ SpriteNullAnimationFrame:
 ;	or c
 ;	jr nz, .loop
 ;	ret
+;
+;
+; seems to be used to look at each OW NPC sprites
+; with functions to rotate NPC and animate them
+;Func_80cd7:
+;	call DisableLCD
+;	call EmptyScreen
+;	call ClearSpriteAnimations
+;	xor a
+;	ld [wd4ca], a
+;	ld [wd4cb], a
+;	ld a, PALETTE_0
+;	call SetBGPAndLoadedPal
+;	xor a
+;	ld [wd4ca], a
+;	ld [wd4cb], a
+;	ld a, PALETTE_29
+;	call LoadPaletteData
+;	ld a, SOUTH
+;	ld [wLoadNPCDirection], a
+;	ld a, $01
+;	ld [wLoadedNPCTempIndex], a
+;	call .DrawNPCSprite
+;	call .PrintNPCInfo
+;	call EnableLCD
+;.loop
+;	call DoFrameIfLCDEnabled
+;	call .HandleInput
+;	call HandleAllSpriteAnimations
+;	ldh a, [hKeysPressed]
+;	and SELECT ; if select is pressed, exit
+;	jr z, .loop
+;	ret
+;
+; A button makes NPC rotate
+; D-pad scrolls through the NPCs
+; from $01 to $2c
+; these are not aligned with the regular NPC indices
+;.HandleInput
+;	ldh a, [hKeysPressed]
+;	and A_BUTTON
+;	jr z, .no_a_button
+;	ld a, [wLoadNPCDirection]
+;	inc a ; rotate NPC
+;	and %11
+;	ld [wLoadNPCDirection], a
+;	call ClearSpriteAnimations
+;	call .DrawNPCSprite
+;.no_a_button
+;	ldh a, [hKeysPressed]
+;	and D_PAD
+;	ret z
+;	farcall GetDirectionFromDPad
+;	ld hl, .func_table
+;	jp JumpToFunctionInTable
+;
+;.func_table
+;	dw .up ; D_UP
+;	dw .right ; D_RIGHT
+;	dw .down ; D_DOWN
+;	dw .left ; D_LEFT
+;.up
+;	ld a, 10
+;	jr .decr_npc_id
+;.down
+;	ld a, 10
+;	jr .incr_npc_id
+;.right
+;	ld a, 1
+;	; fallthrough
+;
+;.incr_npc_id
+;	ld c, a
+;	ld a, [wLoadedNPCTempIndex]
+;	cp $2c
+;	jr z, .load_first_npc
+;	add c
+;	jr c, .load_last_npc
+;	cp $2c
+;	jr nc, .load_last_npc
+;	jr .got_npc
+;
+;.left
+;	ld a, 1
+;	; fallthrough
+;
+;.decr_npc_id
+;	ld c, a
+;	ld a, [wLoadedNPCTempIndex]
+;	cp $01
+;	jr z, .load_last_npc
+;	sub c
+;	jr c, .load_first_npc
+;	cp $01
+;	jr c, .load_first_npc
+;	jr .got_npc
+;.load_first_npc
+;	ld a, $01
+;	jr .got_npc
+;.load_last_npc
+;	ld a, $2c
+;
+;.got_npc
+;	ld [wLoadedNPCTempIndex], a
+;	call ClearSpriteAnimations
+;	call .DrawNPCSprite
+;	; fallthrough
+;
+;.PrintNPCInfo
+;	lb de, 0, 4
+;	ldtx hl, SPRText
+;	call InitTextPrinting_ProcessTextFromID
+;	ld bc, FlushAllPalettes
+;	ld a, [wLoadedNPCTempIndex]
+;	jp WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
+;
+;.DrawNPCSprite
+;	ld a, [wLoadedNPCTempIndex]
+;	ld c, a
+;	add a
+;	add c ; *3
+;	ld c, a
+;	ld b, $0
+;	ld hl, .NPCSpriteAnimData - 3
+;	add hl, bc
+;	ld a, [hli]
+;	cp $ff
+;	ret z ; skip draw sprite
+;	farcall CreateSpriteAndAnimBufferEntry
+;	ld a, [wConsole]
+;	cp CONSOLE_CGB
+;	jr nz, .not_cgb
+;	inc hl
+;.not_cgb
+;	ld a, [wLoadNPCDirection]
+;	add [hl]
+;	farcall StartNewSpriteAnimation
+;	ld c, SPRITE_ANIM_COORD_X
+;	call GetSpriteAnimBufferProperty
+;	ld a, $48
+;	ld [hli], a
+;	ld a, $40
+;	ld [hl], a ; SPRITE_ANIM_COORD_Y
+;	ret
+;
+;.NPCSpriteAnimData
+;	db SPRITE_OW_PLAYER,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_RED_NPC_UP       ; $01
+;	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $02
+;	db SPRITE_OW_RONALD,   SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_BLUE_NPC_UP      ; $03
+;	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $04
+;	db SPRITE_OW_DRMASON,  SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $05
+;	db SPRITE_OW_ISHIHARA, SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_PURPLE_NPC_UP    ; $06
+;	db SPRITE_OW_IMAKUNI,  SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $07
+;	db SPRITE_OW_NIKKI,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_GREEN_NPC_UP     ; $08
+;	db SPRITE_OW_RICK,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $09
+;	db SPRITE_OW_KEN,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_RED_NPC_UP       ; $0a
+;	db SPRITE_OW_AMY,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_BLUE_NPC_UP      ; $0b
+;	db SPRITE_OW_ISAAC,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $0c
+;	db SPRITE_OW_MITCH,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $0d
+;	db SPRITE_OW_GENE,     SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_PURPLE_NPC_UP    ; $0e
+;	db SPRITE_OW_MURRAY,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PINK_NPC_UP      ; $0f
+;	db SPRITE_OW_COURTNEY, SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PINK_NPC_UP      ; $10
+;	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $11
+;	db SPRITE_OW_STEVE,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_INDIGO_NPC_UP    ; $12
+;	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $13
+;	db SPRITE_OW_JACK,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $14
+;	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $15
+;	db SPRITE_OW_ROD,      SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $16
+;	db $ff,                SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_LIGHT_NPC_UP     ; $17
+;	db SPRITE_OW_BOY,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_YELLOW_NPC_UP    ; $18
+;	db SPRITE_OW_LAD,      SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_GREEN_NPC_UP     ; $19
+;	db SPRITE_OW_SPECS,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PURPLE_NPC_UP    ; $1a
+;	db SPRITE_OW_BUTCH,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $1b
+;	db SPRITE_OW_MANIA,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $1c
+;	db SPRITE_OW_JOSHUA,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_WHITE_NPC_UP     ; $1d
+;	db SPRITE_OW_HOOD,     SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_RED_NPC_UP       ; $1e
+;	db SPRITE_OW_TECH,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_BLUE_NPC_UP      ; $1f
+;	db SPRITE_OW_CHAP,     SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_GREEN_NPC_UP     ; $20
+;	db SPRITE_OW_MAN,      SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $21
+;	db SPRITE_OW_PAPPY,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_PURPLE_NPC_UP    ; $22
+;	db SPRITE_OW_GIRL,     SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_BLUE_NPC_UP      ; $23
+;	db SPRITE_OW_LASS1,    SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_PURPLE_NPC_UP    ; $24
+;	db SPRITE_OW_LASS2,    SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_RED_NPC_UP       ; $25
+;	db SPRITE_OW_LASS3,    SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_GREEN_NPC_UP     ; $26
+;	db SPRITE_OW_SWIMMER,  SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $27
+;	db SPRITE_OW_CLERK,    SPRITE_ANIM_SGB_CLERK_NPC_UP, SPRITE_ANIM_CGB_CLERK_NPC_UP ; $28
+;	db SPRITE_OW_GAL,      SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $29
+;	db SPRITE_OW_WOMAN,    SPRITE_ANIM_DARK_NPC_UP,      SPRITE_ANIM_RED_NPC_UP       ; $2a
+;	db SPRITE_OW_GRANNY,   SPRITE_ANIM_LIGHT_NPC_UP,     SPRITE_ANIM_YELLOW_NPC_UP    ; $2b
+;	db SPRITE_OW_AMY,      SPRITE_ANIM_SGB_AMY_LAYING,   SPRITE_ANIM_CGB_AMY_LAYING   ; $2c

@@ -158,49 +158,6 @@ SetNPCMatchStartTheme:
 INCLUDE "data/npcs.asm"
 
 
-; loads some configurations for the duel against
-; the NPC whose deck ID is stored in wNPCDuelDeckID.
-; this includes NPC portrait, his/her name text ID, and the number of prize cards.
-; this was used in testing since these configurations
-; are stored in the script-related NPC data for normal gameplay.
-; preserves all registers except af
-; input:
-;	[wNPCDuelDeckID] = NPC's deck ID (*_DECK constant)
-; output:
-;	carry = set:  if a duel configuration was found for the given NPC deck ID
-_GetNPCDuelConfigurations::
-	push hl
-	push bc
-	push de
-	ld a, [wNPCDuelDeckID]
-	ld e, a
-	ld bc, 9 ; size of struct - 1
-	ld hl, DeckIDDuelConfigurations
-.loop_deck_ids
-	ld a, [hli]
-	cp -1 ; end of list?
-	jr z, .done
-	cp e
-	jr nz, .next_deck_id
-	ld a, [hli]
-	ld [wOpponentPortrait], a
-	ld a, [hli]
-	ld [wOpponentName], a
-	ld a, [hli]
-	ld [wOpponentName + 1], a
-	ld a, [hl]
-	ld [wNPCDuelPrizes], a
-	scf
-.done
-	pop de
-	pop bc
-	pop hl
-	ret
-.next_deck_id
-	add hl, bc
-	jr .loop_deck_ids
-
-
 ; preserves bc and de
 ; input:
 ;	[wNPCDuelDeckID] = deck ID (*_DECK constant)
@@ -237,3 +194,50 @@ _GetChallengeMachineDuelConfigurations:
 .next_deck_id
 	add hl, bc
 	jr .loop_deck_ids
+
+
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; loads some configurations for the duel against
+; the NPC whose deck ID is stored in wNPCDuelDeckID.
+; this includes NPC portrait, his/her name text ID, and the number of prize cards.
+; this was used in testing since these configurations
+; are stored in the script-related NPC data for normal gameplay.
+; preserves all registers except af
+; input:
+;	[wNPCDuelDeckID] = NPC's deck ID (*_DECK constant)
+; output:
+;	carry = set:  if a duel configuration was found for the given NPC deck ID
+;_GetNPCDuelConfigurations::
+;	push hl
+;	push bc
+;	push de
+;	ld a, [wNPCDuelDeckID]
+;	ld e, a
+;	ld bc, 9 ; size of struct - 1
+;	ld hl, DeckIDDuelConfigurations
+;.loop_deck_ids
+;	ld a, [hli]
+;	cp -1 ; end of list?
+;	jr z, .done
+;	cp e
+;	jr nz, .next_deck_id
+;	ld a, [hli]
+;	ld [wOpponentPortrait], a
+;	ld a, [hli]
+;	ld [wOpponentName], a
+;	ld a, [hli]
+;	ld [wOpponentName + 1], a
+;	ld a, [hl]
+;	ld [wNPCDuelPrizes], a
+;	scf
+;.done
+;	pop de
+;	pop bc
+;	pop hl
+;	ret
+;.next_deck_id
+;	add hl, bc
+;	jr .loop_deck_ids

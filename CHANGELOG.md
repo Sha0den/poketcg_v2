@@ -90,6 +90,11 @@
 
 
 ## Code Optimization
+- **September 9, 2024:** 6 Files Changed
+    - Remove some more unreferenced functions from the build
+
+<br/>
+
 - **[September 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/623ad9e66c831b60fb67885debddb175175639cd):** 3 Files Changed
     - Make some changes to the effect functions files pertaining to hram labels and eliminate some unnecessary functions in the process.
     - A missing `ret` was added in [this commit](https://github.com/Sha0den/poketcg_v2/commit/b009fbaf8dc9aceeb71fbfa9fbbd1ae14c7826b0).
@@ -564,7 +569,7 @@
 
 
 ## Miscellaneous Changes
-- **September 9, 2024:** 128 Files Deleted
+- **[September 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/d87ba6cad6f1fde098f4260f1003de499a09f97e):** 128 Files Deleted
     - Remove the .match files for the map graphics data
 
 <br/>
