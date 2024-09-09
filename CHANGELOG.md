@@ -92,7 +92,7 @@
 ## Code Optimization
 - **[September 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/623ad9e66c831b60fb67885debddb175175639cd):** 3 Files Changed
     - Make some changes to the effect functions files pertaining to hram labels and eliminate some unnecessary functions in the process.
-    - A missing `ret` was added in the next commit.
+    - A missing `ret` was added in [this commit](https://github.com/Sha0den/poketcg_v2/commit/b009fbaf8dc9aceeb71fbfa9fbbd1ae14c7826b0).
 
 <br/>
 
@@ -564,6 +564,11 @@
 
 
 ## Miscellaneous Changes
+- **September 9, 2024:** 128 Files Deleted
+    - Remove the .match files for the map graphics data
+
+<br/>
+
 - **[August 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/f6a9e26233234a45d170ad9776bd6e0b48f58408):** 4 Files Changed
     - Update the palettes and icons for Ronald's and the Player's duelist portraits (most changes were taken from the sequel's portraits)
     - Identify palettes that are used for all of the duelist portraits
