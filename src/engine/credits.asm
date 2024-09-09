@@ -193,5 +193,4 @@ Func_1d7ee:
 	lb de, 0, 32  ; screen coordinates for top left tile (off screen)
 	lb bc, 20, 18 ; width and height of image in tiles (screen size)
 	lb hl, 0, 0
-	call FillRectangle
-	ret
+	jp FillRectangle

@@ -90,7 +90,12 @@
 
 
 ## Code Optimization
-- **September 9, 2024:** 6 Files Changed
+- **September 9, 2024:** 10 Files Changed
+    - Eliminate some more tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
+
+<br/>
+
+- **[September 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/033036f9a242f651e3491c62c51164246d6603df):** 6 Files Changed
     - Remove some more unreferenced functions from the build
 
 <br/>

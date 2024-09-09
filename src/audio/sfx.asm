@@ -62,8 +62,7 @@ SFX_Update:
 	ld a, [wdd8c]
 	or a
 	jr nz, .asm_fc063
-	call Func_fc26c
-	ret
+	jp Func_fc26c
 .asm_fc063
 	xor a
 	ld b, a

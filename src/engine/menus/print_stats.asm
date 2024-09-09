@@ -99,8 +99,7 @@ FlashReceivedMedal:
 	ld d, b ; x coordinate
 	lb bc, 3, 3 ; width and height of a medal icon
 	lb hl, 0, 0
-	call FillRectangle
-	ret
+	jp FillRectangle
 
 .show
 	inc hl

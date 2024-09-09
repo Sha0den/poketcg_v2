@@ -81,8 +81,7 @@ HandleTitleScreen:
 	xor a
 	ld [wDoFrameFunction + 0], a
 	ld [wDoFrameFunction + 1], a
-	call EnableAndClearSpriteAnimations
-	ret
+	jp EnableAndClearSpriteAnimations
 
 
 ; updates wHasSaveData and wHasDuelSaveData
@@ -430,5 +429,4 @@ DrawPlayerPortraitAndPrintNewGameText:
 	xor a
 	ld [wDoFrameFunction + 0], a
 	ld [wDoFrameFunction + 1], a
-	call EnableAndClearSpriteAnimations
-	ret
+	jp EnableAndClearSpriteAnimations

@@ -181,8 +181,7 @@ Music2_Update:
 	call Music2_UpdateChannel4
 .skip_channel_Updates
 	call Music2_f4866
-	call Music2_CheckForEndOfSong
-	ret
+	jp Music2_CheckForEndOfSong
 
 Music2_CheckForNewSound:
 	ld a, [wCurSongID]
@@ -373,8 +372,6 @@ Music2_BeginSong:
 .no_channel_4
 	xor a
 	ld [wddf2], a
-	ret
-
 Music2_EmptyFunc:
 	ret
 
@@ -418,8 +415,7 @@ Music2_UpdateChannel1:
 	call Music2_f4714
 .asm_f42f4
 	ld a, $0
-	call Music2_f485a
-	ret
+	jp Music2_f485a
 .asm_f42fa
 	ld a, [wdd8c]
 	bit 0, a
@@ -470,8 +466,7 @@ Music2_UpdateChannel2:
 	call Music2_f475a
 .asm_f4359
 	ld a, $1
-	call Music2_f485a
-	ret
+	jp Music2_f485a
 .asm_f435f
 	ld a, [wdd8c]
 	bit 1, a
@@ -518,8 +513,7 @@ Music2_UpdateChannel3:
 	call Music2_f479c
 .asm_f43b8
 	ld a, $2
-	call Music2_f485a
-	ret
+	jp Music2_f485a
 .asm_f43be
 	ld a, [wdd8c]
 	bit 2, a
@@ -553,8 +547,7 @@ Music2_UpdateChannel4:
 	ld a, [wddef]
 	or a
 	ret z
-	call Music2_f4839
-	ret
+	jp Music2_f4839
 .asm_f4400
 	ld a, [wdd8c]
 	bit 3, a
@@ -1349,8 +1342,7 @@ Music2_f485a:
 	ld c, a
 	call Music2_UpdateVibrato
 	pop af
-	call Music2_f490b
-	ret
+	jp Music2_f490b
 
 Music2_f4866:
 	ld a, [wMusicPanning]
@@ -1711,8 +1703,7 @@ Music2_BackupSong:
 	ld hl, wMusicCh1Stack
 	ld de, wMusicCh1StackBackup
 	ld a, $c * 4
-	call Music2_CopyData
-	ret
+	jp Music2_CopyData
 
 Music2_LoadBackup:
 	ld a, [wCurSongIDBackup]
@@ -1814,8 +1805,7 @@ Music2_LoadBackup:
 	ld hl, wMusicCh1StackBackup
 	ld de, wMusicCh1Stack
 	ld a, $c * 4
-	call Music2_CopyData
-	ret
+;	fallthrough
 
 ; copies a bytes from hl to de
 Music2_CopyData:

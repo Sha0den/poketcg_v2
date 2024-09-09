@@ -38,8 +38,7 @@ MasonLabPressedA:
 	or a
 	ret z
 	ld hl, ChallengeMachineObjectTable
-	call FindExtraInteractableObjects
-	ret
+	jp FindExtraInteractableObjects
 
 ChallengeMachineObjectTable:
 	db 10, 4, NORTH

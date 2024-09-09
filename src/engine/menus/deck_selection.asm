@@ -89,8 +89,7 @@ EmptyScreenAndLoadFontDuelAndDeckIcons:
 	call LoadDuelCardSymbolTiles
 	bank1call SetDefaultConsolePalettes
 	lb de, $38, $bf
-	call SetupText
-	ret
+	jp SetupText
 
 
 ; initializes the following deck building parameters from hl:
