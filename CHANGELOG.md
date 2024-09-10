@@ -90,7 +90,7 @@
 
 
 ## Code Optimization
-- **September 10, 2024:** 28 Files Changed
+- **[September 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/115b22557cfb56883fdbca6b1f41c38d3f4bfa85):** 28 Files Changed
     - Replace some jumps that skip over a call with a conditional call (e.g. `call nz`)
     - Replace various instances of 2 numbers being separately loaded into a register pair with a 16-bit load
     - Replace a few uses of `jp` with `jr` and remove a few duplicate `xor a` instructions
@@ -581,6 +581,11 @@
 
 
 ## Miscellaneous Changes
+- **September 10, 2024:** 2 Files Changed (1 was deleted)
+    - Remove remaining rom comparison references in `Makefile` and delete `rom.sha1`
+
+<br/>
+
 - **[September 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/d87ba6cad6f1fde098f4260f1003de499a09f97e):** 128 Files Deleted
     - Remove the .match files for the map graphics data
 
