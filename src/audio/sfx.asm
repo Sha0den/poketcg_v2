@@ -13,9 +13,7 @@ SFX_Play:
 	ld b, $0
 	ld a, [wde53]
 	or a
-	jr z, .asm_fc019
-	call Func_fc279
-.asm_fc019
+	call nz, Func_fc279
 	ld a, $1
 	ld [wde53], a
 	ld hl, SFXHeaderPointers

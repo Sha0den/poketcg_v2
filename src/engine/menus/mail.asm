@@ -280,8 +280,7 @@ TryOpenPCMailBoosterPack:
 	pop hl
 	ld a, [hl]
 	or a
-	jp z, DisableLCD ; the mail didn't have a 2nd booster pack
-	call GiveBoosterPack
+	call nz, GiveBoosterPack
 	jp DisableLCD
 
 .booster_already_open

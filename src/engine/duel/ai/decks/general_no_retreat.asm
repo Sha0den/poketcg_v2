@@ -71,9 +71,7 @@ AIDoTurn_GeneralNoRetreat:
 ; play Energy card if possible
 	ld a, [wAlreadyPlayedEnergy]
 	or a
-	jr nz, .skip_energy_attach_1
-	call AIProcessAndTryToPlayEnergy
-.skip_energy_attach_1
+	call z, AIProcessAndTryToPlayEnergy
 ; play Pokemon from hand again
 	call AIDecidePlayPokemonCard
 ; handle Pkmn Powers again
@@ -119,9 +117,7 @@ AIDoTurn_GeneralNoRetreat:
 	call AIProcessHandTrainerCards
 	ld a, [wAlreadyPlayedEnergy]
 	or a
-	jr nz, .skip_energy_attach_2
-	call AIProcessAndTryToPlayEnergy
-.skip_energy_attach_2
+	call z, AIProcessAndTryToPlayEnergy
 	call AIDecidePlayPokemonCard
 	farcall HandleAIDamageSwap
 	farcall HandleAIPkmnPowers

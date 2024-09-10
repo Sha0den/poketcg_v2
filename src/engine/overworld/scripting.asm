@@ -924,9 +924,7 @@ ScriptCommand_BattleCenter:
 ScriptCommand_PrintVariableNPCText:
 	ld a, [wScriptControlByte]
 	or a
-	jr nz, .print_text
-	call GetScriptArgs3AfterPointer
-.print_text
+	call z, GetScriptArgs3AfterPointer
 	ld l, c
 	ld h, b
 	call Func_cc32
@@ -949,9 +947,7 @@ ScriptCommand_PrintTextForChallengeCup:
 ScriptCommand_PrintVariableText:
 	ld a, [wScriptControlByte]
 	or a
-	jr nz, .print_text
-	call GetScriptArgs3AfterPointer
-.print_text
+	call z, GetScriptArgs3AfterPointer
 	ld l, c
 	ld h, b
 	call Func_c891
@@ -1284,8 +1280,7 @@ ScriptCommand_TakeCard:
 
 ; preserves de
 ScriptCommand_JumpIfAnyEnergyCardsInCollection:
-	ld c, GRASS_ENERGY
-	ld b, 0
+	lb bc, 0, GRASS_ENERGY
 .loop
 	ld a, c
 	call GetCardCountInCollection
@@ -1937,9 +1932,7 @@ ShowMultichoiceTextbox:
 	ld h, [hl]
 	ld l, a
 	or h
-	jr z, .no_text
-	call Func_c8ba
-.no_text
+	call nz, Func_c8ba
 	ld a, 1 << AUTO_CLOSE_TEXTBOX
 	call SetOverworldNPCFlags
 	pop hl

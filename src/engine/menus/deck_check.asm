@@ -76,10 +76,7 @@ HandleCheckMenuInput:
 .no_input
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .check_blink
-	call PlaySFX
-
-.check_blink
+	call nz, PlaySFX
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]

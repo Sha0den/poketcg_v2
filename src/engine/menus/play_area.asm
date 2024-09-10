@@ -536,9 +536,7 @@ OpenInPlayAreaScreen_HandleInput:
 .return
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .skip_sfx
-	call PlaySFX
-.skip_sfx
+	call nz, PlaySFX
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]

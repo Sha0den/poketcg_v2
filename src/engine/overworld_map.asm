@@ -18,8 +18,7 @@ OverworldMap_UpdatePlayerAndCursorSprites:
 	ld a, [wPlayerSpriteIndex]
 	ld [wWhichSprite], a
 	ld a, [wOverworldMapStartingPosition]
-	ld d, 0
-	ld e, 0
+	lb de, 0, 0
 	call OverworldMap_SetSpritePosition
 .player_walking
 	pop de

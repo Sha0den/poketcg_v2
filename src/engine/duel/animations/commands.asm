@@ -145,18 +145,15 @@ AnimationCommand_AnimNormal:
 ; screen shake happens differently
 ; depending on whose turn it is
 .shake_1
-	ld c, DUEL_ANIM_SMALL_SHAKE_X
-	ld b, DUEL_ANIM_SMALL_SHAKE_Y
+	lb bc, DUEL_ANIM_SMALL_SHAKE_Y, DUEL_ANIM_SMALL_SHAKE_X
 	jr .check_duelist
 
 .shake_2
-	ld c, DUEL_ANIM_BIG_SHAKE_X
-	ld b, DUEL_ANIM_BIG_SHAKE_Y
+	lb bc, DUEL_ANIM_BIG_SHAKE_Y, DUEL_ANIM_BIG_SHAKE_X
 	jr .check_duelist
 
 .shake_3
-	ld c, DUEL_ANIM_SMALL_SHAKE_Y
-	ld b, DUEL_ANIM_SMALL_SHAKE_X
+	lb bc, DUEL_ANIM_SMALL_SHAKE_X, DUEL_ANIM_SMALL_SHAKE_Y
 ;	fallthrough
 
 .check_duelist
@@ -235,23 +232,19 @@ SetDuelAnimationScreen:
 	jr .asm_50e2
 
 .asm_50d2
-	ld l, UNKNOWN_SCREEN_4
-	ld h, PLAYER_TURN
+	lb hl, PLAYER_TURN, UNKNOWN_SCREEN_4
 	ld a, DUEL_ANIM_SCREEN_PLAYER_PLAY_AREA
 	jr .ok
 .asm_50da
-	ld l, UNKNOWN_SCREEN_4
-	ld h, OPPONENT_TURN
+	lb hl, OPPONENT_TURN, UNKNOWN_SCREEN_4
 	ld a, DUEL_ANIM_SCREEN_PLAYER_PLAY_AREA
 	jr .ok
 .asm_50e2
-	ld l, UNKNOWN_SCREEN_5
-	ld h, OPPONENT_TURN
+	lb hl, OPPONENT_TURN, UNKNOWN_SCREEN_5
 	ld a, DUEL_ANIM_SCREEN_OPP_PLAY_AREA
 	jr .ok
 .asm_50ea
-	ld l, UNKNOWN_SCREEN_5
-	ld h, PLAYER_TURN
+	lb hl, PLAYER_TURN, UNKNOWN_SCREEN_5
 	ld a, DUEL_ANIM_SCREEN_OPP_PLAY_AREA
 ;	fallthrough
 

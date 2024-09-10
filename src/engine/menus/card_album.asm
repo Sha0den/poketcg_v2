@@ -395,8 +395,7 @@ PrintCardSetListEntries:
 	ld [wUnableToScrollDown], a
 	ld a, SYM_SPACE
 .got_down_cursor_tile
-	ld b, 18
-	ld c, 16
+	lb bc, 18, 16
 	call WriteByteToBGMap0
 	pop bc
 	ret
@@ -958,8 +957,7 @@ CardAlbum:
 	; still didn't find any promotional cards, so print empty Card Set name
 	ld a, TRUE
 	ld [wUnavailableAlbumCardSets + CARD_SET_PROMOTIONAL], a
-	ld e, 11
-	ld d, 5
+	lb de, 5, 11
 	ldtx hl, EmptyPromotionalCardText
 	call InitTextPrinting_ProcessTextFromID
 	jr .has_promotional

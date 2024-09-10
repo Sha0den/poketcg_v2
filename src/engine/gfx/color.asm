@@ -161,8 +161,7 @@ Func_10b85:
 .Func_10b9e
 	push bc
 	push de
-	ld e, 4
-	ld d, $00
+	lb de, $00, 4
 .loop
 	call .Func_10bba
 	or d

@@ -133,8 +133,7 @@ _LoadScene::
 	inc hl
 	ld a, [wSceneSpriteAnimation]
 	cp $ff
-	jr z, .next_animation
-	call StartSpriteAnimation
+	call nz, StartSpriteAnimation
 	jr .next_animation
 .done
 	pop af

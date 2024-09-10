@@ -433,9 +433,7 @@ PlayerNamingScreen_CheckButtonState:
 .asm_69ef
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .asm_69f8
-	call PlaySFX
-.asm_69f8
+	call nz, PlaySFX
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]
@@ -1337,9 +1335,7 @@ DeckNamingScreen_CheckButtonState:
 .asm_6f89
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .asm_6f92
-	call PlaySFX
-.asm_6f92
+	call nz, PlaySFX
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]

@@ -731,8 +731,7 @@ GetSavedDeckCount:
 	call EnableSRAM
 	ld hl, sSavedDecks
 	ld bc, DECK_STRUCT_SIZE
-	ld d, NUM_DECK_SAVE_MACHINE_SLOTS
-	ld e, 0
+	lb de, NUM_DECK_SAVE_MACHINE_SLOTS, 0
 .loop
 	ld a, [hl]
 	or a
@@ -962,9 +961,7 @@ SafelySwitchToTempSRAMBank:
 	ld b, a
 	ld a, [wTempBankSRAM]
 	cp b
-	jr z, .skip
-	call BankswitchSRAM
-.skip
+	call nz, BankswitchSRAM
 	pop bc
 	pop af
 	ret
@@ -1577,8 +1574,7 @@ HandleAutoDeckMenu:
 	jr z, .exit ; operation cancelled
 	ld [wSelectedDeckMachineEntry], a
 	call ResetCheckMenuCursorPositionAndBlink
-	xor a
-	ld [wce5e], a
+	ld [wce5e], a ; 0
 	call DrawWideTextBox
 	ld hl, .DeckMachineMenuData
 	call PlaceTextItems

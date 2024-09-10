@@ -91,7 +91,7 @@ AIDoTurn_LegendaryMoltres:
 ; initialize variables
 	call InitAITurnVars
 	call HandleAIAntiMewtwoDeckStrategy
-	jp nc, .try_attack
+	jr nc, .try_attack
 ; process Trainer cards
 ; phase 2 through 4.
 	ld a, AI_TRAINER_CARD_PHASE_02

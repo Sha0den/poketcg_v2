@@ -589,8 +589,7 @@ SetAllNPCTilePermissions:
 	push hl
 	push bc
 	push de
-	ld b, $00
-	ld c, LOADED_NPC_MAX
+	lb bc, $00, LOADED_NPC_MAX
 	ld hl, wLoadedNPCs
 	ld de, LOADED_NPC_LENGTH
 .loop_npcs
@@ -639,8 +638,7 @@ FindNPCAtLocation:
 	push hl
 	push bc
 	push de
-	ld d, $00
-	ld e, LOADED_NPC_MAX
+	lb de, $00, LOADED_NPC_MAX
 	ld hl, wLoadedNPC1CoordX
 .findValidNPCLoop
 	ld a, [hli]

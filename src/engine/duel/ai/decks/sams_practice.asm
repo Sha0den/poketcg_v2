@@ -102,8 +102,8 @@ AIPerformScriptedTurn:
 ; always attack with Arena card's first attack.
 ; if it's unusable end turn without attacking.
 	xor a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	ld [wSelectedAttack], a
+	ldh [hTempPlayAreaLocation_ff9d], a ; PLAY_AREA_ARENA
+	ld [wSelectedAttack], a ; FIRST_ATTACK_OR_PKMN_POWER
 	call CheckIfSelectedAttackIsUnusable
 	jr c, .unusable
 	call AITryUseAttack
@@ -124,8 +124,7 @@ AIPerformScriptedTurn:
 	dw .turn_7
 
 .turn_1
-	ld d, MACHOP
-	ld e, FIGHTING_ENERGY
+	lb de, MACHOP, FIGHTING_ENERGY
 	call AIAttachEnergyInHandToCardInPlayArea
 	ret
 
@@ -135,8 +134,7 @@ AIPerformScriptedTurn:
 	ldh [hTemp_ffa0], a
 	ld a, OPPACTION_PLAY_BASIC_PKMN
 	bank1call AIMakeDecision
-	ld d, RATTATA
-	ld e, FIGHTING_ENERGY
+	lb de, RATTATA, FIGHTING_ENERGY
 	call AIAttachEnergyInHandToCardInPlayArea
 	ret
 
@@ -150,14 +148,12 @@ AIPerformScriptedTurn:
 	ldh [hTemp_ffa0], a
 	ld a, OPPACTION_EVOLVE_PKMN
 	bank1call AIMakeDecision
-	ld d, RATICATE
-	ld e, LIGHTNING_ENERGY
+	lb de, RATICATE, LIGHTNING_ENERGY
 	call AIAttachEnergyInHandToCardInPlayArea
 	ret
 
 .turn_4
-	ld d, RATICATE
-	ld e, LIGHTNING_ENERGY
+	lb de, RATICATE, LIGHTNING_ENERGY
 	call AIAttachEnergyInHandToCardInPlayArea
 	ret
 
@@ -167,8 +163,7 @@ AIPerformScriptedTurn:
 	ldh [hTemp_ffa0], a
 	ld a, OPPACTION_PLAY_BASIC_PKMN
 	bank1call AIMakeDecision
-	ld d, MACHOP
-	ld e, FIGHTING_ENERGY
+	lb de, MACHOP, FIGHTING_ENERGY
 	call AIAttachEnergyInHandToCardInBench
 
 	ld a, DUELVARS_ARENA_CARD
@@ -184,13 +179,11 @@ AIPerformScriptedTurn:
 	ret
 
 .turn_6
-	ld d, MACHOP
-	ld e, FIGHTING_ENERGY
+	lb de, MACHOP, FIGHTING_ENERGY
 	call AIAttachEnergyInHandToCardInPlayArea
 	ret
 
 .turn_7
-	ld d, MACHOP
-	ld e, FIGHTING_ENERGY
+	lb de, MACHOP, FIGHTING_ENERGY
 	call AIAttachEnergyInHandToCardInPlayArea
 	ret

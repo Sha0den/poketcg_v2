@@ -1408,8 +1408,7 @@ PrintAndLoadAttacksToDuelTempList:
 	get_turn_duelist_var
 	ldh [hTempCardIndex_ff98], a
 	call LoadCardDataToBuffer1_FromDeckIndex
-	ld c, 0
-	ld b, 13
+	lb bc, 13, 0
 	ld hl, wDuelTempList
 	xor a
 	ld [wCardPageNumber], a
@@ -2320,8 +2319,7 @@ ShuffleDeckAndDrawSevenCards:
 	jr nz, .draw_loop
 	ld a, DUELVARS_HAND
 	get_turn_duelist_var
-	ld b, $00
-	ld c, 7
+	lb bc, $00, 7
 .cards_loop
 	ld a, [hli]
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -2441,13 +2439,11 @@ DisplayPracticeDuelPlayerHandScreen:
 
 
 PlayShuffleAndDrawCardsAnimation_TurnDuelist:
-	ld b, DUEL_ANIM_PLAYER_SHUFFLE
-	ld c, DUEL_ANIM_PLAYER_DRAW
+	lb bc, DUEL_ANIM_PLAYER_SHUFFLE, DUEL_ANIM_PLAYER_DRAW
 	ldh a, [hWhoseTurn]
 	cp PLAYER_TURN
 	jr z, .play_anim
-	ld b, DUEL_ANIM_OPP_SHUFFLE
-	ld c, DUEL_ANIM_OPP_DRAW
+	lb bc, DUEL_ANIM_OPP_SHUFFLE, DUEL_ANIM_OPP_DRAW
 .play_anim
 	ldtx hl, ShufflesTheDeckText
 	ldtx de, Drew7CardsText
@@ -2455,8 +2451,7 @@ PlayShuffleAndDrawCardsAnimation_TurnDuelist:
 
 
 PlayShuffleAndDrawCardsAnimation_BothDuelists:
-	ld b, DUEL_ANIM_BOTH_SHUFFLE
-	ld c, DUEL_ANIM_BOTH_DRAW
+	lb bc, DUEL_ANIM_BOTH_SHUFFLE, DUEL_ANIM_BOTH_DRAW
 	ldtx hl, EachPlayerShuffleOpponentsDeckText
 	ldtx de, EachPlayerDraw7CardsText
 	ld a, [wDuelType]
@@ -3262,7 +3257,7 @@ PracticeDuelVerify_Turn2:
 	cp SEAKING
 	jr nz, ReturnWrongAction
 	ld a, [wSelectedAttack]
-	cp 1
+	cp SECOND_ATTACK
 	jr nz, ReturnWrongAction
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
@@ -3301,7 +3296,7 @@ PracticeDuelVerify_Turn4:
 	cp SEAKING
 	jr nz, ReturnWrongAction
 	ld a, [wSelectedAttack]
-	cp 1
+	cp SECOND_ATTACK
 	ret z
 ;	fallthrough
 
@@ -3347,7 +3342,7 @@ PracticeDuelVerify_Turn7Or8:
 	cp STARMIE
 	jr nz, ReturnWrongAction
 	ld a, [wSelectedAttack]
-	cp 1
+	cp SECOND_ATTACK
 	jr nz, ReturnWrongAction
 	ret
 
@@ -7199,8 +7194,7 @@ HandleBetweenTurnsEvents:
 	or a
 	jr z, .asm_6c3a
 	call HandlePoisonDamage
-	jr c, .asm_6c3a
-	call HandleSleepCheck
+	call nc, HandleSleepCheck
 .asm_6c3a
 	call DiscardAttachedDefenders
 	rst SwapTurn
@@ -7849,8 +7843,7 @@ CountKnockedOutPokemon:
 	get_turn_duelist_var
 	ld d, h
 	ld e, DUELVARS_ARENA_CARD
-	ld b, PLAY_AREA_ARENA
-	ld c, MAX_PLAY_AREA_POKEMON
+	lb bc, PLAY_AREA_ARENA, MAX_PLAY_AREA_POKEMON
 .loop
 	ld a, [de]
 	cp -1

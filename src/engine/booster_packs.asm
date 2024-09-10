@@ -628,8 +628,7 @@ InitBoosterData:
 	call CopyDataHLtoDE ; load booster pack data to wram
 	call LoadRarityAmountsToWram
 	ld bc, $0
-	ld d, NUM_BOOSTER_CARD_TYPES
-	ld e, $0
+	lb de, NUM_BOOSTER_CARD_TYPES, $0
 	ld hl, wBoosterData_TypeChances
 .add_chance_bytes_loop
 	ld a, [hli]

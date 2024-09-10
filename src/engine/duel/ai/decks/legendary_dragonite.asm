@@ -86,7 +86,7 @@ AIDoTurn_LegendaryDragonite:
 	ld a, AI_TRAINER_CARD_PHASE_01
 	call AIProcessHandTrainerCards
 	call HandleAIAntiMewtwoDeckStrategy
-	jp nc, .try_attack
+	jr nc, .try_attack
 ; process Trainer cards
 	ld a, AI_TRAINER_CARD_PHASE_02
 	call AIProcessHandTrainerCards
@@ -120,7 +120,7 @@ AIDoTurn_LegendaryDragonite:
 	call CountNumberOfEnergyCardsAttached_Bank5
 	or a
 	jr nz, .attach_normally
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call AITryToPlayEnergyCard
 	jr c, .skip_energy_attach_1
@@ -152,9 +152,7 @@ AIDoTurn_LegendaryDragonite:
 	call AIProcessHandTrainerCards
 	ld a, [wAlreadyPlayedEnergy]
 	or a
-	jr nz, .skip_energy_attach_2
-	call AIProcessAndTryToPlayEnergy
-.skip_energy_attach_2
+	call z, AIProcessAndTryToPlayEnergy
 	call AIDecidePlayPokemonCard
 .try_attack
 ; attack if possible, if not,

@@ -1790,9 +1790,7 @@ ConfirmSelectionAndReturnCarry:
 HandleCardSelectionCursorBlink:
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .skip_sfx
-	call PlaySFX
-.skip_sfx
+	call nz, PlaySFX
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]
@@ -1971,8 +1969,7 @@ HandleDeckCardSelectionList:
 .check_sfx
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .handle_blink
-	call PlaySFX
+	call nz, PlaySFX
 .handle_blink
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
@@ -2767,8 +2764,7 @@ SortCurDeckCardsByID:
 ; (assuming wCurDeckCards is sorted by ID)
 ; also counts the total number of the different cards
 CreateCurDeckUniqueCardList:
-	ld b, 0
-	ld c, $0
+	lb bc, 0, $0
 	ld hl, wCurDeckCards
 	ld de, wUniqueDeckCardList
 .loop

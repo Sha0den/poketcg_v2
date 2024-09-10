@@ -90,7 +90,14 @@
 
 
 ## Code Optimization
-- **September 9, 2024:** 10 Files Changed
+- **September 10, 2024:** 28 Files Changed
+    - Replace some jumps that skip over a call with a conditional call (e.g. `call nz`)
+    - Replace various instances of 2 numbers being separately loaded into a register pair with a 16-bit load
+    - Replace a few uses of `jp` with `jr` and remove a few duplicate `xor a` instructions
+
+<br/>
+
+- **[September 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/cf1016154b7bd1fff82761e55bbbad7138168d50):** 10 Files Changed
     - Eliminate some more tail calls (replacing a `call` and subsequent `ret` with a fallthrough/`jr`/`jp`)
 
 <br/>

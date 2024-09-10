@@ -157,7 +157,7 @@ AIDoTurn_LegendaryArticuno:
 	ld a, AI_TRAINER_CARD_PHASE_01
 	call AIProcessHandTrainerCards
 	call HandleAIAntiMewtwoDeckStrategy
-	jp nc, .try_attack
+	jr nc, .try_attack
 ; process Trainer cards
 	ld a, AI_TRAINER_CARD_PHASE_02
 	call AIProcessHandTrainerCards
@@ -170,9 +170,7 @@ AIDoTurn_LegendaryArticuno:
 ; play Energy card if possible
 	ld a, [wAlreadyPlayedEnergy]
 	or a
-	jr nz, .skip_energy_attach_1
-	call AIProcessAndTryToPlayEnergy
-.skip_energy_attach_1
+	call z, AIProcessAndTryToPlayEnergy
 ; play Pokemon from hand again
 	call AIDecidePlayPokemonCard
 ; process Trainer cards phases 13 and 15
@@ -195,9 +193,7 @@ AIDoTurn_LegendaryArticuno:
 	call AIProcessHandTrainerCards
 	ld a, [wAlreadyPlayedEnergy]
 	or a
-	jr nz, .skip_energy_attach_2
-	call AIProcessAndTryToPlayEnergy
-.skip_energy_attach_2
+	call z, AIProcessAndTryToPlayEnergy
 	call AIDecidePlayPokemonCard
 .try_attack
 ; attack if possible, if not,

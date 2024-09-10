@@ -3545,9 +3545,7 @@ ResetDevolvedCardStatus:
 ; if it's the Active Pokemon, remove any special conditions
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or a
-	jr nz, .skip_clear_status
-	call ClearAllStatusConditions
-.skip_clear_status
+	call z, ClearAllStatusConditions
 ; reset changed color status
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_CHANGED_TYPE

@@ -1,7 +1,6 @@
 _OpenDuelCheckMenu::
 	call ResetCheckMenuCursorPositionAndBlink
-	xor a
-	ld [wce5e], a
+	ld [wce5e], a ; 0
 	call DrawWideTextBox
 
 ; reset cursor blink
@@ -51,8 +50,7 @@ DuelCheckMenu_Glossary:
 ; opens the Your Play Area submenu
 DuelCheckMenu_YourPlayArea:
 	call ResetCheckMenuCursorPositionAndBlink
-	xor a
-	ld [wce5e], a
+	ld [wce5e], a ; 0
 	ldh a, [hWhoseTurn]
 .draw
 	ld h, a
@@ -1287,10 +1285,8 @@ HandleCheckMenuInput_YourOrOppPlayArea:
 .sfx
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .draw_cursor
-	call PlaySFX
+	call nz, PlaySFX
 
-.draw_cursor
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]
@@ -1827,9 +1823,7 @@ YourOrOppPlayAreaScreen_HandleInput:
 .return
 	ld a, [wMenuInputSFX]
 	or a
-	jr z, .skip_sfx
-	call PlaySFX
-.skip_sfx
+	call nz, PlaySFX
 	ld hl, wCheckMenuCursorBlinkCounter
 	ld a, [hl]
 	inc [hl]

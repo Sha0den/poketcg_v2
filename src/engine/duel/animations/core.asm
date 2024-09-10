@@ -66,10 +66,8 @@ PlayLoadedDuelAnimation::
 	ld a, [hl]
 	pop hl
 	or a
-	jr z, .calc_addr
-	call PlaySFX
+	call nz, PlaySFX
 
-.calc_addr
 ; this data field is always $00,
 ; so this calculation is unnecessary
 ; seems like there was supposed to be
@@ -588,9 +586,7 @@ DrawDamageAnimationNumbers:
 	push de
 	ld a, [hl]
 	or a
-	jr z, .no_char
-	call CreateDamageCharSprite
-.no_char
+	call nz, CreateDamageCharSprite
 	pop de
 	pop hl
 	inc hl
