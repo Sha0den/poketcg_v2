@@ -132,6 +132,7 @@ OpenGlossaryScreen:
 	lb de, 0, 0
 	lb bc, 20, 18
 	call DrawRegularTextBox
+	ld b, SCREEN_WIDTH
 	lb de, 0, 2
 	call DrawTextBoxSeparator
 

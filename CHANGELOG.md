@@ -581,7 +581,7 @@
 
 
 ## Miscellaneous Changes
-- **September 10, 2024:** 2 Files Changed (1 was deleted)
+- **[September 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/706cf64f04e7ac7d71bd505bc35c2b6e0a91d9fa):** 2 Files Changed (1 was deleted)
     - Remove remaining rom comparison references in `Makefile` and delete `rom.sha1`
 
 <br/>
@@ -645,6 +645,7 @@
     - Move a lot of texts from text3.asm to text2.asm (Needed more space for Glossary)
     - Move a lot of texts from text2.asm to text1.asm
     - Make some minor adjustments to several of the title menu texts in text3.asm
+    - The newly added `DrawTextBoxSeparator` function was later fixed in the September 11 commit.
 
 <br/>
 
@@ -779,6 +780,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **September 11, 2024:** 3 Files Changed
+    - Make `DrawTextBoxSeparator` function SGB-compatible (it no longer crashes the game)
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/b16b83b296ee35aa3d05b7066ed8c649343e0879)*
+
+<br/>
+
 - **[August 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/cbfce31cab1e997d446cd57bbed99990fb7ca27a):** 1 File Changed
     - Revert the textpointers because it screws up the printing of some empty texts (plus everything works fine without making any adjustments)
     - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/fe4c091b38639bc5b52078c9ac153a0eac12ae01)*

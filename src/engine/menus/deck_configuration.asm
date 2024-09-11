@@ -109,10 +109,13 @@ DrawDecksScreen:
 	lb de, 0,  0
 	lb bc, 20, 13
 	call DrawRegularTextBox
+	ld b, SCREEN_WIDTH
 	lb de, 0, 3
 	call DrawTextBoxSeparator
+	ld b, SCREEN_WIDTH
 	lb de, 0, 6
 	call DrawTextBoxSeparator
+	ld b, SCREEN_WIDTH
 	lb de, 0, 9
 	call DrawTextBoxSeparator
 	
