@@ -12,6 +12,11 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **September 12, 2024:** 1 File Changed
+    - Prevent the Morph attack from transforming the user into a copy of the exact same card
+
+<br/>
+
 - **[September 3, 2024](https://github.com/Sha0den/poketcg_v2/commit/686b3842584ef587fe3a73947eaf8521ca91b5db):** 2 Files Changed
     - Prevent the header text on the card album and card list screens from being overwritten by new font tiles when scrolling the page
     - This display glitch would only have occurred if the size of the card or booster pack lists were increased or the card names were altered
@@ -645,7 +650,7 @@
     - Move a lot of texts from text3.asm to text2.asm (Needed more space for Glossary)
     - Move a lot of texts from text2.asm to text1.asm
     - Make some minor adjustments to several of the title menu texts in text3.asm
-    - The newly added `DrawTextBoxSeparator` function was later fixed in the September 11 commit.
+    - The newly added `DrawTextBoxSeparator` function was later fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/1125a231a37aa3217d2684badcbfff5776fad9bc).
 
 <br/>
 
@@ -780,7 +785,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **September 11, 2024:** 3 Files Changed
+- **[September 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/1125a231a37aa3217d2684badcbfff5776fad9bc):** 3 Files Changed
     - Make `DrawTextBoxSeparator` function SGB-compatible (it no longer crashes the game)
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/b16b83b296ee35aa3d05b7066ed8c649343e0879)*
 

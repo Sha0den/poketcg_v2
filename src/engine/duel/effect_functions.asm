@@ -5771,13 +5771,18 @@ MorphEffect:
 ; needs to be a Basic Pokemon that doesn't have
 ; the same ID as the Active Pokemon.
 ; output:
-;	carry = set:  if no Basic Pokemon were found in the deck (other than Ditto)
+;	carry = set:  if no Basic Pokemon were found in the deck (other than the Pokemon using this attack)
 ;	[hTempCardIndex_ff98] = deck index of the chosen Basic Pokemon from the deck
 .PickRandomBasicPokemonFromDeck
 	call CreateDeckCardList
 	ret c ; return if the deck is empty
 	ld hl, wDuelTempList
+	push hl
 	call ShuffleCards
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call GetCardIDFromDeckIndex
+	pop hl
 .loop_deck
 	ld a, [hli]
 	ldh [hTempCardIndex_ff98], a
@@ -5786,7 +5791,7 @@ MorphEffect:
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_deck ; skip if not a Basic Pokemon
 	ld a, [wLoadedCard2ID]
-	cp DUELVARS_ARENA_CARD
+	cp e
 	jr z, .loop_deck ; skip cards with same ID as the Active Pokemon
 	ldh a, [hTempCardIndex_ff98]
 	or a
