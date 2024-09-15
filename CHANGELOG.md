@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **September 12, 2024:** 1 File Changed
+- **[September 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/cba5b2646b518893a6dc61d6e2991eb13db057e0):** 1 File Changed
     - Prevent the Morph attack from transforming the user into a copy of the exact same card
 
 <br/>
@@ -95,6 +95,11 @@
 
 
 ## Code Optimization
+- **September 15, 2024:** 1 File Changed
+    - Some more comments and minor optimizations in home/substatus.asm
+
+<br/>
+
 - **[September 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/115b22557cfb56883fdbca6b1f41c38d3f4bfa85):** 28 Files Changed
     - Replace some jumps that skip over a call with a conditional call (e.g. `call nz`)
     - Replace various instances of 2 numbers being separately loaded into a register pair with a 16-bit load
