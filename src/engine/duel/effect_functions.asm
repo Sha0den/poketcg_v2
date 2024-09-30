@@ -3003,7 +3003,7 @@ OpponentSwitchesActive_BenchCheck:
 ;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant):
 ;	               if there's a Benched Pokemon and the coin toss result was heads
 OpponentSwitchesActive50Percent_SelectEffect:
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTemp_ffa0], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
@@ -4509,7 +4509,7 @@ CreateListOfEnergyAttachedToActive:
 ;	[hTemp_ffa0] = deck index of the Fire Energy card that should be discarded
 DiscardAttachedFireEnergy_PlayerSelection:
 	call CreateListOfFireEnergyAttachedToActive
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	bank1call DisplayEnergyDiscardScreen
 	bank1call HandleEnergyDiscardMenuInput
 	ldh a, [hTempCardIndex_ff98]
@@ -4548,7 +4548,7 @@ DiscardXAttachedFireEnergy_PlayerSelection:
 	xor a
 	ldh [hCurSelectionItem], a
 	call CreateListOfFireEnergyAttachedToActive
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	bank1call DisplayEnergyDiscardScreen
 
 ; show list to Player and for each card selected to discard, increase a counter and store it.
@@ -4648,7 +4648,7 @@ Discard2AttachedFireEnergy_PlayerSelection:
 	xor a
 	ldh [hCurSelectionItem], a
 	call CreateListOfFireEnergyAttachedToActive
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	bank1call DisplayEnergyDiscardScreen
 .loop_input
 	bank1call HandleEnergyDiscardMenuInput
@@ -4742,10 +4742,10 @@ Discard2AttachedEnergyCards_PlayerSelection:
 
 	xor a
 	ldh [hCurSelectionItem], a
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
 	call SortCardsInDuelTempListByID
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	bank1call DisplayEnergyDiscardScreen
 
 	ld a, 2
@@ -4797,7 +4797,7 @@ Discard2AttachedEnergyCards_DiscardEffect:
 
 ; discards all Energy attached to the turn holder's Active Pokemon
 DiscardAllAttachedEnergyEffect:
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
 	ld hl, wDuelTempList
 ; put all Energy cards in the discard pile
@@ -4876,7 +4876,7 @@ DamageBothBenches_10DamageEffect:
 
 	; damage opponent's bench
 	rst SwapTurn
-	xor a
+	xor a ; FALSE
 	ld [wIsDamageToSelf], a
 	ld de, 10
 	call DealDamageToAllBenchedPokemon
@@ -4912,7 +4912,7 @@ DamageBothBenches_20DamageEffect:
 	call DealDamageToAllBenchedPokemon
 ; opponent's bench
 	rst SwapTurn
-	xor a
+	xor a ; FALSE
 	ld [wIsDamageToSelf], a
 	ld de, 20
 	call DealDamageToAllBenchedPokemon
@@ -5444,7 +5444,7 @@ RandomlyDamagePlayAreaPokemon:
 	jp DealDamageToPlayAreaPokemon
 
 .opp_play_area
-	xor a
+	xor a ; FALSE
 	ld [wIsDamageToSelf], a
 	rst SwapTurn
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -5699,7 +5699,7 @@ MorphEffect:
 ; if this is an Evolved Pokemon (in case it's used by Clefable's Metronome attack),
 ; then first discard the lower stage card.
 	push hl
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetCardOneStageBelow
 	ld a, d
@@ -7001,6 +7001,7 @@ StrangeBehavior_SelectAndSwapEffect:
 ; tries to give damage counter to the user and updates UI screen if successful
 ; input:
 ;	[hTemp_ffa0] = play area location offset of the user (PLAY_AREA_* constant)
+;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokémon losing a damage counter
 ; output:
 ;	carry = set:  if adding the damage counter would KO the user
 StrangeBehavior_SwapEffect:
@@ -7617,7 +7618,7 @@ EnergyRemoval_AISelection:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
 
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
 	jr nc, .has_energy
 	; no Energy, so return
@@ -8506,7 +8507,7 @@ PokemonBreeder_EvolveEffect:
 	ld a, 18
 	call CopyCardNameAndLevel
 	xor a
-	ld [hl], a ; $0 character
+	ld [hl], a ; TX_END
 	ld hl, wTxRam2_b
 	ld [hli], a
 	ld [hl], a
@@ -8615,6 +8616,7 @@ CreatePlayableStage2PokemonCardListFromHand:
 ; input:
 ;	e = play area location offset of the Pokemon being evolved (PLAY_AREA_* constant)
 ;	d = deck index of a Stage 2 Evolution card to match against the Basic Pokemon
+; output:
 ;	carry = set:  if the given Pokemon is unable to evolve this turn or
 ;	              if it isn't a Basic Pokemon with a matching Stage 2 in the hand
 CheckIfCanEvolveInto_BasicToStage2:
@@ -8972,7 +8974,7 @@ HealPlayAreaCardHP:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 18
 	call CopyCardNameAndLevel
-	ld [hl], $00 ; terminating character on end of the name
+	ld [hl], TX_END ; terminating character on end of the name
 	ldtx hl, PokemonHealedDamageText
 	call DrawWideTextBox_WaitForInput
 	pop de

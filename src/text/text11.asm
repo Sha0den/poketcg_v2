@@ -1265,9 +1265,9 @@ LeerName:
 	done
 
 LeerDescription:
-	text "Flip a coin. If heads, the"
-	line "Defending Pokémon can't attack Rhyhorn"
-	line "during your opponent's next turn."
+	text "Flip a coin. If heads, the Defending"
+	line "Pokémon can't attack Rhyhorn during"
+	line "your opponent's next turn."
 	line "(Benching or evolving either Pokémon"
 	line "ends this effect.)"
 	done

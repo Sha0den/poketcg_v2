@@ -171,11 +171,11 @@ OpenGlossaryScreen:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	lb de, 1, 4
 	call InitTextPrinting_ProcessTextFromID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	call EnableLCD
 .loop

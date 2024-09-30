@@ -247,7 +247,7 @@ LookUpNameInCardPopNameList:
 ; of VenusaurLv64 and MewLv15.
 ; output:
 ;	a/e = card ID that was chosen
-;	wLoadedCard1 = contains the card_data_struct of the chosen card
+;	[wLoadedCard1] = all of the chosen card's data (card_data_struct)
 DecideCardToReceiveFromCardPop:
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a

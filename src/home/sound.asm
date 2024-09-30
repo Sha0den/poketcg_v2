@@ -87,8 +87,8 @@ PlayDefaultSong::
 
 ; preserves all registers except af
 ; output:
-;	a = [wDefaultSong] (if Ishihara's House, Challenge Hall, or Pokemon Dome)
-;	a = MUSIC_RONALD (if any other map)
+;	a = MUSIC_RONALD:  if Ronald is on the map and it's not Ishihara's House, Challenge Hall, or Pokemon Dome
+;	a = [wDefaultSong]:  if none of the above conditions are true
 GetDefaultSong::
 	ld a, [wRonaldIsInMap]
 	or a

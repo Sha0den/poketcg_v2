@@ -599,11 +599,11 @@ DuelMenu_Done:
 
 DuelMenuData:
 	; x, y, text ID
-	textitem 3,  14, HandText
-	textitem 9,  14, CheckText
+	textitem  3, 14, HandText
+	textitem  9, 14, CheckText
 	textitem 15, 14, RetreatText
-	textitem 3,  16, AttackText
-	textitem 9,  16, PKMNPowerText
+	textitem  3, 16, AttackText
+	textitem  9, 16, PKMNPowerText
 	textitem 15, 16, DoneText
 	db $ff
 
@@ -815,7 +815,7 @@ ReloadCardListScreen:
 ; puts a Basic Pokemon into play, either in the Arena or on the Bench, or puts a
 ; Stage 1/2 Evolution card on top of a Pokemon that's already in play to evolve it.
 ; input:
-;	wLoadedCard1 = contains the card_data_struct of the Pokemon being played
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 ;	[hTempCardIndex_ff98] = deck index of the Pokemon being played
 ; output:
 ;	carry = set:  if the Pokemon card wasn't put into play
@@ -840,7 +840,7 @@ PlayPokemonCard:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 20
 	call CopyCardNameAndLevel
-	ld [hl], $00
+	ld [hl], TX_END
 	ld hl, $0000
 	call LoadTxRam2
 	ldtx hl, PlacedOnTheBenchText
@@ -1034,7 +1034,7 @@ CheckAbleToRetreat:
 CheckIfEnoughEnergiesToRetreat:
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetPlayAreaCardRetreatCost
 	ld [wEnergyCardsRequiredToRetreat], a
@@ -1069,7 +1069,7 @@ DisplayRetreatScreen:
 	call SortCardsInDuelTempListByID
 	ld a, LOW(hTempRetreatCostCards)
 	ld [wTempRetreatCostCardsPos], a
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	call DisplayEnergyDiscardScreen
 	ld a, [wEnergyCardsRequiredToRetreat]
 	ld [wEnergyDiscardMenuDenominator], a
@@ -1118,6 +1118,7 @@ DisplayRetreatScreen:
 ; discards Retreat Cost Energy cards and attempts retreat of the Active Pokemon.
 ; if successful, the retreating Pokemon is replaced with a Benched Pokemon card.
 ; input:
+;	[hTemp_ffa0] = Active Pokémon's status (i.e. Special Conditions)
 ;	hTempRetreatCostCards = $ff terminated list with deck indices of cards to discard
 ; output:
 ;	carry = set:  if unable to retreat this turn due to a failed confusion check
@@ -1277,7 +1278,7 @@ HandleEnergyDiscardMenuInput:
 ; draws the attack page of the card at wLoadedCard1 and of the attack selected in the Attack
 ; menu by hCurMenuItem, and listen for input in order to switch the page or to exit.
 ; input:
-;	wLoadedCard1 = contains the card_data_struct of the Pokemon with the attack
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 OpenAttackPage:
 	ld a, CARDPAGE_POKEMON_OVERVIEW
 	ld [wCardPageNumber], a
@@ -1333,7 +1334,7 @@ OpenAttackPage:
 ; displays the card page with ID at wAttackPageNumber for card in wLoadedCard1
 ; input:
 ;	[wAttackPageNumber] = which card page to load (ATTACKPAGE_ATTACK* constant)
-;	wLoadedCard1 = contains the card_data_struct of the Pokemon with the attack
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayAttackPage:
 	ld a, [wAttackPageNumber]
 	ld hl, AttackPageDisplayPointerTable
@@ -1908,11 +1909,11 @@ PrintDuelResultStats:
 ; input:
 ;	de = screen coordinates at which to begin printing the stats
 .PrintDuelistResultStats:
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	ldtx hl, PrizesLeftActivePokemonCardsInDeckText
 	call InitTextPrinting_ProcessTextFromID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	ld c, e
 	ld a, d
@@ -1966,7 +1967,7 @@ DisplayCardDetailScreen:
 
 ; input:
 ;	hl = text ID for the text to print at the bottom of the screen
-;	wLoadedCard1 = contains the card_data_struct of the card being shown
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 _DisplayCardDetailScreen:
 	push hl
 	call DrawLargePictureOfCard
@@ -2338,7 +2339,7 @@ ShuffleDeckAndDrawSevenCards:
 
 ; preserves all registers except af
 ; input:
-;	wLoadedCard1 = contains the card_data_struct of the card being checked
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 ; output:
 ;	a = $01:  if the loaded card is a Basic Pokemon (or a Clefairy Doll/Mysterious Fossil)
 ;	a = $00:  if the loaded card is not a Basic Pokemon
@@ -2927,7 +2928,7 @@ PracticeDuel_DrawSevenCards:
 
 
 ; input:
-;	wLoadedCard1 = contains the card_data_struct of the Pokemon being played
+;	[wLoadedCard1] = all of the data of the Pokémon being played (card_data_struct)
 ; output:
 ;	carry = set:  if the Player didn't choose Goldeen as their starting Pokemon
 PracticeDuel_PlayGoldeen:
@@ -3143,7 +3144,7 @@ PrintPracticeDuelInstructions:
 	ld d, [hl]
 	inc hl
 	push hl
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	ld l, e
 	ld h, d
@@ -3151,7 +3152,7 @@ PrintPracticeDuelInstructions:
 	ld e, a
 	ld d, 1
 	call InitTextPrinting_ProcessTextFromID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	pop hl
 	jr .print_instructions_loop
@@ -3193,10 +3194,10 @@ PrintPracticeDuelNumberedInstruction:
 	push hl
 	ld l, c
 	ld h, b
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	call InitTextPrinting_ProcessTextFromID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	pop hl
 	ret
@@ -3743,7 +3744,7 @@ CardListFunction:
 
 ; loads the tiles and palette of the card selected in a card list screen
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[hCurMenuItem] = index for wDuelTempList
 LoadSelectedCardGfx:
 	ldh a, [hCurMenuItem]
 	call GetCardInDuelTempList
@@ -3760,7 +3761,7 @@ LoadSelectedCardGfx:
 ; D_UP and D_DOWN exit the card page allowing the caller to load the card page
 ; of the card above or below in the list.
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 OpenCardPage_FromCheckHandOrDiscardPile:
 	ld a, B_BUTTON | D_UP | D_DOWN
 	ld [wCardPageExitKeys], a
@@ -3771,7 +3772,7 @@ OpenCardPage_FromCheckHandOrDiscardPile:
 ; in order to switch the page or to exit.
 ; triggered by checking an Active or Benched Pokemon in the Check menu.
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 OpenCardPage_FromCheckPlayArea:
 	ld a, B_BUTTON
 	ld [wCardPageExitKeys], a
@@ -3782,7 +3783,7 @@ OpenCardPage_FromCheckPlayArea:
 ; in order to switch the page or to exit.
 ; triggered by checking a card in the Hand menu.
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 OpenCardPage_FromHand:
 	ld a, B_BUTTON
 	ld [wCardPageExitKeys], a
@@ -3851,12 +3852,12 @@ DrawWholeScreenTextBox:
 	ld a, 19
 	lb de, 1, 1
 	call InitTextPrintingInTextbox
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	pop hl
 	call ProcessTextFromID
 	call EnableLCD
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	jp WaitForWideTextBoxInput
 
@@ -3898,7 +3899,7 @@ DisplayFirstOrNextCardPage:
 ; displays the card page with ID at wCardPageNumber of wLoadedCard1
 ; input:
 ;	[wCardPageNumber] = which card page to display
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 DisplayCardPage:
 	ld a, [wCardPageNumber]
 	ld hl, CardPageDisplayPointerTable
@@ -3909,12 +3910,12 @@ DisplayCardPage:
 
 CardPageDisplayPointerTable:
 	dw DrawDuelMainScene
-	dw DisplayCardPage_PokemonOverview    ; CARDPAGE_POKEMON_OVERVIEW
-	dw DisplayCardPage_PokemonAttack1Page1  ; CARDPAGE_POKEMON_ATTACK1_1
-	dw DisplayCardPage_PokemonAttack1Page2  ; CARDPAGE_POKEMON_ATTACK1_2
-	dw DisplayCardPage_PokemonAttack2Page1  ; CARDPAGE_POKEMON_ATTACK2_1
-	dw DisplayCardPage_PokemonAttack2Page2  ; CARDPAGE_POKEMON_ATTACK2_2
-	dw DisplayCardPage_PokemonDescription ; CARDPAGE_POKEMON_DESCRIPTION
+	dw DisplayCardPage_PokemonOverview     ; CARDPAGE_POKEMON_OVERVIEW
+	dw DisplayCardPage_PokemonAttack1Page1 ; CARDPAGE_POKEMON_ATTACK1_1
+	dw DisplayCardPage_PokemonAttack1Page2 ; CARDPAGE_POKEMON_ATTACK1_2
+	dw DisplayCardPage_PokemonAttack2Page1 ; CARDPAGE_POKEMON_ATTACK2_1
+	dw DisplayCardPage_PokemonAttack2Page2 ; CARDPAGE_POKEMON_ATTACK2_2
+	dw DisplayCardPage_PokemonDescription  ; CARDPAGE_POKEMON_DESCRIPTION
 	dw DrawDuelMainScene
 	dw DrawDuelMainScene
 	dw DisplayCardPage_Energy ; CARDPAGE_ENERGY
@@ -4015,19 +4016,19 @@ SwitchCardPage:
 CardPageSwitchPointerTable:
 	dw CardPageSwitch_00
 	dw CardPageSwitch_PokemonOverviewOrDescription ; CARDPAGE_POKEMON_OVERVIEW
-	dw CardPageSwitch_PokemonAttack1Page1 ; CARDPAGE_POKEMON_ATTACK1_1
-	dw CardPageSwitch_PokemonAttack1Page2 ; CARDPAGE_POKEMON_ATTACK1_2
-	dw CardPageSwitch_PokemonAttack2Page1 ; CARDPAGE_POKEMON_ATTACK2_1
-	dw CardPageSwitch_PokemonAttack2Page2 ; CARDPAGE_POKEMON_ATTACK2_2
+	dw CardPageSwitch_PokemonAttack1Page1          ; CARDPAGE_POKEMON_ATTACK1_1
+	dw CardPageSwitch_PokemonAttack1Page2          ; CARDPAGE_POKEMON_ATTACK1_2
+	dw CardPageSwitch_PokemonAttack2Page1          ; CARDPAGE_POKEMON_ATTACK2_1
+	dw CardPageSwitch_PokemonAttack2Page2          ; CARDPAGE_POKEMON_ATTACK2_2
 	dw CardPageSwitch_PokemonOverviewOrDescription ; CARDPAGE_POKEMON_DESCRIPTION
 	dw CardPageSwitch_PokemonEnd
 	dw CardPageSwitch_08
 	dw CardPageSwitch_EnergyOrTrainerPage1 ; CARDPAGE_ENERGY
-	dw CardPageSwitch_TrainerPage2 ; CARDPAGE_ENERGY + 1
+	dw CardPageSwitch_TrainerPage2         ; CARDPAGE_ENERGY + 1
 	dw CardPageSwitch_EnergyEnd
 	dw CardPageSwitch_0c
 	dw CardPageSwitch_EnergyOrTrainerPage1 ; CARDPAGE_TRAINER_1
-	dw CardPageSwitch_TrainerPage2 ; CARDPAGE_TRAINER_2
+	dw CardPageSwitch_TrainerPage2         ; CARDPAGE_TRAINER_2
 	dw CardPageSwitch_TrainerEnd
 
 
@@ -4470,7 +4471,7 @@ Pal01Packet_Default:
 
 
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayCardPage_PokemonOverview:
 	ld a, [wCardPageType]
 	or a ; CARDPAGETYPE_NOT_PLAY_AREA
@@ -4720,7 +4721,7 @@ PrintEnergiesOfColor:
 ; used in all CARDPAGE_POKEMON_* and ATTACKPAGE_*, except in
 ; CARDPAGE_POKEMON_OVERVIEW when wCardPageType is CARDPAGETYPE_PLAY_AREA.
 ; input:
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 PrintPokemonCardPageGenericInformation:
 	call DrawCardPageSurroundingBox
 	lb de, 5, 1
@@ -4742,7 +4743,7 @@ PrintPokemonCardPageGenericInformation:
 
 ; prints the card's set 2 icon and the full width text character of the card's rarity
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 DrawCardPageSet2AndRarityIcons:
 	ld a, [wLoadedCard1Set]
 	call LoadCardSet2Tiles
@@ -4812,7 +4813,7 @@ CardPageLvHPTextTileData:
 
 
 ; input:
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayCardPage_PokemonAttack1Page1:
 	ld hl, wLoadedCard1Atk1Name
 	ld de, wLoadedCard1Atk1Description
@@ -4836,7 +4837,7 @@ PrintDownArrowIfSecondDescriptionPage:
 
 
 ; input:
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayCardPage_PokemonAttack1Page2:
 	ld hl, wLoadedCard1Atk1Name
 	ld de, wLoadedCard1Atk1Description + 2
@@ -4853,7 +4854,7 @@ PrintUpArrowOnSecondDescriptionPage:
 
 
 ; input:
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayCardPage_PokemonAttack2Page1:
 	ld hl, wLoadedCard1Atk2Name
 	ld de, wLoadedCard1Atk2Description
@@ -4863,7 +4864,7 @@ DisplayCardPage_PokemonAttack2Page1:
 
 
 ; input:
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayCardPage_PokemonAttack2Page2:
 	ld hl, wLoadedCard1Atk2Name
 	ld de, wLoadedCard1Atk2Description + 2
@@ -4874,7 +4875,7 @@ DisplayCardPage_PokemonAttack2Page2:
 ; input:
 ;	[hl] = text ID for the attack name to print (2 bytes)
 ;	[de] = text ID for the attack description to print (2 bytes)
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayPokemonAttackCardPage:
 	push de
 	push hl
@@ -4902,7 +4903,7 @@ PrintAttackOrNonPokemonCardDescription:
 
 
 ; input:
-;	wLoadedCard1 = contains the Pokemon's card_data_struct
+;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 DisplayCardPage_PokemonDescription:
 	; print surrounding box, card name at 5,1, type, set 2, and rarity
 	call PrintPokemonCardPageGenericInformation
@@ -4945,7 +4946,7 @@ DisplayCardPage_PokemonDescription:
 	ldtx hl, LbsText
 	call InitTextPrinting_ProcessTextFromID
 	; print the card's description without line separation
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	ld hl, wLoadedCard1Description
 	ld a, [hli]
@@ -4961,7 +4962,7 @@ DisplayCardPage_PokemonDescription:
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1Description
 	call ProcessTextFromPointerToID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	ret
 
@@ -4972,7 +4973,7 @@ CardPageLengthWeightTextData:
 
 
 ; input:
-;	wLoadedCard1 = contains the Trainer card's card_data_struct
+;	[wLoadedCard1] = all of the Trainer card's data (card_data_struct)
 DisplayCardPage_TrainerPage1:
 	xor a ; HEADER_TRAINER
 	ld hl, wLoadedCard1NonPokemonDescription
@@ -4982,7 +4983,7 @@ DisplayCardPage_TrainerPage1:
 
 
 ; input:
-;	wLoadedCard1 = contains the Trainer card's card_data_struct
+;	[wLoadedCard1] = all of the Trainer card's data (card_data_struct)
 DisplayCardPage_TrainerPage2:
 	xor a ; HEADER_TRAINER
 	ld hl, wLoadedCard1NonPokemonDescription + 2
@@ -4991,7 +4992,7 @@ DisplayCardPage_TrainerPage2:
 
 
 ; input:
-;	wLoadedCard1 = contains the Energy card's card_data_struct
+;	[wLoadedCard1] = all of the Energy card's data (card_data_struct)
 DisplayCardPage_Energy:
 	ld a, HEADER_ENERGY
 	ld hl, wLoadedCard1NonPokemonDescription
@@ -5000,7 +5001,7 @@ DisplayCardPage_Energy:
 ; input:
 ;	a = HEADER_* constant
 ;	[hl] = text ID for the card's description (2 bytes)
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 DisplayEnergyOrTrainerCardPage:
 	push hl
 	call LoadCardTypeHeaderTiles
@@ -5030,7 +5031,7 @@ DisplayEnergyOrTrainerCardPage:
 ; draws a large picture of the card loaded in wLoadedCard1, including its image
 ; and a header indicating the type of card (TRAINER, ENERGY, PoKéMoN)
 ; input:
-;	wLoadedCard1 = contains the card's card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 DrawLargePictureOfCard:
 	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
@@ -5111,7 +5112,7 @@ PrintPokemonCardWeight:
 	add SYM_0
 	ld [hli], a
 .decimal_done
-	ld [hl], 0
+	ld [hl], TX_END
 	push bc
 	call BCCoordToBGMap0Address
 	ld hl, wStringBuffer
@@ -5203,6 +5204,8 @@ HasAlivePokemonInPlayArea:
 	xor a
 ;	fallthrough
 
+; input:
+;	a = number of Pokémon to exclude from the search (starting with the Active Pokémon)
 _HasAlivePokemonInPlayArea:
 	ld [wExcludeArenaPokemon], a
 	ld b, a
@@ -6081,7 +6084,7 @@ DisplayUsePokemonPowerScreen::
 ;	de = screen coordinates at which to start printing the text
 ;	[hl] = text ID for the description to print (2 bytes)
 PrintAttackOrCardDescription:
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	ld a, [hli]
 	ld h, [hl]
@@ -6094,13 +6097,15 @@ PrintAttackOrCardDescription:
 	ld a, 19
 	call InitTextPrintingInTextbox
 	call ProcessTextFromID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	ret
 
 
 ; when an opponent's Pokemon attacks, this displays a screen
 ; containing the description and information of the used attack
+; input:
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 DisplayOpponentUsedAttackScreen:
 	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
@@ -6138,10 +6143,10 @@ DisplayUsedTrainerCardDetailScreen::
 ; "Used xxx" text in a text box. this function is used to show the player
 ; the information of a Trainer card being used by the opponent.
 ; input:
-;	wLoadedCard1 = contains the Trainer card's card_data_struct
+;	[wLoadedCard1] = all of the Trainer card's data (card_data_struct)
 PrintUsedTrainerCardDescription:
 	call EmptyScreen
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	lb de, 1, 1
 	ld hl, wLoadedCard1Name
@@ -6151,7 +6156,7 @@ PrintUsedTrainerCardDescription:
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1NonPokemonDescription
 	call ProcessTextFromPointerToID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	ldtx hl, UsedText
 	jp DrawWideTextBox_WaitForInput
@@ -6507,23 +6512,6 @@ CheckSkipDelayAllowed:
 	ret
 
 
-; related to AI taking their turn in a duel.
-; called multiple times during one AI turn.
-; each call results in the execution of an OppActionTable function.
-AIMakeDecision:
-	ldh [hOppActionTableIndex], a
-	ld hl, wOpponentTurnEnded
-	ld [hl], 0
-	ld hl, OppActionTable
-	call JumpToFunctionInTable
-	ld a, [wDuelFinished]
-	ld hl, wOpponentTurnEnded
-	or [hl]
-	ret z
-	scf
-	ret
-
-
 ; handles menu for when player is waiting for
 ; Link Opponent to make a decision, where it's
 ; possible to examine the hand or duel main scene
@@ -6749,6 +6737,23 @@ DoLinkOpponentTurn:
 	ld a, [wDuelFinished]
 	or [hl]
 	jr z, .link_opp_turn_loop
+	ret
+
+
+; related to AI taking their turn in a duel.
+; called multiple times during one AI turn.
+; each call results in the execution of an OppActionTable function.
+AIMakeDecision:
+	ldh [hOppActionTableIndex], a
+	ld hl, wOpponentTurnEnded
+	ld [hl], 0
+	ld hl, OppActionTable
+	call JumpToFunctionInTable
+	ld a, [wDuelFinished]
+	ld hl, wOpponentTurnEnded
+	or [hl]
+	ret z
+	scf
 	ret
 
 
@@ -7076,6 +7081,9 @@ OppAction_NoAction:
 ; preserves all registers except af
 ; input:
 ;	a = card's deck index (0-59)
+; output:
+;	[wLoadedCard1] = all of the given card's data (card_data_struct)
+;	[wTxRam2] = text ID for the given card's name (2 bytes)
 LoadCardNameToTxRam2:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Name]
@@ -7089,6 +7097,9 @@ LoadCardNameToTxRam2:
 ; preserves all registers except af
 ; input:
 ;	a = card's deck index (0-59)
+; output:
+;	[wLoadedCard1] = all of the given card's data (card_data_struct)
+;	[wTxRam2_b] = text ID for the given card's name (2 bytes)
 LoadCardNameToTxRam2_b:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Name]
@@ -7101,6 +7112,8 @@ LoadCardNameToTxRam2_b:
 ; draws the main duel screen, then prints the "<Pokemon Lvxx>'s <attack>" text
 ; The Pokemon's name is the turn holder's Active Pokemon,
 ; and the attack's name is taken from wLoadedAttackName.
+; input:
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 DrawDuelMainScene_PrintPokemonsAttackText:
 	call DrawDuelMainScene
 ;	fallthrough
@@ -7108,6 +7121,8 @@ DrawDuelMainScene_PrintPokemonsAttackText:
 ; prints the "<Pokemon Lvxx>'s <attack>" text
 ; The Pokemon's name is the turn holder's Active Pokemon,
 ; and the attack's name is taken from wLoadedAttackName.
+; input:
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 PrintPokemonsAttackText:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -7977,6 +7992,7 @@ CheckIfTurnDuelistPlayAreaPokemonAreAllKnockedOut:
 ; preserves de
 ; output:
 ;	hl = ID for notification text
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 PrintThereWasNoEffectFromStatusText::
 	ld a, [wNoEffectFromWhichStatus]
 	or a
@@ -8420,6 +8436,11 @@ ClearNonTurnTemporaryDuelvars_ResetCarry:
 	ret
 
 ; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
+; input:
+;	[wSelectedAttack] = attack index (0 = first attack, 1 = second attack)
+;	[hTempCardIndex_ff9f] = Pokémon's deck index
+;	[wTempCardID_ccc2] = Pokémon's card ID
+;	[wLoadedAttack] = Pokémon's attack data (atk_data_struct)
 ; output:
 ;	carry = set:  if the effect command returned with carry set
 UseAttackOrPokemonPower::
@@ -8466,6 +8487,8 @@ UseAttackOrPokemonPower::
 	call SetOppAction_SerialSendDuelData
 ;	fallthrough
 
+; input
+;	[wLoadedAttack] = Pokémon's attack data (atk_data_struct)
 PlayAttackAnimation_DealAttackDamage::
 	xor a
 	ld [wce7e], a
@@ -8476,7 +8499,7 @@ PlayAttackAnimation_DealAttackDamage::
 	call HandleNoDamageOrEffectSubstatus
 	rst SwapTurn
 .deal_damage
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
 	call TryExecuteEffectCommandFunction
@@ -8622,6 +8645,7 @@ CheckSmokescreenSubstatus:
 
 ; output:
 ;	carry = set:  if the turn holder's attack was unsuccessful due to Smokescreen
+;	[wGotHeadsFromSmokescreenCheck] = result of the coin toss (0 = tails, 1 = heads)
 HandleSmokescreenSubstatus:
 	call CheckSmokescreenSubstatus
 	ret nc ; return if the Active Pokemon isn't affected by Smokescreen
@@ -8637,9 +8661,9 @@ HandleSmokescreenSubstatus:
 
 ; flips a coin to see whether or not a Confused Pokemon will attack itself
 ; output:
-;	carry = set:  if the coin was tails (Pokemon will attack itself)
-;	[wGotHeadsFromConfusionCheck] = 0:  if the coin was heads (Pokemon won't attack itself)
-;	[wGotHeadsFromConfusionCheck] = 1:  if the coin was tails (Pokemon will attack itself)
+;	carry = set:  if the Active Pokémon is Confused and it flipped a tails
+;	[wGotHeadsFromConfusionCheck] = 0:  if the attack will proceed as normal
+;	                              = 1:  if the Pokémon will attack itself (coin was tails)
 CheckSelfConfusionDamage:
 	xor a
 	ld [wGotHeadsFromConfusionCheck], a
@@ -8648,12 +8672,13 @@ CheckSelfConfusionDamage:
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr z, .confused
+.no_carry
 	or a
 	ret
 .confused
 	ldtx de, ConfusionCheckDamageText
 	call TossCoin
-	jr c, HandleConfusionDamageToSelf.no_carry ; return nc if heads
+	jr c, .no_carry ; return nc if heads
 	ld a, 1
 	ld [wGotHeadsFromConfusionCheck], a
 	scf
@@ -8675,7 +8700,6 @@ HandleConfusionDamageToSelf:
 	call Func_1bb4
 	call HandleDestinyBondAndBetweenTurnKnockOuts
 	call ClearNonTurnTemporaryDuelvars
-.no_carry
 	or a
 	ret
 
@@ -8684,7 +8708,7 @@ Func_1bb4:
 	call FinishQueuedAnimations
 	call DrawDuelMainScene
 	call DrawDuelHUDs
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call PrintFailedEffectText
 	call WaitForWideTextBoxInput
@@ -8696,32 +8720,34 @@ Func_1bb4:
 ; damage is set to 0 if anything is found.
 ; input:
 ;	de = damage being dealt by the attack
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 LastChanceToNegateFinalDamage:
 	ld a, [wLoadedAttackCategory]
 	bit RESIDUAL_F, a
-	ret nz
+	ret nz ; return if the attack is residual
 	ld a, [wNoDamageOrEffect]
 	or a
-	ret nz
+	ret nz ; return if the attack's damage and effects were already negated
 	ld a, e
 	or d
-	jr nz, .attack_opponent
+	jr nz, .attack_opponent ; jump ahead if the attack's damage isn't 0
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetNonTurnDuelistVariable
 	or a
-	jr nz, .attack_opponent
+	jr nz, .attack_opponent ; jump ahead if the Defending Pokémon has a SUBSTATUS2
 	ld a, [wStatusConditionQueueIndex]
 	or a
-	ret z
+	ret z ; return if there are no pending Special Conditions
 .attack_opponent
-	push de
+	push de ; store the attack's damage on the stack
 	rst SwapTurn
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ld [wTempPlayAreaLocation_cceb], a
 	call HandleTransparency
 	rst SwapTurn
-	pop de
-	ret nc
+	pop de ; restore the attack's damage
+	ret nc ; return if Transparency isn't going to negate the attack
+; Transparency was successful, so reset any SUBSTATUS2 effects and set damage to 0
 	call DrawDuelMainScene
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	call GetNonTurnDuelistVariable
@@ -8733,8 +8759,9 @@ LastChanceToNegateFinalDamage:
 ; used to bounce back an attack of the RESIDUAL category.
 ; when MACHAMP is damaged, if its Strikes Back is active, the
 ; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
-; output:
-;	carry = set:  if Machamp is unable to use its Pokemon Power
+; input:
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
+;	[wTempNonTurnDuelistCardID] = Defending Pokémon's card ID
 HandleStrikesBack_AgainstResidualAttack:
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
@@ -8754,6 +8781,9 @@ HandleStrikesBack_AgainstResidualAttack:
 	jp nc, WaitForWideTextBoxInput
 	ret
 
+; input:
+;	hl = amount to subtract from the Attacking Pokémon's HP
+;	[wTempTurnDuelistCardID] = attacking Pokémon's card ID
 ; output:
 ;	carry = set:  if the Attacking Pokemon was Knocked Out
 ApplyStrikesBack_AgainstResidualAttack:

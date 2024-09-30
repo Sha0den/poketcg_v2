@@ -5,7 +5,7 @@ _PauseMenu_Config:
 	push af
 	xor a
 	ld [wConfigExitSettingsCursorPos], a
-	inc a ; text isn't double-spaced
+	inc a ; SINGLE_SPACED
 	ld [wLineSeparation], a
 	call InitMenuScreen
 	lb de,  0,  3

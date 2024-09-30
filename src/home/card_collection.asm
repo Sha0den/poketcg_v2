@@ -160,11 +160,11 @@ CreateTempCardCollection::
 	ret
 
 
-; adds card with id given in a to sCardCollection, provided that
+; adds card with ID given in a to sCardCollection, provided that
 ; the player has less than MAX_AMOUNT_OF_CARD (99) of them
 ; preserves all registers except af
 ; input:
-;	a = ID of card to add
+;	a = card ID for the card to add
 AddCardToCollection::
 	push hl
 	push de
@@ -194,7 +194,7 @@ AddCardToCollection::
 ; removes a card with ID given in a from sCardCollection (decrement its count if non-0)
 ; preserves all registers except af
 ; input:
-;	a = ID of card to remove
+;	a = card ID for the card to remove
 RemoveCardFromCollection::
 	push hl
 	call EnableSRAM

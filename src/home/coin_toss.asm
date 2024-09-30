@@ -4,9 +4,9 @@
 ; input:
 ;	de = text ID for the relevant text to print
 ; output:
+;	a & [wCoinTossNumHeads] = 0:  if the result was tails
+;	                        = 1:  if the result was heads
 ;	carry = set:  if the result was heads
-;	[wCoinTossNumHeads] & a = 1:  if the result was heads
-;	[wCoinTossNumHeads] & a = 0:  if the result was tails
 TossCoin::
 	ld a, 1
 ;	fallthrough
@@ -19,8 +19,8 @@ TossCoin::
 ;	a = number of coin tosses
 ;	de = text ID for the relevant text to print
 ; output:
+;	a & [wCoinTossNumHeads] = number of heads that were flipped
 ;	carry = set:  if there was at least one heads
-;	[wCoinTossNumHeads] & a = number of heads that were flipped
 TossCoinATimes::
 	push hl
 	ld hl, wCoinTossScreenTextID

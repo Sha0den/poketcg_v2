@@ -371,7 +371,7 @@ CreditsSequenceCmd_DrawRectangle:
 ;	c = x coordinate at which to begin printing the text
 ;	b = used to find the y coordinate for printing the text
 CreditsSequenceCmd_PrintText:
-	ld a, $01
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	push de
 	ld d, c ; x coordinate for the text
@@ -388,7 +388,7 @@ CreditsSequenceCmd_PrintText:
 ;	c = x coordinate at which to begin printing the text
 ;	b = y coordinate at which to begin printing the text
 CreditsSequenceCmd_PrintTextBox:
-	ld a, $01
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	push de
 	ld d, c

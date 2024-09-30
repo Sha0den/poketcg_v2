@@ -198,7 +198,7 @@ RequestToPrintCard::
 ; if it's a Trainer or Energy card, just print the card's description.
 DrawBottomCardInfoInSRAMGfxBuffer0:
 	call Func_1a025
-	xor a
+	xor a ; CARDPAGETYPE_NOT_PLAY_AREA
 	ld [wCardPageType], a
 	ld hl, sGfxBuffer0
 	ld b, 20
@@ -228,14 +228,14 @@ DrawBottomCardInfoInSRAMGfxBuffer0:
 	jp WriteThreeDigitNumberInTxSymbolFormat
 
 .not_pkmn_card
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	lb de, 1, 66
 	ld a, 19 ; line length
 	call InitTextPrintingInTextbox
 	ld hl, wLoadedCard1NonPokemonDescription
 	call ProcessTextFromPointerToID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	ret
 

@@ -2,7 +2,7 @@
 ; preserves bc and de
 ; input:
 ;	a = length in number of tiles (the resulting string will be padded with spaces to match it)
-;	wLoadedCard1 = contains a card_data_struct
+;	[wLoadedCard1] = all of the card's data (card_data_struct)
 _CopyCardNameAndLevel::
 	push bc
 	push de

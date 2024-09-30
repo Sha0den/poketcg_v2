@@ -200,7 +200,7 @@ DiscardName:
 	text "Discard"
 	done
 
-IncompleteText:
+IncompleteText: ; Unused
 	text "Incomplete"
 	done
 

@@ -124,7 +124,7 @@ HandleStartMenu:
 	lb de, $30, $8f
 	call SetupText
 	call EnableAndClearSpriteAnimations
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	lb bc, 14, 1
 	call DrawPlayerPortrait

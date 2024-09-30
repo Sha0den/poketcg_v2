@@ -125,7 +125,7 @@ LoadCardOrDuelMenuBorderTiles::
 ; loads the graphics of a card type header, used to display
 ; a picture of a card after drawing it or placing it in the Arena.
 ; input:
-;	e = which header to load (HEADER_* constant)
+;	a = which header to load (HEADER_* constant)
 LoadCardTypeHeaderTiles::
 	ld d, a
 	ld e, 0

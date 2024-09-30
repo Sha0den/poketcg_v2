@@ -123,7 +123,7 @@ ProcessSpecialTextCharacter::
 	call TerminateHalfWidthText
 	ld a, [wLineSeparation]
 	or a
-	call z, .next_line
+	call z, .next_line ; extra line if DOUBLE_SPACED
 .next_line
 	xor a
 	ldh [hTextLineCurPos], a
@@ -704,6 +704,7 @@ CreateHalfWidthFontTile::
 ; assumes BANK(HalfWidthFont) is already loaded.
 ; input:
 ;	a = halfwidth font character
+;	de = where to copy the font character (e.g. wTextTileBuffer)
 CopyHalfWidthCharacterToDE::
 	sub $20 ; HalfWidthFont begins at ascii $20
 	ld l, a

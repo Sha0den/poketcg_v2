@@ -2,12 +2,15 @@
 ; with card IDs and counts, respectively, from a given Card Set
 ; input:
 ;	a = CARD_SET_* constant
+; output:
+;	wFilteredCardList = null-terminated list with card IDs of every card in the given set
+;	wOwnedCardsCountList = $ff-terminated list with card counts of every card in the given set
 CreateCardSetList:
 	push af
-	ld a, DECK_SIZE
+	ld a, DECK_SIZE ; max number of cards in a card set (currently set to 60)
 	ld hl, wFilteredCardList
 	call ClearNBytesFromHL
-	ld a, DECK_SIZE
+	ld a, DECK_SIZE ; max number of cards in a card set (currently set to 60)
 	ld hl, wOwnedCardsCountList
 	call ClearNBytesFromHL
 	xor a
@@ -286,6 +289,9 @@ BoosterNamesTextIDTable::
 ; prints the cards being shown in the Card Album screen
 ; for the corresponding Card Set
 ; preserves bc
+; input:
+;	wFilteredCardList = null-terminated list with card IDs of every card in the given set
+;	wOwnedCardsCountList = $ff-terminated list with card counts of every card in the given set
 PrintCardSetListEntries:
 	push bc
 	ld a, [wSelectedCardSet]
@@ -500,6 +506,12 @@ PrintCardSetListEntries:
 
 
 ; handles opening card page, and inputs when inside Card Album
+; input:
+;	[wCardListCursorPos] = which list position is currently selected
+;	[wCardListVisibleOffset] = position in list of the first card that's currently shown on screen
+;	[wCardListNumCursorPositions] = NUM_CARD_ALBUM_VISIBLE_CARDS (7)
+;	wOwnedCardsCountList = $ff-terminated list with card counts of every card in the given set
+;	wCurCardListPtr = pointer for a list of card IDs for the current set (wFilteredCardList)
 HandleCardAlbumCardPage:
 	ld a, [wCardListCursorPos]
 	ld b, a
@@ -635,6 +647,10 @@ HandleCardAlbumCardPage:
 
 
 ; preserves de
+; input:
+;	wOwnedCardsCountList = $ff-terminated list with card counts of every card in the given set
+; output:
+;	[wFirstOwnedCardIndex] = position in the given list of the first card that's owned
 GetFirstOwnedCardIndex:
 	ld hl, wOwnedCardsCountList
 	ld b, 0

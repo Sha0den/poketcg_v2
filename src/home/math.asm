@@ -14,6 +14,7 @@ ATimes10::
 	ret
 
 
+; currently an unreferenced function
 ; preserves all registers except af
 ; input:
 ;	a = number to divide by 10

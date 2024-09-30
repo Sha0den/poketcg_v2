@@ -936,9 +936,10 @@ CheckIfHasOtherValidDecks:
 
 ; preserves bc
 ; input:
-;	hl = list of cards to check
+;	hl = null-terminated list with card IDs
+;	e = card ID of the first Basic Pokémon in the list
 ; output:
-;	carry = set:  if there's a Basic Pokemon in the list of cards
+;	carry = set:  if there's a Basic Pokémon in the list of cards
 CheckCardListForBasicPokemonUsingCardID:
 	ld a, [hli]
 	ld e, a
@@ -947,11 +948,11 @@ CheckCardListForBasicPokemonUsingCardID:
 	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
-	jr nc, CheckCardListForBasicPokemonUsingCardID ; card isn't a Pokemon
+	jr nc, CheckCardListForBasicPokemonUsingCardID ; skip if not a Pokémon
 	ld a, [wLoadedCard1Stage]
 	or a
-	jr nz, CheckCardListForBasicPokemonUsingCardID ; Pokemon isn't Basic
-	; found a Basic Pokemon
+	jr nz, CheckCardListForBasicPokemonUsingCardID ; skip if stage isn't Basic
+	; found a Basic Pokémon
 	scf
 	ret
 

@@ -876,7 +876,8 @@ wTilePatternSelector:: ; cd06
 wTilePatternSelectorCorrection:: ; cd07
 	ds $1
 
-; if 0, text lines are separated by a blank line
+; if 0 (DOUBLE_SPACED), text lines are separated by a blank line
+; uses constants DOUBLE_SPACED and SINGLE_SPACED
 wLineSeparation:: ; cd08
 	ds $1
 
@@ -1786,6 +1787,10 @@ wTempHandCardList:: ; cf68
 	ds DECK_SIZE ; ds $3c
 
 ; Unused wram bytes?
+; these could be used by the card album if more than more than
+; DECK_SIZE (60) cards are ever assigned to any card set.
+; the current maximum number of cards in a set is effectively 80 cards
+; (60 from "ds DECK_SIZE" + 21 from "ds $15" - 1 from the terminating $ff byte)
 	ds $15
 
 ; name of the selected deck

@@ -4,6 +4,8 @@
 ;   ...
 ;   $ff
 ; for each struct, writes data to BGMap0-translated x,y
+; input:
+;	hl = location of data to copy into vram
 WriteDataBlocksToBGMap0::
 	call WriteDataBlockToBGMap0
 	bit 7, [hl] ; check for $ff
@@ -14,6 +16,8 @@ WriteDataBlocksToBGMap0::
 ; writes data to BGMap0-translated x,y
 ; reads struct:
 ;	x (1 byte), y (1 byte), data (n bytes), $00
+; input:
+;	hl = location of data to copy into vram
 WriteDataBlockToBGMap0::
 	ld b, [hl]
 	inc hl

@@ -45,9 +45,9 @@ GetPlayAreaCardColor::
 
 
 ; finds the Weakness of one of the turn holder's in-play Pokemon
-; preserves bc and hl
+; preserves bc and de
 ; input:
-;	a = play area location offset (PLAY_AREA_* constant)
+;	a = Pokémon's play area location offset (PLAY_AREA_* constant)
 ; output:
 ;	a = Weakness of the Pokemon from input
 GetPlayAreaCardWeakness::
@@ -58,7 +58,7 @@ GetPlayAreaCardWeakness::
 
 ; finds the Weakness of the turn holder's Active Pokemon's, either what's
 ; printed on the card or whatever it might have become via a card effect
-; preserves bc and hl
+; preserves bc and de
 ; output:
 ;	a = Weakness of the turn holder's Active Pokemon
 GetArenaCardWeakness::
@@ -77,9 +77,9 @@ GetCardWeakness::
 
 
 ; finds the Resistance of one of the turn holder's in-play Pokemon
-; preserves bc and hl
+; preserves bc and de
 ; input:
-;	a = play area location offset (PLAY_AREA_* constant)
+;	a = Pokémon's play area location offset (PLAY_AREA_* constant)
 ; output:
 ;	a = Resistance of the Pokemon from input
 GetPlayAreaCardResistance::
@@ -91,7 +91,7 @@ GetPlayAreaCardResistance::
 
 ; finds the Resistance of the turn holder's Active Pokemon's, either what's
 ; printed on the card or whatever it might have become via a card effect
-; preserves bc and hl
+; preserves bc and de
 ; output:
 ;	a = Resistance of the turn holder's Active Pokemon
 GetArenaCardResistance::
@@ -111,6 +111,8 @@ GetCardResistance::
 
 ; converts a color to its equivalent WR_* (weakness/resistance) value
 ; preserves all registers except af
+; input:
+; 	a = type/color constant (e.g. FIRE, GRASS, etc.)
 TranslateColorToWR::
 	push hl
 	add LOW(InvertedPowersOf2)

@@ -1,6 +1,8 @@
 ; loads the data of a card to wLoadedCard1 by using the text ID of the card name
 ; input:
 ;	de = text ID for a card's name
+; output:
+;	[wLoadedCard1] = all of the card's data (65 bytes)
 LoadCardDataToBuffer1_FromName::
 	ld hl, CardPointers + 2 ; skip first NULL pointer
 	ld a, BANK(CardPointers)
@@ -51,6 +53,8 @@ LoadCardDataToBuffer1_FromName::
 ; preserves all registers except af
 ; input:
 ;	e = card ID
+; output:
+;	[wLoadedCard1] = all of the card's data (65 bytes)
 LoadCardDataToBuffer2_FromCardID::
 	push hl
 	ld hl, wLoadedCard2
@@ -60,6 +64,8 @@ LoadCardDataToBuffer2_FromCardID::
 ; preserves all registers except af
 ; input:
 ;	e = card ID
+; output:
+;	[wLoadedCard1] = all of the card's data (65 bytes)
 LoadCardDataToBuffer1_FromCardID::
 	push hl
 	ld hl, wLoadedCard1
@@ -110,7 +116,7 @@ GetCardType::
 	ret
 
 
-; preserves all registers except af
+; preserves bc and hl
 ; input:
 ;	e = card ID
 ; output:
@@ -133,7 +139,6 @@ GetCardName::
 	ret
 
 
-; Shaoden: this function can't be moved outside the home bank; it crashes the game.
 ; preserves de and hl
 ; input:
 ;	a = card ID

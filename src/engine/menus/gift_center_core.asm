@@ -40,10 +40,10 @@ GiftCenter_SendCard:
 	call InitTextPrinting_ProcessTextFromID
 	lb de, 1, 3
 	ldtx hl, CardSendingProceduresText
-	ld a, $01 ; text isn't double-spaced
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	call InitTextPrinting_ProcessTextFromID
-	xor a ; text is double-spaced
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	ldtx hl, PleaseReadTheProceduresForSendingCardsText
 	call DrawWideTextBox_WaitForInput

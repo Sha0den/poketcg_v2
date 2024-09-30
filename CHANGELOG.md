@@ -95,7 +95,13 @@
 
 
 ## Code Optimization
-- **September 15, 2024:** 1 File Changed
+- **September 30, 2024:** 32 Files Changed
+    - Add/edit a lot of function comments and move a couple of functions (within the same file)
+    - Change several magic numbers to the correct constants and add constants for wLineSeparation
+
+<br/>
+
+- **[September 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/fc428d659332548d2c5f5a856518db642db3e29b):** 1 File Changed
     - Some more comments and minor optimizations in home/substatus.asm
 
 <br/>

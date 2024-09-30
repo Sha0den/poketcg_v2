@@ -18,7 +18,7 @@ Func_12661:
 	call SetupText
 	call EnableAndClearSpriteAnimations
 	call Func_12871
-	ld a, $01
+	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	ld a, [wDebugMenuSelection]
 	ld hl, Unknown_128f7
@@ -32,7 +32,7 @@ Func_12661:
 	bit 7, a
 	jr nz, .asm_12698
 	ld [wDebugMenuSelection], a
-	xor a
+	xor a ; DOUBLE_SPACED
 	ld [wLineSeparation], a
 	call Func_126b3
 	jr c, .asm_1266d

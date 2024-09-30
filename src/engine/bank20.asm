@@ -1360,7 +1360,7 @@ SpriteNullAnimationFrame:
 ;Func_80c64:
 ;	ld a, [wLineSeparation]
 ;	push af
-;	ld a, $01 ; no line separator
+;	ld a, SINGLE_SPACED
 ;	ld [wLineSeparation], a
 ;	; load opponent's name
 ;	ld a, [wOpponentName]
