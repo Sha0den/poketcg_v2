@@ -133,6 +133,8 @@ SearchCardInDeckAndAddToHand::
 	get_turn_duelist_var
 	ld a, DECK_SIZE
 	sub [hl]
+	or a
+	jr z, .done ; done if no cards in deck
 	inc [hl] ; increment number of cards not in deck
 	ld b, a ; DECK_SIZE - [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK] (number of cards in deck)
 	ld l, c
@@ -140,8 +142,6 @@ SearchCardInDeckAndAddToHand::
 	ld l, DUELVARS_DECK_CARDS + DECK_SIZE - 1
 	ld e, l
 	ld d, h ; hl = de = DUELVARS_DECK_CARDS + DECK_SIZE - 1 (last card)
-	inc b
-	jr .match
 .loop
 	ld a, [hld]
 	cp c
@@ -151,6 +151,7 @@ SearchCardInDeckAndAddToHand::
 .match
 	dec b
 	jr nz, .loop
+.done
 	pop bc
 	pop de
 	pop hl
@@ -167,9 +168,7 @@ AddCardToHand::
 	push hl
 	push de
 	ld e, a
-	ld l, a
-	ldh a, [hWhoseTurn]
-	ld h, a
+	get_turn_duelist_var
 	; write CARD_LOCATION_HAND into the location of this card
 	ld [hl], CARD_LOCATION_HAND
 	; increment number of cards in hand
@@ -305,46 +304,38 @@ MoveDiscardPileCardToHand::
 
 ; fills wDuelTempList with the turn holder's discard pile cards (their 0-59 deck indices)
 ; output:
+;	a = number of cards in the turn holder's discard pile
 ;	carry = set:  if there weren't any cards in the turn holder's discard pile
-;	wDuelTempList = $ff terminated list with deck indices of all cards in the turn holder's discard pile
+;	wDuelTempList = $ff-terminated list with deck indices of all cards in the turn holder's discard pile
 CreateDiscardPileCardList::
-	ldh a, [hWhoseTurn]
-	ld h, a
-	ld l, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
-	ld b, [hl]
-	ld a, DUELVARS_DECK_CARDS - 1
-	add [hl] ; point to last card in discard pile
+	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
+	get_turn_duelist_var
+	or a
+	jr z, EmptyDuelTempListAndSetCarry ; return carry with empty list if no cards in discard pile
+	ld c, a
+	ld b, a
+	add DUELVARS_DECK_CARDS - 1 ; point to last card in discard pile
 	ld l, a
 	ld de, wDuelTempList
-	inc b
-	jr .begin_loop
 .next_card_loop
 	ld a, [hld]
 	ld [de], a
 	inc de
-.begin_loop
 	dec b
 	jr nz, .next_card_loop
-	ld a, $ff ; $ff-terminated
-	ld [de], a
-	ld l, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
-	ld a, [hl]
-	or a
-	ret nz
-	scf
-	ret
+	jr CreateDeckCardList.terminate_list
 
 
 ; fills wDuelTempList with the turn holder's remaining deck cards (their 0-59 deck indices)
 ; output:
-;	a & c = number of cards in the turn holder's deck ($ff if deck is empty)
+;	a = number of cards in the turn holder's deck
 ;	carry = set:  if there weren't any cards in the turn holder's deck
-;	wDuelTempList = $ff terminated list with deck indices of all cards still in the turn holder's deck
+;	wDuelTempList = $ff-terminated list with deck indices of all cards still in the turn holder's deck
 CreateDeckCardList::
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	cp DECK_SIZE
-	jr nc, .no_cards_left_in_deck
+	jr nc, EmptyDuelTempListAndSetCarry ; return carry with empty list if no cards in deck
 	ld a, DECK_SIZE
 	sub [hl]
 	ld c, a
@@ -352,24 +343,25 @@ CreateDeckCardList::
 	ld a, [hl]
 	add DUELVARS_DECK_CARDS
 	ld l, a ; l = DUELVARS_DECK_CARDS + [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK]
-	inc b
 	ld de, wDuelTempList
-	jr .begin_loop
-.next_card
-	ld a, [hli]
-	ld [de], a
-	inc de
-.begin_loop
-	dec b
-	jr nz, .next_card
+	call CopyNBytesFromHLToDE
+.terminate_list
 	ld a, $ff ; $ff-terminated
 	ld [de], a
 	ld a, c
 	or a
 	ret
-.no_cards_left_in_deck
+
+
+; output:
+;	a = $00
+;	carry = set
+;	[wDuelTempList] = $ff
+EmptyDuelTempListAndSetCarry::
 	ld a, $ff
 	ld [wDuelTempList], a
+	xor a
+.set_carry
 	scf
 	ret
 
@@ -379,11 +371,13 @@ CreateDeckCardList::
 ; input:
 ;	a = play area location offset (PLAY_AREA_* constant)
 ; output:
+;	a & b = number of Energy cards attached to the Pokémon in the given location
 ;	carry = set:  if there weren't any Energy cards in the location from input
-;	wDuelTempList = $ff terminated list with deck indices of all Energy cards in input location
+;	wDuelTempList = $ff-terminated list with deck indices of all Energy cards in input location
 CreateArenaOrBenchEnergyCardList::
 	or CARD_LOCATION_PLAY_AREA
 	ld c, a
+	ld b, 0 ; initial counter
 	ld de, wDuelTempList
 	ld a, DUELVARS_CARD_LOCATIONS
 	get_turn_duelist_var
@@ -398,31 +392,33 @@ CreateArenaOrBenchEnergyCardList::
 	ld a, l
 	ld [de], a ; add to wDuelTempList
 	inc de
+	inc b
 .skip_card
 	inc l
 	ld a, l
 	cp DECK_SIZE
 	jr c, .next_card_loop
 	; all cards checked
-	ld a, $ff
+	ld a, $ff ; terminating byte
 	ld [de], a
-	ld a, [wDuelTempList]
-	cp $ff
-	jr z, CreateHandCardList.set_carry ; no Energy cards were found
+	ld a, b
 	or a
+	ret nz
+	scf
 	ret
 
 
 ; fills wDuelTempList with the turn holder's hand cards (their 0-59 deck indices)
+; preserves c
 ; output:
 ;	a = number of cards in the turn holder's hand
 ;	carry = set:  if there weren't any cards in the turn holder's hand
-;	wDuelTempList = $ff terminated list with deck indices of all cards in the turn holder's hand
+;	wDuelTempList = $ff-terminated list with deck indices of all cards in the turn holder's hand
 CreateHandCardList::
 	call FindLastCardInHand
-	inc b
-	jr .skip_card
-
+	ld a, b
+	or a
+	jr z, EmptyDuelTempListAndSetCarry ; return carry with empty list if no cards in hand
 .check_next_card_loop
 	ld a, [hld]
 	push hl
@@ -432,7 +428,6 @@ CreateHandCardList::
 	jr nz, .skip_card
 	ld [de], a
 	inc de
-
 .skip_card
 	dec b
 	jr nz, .check_next_card_loop
@@ -441,9 +436,6 @@ CreateHandCardList::
 	ld l, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	ld a, [hl]
 	or a
-	ret nz
-.set_carry
-	scf
 	ret
 
 
@@ -849,7 +841,6 @@ EvolvePokemonCard::
 	ldh a, [hTempCardIndex_ff98]
 	call PutHandCardInPlayArea
 	; update the Pokemon's HP with the difference
-	ldh a, [hTempPlayAreaLocation_ff9d] ; derp
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
@@ -1076,23 +1067,29 @@ MovePlayAreaCardToDiscardPile::
 ; input:
 ;	e = play area location offset (PLAY_AREA_* constant)
 EmptyPlayAreaSlot::
-	ldh a, [hWhoseTurn]
-	ld h, a
 	ld d, -1
 	ld a, DUELVARS_ARENA_CARD
-	call .init_duelvar
+	add e
+	get_turn_duelist_var
+	ld [hl], d
 	ld d, 0
 	ld a, DUELVARS_ARENA_CARD_HP
-	call .init_duelvar
+	add e
+	ld l, a
+	ld [hl], d
 	ld a, DUELVARS_ARENA_CARD_STAGE
-	call .init_duelvar
+	add e
+	ld l, a
+	ld [hl], d
 	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
-	call .init_duelvar
+	add e
+	ld l, a
+	ld [hl], d
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
-	call .init_duelvar
+	add e
+	ld l, a
+	ld [hl], d
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
-	; fallthrough
-.init_duelvar
 	add e
 	ld l, a
 	ld [hl], d
@@ -1286,11 +1283,12 @@ GetPlayAreaCardAttachedEnergies::
 ; input:
 ;	e = card ID to search
 ;	b = location to consider (CARD_LOCATION_* constant)
-;	h = PLAYER_TURN or OPPONENT_TURN
 ; output:
 ;	a = how many of the given card exists in the given location
 CountCardIDInLocation::
 	push bc
+	ldh a, [hWhoseTurn]
+	ld h, a
 	ld l, DUELVARS_CARD_LOCATIONS
 	ld c, $0
 .next_card
@@ -1349,7 +1347,6 @@ CopyAttackDataAndDamage_FromCardID::
 	ldh [hTempCardIndex_ff9f], a
 	pop af
 	ld e, a
-	ld d, $00
 	call LoadCardDataToBuffer1_FromCardID
 	pop de
 	jr CopyAttackDataAndDamage
@@ -1419,13 +1416,15 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	ld [wTempNonTurnDuelistCardID], a
 	rst SwapTurn
 	xor a
-	ld [wccec], a
 	ld [wStatusConditionQueueIndex], a
-	ld [wEffectFailed], a
 	ld [wIsDamageToSelf], a
-	ld [wDefendingWasForcedToSwitch], a
-	ld [wMetronomeEnergyCost], a
-	ld [wNoEffectFromWhichStatus], a
+	ld hl, wccec
+	ld [hli], a ; wccec = $00
+	ld [hli], a ; wEffectFailed = $00
+	inc hl      ; skip wPreEvolutionPokemonCard
+	ld [hli], a ; wDefendingWasForcedToSwitch = $00
+	ld [hli], a ; wMetronomeEnergyCost = $00
+	ld [hl], a  ; wNoEffectFromWhichStatus = $00
 	bank1call ClearNonTurnTemporaryDuelvars_CopyStatus
 	ret
 
@@ -1672,7 +1671,6 @@ ApplyDamageModifiers_DamageToSelf::
 ;	de = updated damage
 ApplyAttachedPluspower::
 	push de
-	get_turn_duelist_var
 	ld de, PLUSPOWER
 	call CountCardIDInLocation
 	ld l, a
@@ -1694,7 +1692,6 @@ ApplyAttachedPluspower::
 ;	de = updated damage
 ApplyAttachedDefender::
 	push de
-	get_turn_duelist_var
 	ld de, DEFENDER
 	call CountCardIDInLocation
 	ld l, a
@@ -1832,6 +1829,9 @@ DealDamageToPlayAreaPokemon::
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	jr z, .skip_defender
 	ld a, [wTempPlayAreaLocation_cceb]
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .next
@@ -1847,9 +1847,6 @@ DealDamageToPlayAreaPokemon::
 	call ApplyAttachedPluspower
 	rst SwapTurn
 .next
-	ld a, [wLoadedAttackCategory]
-	cp POKEMON_POWER
-	jr z, .skip_defender
 	ld a, [wTempPlayAreaLocation_cceb]
 	or CARD_LOCATION_PLAY_AREA
 	ld b, a
@@ -1920,10 +1917,12 @@ PrintFailedEffectText::
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 18
 	call CopyCardNameAndLevel
+	xor a ; TX_END
+	ld [hl], a ; terminate the text string at wDefaultText
 	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
-	ld [hl], TX_END
-	ld hl, $0000
-	call LoadTxRam2
+	ld hl, wTxRam2
+	ld [hli], a
+	ld [hl], a
 	ld hl, wLoadedAttackName
 	ld de, wTxRam2_b
 	ld a, [hli]

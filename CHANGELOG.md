@@ -95,7 +95,12 @@
 
 
 ## Code Optimization
-- **September 30, 2024:** 32 Files Changed
+- **October 1, 2024:** 1 File Changed
+    - Refactor some code and delete a couple of useless lines in home/duel.asm
+
+<br/>
+
+- **[September 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/74b3bb534c4e2a833984e7b81a3fde87ba6f4754):** 32 Files Changed
     - Add/edit a lot of function comments and move a couple of functions (within the same file)
     - Change several magic numbers to the correct constants and add constants for wLineSeparation
 
