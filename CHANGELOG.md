@@ -95,7 +95,14 @@
 
 
 ## Code Optimization
-- **October 1, 2024:** 1 File Changed
+- **October 4, 2024:** 4 Files Changed
+    - Thoroughly review the effect functions files, optimizing and occasionally correcting miscellaneous code
+    - Update various comments in the effect functions files (also correct `RemoveCardFromDuelTempList`'s output comments in home/duel.asm)
+    - Reorder a lot of the individual effect commands (EFFECTCMDTYPE_*) to reflect the actual order of execution
+
+<br/>
+
+- **[October 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/25cd3432fd601532fc09df09182e802ae802b562):** 1 File Changed
     - Refactor some code and delete a couple of useless lines in home/duel.asm
 
 <br/>

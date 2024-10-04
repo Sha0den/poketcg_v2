@@ -751,7 +751,8 @@ GetCardInDuelTempList::
 ;	a = deck index of the card to remove
 ;	wDuelTempList = $ff-terminated list
 ; output:
-;	carry = set:  if the card wasn't found in the list
+;	a = number of items remaining in wDuelTempList
+;	carry = set:  if wDuelTempList is now empty
 RemoveCardFromDuelTempList::
 	push hl
 	push de

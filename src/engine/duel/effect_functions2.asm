@@ -188,12 +188,10 @@ LookForCardsInDeck:
 	jp z, .set_carry
 	call _GetCardIDFromDeckIndex
 	cp NIDORANF
-	jr z, .found_nidoran
+	ret z ; return no carry if a Nidoran F was found
 	cp NIDORANM
 	jr nz, .loop_deck_nidoran ; skip if not a Nidoran
-.found_nidoran
-	or a
-	ret
+	ret ; return no carry if a Nidoran M was found
 
 
 ; output:
@@ -258,13 +256,10 @@ FindBasicEnergy:
 CheckDeckIndexForBasicEnergy:
 	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY
-	jr c, .no_carry ; it's a Pokemon
+	ccf
+	ret nc ; return no carry if it's a Pokémon card
 	cp TYPE_ENERGY + NUM_COLORED_TYPES
-	ret c ; it's a Basic Energy
-; it must be a Trainer or Special Energy
-.no_carry
-	or a
-	ret
+	ret ; c if Basic Energy, nc if Trainer/Special Energy
 
 
 ; output:
@@ -454,7 +449,6 @@ FindAnyPokemon:
 .read_input
 	bank1call DisplayCardList
 	jr c, .attempt_to_cancel ; the B button was pressed
-	ldh a, [hTempCardIndex_ff98]
 	call GetCardIDFromDeckIndex
 	call GetCardType
 	cp TYPE_ENERGY
@@ -1039,30 +1033,69 @@ AIFindKrabby:
 
 
 
-; draws and handles the Player's selection for reordering the top 3 cards of the deck.
-; the resulting list is output in order in hTempList (now done in ProphecyLoopOrder/PokedexLoopOrder).
+; handles the Player's selection for reordering the top 5 cards of their deck
 ; output:
-;	wDuelTempList = list with the deck indices of the cards to be reordered
-;	wDuelTempList + 10 = list with the same number of entries as wDuelTempList containing the new
-;	                     ordering data (numbers from 1 to the total number of cards being reordered)
+;	hTempList + 1 = $ff-terminated list with deck indices of cards to place on top of the deck
+HandlePokedexPlayerSelection:
+; print text box
+	ldtx hl, RearrangeThe5CardsAtTopOfDeckText
+	call DrawWideTextBox_WaitForInput
+	ld c, 5 ; number of cards that will be reordered
+	jr ReorderCardsOnTopOfDeck
+
+
+; output:
+;	[hTempList] = which deck was chosen (0 = turn holder's deck, 1 = opponent's deck)
+;	hTempList + 1 = $ff-terminated list with deck indices of cards to place on top of the deck
+HandleProphecyPlayerSelection:
+	ldtx hl, ProcedureForProphecyText
+	bank1call DrawWholeScreenTextBox
+.select_deck
+	bank1call DrawDuelMainScene
+	ldtx hl, PleaseSelectTheDeckText
+	call TwoItemHorizontalMenu
+	ldh a, [hKeysHeld]
+	and B_BUTTON
+	jr nz, HandleProphecyPlayerSelection ; loop back to start
+
+	ldh a, [hCurMenuItem]
+	ldh [hTempList], a ; store selection in first position in list
+	or a
+	jr z, .turn_duelist
+
+; non-turn duelist
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	call GetNonTurnDuelistVariable
+	cp DECK_SIZE
+	jr nc, .select_deck ; no cards, go back to deck selection
+	rst SwapTurn
+	call HandleProphecyScreen
+	jp SwapTurn
+
+.turn_duelist
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	get_turn_duelist_var
+	cp DECK_SIZE
+	jr nc, .select_deck ; no cards, go back to deck selection
+;	fallthrough
+
+; draws and handles the Player's selection for reordering the top 3 cards of the deck.
+; the resulting list is output in order in hTempList.
+; output:
+;	hTempList + 1 = $ff-terminated list with deck indices of cards to place on top of the deck
 HandleProphecyScreen:
+	ld c, 3 ; number of cards that will be reordered
+;	fallthrough
+
+; input:
+;	c = number of cards to reorder
+ReorderCardsOnTopOfDeck:
+; cap the number of cards to reorder up to the number of cards in deck.
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	ld b, a
 	ld a, DECK_SIZE
 	sub [hl] ; a = number of cards in deck
-
-; store in c the number of cards that will be reordered.
-; this number is 3, unless the deck has fewer cards than that,
-; in which case it will be the number of cards remaining.
-	ld c, 3
-;	fallthrough
-
-; input:
-;	a = number of cards in the deck
-;	b = number of cards not in the deck
-;	c = number of cards to reorder
-ReorderCardsOnTopOfDeck:
 	cp c
 	jr nc, .got_number_cards
 	ld c, a ; store number of remaining cards in c
@@ -1092,7 +1125,6 @@ ReorderCardsOnTopOfDeck:
 	call CountCardsInDuelTempList
 	ld b, a
 	ld a, 1 ; start at 1
-	; fill order list with zeroes
 	ldh [hCurSelectionItem], a
 	; initialize buffer ahead in wDuelTempList.
 	ld hl, wDuelTempList + 10
@@ -1133,9 +1165,7 @@ ReorderCardsOnTopOfDeck:
 	ldh [hCurSelectionItem], a
 
 ; refresh screen
-	push af
 	call PrintSortNumberInCardList_CallFromPointer
-	pop af
 
 ; check if we're done ordering
 	ldh a, [hCurSelectionItem]
@@ -1148,10 +1178,37 @@ ReorderCardsOnTopOfDeck:
 	ldtx hl, IsThisOKText
 	call YesOrNoMenuWithText_LeftAligned
 	jr c, .start ; "No" returns back to beginning of selection
-	
+
+; write in hTempList the card list in order that was selected.
 	ld hl, wDuelTempList + 10
 	ld de, wDuelTempList
 	ld c, 0
+.loop_order
+	ld a, [hli]
+	cp $ff
+	jr z, .done
+	push hl
+	push bc
+	ld c, a
+	ld b, $00
+	ld hl, hTempList
+	add hl, bc
+	ld a, [de]
+	ld [hl], a
+	pop bc
+	pop hl
+	inc de
+	inc c
+	jr .loop_order
+
+; now hTempList has the list of card deck indices
+; in the order selected to be place on top of the deck.
+.done
+	ld b, $00
+	ld hl, hTempList + 1
+	add hl, bc
+	ld [hl], $ff ; terminating byte
+	or a
 	ret
 
 .clear
@@ -1222,128 +1279,3 @@ PrintSortNumberInCardList:
 	inc c
 	inc c
 	jr .next
-
-
-; output:
-;	[hTempList] = which deck was chosen (0 = turn holder's deck, 1 = opponent's deck)
-;	hTempList + 1 = $ff terminated list with deck indices of cards to place on top of the deck
-HandleProphecyPlayerSelection:
-	ldtx hl, ProcedureForProphecyText
-	bank1call DrawWholeScreenTextBox
-.select_deck
-	bank1call DrawDuelMainScene
-	ldtx hl, PleaseSelectTheDeckText
-	call TwoItemHorizontalMenu
-	ldh a, [hKeysHeld]
-	and B_BUTTON
-	jr nz, HandleProphecyPlayerSelection ; loop back to start
-
-	ldh a, [hCurMenuItem]
-	ldh [hTempList], a ; store selection in first position in list
-	or a
-	jr z, .turn_duelist
-
-; non-turn duelist
-	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	call GetNonTurnDuelistVariable
-	cp DECK_SIZE
-	jr nc, .select_deck ; no cards, go back to deck selection
-	rst SwapTurn
-	call HandleProphecyScreen
-	call .ProphecyLoopOrder
-	jp SwapTurn
-
-.turn_duelist
-	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	get_turn_duelist_var
-	cp DECK_SIZE
-	jr nc, .select_deck ; no cards, go back to deck selection
-	call HandleProphecyScreen
-;	fallthrough
-
-; writes in hTempList the card list in order that was selected
-; input:
-;	c = 0
-;	de = list with the deck indices of the cards to be reordered
-;	hl = list with the same number of entries as wDuelTempList containing the new
-;	     ordering data (numbers from 1 to the total number of cards being reordered)
-.ProphecyLoopOrder:
-	ld a, [hli]
-	cp $ff
-	jr z, .done
-	push hl
-	push bc
-	ld c, a
-	ld b, $00
-	ld hl, hTempList
-	add hl, bc
-	ld a, [de]
-	ld [hl], a
-	pop bc
-	pop hl
-	inc de
-	inc c
-	jr .ProphecyLoopOrder
-
-; now hTempList has the list of card deck indices
-; in the order selected to be place on top of the deck.
-.done
-	ld b, $00
-	ld hl, hTempList + 1
-	add hl, bc
-	ld [hl], $ff ; terminating byte
-	or a
-	ret
-
-
-; handles the Player's selection for reordering the top 5 cards of their deck
-; output:
-;	hTempList = $ff terminated list with deck indices of cards to place on top of the deck
-HandlePokedexPlayerSelection:
-; print text box
-	ldtx hl, RearrangeThe5CardsAtTopOfDeckText
-	call DrawWideTextBox_WaitForInput
-
-; cap the number of cards to reorder up to the number of cards in deck (maximum of 5)
-	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	get_turn_duelist_var
-	ld b, a
-	ld a, DECK_SIZE
-	sub [hl]
-	ld c, 5
-	call ReorderCardsOnTopOfDeck
-;	fallthrough
-
-; writes in hTempList the card list in order that was selected.
-; like ProphecyLoopOrder, except it starts with hTempCardIndex_ff9f instead of hTempList
-; input:
-;	c = 0
-;	de = list with the deck indices of the cards to be reordered
-;	hl = list with the same number of entries as wDuelTempList containing the new
-.PokedexLoopOrder:
-	ld a, [hli]
-	cp $ff
-	jr z, .done
-	push hl
-	push bc
-	ld c, a
-	ld b, $00
-	ld hl, hTempCardIndex_ff9f
-	add hl, bc
-	ld a, [de]
-	ld [hl], a
-	pop bc
-	pop hl
-	inc de
-	inc c
-	jr .PokedexLoopOrder
-
-; now hTempList has the list of card deck indices
-; in the order selected to be place on top of the deck.
-.done
-	ld b, $00
-	ld hl, hTempList
-	add hl, bc
-	ld [hl], $ff ; terminating byte
-	or a
-	ret
