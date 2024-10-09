@@ -95,7 +95,13 @@
 
 
 ## Code Optimization
-- **October 4, 2024:** 4 Files Changed
+- **October 9, 2024:** 3 Files Changed
+    - Thoroughly review engine/duel/core.asm, updating comments, code, and even some labels
+    - Change the name of a subroutine in home/copy.asm into `CopyNBytesFromDEToHL` and use it in a couple of other files
+
+<br/>
+
+- **[October 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/3fe70f141410ba19fc361755f4e83b2beeb99f0f):** 4 Files Changed
     - Thoroughly review the effect functions files, optimizing and occasionally correcting miscellaneous code
     - Update various comments in the effect functions files (also correct `RemoveCardFromDuelTempList`'s output comments in home/duel.asm)
     - Reorder a lot of the individual effect commands (EFFECTCMDTYPE_*) to reflect the actual order of execution

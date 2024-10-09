@@ -285,12 +285,7 @@ ColorizeTextBoxSGB::
 	ld hl, wTempSGBPacket
 	ld de, AttrBlkPacket_TextBox
 	ld c, SGB_PACKET_SIZE
-.copy_sgb_command_loop
-	ld a, [de]
-	inc de
-	ld [hli], a
-	dec c
-	jr nz, .copy_sgb_command_loop
+	call CopyNBytesFromDEToHL
 	pop de
 	pop bc
 	ld hl, wTempSGBPacket + 4

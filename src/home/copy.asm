@@ -137,12 +137,19 @@ SafeCopyDataDEtoHL::
 	ld a, [wLCDC]
 	bit LCDC_ENABLE_F, a
 	jr nz, HblankCopyDataDEtoHL  ; LCD is on
-.lcd_off_loop::
+;	fallthrough
+
+; copies c bytes of data from de to hl
+; input:
+;	c = number of bytes to copy
+;	de = address from which to start copying the data
+;	hl = where to copy the data
+CopyNBytesFromDEToHL::
 	ld a, [de]
 	inc de
 	ld [hli], a
 	dec c
-	jr nz, .lcd_off_loop
+	jr nz, CopyNBytesFromDEToHL
 	ret
 
 
