@@ -271,12 +271,13 @@ Func_c1b1:
 	farcall Func_80b7a
 	farcall ClearMasterBeatenList
 	farcall ChallengeMachine_Reset
+	ld hl, wPlayTimeCounter
 	xor a
-	ld [wPlayTimeCounter + 0], a
-	ld [wPlayTimeCounter + 1], a
-	ld [wPlayTimeCounter + 2], a
-	ld [wPlayTimeCounter + 3], a
-	ld [wPlayTimeCounter + 4], a
+	ld [hli], a
+	ld [hli], a
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
 	ret
 
 

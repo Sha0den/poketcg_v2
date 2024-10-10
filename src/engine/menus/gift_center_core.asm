@@ -297,9 +297,11 @@ GiftCenter_ReceiveDeck:
 	ld hl, wNameBuffer
 	ld de, wDefaultText
 	call CopyListFromHLToDE
+	; zero wTxRam2 so that the name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, ReceivedADeckConfigurationFromText
 	call DrawWideTextBox_WaitForInput
 	call GetSelectedSavedDeckPtr
@@ -424,9 +426,11 @@ ShowReceivedCardsList:
 	ld hl, wNameBuffer
 	ld de, wDefaultText
 	call CopyListFromHLToDE
+	; zero wTxRam2 so that the name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	lb de, 1, 14
 	ldtx hl, ReceivedTheseCardsFromText
 	call InitTextPrinting_PrintTextNoDelay
@@ -562,9 +566,11 @@ PrintReceivedTheseCardsText:
 	ld hl, wNameBuffer
 	ld de, wDefaultText
 	call CopyListFromHLToDE
+	; zero wTxRam2 so that the name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, ReceivedTheseCardsFromText
 	jp DrawWideTextBox_PrintText
 

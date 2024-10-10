@@ -530,11 +530,14 @@ Func_f5d4:
 	ret
 
 Func_f5db:
+	push hl
+	ld hl, wd698
 	xor a
-	ld [wd698 + 0], a
-	ld [wd698 + 1], a
-	ld [wd698 + 2], a
-	ld [wd698 + 3], a
+	ld [hli], a
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+	pop hl
 	ret
 
 Func_f5e9:

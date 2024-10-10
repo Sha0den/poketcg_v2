@@ -355,9 +355,10 @@ ExchangeRNG::
 ; prints TransmissionErrorText, exits the duel, and resets serial registers.
 DuelTransmissionError::
 	ld a, [wSerialFlags]
-	ld l, a
-	ld h, 0
-	call LoadTxRam3
+	ld hl, wTxRam3
+	ld [hli], a
+	xor a
+	ld [hl], a
 	ldtx hl, TransmissionErrorText
 	call DrawWideTextBox_WaitForInput
 	ld a, -1

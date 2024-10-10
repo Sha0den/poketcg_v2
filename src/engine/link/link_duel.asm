@@ -77,9 +77,10 @@ SetUpAndStartLinkDuel::
 	ld a, OPPONENT_TURN
 	ldh [hWhoseTurn], a
 	ld a, [wNPCDuelPrizes]
-	ld l, a
-	ld h, $00
-	call LoadTxRam3
+	ld hl, wTxRam3
+	ld [hli], a
+	xor a
+	ld [hl], a
 	ldtx hl, BeginAPrizeDuelWithText
 	call DrawWideTextBox_WaitForInput
 	pop af

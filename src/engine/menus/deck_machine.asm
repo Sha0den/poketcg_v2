@@ -818,9 +818,11 @@ SaveDeckInDeckSaveMachine:
 	call EnableSRAM
 	call CopyDeckName
 	call DisableSRAM
+	; zero wTxRam2 so that the deck name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, SavedTheConfigurationForText
 	call DrawWideTextBox_WaitForInput
 	scf
@@ -1027,9 +1029,11 @@ TryDeleteSavedDeck:
 	ld a, DECK_STRUCT_SIZE
 	call ClearNBytesFromHL
 	call DisableSRAM
+	; zero wTxRam2 so that the deck name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, DeletedTheConfigurationForText
 	call DrawWideTextBox_WaitForInput
 	or a
@@ -1137,9 +1141,11 @@ HandleDismantleDeckToMakeSpace:
 	call SafelySwitchToTempSRAMBank
 	ld hl, wDismantledDeckName
 	call CopyDeckName
+	; zero wTxRam2 so that the deck name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, DismantledDeckText
 	call DrawWideTextBox_WaitForInput
 	ld a, [wCurDeck]
@@ -1242,9 +1248,11 @@ TryBuildDeckMachineDeck:
 	call CopyDeckName
 	call DisableSRAM
 	call SafelySwitchToTempSRAMBank
+	; zero wTxRam2 so that the deck name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2 + 0], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, BuiltDeckText
 	call DrawWideTextBox_WaitForInput
 	scf

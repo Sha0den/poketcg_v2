@@ -613,8 +613,7 @@ HandleCardAlbumCardPage:
 	ld [wCardListCursorPos], a
 	ld a, [wMenuInputSFX]
 	or a
-	jp z, HandleCardAlbumCardPage
-	call PlaySFX
+	call nz, PlaySFX
 	jp HandleCardAlbumCardPage
 
 .asm_a8d6
@@ -681,7 +680,7 @@ CardAlbum:
 	jr nc, .loop_input_1
 	ldh a, [hCurMenuItem]
 	cp $ff
-	ret z
+	ret z ; exit if the B button was pressed
 
 	; ignore input if this Card Set is unavailable
 	ld c, a

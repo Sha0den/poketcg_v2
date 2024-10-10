@@ -429,9 +429,11 @@ DeckSelectionSubMenu_SelectOrCancel:
 	call EnableSRAM
 	call CopyDeckName
 	call DisableSRAM
+	; zero wTxRam2 so that the deck name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, ChosenAsDuelingDeckText
 	call DrawWideTextBox_WaitForInput
 	ld a, [wCurDeck]

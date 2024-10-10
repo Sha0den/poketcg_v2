@@ -314,9 +314,10 @@ PrintDamageText:
 	call LoadCardDataToBuffer1_FromCardID
 	ld a, 18
 	call CopyCardNameAndLevel
-	ld [hl], TX_END
+	xor a ; TX_END
+	ld [hl], a ; terminate the text string at wDefaultText
+	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
 	ld hl, wTxRam2
-	xor a
 	ld [hli], a
 	ld [hl], a
 	ld hl, wDamageAnimAmount

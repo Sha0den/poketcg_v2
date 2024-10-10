@@ -181,8 +181,7 @@ PlayOpenOrExitScreenSFX::
 RefreshMenuCursor_CheckPlaySFX::
 	ld a, [wRefreshMenuCursorSFX]
 	or a
-	jr z, RefreshMenuCursor
-	call PlaySFX
+	call nz, PlaySFX
 ;	fallthrough
 
 RefreshMenuCursor::

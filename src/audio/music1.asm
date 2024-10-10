@@ -1677,11 +1677,12 @@ Music1_BackupSong:
 	ld de, wMusicVibratoDelayBackup
 	ld a, $4
 	call Music1_CopyData
+	ld hl, wdddb
 	ld a, $0
-	ld [wdddb], a
-	ld [wdddb + 1], a
-	ld [wdddb + 2], a
-	ld [wdddb + 3], a
+	ld [hli], a
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
 	ld hl, wMusicVolume
 	ld de, wMusicVolumeBackup
 	ld a, $3

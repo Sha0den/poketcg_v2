@@ -137,13 +137,16 @@ InitSaveData::
 	ld [sTextSpeed], a
 	ld [wTextSpeed], a
 
-; miscellaneous data
+; clear miscellaneous save data
+	ld hl, s0a004
 	xor a
-	ld [sAnimationsDisabled], a
-	ld [sSkipDelayAllowed], a
-	ld [s0a004], a
-	ld [sTotalCardPopsDone], a
-	ld [sReceivedLegendaryCards], a
+	ld [hli], a ; s0a004 = $00
+	ld [hli], a ; sTotalCardPopsDone = $00
+	inc hl      ; skip sTextSpeed
+	ld [hli], a ; sAnimationsDisabled = $00
+	inc hl      ; skip s0a008
+	ld [hli], a ; sSkipDelayAllowed = $00
+	ld [hl], a  ; sReceivedLegendaryCards = $00
 	farcall InitPromotionalCardAndDeckCounterSaveData
 	jp DisableSRAM
 

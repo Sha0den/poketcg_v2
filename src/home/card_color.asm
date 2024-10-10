@@ -22,8 +22,7 @@ GetPlayAreaCardColor::
 	ld a, e
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	call GetCardType
+	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_TRAINER
 	jr nz, .got_type
 	ld a, COLORLESS
@@ -148,5 +147,5 @@ HandleEnergyBurn::
 	dec c
 	jr nz, .zero_next_energy
 	ld a, [wTotalAttachedEnergies]
-	ld [wAttachedEnergies], a
+	ld [wAttachedEnergies + FIRE], a
 	ret

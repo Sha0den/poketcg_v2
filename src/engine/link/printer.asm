@@ -36,19 +36,19 @@ HandlePrinterError:
 	jr nz, .jammed_printer
 
 	ldtx hl, PrinterPacketErrorText
-	ld a, $04
+;	ld a, $04 ; error code
 	jr ShowPrinterConnectionErrorScene
 .cable_or_printer_switch
 	ldtx hl, CheckCableOrPrinterSwitchText
-	ld a, $02
+;	ld a, $02 ; error code
 	jr ShowPrinterConnectionErrorScene
 .jammed_printer
 	ldtx hl, PrinterPaperIsJammedText
-	ld a, $03
+;	ld a, $03 ; error code
 	jr ShowPrinterConnectionErrorScene
 .batteries_lost_charge
 	ldtx hl, BatteriesHaveLostTheirChargeText
-	ld a, $01
+;	ld a, $01 ; error code
 	jr ShowPrinterConnectionErrorScene
 .interrupted
 	ldtx hl, PrintingWasInterruptedText
@@ -59,22 +59,15 @@ HandlePrinterError:
 
 ShowPrinterIsNotConnected:
 	ldtx hl, PrinterIsNotConnectedText
-	ld a, $02
+;	ld a, $02 ; error code
 ;	fallthrough
 
 ; input:
-;	a = error code
 ;	hl = text ID for the notification text to print in the text box
 ; output:
 ;	carry = set
 ShowPrinterConnectionErrorScene:
 	push hl
-	; unnecessary loading TxRam, since the text data
-	; already incorporate the error number
-	ld l, a
-	ld h, $00
-	call LoadTxRam3
-
 	call SetSpriteAnimationsAsVBlankFunction
 	ld a, SCENE_GAMEBOY_PRINTER_NOT_CONNECTED
 	lb bc, 0, 0
@@ -99,9 +92,12 @@ RequestToPrintCard::
 	call LoadScene
 	ld a, 20
 	call CopyCardNameAndLevel
-	ld [hl], TX_END
-	ld hl, $0
-	call LoadTxRam2
+	xor a ; TX_END
+	ld [hl], a ; terminate the text string at wDefaultText
+	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
+	ld hl, wTxRam2
+	ld [hli], a
+	ld [hl], a
 	ldtx hl, NowPrintingText
 	call DrawWideTextBox_PrintText
 	call EnableLCD

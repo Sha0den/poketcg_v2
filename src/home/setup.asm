@@ -7,19 +7,19 @@ SetupRegisters::
 	ldh [rSCX], a
 	ldh [rWY], a
 	ldh [rWX], a
-	ld [wcab0], a
-	ld [wcab1], a
-	ld [wcab2], a
 	ldh [hSCX], a
 	ldh [hSCY], a
 	ldh [hWX], a
 	ldh [hWY], a
-	xor a
+	ld hl, wcab0
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
 	ld [wReentrancyFlag], a
 	ld a, $c3            ; $c3 = jp nn
 	ld [wLCDCFunctionTrampoline], a
-	ld [wVBlankFunctionTrampoline], a
-	ld hl, wVBlankFunctionTrampoline + 1
+	ld hl, wVBlankFunctionTrampoline
+	ld [hli], a
 	ld [hl], LOW(NoOp)   ;
 	inc hl               ; load `jp NoOp`
 	ld [hl], HIGH(NoOp)  ;

@@ -319,9 +319,10 @@ PrintStartMenuDescriptionText:
 
 	; get medal count
 	ld a, [wMedalCount]
-	ld [wTxRam3 + 0], a
+	ld hl, wTxRam3
+	ld [hli], a
 	xor a
-	ld [wTxRam3 + 1], a
+	ld [hl], a
 
 	; print text
 	lb de, 1, 10

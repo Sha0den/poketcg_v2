@@ -95,7 +95,12 @@
 
 
 ## Code Optimization
-- **October 9, 2024:** 3 Files Changed
+- **October 10, 2024:** 19 Files Changed
+    - Miscellaneous optimizations, mostly related to storing information in RAM
+
+<br/>
+
+- **[October 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7a85492e5f41651962c34b31d88123e2e979956):** 3 Files Changed
     - Thoroughly review engine/duel/core.asm, updating comments, code, and even some labels
     - Change the name of a subroutine in home/copy.asm into `CopyNBytesFromDEToHL` and use it in a couple of other files
 

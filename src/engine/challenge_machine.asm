@@ -1,14 +1,15 @@
 ChallengeMachine_Reset:
 	call ChallengeMachine_Initialize
 	call EnableSRAM
+	ld hl, sPlayerInChallengeMachine
 	xor a
-	ld [sTotalChallengeMachineWins], a
-	ld [sTotalChallengeMachineWins + 1], a
-	ld [sPresentConsecutiveWins], a
-	ld [sPresentConsecutiveWins + 1], a
-	ld [sPresentConsecutiveWinsBackup], a
-	ld [sPresentConsecutiveWinsBackup + 1], a
-	ld [sPlayerInChallengeMachine], a
+	ld [hli], a
+	ld [hli], a ; sTotalChallengeMachineWins
+	ld [hli], a
+	ld [hli], a ; sPresentConsecutiveWins
+	ld [hli], a
+	ld [hli], a ; sPresentConsecutiveWinsBackup
+	ld [hl], a
 	jp DisableSRAM
 
 
@@ -111,9 +112,10 @@ ChallengeMachine_Start::
 	call EnableSRAM
 	ld a, [sChallengeMachineOpponentNumber]
 	inc a
-	ld [wTxRam3], a
+	ld hl, wTxRam3
+	ld [hli], a
 	xor a
-	ld [wTxRam3 + 1], a
+	ld [hl], a
 	call DisableSRAM
 	call ChallengeMachine_GetOpponentNameAndDeck
 	ld a, [wOpponentName]
@@ -354,9 +356,10 @@ ChallengeMachine_DuelWon:
 	call EnableSRAM
 	ld a, [sChallengeMachineOpponentNumber]
 	inc a
-	ld [wTxRam3], a
+	ld hl, wTxRam3
+	ld [hli], a
 	xor a
-	ld [wTxRam3 + 1], a
+	ld [hl], a
 	ldtx hl, WonAgainstXOpponentsText
 	ld a, [sChallengeMachineOpponentNumber]
 	call DisableSRAM
@@ -433,9 +436,11 @@ ChallengeMachine_DrawScoreScreen:
 	ld bc, NAME_BUFFER_LENGTH
 	call CopyDataHLtoDE
 	call DisableSRAM
+	; zero wTxRam2 so that the name just loaded to wDefaultText is printed
+	ld hl, wTxRam2
 	xor a
-	ld [wTxRam2], a
-	ld [wTxRam2 + 1], a
+	ld [hli], a
+	ld [hl], a
 	ld hl, ChallengeMachine_PlayerScoreLabels
 	call PrintLabels
 	ld hl, ChallengeMachine_PlayerScoreValues
