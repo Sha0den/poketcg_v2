@@ -8,12 +8,7 @@ AIProcessButDontUseAttack:
 	ld de, wTempPlayAreaAIScore
 	ld hl, wPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
+	call CopyNBytesFromHLToDE
 
 ; copies wAIScore to wTempAIScore
 	ld a, [wAIScore]
@@ -46,7 +41,7 @@ AIProcessAttacks:
 ; skip attack if Barrier counter is 0.
 	ld a, [wAIBarrierFlagCounter]
 	cp AI_MEWTWO_MILL + 0
-	jp z, .dont_attack
+	jr z, .dont_attack
 
 ; determine AI score of both attacks.
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
@@ -80,8 +75,7 @@ AIProcessAttacks:
 	ld a, c
 	ld [wSelectedAttack], a
 	or a
-	jr z, .attack_chosen
-	call CheckWhetherToSwitchToFirstAttack
+	call nz, CheckWhetherToSwitchToFirstAttack
 
 .attack_chosen
 ; check whether to execute the attack chosen
@@ -155,12 +149,7 @@ RetrievePlayAreaAIScoreFromBackup:
 	ld de, wPlayAreaAIScore
 	ld hl, wTempPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
+	call CopyNBytesFromHLToDE
 
 	ld a, [hl]
 	ld [wAIScore], a
@@ -230,11 +219,10 @@ GetAIScoreOfAttack:
 	call EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
+	dec a ; subtract 1 so carry will be set if final HP = 0
 	ld hl, wDamage
 	sub [hl]
-	jr c, .can_ko
-	jr z, .can_ko
-	jr .check_damage
+	jr nc, .check_damage
 .can_ko
 	ld a, 20
 	call AddToAIScore
@@ -299,9 +287,9 @@ GetAIScoreOfAttack:
 	; if LOW_RECOIL KOs self, decrease AI score
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
+	dec a ; subtract 1 so carry will be set if final HP = 0
 	cp e
-	jr c, .kos_self
-	jp nz, .check_defending_can_ko
+	jp nc, .check_defending_can_ko
 .kos_self
 	ld a, 10
 	call SubFromAIScore
@@ -678,10 +666,9 @@ GetAIScoreOfAttack:
 	push hl
 	get_turn_duelist_var
 	pop hl
+	dec a ; subtract 1 so carry will be set if final HP = 0
 	cp b
-	jr z, .increase_count
 	jr nc, .loop
-.increase_count
 	; increase d if damage dealt KOs
 	inc d
 	jr .loop
@@ -689,11 +676,56 @@ GetAIScoreOfAttack:
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
+	dec a ; subtract 1 so carry will be set if number of KO'd Pokémon = number of Prizes
 	cp d
-	ret c
-	jr z, .set_carry
-	or a
 	ret
-.set_carry
-	scf
+
+; called when second attack is determined by AI to have
+; more AI score than the first attack, so that it checks
+; whether the first attack is a better alternative.
+CheckWhetherToSwitchToFirstAttack:
+; this checks whether the first attack is also viable
+; (has more than minimum score to be used)
+	ld a, [wFirstAttackAIScore]
+	cp $50
+	jr c, .keep_second_attack
+
+; first attack has more than minimum score to be used.
+; check if second attack can KO.
+; in case it can't, the AI keeps it as the attack to be used.
+; (possibly due to the assumption that if the
+; second attack cannot KO, the first attack can't KO as well.)
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	call EstimateDamage_VersusDefendingCard
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetNonTurnDuelistVariable
+	dec a ; subtract 1 so carry will be set if final HP = 0
+	ld hl, wDamage
+	sub [hl]
+	jr nc, .keep_second_attack
+
+; second attack can ko, check its flag.
+; in case its effect is to heal user or nullify/weaken damage
+; next turn, keep second attack as the option.
+; otherwise switch to the first attack.
+.check_flag
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	ld d, a
+	ld e, SECOND_ATTACK
+	call CopyAttackDataAndDamage_FromDeckIndex
+	ld a, ATTACK_FLAG2_ADDRESS | HEAL_USER_F
+	call CheckLoadedAttackFlag
+	jr c, .keep_second_attack
+	ld a, ATTACK_FLAG2_ADDRESS | NULLIFY_OR_WEAKEN_ATTACK_F
+	call CheckLoadedAttackFlag
+	jr c, .keep_second_attack
+; switch to first attack
+	xor a ; FIRST_ATTACK_OR_PKMN_POWER
+	ld [wSelectedAttack], a
+	ret
+.keep_second_attack
+	ld a, SECOND_ATTACK
+	ld [wSelectedAttack], a
 	ret

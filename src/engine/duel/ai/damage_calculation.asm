@@ -15,7 +15,7 @@ EstimateDamage_VersusDefendingCard:
 	cp POKEMON_POWER
 	jr nz, .is_attack
 
-; is a Pokémon Power
+.not_attack
 ; set wDamage, wAIMinDamage and wAIMaxDamage to zero
 	ld hl, wDamage
 	xor a
@@ -52,35 +52,45 @@ EstimateDamage_VersusDefendingCard:
 
 ; ...otherwise substatuses need to be temporarily reset to account
 ; for the switching, to obtain the right damage calculation...
-	; reset substatus1
-	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+	; copy evolutionary stage
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD_STAGE
 	get_turn_duelist_var
-	push af
+	ld d, a
+	ld l, DUELVARS_ARENA_CARD_STAGE
+	ld b, [hl]
+	ld [hl], d
+	; copy changed type/color
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD_CHANGED_TYPE
+	ld l, a
+	ld d, [hl]
+	ld l, DUELVARS_ARENA_CARD_CHANGED_TYPE
+	ld c, [hl]
+	ld [hl], d
+	push bc ; backup Active Pokémon's stage and changed type
+	; reset substatus1 and substatus2
+	xor a
+	ld l, DUELVARS_ARENA_CARD_SUBSTATUS1
+	ld b, [hl]
+	ld [hl], a
+	inc l ; DUELVARS_ARENA_CARD_SUBSTATUS2
+	ld c, [hl]
+	ld [hl], a
+	push bc ; backup Active Pokémon's Substatus 1/2
 	push hl
-	ld [hl], $00
-	; reset substatus2
-	ld l, DUELVARS_ARENA_CARD_SUBSTATUS2
-	ld a, [hl]
-	push af
-	push hl
-	ld [hl], $00
-	; reset changed resistance
-	ld l, DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	ld a, [hl]
-	push af
-	push hl
-	ld [hl], $00
 	call CalculateDamage_VersusDefendingPokemon
 ; ...and subsequently recovered to continue the duel normally
-	pop hl
-	pop af
-	ld [hl], a
-	pop hl
-	pop af
-	ld [hl], a
-	pop hl
-	pop af
-	ld [hl], a
+	pop hl ; DUELVARS_ARENA_CARD_SUBSTATUS2
+	pop bc ; Active Pokémon's Substatus 1/2
+	ld [hl], c
+	dec l ; DUELVARS_ARENA_CARD_SUBSTATUS1
+	ld [hl], b
+	pop bc ; Active Pokémon's stage and changed type
+	ld l, DUELVARS_ARENA_CARD_CHANGED_TYPE
+	ld [hl], c
+	ld l, DUELVARS_ARENA_CARD_STAGE
+	ld [hl], b
 	ret
 
 ; calculates the damage that will be dealt to the player's active card
@@ -225,21 +235,8 @@ EstimateDamage_FromDefendingPokemon:
 	rst SwapTurn
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
-	jr nz, .is_attack
+	jp z, EstimateDamage_VersusDefendingCard.not_attack
 
-; is a Pokémon Power
-; set wDamage, wAIMinDamage and wAIMaxDamage to zero
-	ld hl, wDamage
-	xor a
-	ld [hli], a
-	ld [hl], a
-	ld [wAIMinDamage], a
-	ld [wAIMaxDamage], a
-	ld e, a
-	ld d, a
-	ret
-
-.is_attack
 ; set wAIMinDamage and wAIMaxDamage to damage of attack
 ; these values take into account the range of damage
 ; that the attack can span (e.g. min and max number of hits)
@@ -272,34 +269,39 @@ EstimateDamage_FromDefendingPokemon:
 
 ; ...otherwise substatuses need to be temporarily reset to account
 ; for the switching, to obtain the right damage calculation...
+	; reset substatus1
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
 	get_turn_duelist_var
-	push af
-	push hl
-	ld [hl], $00
+	ld b, a
+	xor a
+	ld [hl], a
 	; reset substatus2
-	ld l, DUELVARS_ARENA_CARD_SUBSTATUS2
-	ld a, [hl]
-	push af
-	push hl
-	ld [hl], $00
+	inc l ; DUELVARS_ARENA_CARD_SUBSTATUS2
+	ld c, [hl]
+	ld [hl], a
+	push bc ; backup Defending Pokémon's Substatus 1/2
+	; reset changed weakness
+	inc l ; DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
+	ld b, [hl]
+	ld [hl], a
 	; reset changed resistance
-	ld l, DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	ld a, [hl]
-	push af
+	inc l ; DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
+	ld c, [hl]
+	ld [hl], a
+	push bc ; backup Defending Pokémon's changed Weakness/Resistance
 	push hl
-	ld [hl], $00
 	call CalculateDamage_FromDefendingPokemon
 ; ...and subsequently recovered to continue the duel normally
-	pop hl
-	pop af
-	ld [hl], a
-	pop hl
-	pop af
-	ld [hl], a
-	pop hl
-	pop af
-	ld [hl], a
+	pop hl ; DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
+	pop bc ; Defending Pokémon's changed Weakness/Resistance
+	ld [hl], c
+	dec l ; DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
+	ld [hl], b
+	pop bc ; Defending Pokémon's Substatus 1/2
+	dec l ; DUELVARS_ARENA_CARD_SUBSTATUS2
+	ld [hl], c
+	dec l ; DUELVARS_ARENA_CARD_SUBSTATUS1
+	ld [hl], b
 	ret
 
 ; similar to CalculateDamage_VersusDefendingPokemon but reversed,

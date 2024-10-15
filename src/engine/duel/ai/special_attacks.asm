@@ -63,12 +63,15 @@ HandleSpecialAIAttacks:
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr nc, .zero_score
+;	fallthrough
+
+.bench_space_bonus_score
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	cp MAX_BENCH_POKEMON
+	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .zero_score
 	ld b, a
-	ld a, MAX_BENCH_POKEMON
+	ld a, MAX_PLAY_AREA_POKEMON
 	sub b
 	add $80
 	ret
@@ -79,20 +82,12 @@ HandleSpecialAIAttacks:
 	ld e, NIDORANM
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
-	jr c, .found_nidoran
+	jr c, .bench_space_bonus_score
 	ld e, NIDORANF
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
-	jr nc, .zero_score
-.found_nidoran
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	cp MAX_PLAY_AREA_POKEMON
-	jr nc, .zero_score
-	ld b, a
-	ld a, MAX_PLAY_AREA_POKEMON
-	sub b
-	add $80
+	jr c, .bench_space_bonus_score
+	xor a
 	ret
 
 ; checks for certain card IDs of Fighting color in deck.
@@ -102,49 +97,31 @@ HandleSpecialAIAttacks:
 	ld e, GEODUDE
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
-	jr c, .found_fighting_card
+	jr c, .bench_space_bonus_score
 	ld e, ONIX
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
-	jr c, .found_fighting_card
+	jr c, .bench_space_bonus_score
 	ld e, CUBONE
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
-	jr c, .found_fighting_card
+	jr c, .bench_space_bonus_score
 	ld e, RHYHORN
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
-	jr c, .found_fighting_card
+	jr c, .bench_space_bonus_score
 
 ; return zero score.
 .zero_score
 	xor a
 	ret
 
-.found_fighting_card
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	cp MAX_BENCH_POKEMON
-	jr nc, .zero_score
-	ld b, a
-	ld a, MAX_BENCH_POKEMON
-	sub b
-	add $80
-	ret
-
 ; if any basic cards are found in deck,
 ; return a score of $80 + slots available in bench.
 .FriendshipSong:
 	call CheckIfAnyBasicPokemonInDeck
-	jr nc, .zero_score
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	cp MAX_PLAY_AREA_POKEMON
-	jr nc, .zero_score
-	ld b, a
-	ld a, MAX_PLAY_AREA_POKEMON
-	sub b
-	add $80
+	jr c, .bench_space_bonus_score
+	xor a
 	ret
 
 ; if AI decides to retreat, return a score of $80 + 10.
@@ -219,7 +196,7 @@ HandleSpecialAIAttacks:
 	get_turn_duelist_var
 	and CNF_SLP_PRZ
 	cp CONFUSED
-	jp z, .zero_score
+	jr z, .zero_score
 
 	ld a, [wSelectedAttack]
 	or a
@@ -249,7 +226,7 @@ HandleSpecialAIAttacks:
 	ld e, PSYCHIC_ENERGY
 	ld a, CARD_LOCATION_DISCARD_PILE
 	call LookForCardIDInLocation_Bank5
-	jp nc, .zero_score
+	jr nc, .zero_score2
 	ld a, $82
 	ret
 
@@ -263,24 +240,23 @@ HandleSpecialAIAttacks:
 ; can evolve a card in player's deck, encourage.
 ; if encouraged, returns a score of $80 + 3.
 .MixUp:
+	rst SwapTurn
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	call GetNonTurnDuelistVariable
+	get_turn_duelist_var
 	or a
-	ret z
+	jr z, .zero_score_after_swap_turn
 
 	ld a, 3
 	call Random
 	or a
 	jr z, .encourage_mix_up
 	dec a
-	ret z
-	rst SwapTurn
+	jr z, .zero_score_after_swap_turn
 	call CreateHandCardList
-	rst SwapTurn
-	or a
-	ret z ; return if no hand cards (again)
+;	or a
+;	jr z, .zero_score_after_swap_turn ; return if no hand cards (again)
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetNonTurnDuelistVariable
+	get_turn_duelist_var
 	cp 3
 	jr nc, .mix_up_check_play_area
 
@@ -290,15 +266,8 @@ HandleSpecialAIAttacks:
 	ld a, [hli]
 	cp $ff
 	jr z, .tally_basic_cards
-	rst SwapTurn
-	call LoadCardDataToBuffer2_FromDeckIndex
-	rst SwapTurn
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
+	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_mix_up_hand
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .loop_mix_up_hand
 	; is a basic Pokémon card
 	inc b
 	jr .loop_mix_up_hand
@@ -310,20 +279,25 @@ HandleSpecialAIAttacks:
 ; less than 2 basic cards in hand
 .mix_up_check_play_area
 	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
+	get_turn_duelist_var
 .loop_mix_up_play_area
 	ld a, [hli]
 	cp $ff
-	jp z, .zero_score
+	jr z, .zero_score_after_swap_turn
 	push hl
-	rst SwapTurn
 	call CheckForEvolutionInList
-	rst SwapTurn
 	pop hl
 	jr nc, .loop_mix_up_play_area
 
 .encourage_mix_up
+	rst SwapTurn
 	ld a, $83
+	ret
+
+.zero_score_after_swap_turn
+	rst SwapTurn
+.zero_score2
+	xor a
 	ret
 
 ; return score of $80 + 3.
@@ -337,7 +311,7 @@ HandleSpecialAIAttacks:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	cp 41
-	jp nc, .zero_score
+	jr nc, .zero_score2
 	ld a, $80
 	ret
 
@@ -368,9 +342,9 @@ HandleSpecialAIAttacks:
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
+	dec a ; subtract 1 so carry will be set if number of KO'd Pokémon = number of Prizes
 	cp d
-	jp c, .zero_score
-	jp z, .zero_score
+	jr c, .zero_score2
 	ld a, $80
 	ret
 
@@ -380,9 +354,9 @@ HandleSpecialAIAttacks:
 	ld a, CARD_LOCATION_DECK
 	ld e, LIGHTNING_ENERGY
 	call LookForCardIDInLocation_Bank5
-	jp nc, .zero_score
+	jr nc, .zero_score2
 	call AIProcessButDontPlayEnergy_SkipEvolution
-	jp nc, .zero_score
+	jr nc, .zero_score2
 	ld a, $83
 	ret
 
@@ -392,7 +366,7 @@ HandleSpecialAIAttacks:
 .HyperBeam:
 	rst SwapTurn
 	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached_Bank5
+	call GetPlayAreaCardAttachedEnergies
 	rst SwapTurn
 	or a
 	jr z, .hyper_beam_neutral
@@ -402,80 +376,21 @@ HandleSpecialAIAttacks:
 	ld a, $80
 	ret
 
-; called when second attack is determined by AI to have
-; more AI score than the first attack, so that it checks
-; whether the first attack is a better alternative.
-CheckWhetherToSwitchToFirstAttack:
-; this checks whether the first attack is also viable
-; (has more than minimum score to be used)
-	ld a, [wFirstAttackAIScore]
-	cp $50
-	jr c, .keep_second_attack
-
-; first attack has more than minimum score to be used.
-; check if second attack can KO.
-; in case it can't, the AI keeps it as the attack to be used.
-; (possibly due to the assumption that if the
-; second attack cannot KO, the first attack can't KO as well.)
-	xor a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	call EstimateDamage_VersusDefendingCard
-	ld a, DUELVARS_ARENA_CARD_HP
-	call GetNonTurnDuelistVariable
-	ld hl, wDamage
-	sub [hl]
-	jr z, .check_flag
-	jr nc, .keep_second_attack
-
-; second attack can ko, check its flag.
-; in case its effect is to heal user or nullify/weaken damage
-; next turn, keep second attack as the option.
-; otherwise switch to the first attack.
-.check_flag
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	ld d, a
-	ld e, SECOND_ATTACK
-	call CopyAttackDataAndDamage_FromDeckIndex
-	ld a, ATTACK_FLAG2_ADDRESS | HEAL_USER_F
-	call CheckLoadedAttackFlag
-	jr c, .keep_second_attack
-	ld a, ATTACK_FLAG2_ADDRESS | NULLIFY_OR_WEAKEN_ATTACK_F
-	call CheckLoadedAttackFlag
-	jr c, .keep_second_attack
-; switch to first attack
-	xor a
-	ld [wSelectedAttack], a
-	ret
-.keep_second_attack
-	ld a, $01
-	ld [wSelectedAttack], a
-	ret
-
 ; returns carry if there are
 ; any basic Pokémon cards in deck.
 CheckIfAnyBasicPokemonInDeck:
-	ld e, 0
+	ld e, DECK_SIZE
 .loop
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
+	dec e ; go through deck indices in reverse order
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
 	cp CARD_LOCATION_DECK
 	jr nz, .next
 	ld a, e
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY
-	jr nc, .next
-	ld a, [wLoadedCard2Stage]
-	or a
-	jr nz, .next
-	scf
-	ret
+	call CheckDeckIndexForBasicPokemon
+	ret c
 .next
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop
+	ld a, e
 	or a
+	jr nz, .loop
 	ret

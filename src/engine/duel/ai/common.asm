@@ -1,10 +1,49 @@
+; probability to return carry:
+; - 50% if deck AI is playing is on the list;
+; - 25% for all other decks;
+; - 0% for boss decks.
+; used for certain decks to randomly choose
+; not to play Trainer card or use PKMN Power
+AIChooseRandomlyNotToDoAction:
+; boss decks always use Trainer cards.
+	farcall CheckIfNotABossDeckID
+	ret nc
+
+.check_deck
+	ld a, [wOpponentDeckID]
+	cp MUSCLES_FOR_BRAINS_DECK_ID
+	jr z, .carry_50_percent
+	cp BLISTERING_POKEMON_DECK_ID
+	jr z, .carry_50_percent
+	cp WATERFRONT_POKEMON_DECK_ID
+	jr z, .carry_50_percent
+	cp BOOM_BOOM_SELFDESTRUCT_DECK_ID
+	jr z, .carry_50_percent
+	cp KALEIDOSCOPE_DECK_ID
+	jr z, .carry_50_percent
+	cp RESHUFFLE_DECK_ID
+	jr z, .carry_50_percent
+
+; carry 25 percent
+	ld a, 4
+	call Random
+	cp 1
+	ret
+
+.carry_50_percent
+	ld a, 4
+	call Random
+	cp 2
+	ret
+
 ; runs through Player's whole deck and
 ; sets carry if there's any Pokemon other
 ; than MewtwoLv53.
 CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 	rst SwapTurn
-	ld e, 0
+	ld e, DECK_SIZE
 .loop_deck
+	dec e ; go through deck indices in reverse order
 	ld a, e
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
@@ -14,13 +53,10 @@ CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 	cp MEWTWO_LV53
 	jr nz, .not_mewtwo1
 .next
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop_deck
-
-; no carry
+	ld a, e
 	or a
+	jr nz, .loop_deck
+	; no carry
 	jp SwapTurn
 
 .not_mewtwo1
@@ -37,15 +73,15 @@ CheckIfPlayerHasPokemonOtherThanMewtwoLv53:
 ;   a = number of cards found
 FindBasicEnergyCardsInLocation:
 	ld [wTempAI], a
-	lb de, 0, 0
+	lb de, 0, DECK_SIZE
 	ld hl, wDuelTempList
 
 ; d = number of basic energy cards found
 ; e = current card in deck
 ; loop entire deck
 .loop
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
+	dec e ; go through deck indices in reverse order
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
 	push hl
 	get_turn_duelist_var
 	ld hl, wTempAI
@@ -67,23 +103,17 @@ FindBasicEnergyCardsInLocation:
 	ld [hli], a
 	inc d
 .next_card
-	inc e
-	ld a, DECK_SIZE
-	cp e
+	ld a, e
+	or a
 	jr nz, .loop
 
-; check if any were found
+.terminate_list
+	ld a, $ff ; list is $ff-terminated
+	ld [hl], a ; add terminating byte to wDuelTempList
 	ld a, d
 	or a
-	jr z, .set_carry
-
-; some were found, add the termination byte on TempList
-	ld a, $ff
-	ld [hl], a
-	ld a, d
-	ret
-
-.set_carry
+	ret nz ; return no carry if there's at least one card in the list
+	; list is empty, so return carry
 	scf
 	ret
 
@@ -99,18 +129,12 @@ AIPickEnergyCardToDiscard:
 ; load Pokémon's attached energy cards.
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CreateArenaOrBenchEnergyCardList
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld e, a
-	call GetPlayAreaCardAttachedEnergies
-;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
-	jr z, .no_energy
+	jr z, PickAttachedEnergyCardToRemove.no_energy
 
 ; load card's ID and type.
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld b, a
-	ld a, DUELVARS_ARENA_CARD
-	add b
+	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
@@ -122,21 +146,15 @@ AIPickEnergyCardToDiscard:
 ; if none is found, just return the first energy card attached.
 	ld hl, wDuelTempList
 .loop
-	ld a, [hl]
+	ld a, [hli]
 	cp $ff
-	jr z, .not_found
+	jr z, PickAttachedEnergyCardToRemove.random_energy
 	farcall CheckIfEnergyIsUseful
-	jr nc, .found
-	inc hl
-	jr .loop
+	jr c, .loop
 
-.not_found
-	ld hl, wDuelTempList
 .found
+	dec hl
 	ld a, [hl]
-	ret
-.no_energy
-	ld a, $ff
 	ret
 
 ; returns in a the deck index of an energy card attached to card
@@ -153,18 +171,12 @@ PickAttachedEnergyCardToRemove:
 ; construct energy list and check if there are any energy cards attached
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CreateArenaOrBenchEnergyCardList
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld e, a
-	call GetPlayAreaCardAttachedEnergies
-;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr z, .no_energy
 
 ; load card data and store its type
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld b, a
-	ld a, DUELVARS_ARENA_CARD
-	add b
+	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
@@ -175,32 +187,35 @@ PickAttachedEnergyCardToRemove:
 ; first look for any double colorless energy
 	ld hl, wDuelTempList
 .loop_1
-	ld a, [hl]
+	ld a, [hli]
 	cp $ff
 	jr z, .check_useful
 	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
-	jr z, .found
-	inc hl
-	jr .loop_1
+	jr nz, .loop_1
+
+.found
+	dec hl
+	ld a, [hl]
+	ret
 
 ; then look for any energy cards that are useful
 .check_useful
 	ld hl, wDuelTempList
 .loop_2
-	ld a, [hl]
+	ld a, [hli]
 	cp $ff
-	jr z, .default
+	jr z, .random_energy
 	farcall CheckIfEnergyIsUseful
 	jr c, .found ; the current Energy card is useful, so pick that
-	inc hl
 	jr .loop_2
 
 ; if none were found with the above criteria,
-; just return the first option
-.default
+; just return a random Energy
+.random_energy
+	call CountCardsInDuelTempList
 	ld hl, wDuelTempList
-.found
+	call ShuffleCards
 	ld a, [hl]
 	ret
 
@@ -223,17 +238,12 @@ PickAttachedEnergyCardToRemove:
 PickTwoAttachedEnergyCards:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CreateArenaOrBenchEnergyCardList
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld e, a
-	call CountNumberOfEnergyCardsAttached_Bank8
 	cp 2
 	jr c, PickAttachedEnergyCardToRemove.no_energy
 
 ; load card data and store its type
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld b, a
-	ld a, DUELVARS_ARENA_CARD
-	add b
+	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
@@ -310,44 +320,8 @@ PickTwoAttachedEnergyCards:
 	ld [wCurCardCanAttack], a
 
 .done
-	ld a, [wCurCardCanAttack]
 	ld b, a
 	ld a, [wTempAI]
-	ret
-
-
-; returns in a the number of Energy cards attached to Pokémon
-; at the play area location in e. assumes that Colorless are paired,
-; meaning that every Colorless Energy card provides 2 Colorless Energy.
-; preserves all registers except af
-; input:
-;	e = play area location offset to check (PLAY_AREA_* constant)
-; output:
-;	a = number of Energy cards attached to the Pokémon in the given location
-CountNumberOfEnergyCardsAttached_Bank8:
-	call GetPlayAreaCardAttachedEnergies
-;	ld a, [wTotalAttachedEnergies] ; already loaded
-	or a
-	ret z
-
-	xor a
-	push hl
-	push bc
-	ld b, NUM_COLORED_TYPES
-	ld hl, wAttachedEnergies
-; sum all of the attached Energy cards
-.loop
-	add [hl]
-	inc hl
-	dec b
-	jr nz, .loop
-
-	ld b, [hl]
-	srl b
-; counts Colorless and halves it
-	add b
-	pop bc
-	pop hl
 	ret
 
 
@@ -385,26 +359,6 @@ ClearMemory_Bank8:
 	pop hl
 	pop bc
 	pop af
-	ret
-
-
-; counts number of energy cards found in hand
-; and outputs result in a
-; sets carry if none are found
-; output:
-;	a = number of energy cards found
-CountOppEnergyCardsInHand:
-	farcall CreateEnergyCardListFromHand
-	ret c
-	ld b, -1
-	ld hl, wDuelTempList
-.loop
-	inc b
-	ld a, [hli]
-	cp $ff
-	jr nz, .loop
-	ld a, b
-	or a
 	ret
 
 
@@ -481,31 +435,23 @@ CalculateBDividedByA_Bank8:
 LookForCardIDInLocation_Bank8:
 	ld b, a
 	ld c, e
-;	lb de, 0, 0 ; d is never used
-	ld e, 0
+	ld e, DECK_SIZE
 .loop
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
+	dec e ; go through deck indices in reverse order
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
 	cp b
 	jr nz, .next
 	ld a, e
 	call _GetCardIDFromDeckIndex
 	cp c
-	jr z, .found
-.next
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop
-
-; not found
-	or a
-	ret
-
-.found
 	ld a, e
 	scf
+	ret z ; return carry with deck index in a if a match was found
+.next
+	or a
+	jr nz, .loop
+	; none found, so return no carry
 	ret
 
 
@@ -535,42 +481,6 @@ LookForCardIDInHandList_Bank8:
 	ret
 
 
-; checks the AI's play area for a specific card.
-; preserves de
-; input:
-;	a = card ID
-;	b = play area location offset to start with (PLAY_AREA_* constant)
-; output:
-;	a = the given card's play area location offset (first copy, more might exist)
-;	carry = set:  if the given card ID was found in the turn holder's play area
-LookForCardIDInPlayArea_Bank8:
-	ld [wTempCardIDToLook], a
-.loop
-	ld a, DUELVARS_ARENA_CARD
-	add b
-	get_turn_duelist_var
-	cp $ff
-	ret z
-	call _GetCardIDFromDeckIndex
-	ld c, a
-	ld a, [wTempCardIDToLook]
-	cp c
-	jr z, .found
-	inc b
-	ld a, MAX_PLAY_AREA_POKEMON
-	cp b
-	jr nz, .loop
-
-	ld b, $ff
-	or a
-	ret
-
-.found
-	ld a, b
-	scf
-	ret
-
-
 ; checks the AI's hand and play area for a specific card.
 ; input:
 ;	a = card ID
@@ -586,9 +496,34 @@ LookForCardIDInHandAndPlayArea:
 
 	ld a, b
 	ld b, PLAY_AREA_ARENA
-	call LookForCardIDInPlayArea_Bank8
-	ret c
-	or a
+;	fallthrough
+
+; checks the AI's play area for a specific card.
+; preserves de
+; input:
+;	a = card ID
+;	b = play area location offset to start with (PLAY_AREA_* constant)
+; output:
+;	a = the given card's play area location offset (first copy, more might exist)
+;	  = $ff:  if none of the Pokémon in the turn holder's play area have the given card ID
+;	carry = set:  if the given card ID was found in the turn holder's play area
+LookForCardIDInPlayArea_Bank8:
+	ld c, a
+.loop
+	ld a, DUELVARS_ARENA_CARD
+	add b
+	get_turn_duelist_var
+	cp $ff
+	ret z
+	call _GetCardIDFromDeckIndex
+	cp c
+	jr z, .found
+	inc b
+	jr .loop
+
+.found
+	ld a, b
+	scf
 	ret
 
 
@@ -605,11 +540,9 @@ LookForCardIDInHandAndPlayArea:
 LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 ; store a in wCurCardCanAttack
 ; and b in wTempAI
-	ld c, a
-	ld a, b
-	ld [wTempAI], a
-	ld a, c
 	ld [wCurCardCanAttack], a
+	ld hl, wTempAI
+	ld [hl], b
 
 ; look for the card ID 1 in deck
 	ld e, a
@@ -630,16 +563,10 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 ; if any card is found, return no carry.
 	ld a, [wCurCardCanAttack]
 	call LookForCardIDInHandAndPlayArea
-	jr c, .no_carry
-; none found
-
+	ccf
 	ld a, [wTempAIPokemonCard]
-	scf
 	ret
 
-.no_carry
-	or a
-	ret
 
 ; searches in deck for card ID 1 in a, and
 ; if found, searches in Hand Area for card ID 2 in b, and
@@ -654,11 +581,9 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 LookForCardIDInDeck_GivenCardIDInHand:
 ; store a in wCurCardCanAttack
 ; and b in wTempAI
-	ld c, a
-	ld a, b
-	ld [wTempAI], a
-	ld a, c
 	ld [wCurCardCanAttack], a
+	ld hl, wTempAI
+	ld [hl], b
 
 ; look for the card ID 1 in deck
 	ld e, a
@@ -678,16 +603,10 @@ LookForCardIDInDeck_GivenCardIDInHand:
 ; if any card is found, return no carry.
 	ld a, [wCurCardCanAttack]
 	call LookForCardIDInHandAndPlayArea
-	jr c, .no_carry
-; none found
-
+	ccf
 	ld a, [wTempAIPokemonCard]
-	scf
 	ret
 
-.no_carry
-	or a
-	ret
 
 ; runs through list avoiding card in e.
 ; removes first card in list not equal to e
@@ -702,7 +621,6 @@ LookForCardIDInDeck_GivenCardIDInHand:
 RemoveFromListDifferentCardOfGivenType:
 	push hl
 	push de
-	push bc
 	call CountCardsInDuelTempList
 	call ShuffleCards
 
@@ -754,13 +672,11 @@ RemoveFromListDifferentCardOfGivenType:
 
 ; success
 	ldh a, [hTempCardIndex_ff98]
-	pop bc
 	pop de
 	pop hl
 	scf
 	ret
 .no_carry
-	pop bc
 	pop de
 	pop hl
 	or a
@@ -783,14 +699,15 @@ LookForCardIDToTradeWithDifferentHandCard:
 
 ; if card ID 1 is in hand, return no carry.
 	call LookForCardIDInHandList_Bank8
-	jr c, .no_carry
+	ccf
+	ret nc
 
 ; if card ID 1 is not in deck, return no carry.
 	ld a, [wTempAI]
 	ld e, a
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
-	jr nc, .no_carry
+	ret nc
 
 ; store its deck index
 	ld [wTempAI], a
@@ -805,8 +722,8 @@ LookForCardIDToTradeWithDifferentHandCard:
 .loop_hand
 	ld a, [hli]
 	cp $ff
-	jr z, .no_carry
-	ld b, a
+	ret z ; nc
+	ld e, a
 	call LoadCardDataToBuffer1_FromDeckIndex
 	cp c
 	jr z, .loop_hand
@@ -815,14 +732,8 @@ LookForCardIDToTradeWithDifferentHandCard:
 	jr nc, .loop_hand
 
 ; found, output deck index of card ID 1 in deck
-; and deck index of card found in hand, and set carry
-	ld e, b
+; and deck index of card found in hand, and return carry
 	ld a, [wTempAI]
-	scf
-	ret
-
-.no_carry
-	or a
 	ret
 
 ; returns carry if at least one card in the hand
@@ -884,8 +795,6 @@ CountPokemonCardsInHandAndInPlayArea:
 ; returns carry if a duplicate Pokemon card is found in hand.
 ; outputs in a the deck index of one of them.
 FindDuplicatePokemonCards:
-	ld a, $ff
-	ld [wTempAI], a
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	push hl
@@ -894,7 +803,7 @@ FindDuplicatePokemonCards:
 	pop hl
 	ld a, [hli]
 	cp $ff
-	jr z, .done
+	ret z ; nc
 	call _GetCardIDFromDeckIndex
 	ld b, a
 	push hl
@@ -910,30 +819,120 @@ FindDuplicatePokemonCards:
 	jr nz, .loop_hand_inner
 
 ; found two cards with same ID,
-; if they are Pokemon cards, store its deck index.
+; if Pokémon, return carry with deck index in a.
 	call GetCardType
 	cp TYPE_ENERGY
 	jr nc, .loop_hand_outer
+	pop hl
 	ld a, c
-	ld [wTempAI], a
-	; for some reason loop still continues
-	; even though if some other duplicate
-	; cards are found, it overwrites the result.
-	jr .loop_hand_outer
+	ret
 
-.done
-	ld a, [wTempAI]
+; finds duplicates in card list in hl.
+; if a duplicate of Pokemon cards are found, return in
+; a the deck index of the second one.
+; otherwise, if a duplicate of non-Pokemon cards are found
+; return in a the deck index of the second one.
+; if no duplicates found, return carry.
+; input:
+;   hl = list to look in
+; output:
+;   a = deck index of duplicate card
+FindDuplicateCards:
+	push hl
+	ld a, $ff
+	ld [wce0f], a
+
+.loop_outer
+; get ID of current card
+	pop hl
+	ld a, [hli]
 	cp $ff
-	jr z, .no_carry
+	jr z, .check_found
+	call _GetCardIDFromDeckIndex
+	ld b, a
+	push hl
 
-; found
+; loop the rest of the list to find
+; another card with the same ID
+.loop_inner
+	ld a, [hli]
+	cp $ff
+	jr z, .loop_outer
+	ld c, a
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp b
+	jr nz, .loop_inner
+
+; found two cards with same ID
+	call GetCardType
+	cp TYPE_ENERGY
+	jr nc, .not_pokemon
+
+; they are Pokémon cards, so return carry
+; with the found deck index in a
+	pop hl
+	ld a, c
+	ret
+
+; they are energy or trainer cards
+.not_pokemon
+; loads wce0f with this card deck index
+	ld a, c
+	ld [wce0f], a
+	jr .loop_outer
+
+.check_found
+	ld a, [wce0f]
+	cp $ff
+	ret z ; return no carry if no duplicate cards were found
+	; two non-Pokémon cards with the same ID were found
 	scf
 	ret
-.no_carry
-	or a
+
+; searches the list at hl for the deck index in a
+; and if found, that card is removed from the list.
+; preserves all registers except af and b
+; input:
+;	a  = item to remove from the list
+;	hl = pointer to an $ff-terminated list
+FindAndRemoveCardFromList:
+	push hl
+	ld b, a
+.loop_duplicate
+	ld a, [hli]
+	cp $ff
+	jr z, .done
+	cp b
+	jr nz, .loop_duplicate
+	call RemoveCardFromList
+.done
+	pop hl
 	ret
 
-; return carry flag if attack is not high recoil.
+; remove an element from the list
+; and shortens it accordingly
+; input:
+;   hl = pointer to element after the one to remove
+RemoveCardFromList:
+	push de
+	ld d, h
+	ld e, l
+	dec hl
+	push hl
+.loop_remove
+	ld a, [de]
+	ld [hli], a
+	cp $ff
+	jr z, .done_remove
+	inc de
+	jr .loop_remove
+.done_remove
+	pop hl
+	pop de
+	ret
+
+; return carry flag if attack is high recoil.
 AICheckIfAttackIsHighRecoil:
 	farcall AIProcessButDontUseAttack
 	ret nc
@@ -944,57 +943,68 @@ AICheckIfAttackIsHighRecoil:
 	ld d, a
 	call CopyAttackDataAndDamage_FromDeckIndex
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
-	call CheckLoadedAttackFlag
-	ccf
-	ret
+	jp CheckLoadedAttackFlag
 
-; stores in wce06 the highest damaging attack
-; for the card in play area location in e
-; and stores this card's location in wce08
-FindHighestDamagingAttack:
-	push de
+; checks every Pokémon with attached Energy in the turn holder's play area,
+; starting with e. compares each Pokémon that's found and stores the greatest
+; amount of damage that any of these Pokémon can do to the Defending Pokémon in wce06.
+; the location of the Pokémon with the highest damaging attack is stored in wce08.
+; input:
+;	e = play area location offset of the first Pokémon to check (PLAY_AREA_* constant)
+; output:
+;	[wce06] = greatest amount of damage that one of the turn holder's Pokémon
+;	          with any attached Energy can do to the Defending Pokémon
+;	[wce08] = play area location offset of the Pokémon with attached Energy that
+;	          can do the most damage to the Defending Pokémon (PLAY_AREA_ARENA if none)
+FindEnergizedPokemonWithHighestDamagingAttack:
+	xor a
+	ld [wce06], a
+	ld [wce08], a
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add e
+	get_turn_duelist_var
+	cp $ff
+	ret z ; return when there are no more Pokémon to check in the turn holder's play area
+	call GetPlayAreaCardAttachedEnergies
+	or a
+	call nz, .check_attacks_for_current_pokemon
+	inc e
+	jr .loop_play_area
+
+; preserves de
+; input:
+;	e = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
+.check_attacks_for_current_pokemon
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
-
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
-	farcall EstimateDamage_VersusDefendingCard
-	ld a, [wDamage]
-	or a
-	jr z, .skip_1
-	ld e, a
-	ld a, [wce06]
-	cp e
-	jr nc, .skip_1
-	ld a, e
-	ld [wce06], a ; store this damage value
-	pop de
-	ld a, e
-	ld [wce08], a ; store this location
-	jr .second_attack
-
-.skip_1
-	pop de
-
-.second_attack
-	push de
-	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
-
+	call .compare_this_attack_with_one_stored
 	ld a, SECOND_ATTACK
+;	fallthrough
+
+; preserves de
+; input:
+;	a = which attack to check (0 = first attack, 1 = second attack)
+;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if this attack's damage was higher than the one stored in wce06
+.compare_this_attack_with_one_stored
+	push de
 	farcall EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
 	or a
-	jr z, .skip_2
+	jr z, .skip
 	ld e, a
 	ld a, [wce06]
 	cp e
-	jr nc, .skip_2
+	jr nc, .skip
 	ld a, e
 	ld [wce06], a ; store this damage value
 	pop de
 	ld a, e
 	ld [wce08], a ; store this location
 	ret
-.skip_2
+.skip
 	pop de
 	ret

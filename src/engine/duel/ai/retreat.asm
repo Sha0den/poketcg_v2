@@ -3,19 +3,9 @@
 AIDecideWhetherToRetreat:
 	ld a, [wGotHeadsFromConfusionCheckDuringRetreat]
 	or a
-	jr nz, .no_carry_1
+	ret nz ; return no carry if flipped tails after trying to retreat while Confused
 	xor a
 	ld [wAIPlayEnergyCardForRetreat], a
-	call CheckCantRetreatDueToAttackEffect
-	jr nc, .no_acid
-	; affected by acid, set retreat score to zero and return no carry
-	xor a
-	ld [wAIScore], a
-	ld [wAIRetreatScore], a
-.no_carry_1
-	or a
-	ret
-.no_acid
 	call LoadDefendingPokemonColorWRAndPrizeCards
 	ld a, $80 ; initial retreat score
 	ld [wAIScore], a
@@ -46,16 +36,9 @@ AIDecideWhetherToRetreat:
 	call AddToAIScore
 
 .check_ko_1
-	xor a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	call CheckIfAnyAttackKnocksOutDefendingCard
-	jr nc, .active_cant_ko_1
-	call CheckIfSelectedAttackIsUnusable
-	jr nc, .active_cant_use_atk
-	call LookForEnergyNeededForAttackInHand
-	jr nc, .active_cant_ko_1
-
-.active_cant_use_atk
+	call CheckIfActiveWillNotBeAbleToKODefending
+	jr c, .active_cant_ko_1
+	; active can ko
 	ld a, 5
 	call SubFromAIScore
 	ld a, [wAIOpponentPrizeCount]
@@ -137,8 +120,8 @@ AIDecideWhetherToRetreat:
 ; check bench for Pokémon that
 ; is not weak to defending Pokémon
 ; if one is found, skip SubFromAIScore
-	ld a, [wAIPlayerColor]
-	ld b, a
+;	ld a, [wAIPlayerColor]
+;	ld b, a ; Defending Pokémon's type is already in b
 	ld a, DUELVARS_BENCH
 	get_turn_duelist_var
 .loop_weakness_1
@@ -155,8 +138,8 @@ AIDecideWhetherToRetreat:
 	call SubFromAIScore
 
 .check_resistance_2
-	ld a, [wAIPlayerColor]
-	ld b, a
+;	ld a, [wAIPlayerColor]
+;	ld b, a ; Defending Pokémon's type is already in b
 	call GetArenaCardResistance
 	and b
 	jr z, .check_weakness_2
@@ -270,14 +253,9 @@ AIDecideWhetherToRetreat:
 	jr nc, .check_defending_id
 	call CheckIfNotABossDeckID
 	jr c, .check_defending_id
-
-	xor a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	call CheckIfAnyAttackKnocksOutDefendingCard
-	jr nc, .active_cant_ko_2
-	call CheckIfSelectedAttackIsUnusable
-	jr nc, .check_defending_id
-.active_cant_ko_2
+	call CheckIfActiveCardCanKnockOut
+	jr c, .check_defending_id
+	; Active Pokémon can't KO
 	ld a, 40
 	call AddToAIScore
 	ld a, $01
@@ -290,15 +268,11 @@ AIDecideWhetherToRetreat:
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp MR_MIME
-	jr z, .mr_mime_or_hitmonlee
-	cp HITMONLEE ; ??
 	jr nz, .check_retreat_cost
 
 ; check bench if there's any Pokémon
 ; that can damage defending Pokémon
 ; this is done because of Mr. Mime's PKMN PWR
-; but why Hitmonlee ($87) as well?
-.mr_mime_or_hitmonlee
 	xor a
 	call CheckIfCanDamageDefendingPokemon
 	jr c, .check_retreat_cost
@@ -335,17 +309,15 @@ AIDecideWhetherToRetreat:
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetPlayAreaCardRetreatCost
+	ld b, 1
 	cp 2
 	jr c, .one_or_none
-	cp 3
-	jr nc, .three_or_more
-	; exactly two
-	ld a, 1
-	call SubFromAIScore
-	jr .one_or_none
-
-.three_or_more
-	ld a, 2
+	jr z, .exactly_two
+	; -1 to score if Retreat Cost = 2
+	; -2 to score if Retreat Cost > 2
+	inc b
+.exactly_two
+	ld a, b
 	call SubFromAIScore
 
 .one_or_none
@@ -398,9 +370,7 @@ AIDecideWhetherToRetreat:
 ; if wAIScore is at least 131, set carry
 	ld a, [wAIScore]
 	cp 131
-	jr nc, .set_carry
-.no_carry_2
-	or a
+	ccf
 	ret
 
 ; set carry regardless if active card is
@@ -415,7 +385,7 @@ AIDecideWhetherToRetreat:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp $ff
-	jr z, .no_carry_2
+	ret z ; return no carry if there are no more Benched Pokémon to check
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
 	push de
@@ -427,8 +397,6 @@ AIDecideWhetherToRetreat:
 	call CheckIfCanDamageDefendingPokemon
 	pop de
 	jr nc, .loop_ko_3
-.set_carry
-	scf
 	ret
 
 ; if player's turn and loaded attack is not a Pokémon Power OR
@@ -708,6 +676,7 @@ AIDecideBenchPokemonToSwitchTo:
 ; lower AI score
 .mysterious_fossil_or_clefairy_doll
 	ld a, [wLoadedCard1ID]
+	ld b, a
 	cp MYSTERIOUS_FOSSIL
 	jr z, .lower_score_2
 	cp CLEFAIRY_DOLL
@@ -717,7 +686,6 @@ AIDecideBenchPokemonToSwitchTo:
 	call SubFromAIScore
 
 .ai_score_bonus
-	ld b, a
 	ld a, [wAICardListRetreatBonus + 1]
 	or a
 	jr z, .store_score
@@ -766,6 +734,23 @@ AIDecideBenchPokemonToSwitchTo:
 ;	- a = Play Area location (PLAY_AREA_*) of card to retreat to.
 AITryToRetreat:
 	push af
+; check status
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	get_turn_duelist_var
+	and CNF_SLP_PRZ
+	cp ASLEEP
+	jr z, .unable_to_retreat
+	cp PARALYZED
+	jr z, .unable_to_retreat
+	call CheckCantRetreatDueToAttackEffect
+	jr nc, .check_can_play_energy
+
+.unable_to_retreat
+	pop af
+	scf
+	ret
+
+.check_can_play_energy
 	ld a, [wAIPlayEnergyCardForRetreat]
 	or a
 	jr z, .check_id
@@ -773,16 +758,6 @@ AITryToRetreat:
 ; AI is allowed to play an energy card
 ; from the hand in order to provide
 ; the necessary energy for retreat cost
-
-; check status
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	cp ASLEEP
-	jr z, .check_id
-	cp PARALYZED
-	jr z, .check_id
-
 ; if an energy card hasn't been played yet,
 ; checks if the Pokémon needs just one more energy to retreat
 ; if it does, check if there are any energy cards in hand
@@ -790,11 +765,11 @@ AITryToRetreat:
 	ld a, [wAlreadyPlayedEnergy]
 	or a
 	jr nz, .check_id
-	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached_Bank5
-	push af
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
+	ld e, a
+	call GetPlayAreaCardAttachedEnergies
+	push af
 	call GetPlayAreaCardRetreatCost
 	pop bc
 	cp b
@@ -822,19 +797,11 @@ AITryToRetreat:
 	cp CLEFAIRY_DOLL
 	jp z, .mysterious_fossil_or_clefairy_doll
 
-; if card is Asleep or Paralyzed, set carry and exit
-; else, load the status in hTemp_ffa0
+; store some variables for later
 	pop af
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
-	ld b, a
-	and CNF_SLP_PRZ
-	cp ASLEEP
-	jr z, .set_carry
-	cp PARALYZED
-	jr z, .set_carry
-	ld a, b
 	ldh [hTemp_ffa0], a
 	ld a, $ff
 	ldh [hTempRetreatCostCards], a
@@ -870,19 +837,11 @@ AITryToRetreat:
 	jr nz, .loop_1
 	jr .retreat
 
-.set_carry
-	scf
-	ret
-
 ; if cost > 0 and number of energy cards attached > cost
 ; choose energy cards to discard according to color
 .choose_energy_discard
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, e
+	ld a, [wLoadedCard1ID]
 	ld [wTempCardID], a
-	call LoadCardDataToBuffer1_FromCardID
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
@@ -978,6 +937,7 @@ AITryToRetreat:
 	jr nc, .has_bench
 	; doesn't have any bench
 	pop af
+.set_carry
 	scf
 	ret
 

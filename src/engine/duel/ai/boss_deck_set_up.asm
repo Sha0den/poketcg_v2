@@ -60,10 +60,10 @@ SetUpBossStartingHandAndDeck:
 
 	ld a, [wAISetupBasicPokemonCount]
 	cp 4
-	jp c, .shuffle_deck
+	jr c, .shuffle_deck
 	ld a, [wAISetupEnergyCount]
 	cp 4
-	jp c, .shuffle_deck
+	jr c, .shuffle_deck
 
 ; draw new set of hand cards
 	ld a, DUELVARS_DECK_CARDS

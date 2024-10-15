@@ -11,21 +11,13 @@ AIDecidePlayPokemonCard:
 .next_hand_card
 	ld a, [hli]
 	cp $ff
-	jp z, AIDecideEvolution
+	jr z, AIDecideEvolution
 
 	ld [wTempAIPokemonCard], a
+	call CheckDeckIndexForBasicPokemon
+	jr nc, .next_hand_card ; skip this card if it isn't a Basic Pokémon
+
 	push hl
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wLoadedCard1Type]
-	cp TYPE_ENERGY
-	jr nc, .skip
-	; skip non-pokemon cards
-
-	ld a, [wLoadedCard1Stage]
-	or a
-	jr nz, .skip
-	; skip non-basic pokemon
-
 	ld a, 130
 	ld [wAIScore], a
 	call AIDecidePlayLegendaryBirds
@@ -94,7 +86,7 @@ AIDecidePlayPokemonCard:
 	jr c, .done
 .skip
 	pop hl
-	jp .next_hand_card
+	jr .next_hand_card
 .done
 	pop hl
 	ret
@@ -102,6 +94,11 @@ AIDecidePlayPokemonCard:
 ; determine whether AI evolves
 ; Pokémon in the Play Area
 AIDecideEvolution:
+; check if Prehistoric Power is active
+	call IsPrehistoricPowerActive
+	ccf
+	ret nc
+
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wHandTempList
@@ -111,19 +108,13 @@ AIDecideEvolution:
 .next_hand_card
 	ld a, [hli]
 	cp $ff
-	jp z, .done
+	ret z
 	ld [wTempAIPokemonCard], a
-
-; check if Prehistoric Power is active
-; and if so, skip to next card in hand
 	push hl
-	call IsPrehistoricPowerActive
-	jp c, .done_hand_card
 
 ; load evolution data to buffer1
 ; skip if it's not a Pokémon card
 ; and if it's a basic stage card
-	ld a, [wTempAIPokemonCard]
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
@@ -227,10 +218,8 @@ AIDecideEvolution:
 	ld a, [wTempAI]
 	or a
 	jr nz, .check_defending_can_ko_evolution
-	call CheckIfAnyAttackKnocksOutDefendingCard
+	call CheckIfActiveCardCanKnockOut
 	jr nc, .evolution_cant_ko
-	call CheckIfSelectedAttackIsUnusable
-	jr c, .evolution_cant_ko
 	ld a, 5
 	call AddToAIScore
 	jr .check_defending_can_ko_evolution
@@ -387,9 +376,6 @@ AIDecideEvolution:
 .done_hand_card
 	pop hl
 	jp .next_hand_card
-.done
-	or a
-	ret
 
 ; determine AI score for evolving
 ; Charmeleon, Magikarp, Dragonair and Grimer
@@ -422,12 +408,13 @@ AIDecideSpecialEvolutions:
 .charmeleon
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
-	call CountNumberOfEnergyCardsAttached_Bank5
+	call CountNumberOfEnergyCardsAttached
 	cp 3
 	jr c, .not_enough_energy
 	push af
-	farcall CountOppEnergyCardsInHand
+	call CreateEnergyCardListFromHand
 	pop bc
+	; a = number of Energy cards in hand
 	add b
 	cp 6
 	jr c, .not_enough_energy
@@ -444,7 +431,7 @@ AIDecideSpecialEvolutions:
 	or a ; active card
 	ret z
 	ld e, a
-	call CountNumberOfEnergyCardsAttached_Bank5
+	call CountNumberOfEnergyCardsAttached
 	cp 2
 	ret c
 	ld a, 3
@@ -482,19 +469,19 @@ AIDecideSpecialEvolutions:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld b, a
-	ld c, 0
+	ld c, 0 ; damage counter counter
+	ld e, c ; PLAY_AREA_ARENA
 .loop
-	dec b
-	ld e, b
 	push bc
 	call GetCardDamageAndMaxHP
 	pop bc
+	call ConvertHPToDamageCounters_Bank5
 	add c
 	ld c, a
-	ld a, b
-	or a
+	inc e
+	dec b
 	jr nz, .loop
-	ld a, 70
+	ld a, 7
 	cp c
 	jr c, .check_muk
 .lower_score
@@ -539,7 +526,7 @@ AIDecidePlayLegendaryBirds:
 
 ; check if card applies
 .begin
-	ld a, [wLoadedCard1ID]
+	ld a, [wLoadedCard2ID]
 	cp ARTICUNO_LV37
 	jr z, .articuno
 	cp MOLTRES_LV37
@@ -605,17 +592,20 @@ AIDecidePlayLegendaryBirds:
 ; add
 	ld a, 70
 	jp AddToAIScore
-.subtract
-	ld a, 100
-	jp SubFromAIScore
 
 .moltres
+	; checks for Muk in both Play Areas
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	jr c, .subtract
 	; checks if there's enough cards in deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	cp 56 ; max number of cards not in deck to activate
-	jr nc, .subtract
-	ret
+	ret c
+.subtract
+	ld a, 100
+	jp SubFromAIScore
 
 .zapdos
 	; checks for Muk in both Play Areas

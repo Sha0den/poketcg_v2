@@ -3,15 +3,8 @@
 AIProcessAndTryToPlayEnergy:
 	xor a
 	ld [wAIEnergyAttachLogicFlags], a
-
-.has_logic_flags
 	call CreateEnergyCardListFromHand
 	jr nc, AIProcessEnergyCards
-
-; no energy
-	ld a, [wAIEnergyAttachLogicFlags]
-	or a
-	jp nz, RetrievePlayAreaAIScoreFromBackup
 	ret
 
 ; have AI choose an energy card to play, but do not play it.
@@ -20,23 +13,7 @@ AIProcessAndTryToPlayEnergy:
 ; and if so, return its Play Area location in hTempPlayAreaLocation_ff9d.
 AIProcessButDontPlayEnergy_SkipEvolution:
 	ld a, AI_ENERGY_FLAG_DONT_PLAY | AI_ENERGY_FLAG_SKIP_EVOLUTION
-	ld [wAIEnergyAttachLogicFlags], a
-
-; backup wPlayAreaAIScore in wTempPlayAreaAIScore.
-	ld de, wTempPlayAreaAIScore
-	ld hl, wPlayAreaAIScore
-	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-
-	ld a, [wAIScore]
-	ld [de], a
-
-	jr AIProcessEnergyCards
+	jr AIProcessButDontPlayEnergy_SkipEvolutionAndArena.load_flags
 
 ; have AI choose an energy card to play, but do not play it.
 ; does not consider whether the cards have evolutions to be played.
@@ -44,19 +21,14 @@ AIProcessButDontPlayEnergy_SkipEvolution:
 ; and if so, return its Play Area location in hTempPlayAreaLocation_ff9d.
 AIProcessButDontPlayEnergy_SkipEvolutionAndArena:
 	ld a, AI_ENERGY_FLAG_DONT_PLAY | AI_ENERGY_FLAG_SKIP_EVOLUTION | AI_ENERGY_FLAG_SKIP_ARENA_CARD
+.load_flags
 	ld [wAIEnergyAttachLogicFlags], a
 
 ; backup wPlayAreaAIScore in wTempPlayAreaAIScore.
 	ld de, wTempPlayAreaAIScore
 	ld hl, wPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-
+	call CopyNBytesFromHLToDE
 	ld a, [wAIScore]
 	ld [de], a
 ;	fallthrough
@@ -74,7 +46,9 @@ AIProcessEnergyCards:
 	jr nz, .loop
 
 ; Legendary Articuno Deck has its own energy card logic
-	call HandleLegendaryArticunoEnergyScoring
+	ld a, [wOpponentDeckID]
+	cp LEGENDARY_ARTICUNO_DECK_ID
+	jp z, ScoreLegendaryArticunoCards
 
 ; start the main Play Area loop
 	ld b, PLAY_AREA_ARENA
@@ -103,7 +77,6 @@ AIProcessEnergyCards:
 	get_turn_duelist_var
 	ld [wCurCardCanAttack], a
 	call GetAttacksEnergyCostBits
-	ld hl, wDuelTempList
 	call CheckEnergyFlagsNeededInList
 	jp nc, .store_score
 	ld a, [wCurCardCanAttack]
@@ -340,11 +313,8 @@ AIProcessEnergyCards:
 .not_found
 	ld a, [wAIEnergyAttachLogicFlags]
 	or a
-	jr z, .no_carry
+	ret z
 	jp RetrievePlayAreaAIScoreFromBackup
-.no_carry
-	or a
-	ret
 
 ; checks score related to selected attack,
 ; in order to determine whether to play energy card.
@@ -399,18 +369,17 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	call EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
+	dec a ; subtract 1 so carry will be set if final HP = 0
 	ld hl, wDamage
 	sub [hl]
 	jp c, .check_evolution
-	jp z, .check_evolution
 	ld a, [wDamage]
-	add 10 ; boost gained by attaching another energy card
+	add 10 + 1 ; boost gained by attaching another Energy card plus 1 (so carry will be set if final HP = 0)
 	ld b, a
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	sub b
-	jr c, .attaching_kos_player
-	jr nz, .check_evolution
+	jr nc, .check_evolution
 
 .attaching_kos_player
 	ld a, 20
@@ -447,7 +416,7 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	ld a, b
 	or a
 	jr z, .check_colorless_needed
-	farcall GetEnergyCardNeeded
+	call GetEnergyCardNeeded
 	call LookForCardIDInHand
 	jr c, .check_colorless_needed
 	ld a, 4
@@ -475,9 +444,9 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	call EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
+	dec a ; subtract 1 so carry will be set if final HP = 0
 	ld hl, wDamage
 	sub [hl]
-	jr z, .atk_kos_defending
 	jr nc, .check_evolution
 .atk_kos_defending
 	ld a, 20
@@ -515,7 +484,7 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	ld a, b
 	or a
 	jr z, .check_colorless_needed_evo
-	farcall GetEnergyCardNeeded
+	call GetEnergyCardNeeded
 	call LookForCardIDInHand
 	jr c, .check_colorless_needed_evo
 	ld a, 2
@@ -561,13 +530,11 @@ FindPlayAreaCardWithHighestAIScore:
 ; else, store Play Area location and return carry.
 	ld a, e
 	cp $85
-	jr c, .no_carry ; not enough score
+	ccf
+	ret nc ; not enough score
 	ld a, d
 	ldh [hTempPlayAreaLocation_ff9d], a
 	scf
-	ret
-.no_carry
-	or a
 	ret
 
 ; same as above but only check bench Pokémon scores.
@@ -575,7 +542,7 @@ FindPlayAreaCardWithHighestAIScore:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	dec a
-	jr z, .no_carry
+	ret z ; nc
 
 	ld b, a
 	ld e, 0
@@ -612,11 +579,8 @@ CheckIfEvolutionNeedsEnergyForAttack:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call CheckCardEvolutionInHandOrDeck
-	jr c, .has_evolution
-	or a
-	ret
+	ret nc ; return if it doesn't have an evolution
 
-.has_evolution
 	ld b, a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
@@ -624,22 +588,11 @@ CheckIfEvolutionNeedsEnergyForAttack:
 	push af
 	ld [hl], b
 	call CheckEnergyNeededForAttack
-	jr c, .not_enough_energy
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	pop af
-	ld [hl], a
-	or a
-	ret
-
-.not_enough_energy
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	pop af
-	ld [hl], a
-	scf
+	pop de
+	ld [hl], d
 	ret
 
 ; returns in e the card ID of the energy required for
@@ -668,7 +621,7 @@ GetEnergyCardForDiscardOrEnergyBoostAttack:
 ; for both attacks, load its energy cost.
 	ld a, b
 	cp ZAPDOS_LV64
-	jr z, .zapdos2
+	ret z ; return no carry if ZapdosLv64's Thunderbolt
 	cp CHARIZARD
 	jr z, .charizard_or_exeggutor
 	cp EXEGGUTOR
@@ -720,11 +673,6 @@ GetEnergyCardForDiscardOrEnergyBoostAttack:
 .set_carry
 	lb bc, $01, $00
 	scf
-	ret
-
-; for ZapdosLv64's Thunderbolt attack, return with no carry.
-.zapdos2
-	or a
 	ret
 
 ; Charizard's Fire Spin and Exeggutor's Big Eggsplosion,
@@ -822,7 +770,7 @@ AITryToPlayEnergyCard:
 
 ; in this case, Pokémon needs a specific basic energy card.
 ; look for basic energy card needed in hand and play it.
-	farcall GetEnergyCardNeeded
+	call GetEnergyCardNeeded
 	call LookForCardIDInHand
 	ldh [hTemp_ffa0], a
 	jr nc, .play_energy_card
@@ -994,12 +942,13 @@ CheckSpecificDecksToAttachDoubleColorless:
 ;	ld de, wTempPlayAreaAIScore
 ;	ld hl, wPlayAreaAIScore
 ;	ld b, MAX_PLAY_AREA_POKEMON
-;.loop
-;	ld a, [hli]
-;	ld [de], a
-;	inc de
-;	dec b
-;	jr nz, .loop
+;	call CopyNBytesFromHLToDE
 ;	ld a, [wAIScore]
 ;	ld [de], a
-;	jp AIProcessAndTryToPlayEnergy.has_logic_flags
+;	call CreateEnergyCardListFromHand
+;	jr nc, AIProcessEnergyCards
+;	; no energy
+;	ld a, [wAIEnergyAttachLogicFlags]
+;	or a
+;	jp nz, RetrievePlayAreaAIScoreFromBackup
+;	ret

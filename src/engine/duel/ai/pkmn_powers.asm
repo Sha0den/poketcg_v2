@@ -10,7 +10,7 @@ HandleAIEnergyTrans:
 	ld [wce06], a
 
 ; choose to randomly return
-	farcall AIChooseRandomlyNotToDoAction
+	call AIChooseRandomlyNotToDoAction
 	ret c
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -87,8 +87,7 @@ HandleAIEnergyTrans:
 ; are currently attached to a Bench card.
 	ld e, 0
 .loop_deck_locations
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
 	and %00011111
 	cp CARD_LOCATION_BENCH_1
@@ -147,35 +146,33 @@ HandleAIEnergyTrans:
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	farcall CheckEnergyNeededForAttack
-	jr nc, .attack_false ; return if no energy needed
+	ret nc ; return if no energy needed
 
-; check if colorless energy is needed...
+; check if only colorless energy is needed...
+	ld a, b
+	or a
+	jr nz, .need_colored_energy
 	ld a, c
 	or a
 	jr nz, .count_if_enough
+	ret
 
-; ...otherwise check if basic energy card is needed
-; and it's grass energy.
-	ld a, b
-	or a
-	jr z, .attack_false
+; ...otherwise check if the needed Basic Energy is Grass.
+.need_colored_energy
 	farcall GetEnergyCardNeeded
 	cp GRASS_ENERGY
-	jr nz, .attack_false
-	ld c, b
+	jr nz, .no_carry
+	ld a, b
+	add c
+	ld c, a ; c = total number of Energy needed for the attack
 
 .count_if_enough
 ; if there's enough Grass energy cards in Bench
 ; to satisfy the attack energy cost, return carry.
 	call .CountGrassEnergyInBench
 	cp c
-	jr c, .attack_false
+	ccf
 	ld a, c
-	scf
-	ret
-
-.attack_false
-	or a
 	ret
 
 .is_exeggutor
@@ -183,18 +180,21 @@ HandleAIEnergyTrans:
 ; if there are any Grass energy cards in Bench.
 	call .CountGrassEnergyInBench
 	or a
-	jr z, .attack_false
-
+	ret z
 	scf
+	ret
+
+.no_carry
+	or a
 	ret
 
 ; outputs in a the number of Grass energy cards
 ; currently attached to Bench cards.
 .CountGrassEnergyInBench
-	lb de, 0, 0
+	lb de, 0, DECK_SIZE
 .count_loop
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
+	dec e ; go through deck indices in reverse order
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
 	and %00011111
 	cp CARD_LOCATION_BENCH_1
@@ -207,9 +207,8 @@ HandleAIEnergyTrans:
 	jr nz, .count_next
 	inc d
 .count_next
-	inc e
-	ld a, DECK_SIZE
-	cp e
+	ld a, e
+	or a
 	jr nz, .count_loop
 	ld a, d
 	ret
@@ -219,13 +218,13 @@ HandleAIEnergyTrans:
 ; if so, output the number of energy cards still needed in a.
 .CheckEnoughGrassEnergyCardsForRetreatCost
 	xor a ; PLAY_AREA_ARENA
+	ld e, a
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetPlayAreaCardRetreatCost
 	ld b, a
-	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached_Bank8
+	call GetPlayAreaCardAttachedEnergies
 	cp b
-	jr nc, .retreat_false ; return if enough to retreat
+	ret nc ; return if enough to retreat
 
 ; see if there's enough Grass energy cards
 ; in the Bench to satisfy retreat cost
@@ -235,20 +234,24 @@ HandleAIEnergyTrans:
 	ld c, a
 	call .CountGrassEnergyInBench
 	cp c
-	jr c, .retreat_false ; return if less cards than needed
+	jr c, .no_carry ; return if less cards than needed
 
 ; output number of cards needed to retreat
 	ld a, c
 	scf
-	ret
-.retreat_false
-	or a
 	ret
 
 ; AI logic to determine whether to use Energy Trans Pkmn Power
 ; to transfer energy cards attached from the Arena Pokemon to
 ; some card in the Bench.
 AIEnergyTransTransferEnergyToBench:
+; return if Arena card has no Grass energy cards attached.
+	ld e, PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + GRASS]
+	or a
+	ret z
+
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
@@ -258,13 +261,6 @@ AIEnergyTransTransferEnergyToBench:
 ; if so, return.
 	farcall AIProcessButDontUseAttack
 	ret c
-
-; return if Arena card has no Grass energy cards attached.
-	ld e, PLAY_AREA_ARENA
-	call GetPlayAreaCardAttachedEnergies
-	ld a, [wAttachedEnergies + GRASS]
-	or a
-	ret z
 
 ; if no energy card attachment is needed, return.
 	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
@@ -322,8 +318,7 @@ AIEnergyTransTransferEnergyToBench:
 ; are currently attached to Arena card.
 	ld e, 0
 .loop_deck_locations
-	ld a, DUELVARS_CARD_LOCATIONS
-	add e
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
 	cp CARD_LOCATION_ARENA
 	jr nz, .next_card
@@ -386,7 +381,7 @@ HandleAIPkmnPowers:
 	ccf
 	ret nc ; return no carry if Muk is in play
 
-	farcall AIChooseRandomlyNotToDoAction
+	call AIChooseRandomlyNotToDoAction
 	ccf
 	ret nc ; return no carry if AI randomly decides to
 
@@ -460,9 +455,8 @@ HandleAIPkmnPowers:
 	jr .next_1
 .check_curse
 	cp GENGAR
-	jr nz, .next_1
 	call z, HandleAICurse
-	jr c, .done
+;	fallthrough
 
 .next_1
 	pop bc
@@ -473,9 +467,6 @@ HandleAIPkmnPowers:
 	jr nz, .loop_play_area
 	ret
 
-.done
-	pop bc
-	ret
 
 ; checks whether AI uses Step In.
 ; Step In is only activated if the AI's Active Pokemon is about to be KO'd
@@ -544,30 +535,16 @@ HandleAIHeal:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
 	jr nc, .set_carry ; return carry if can't KO
+
+; check if the Defending Pokémon can still KO
+; this Pokémon after Heal is used on it.
+; if Heal prevents KO, return carry.
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
-	ld h, a
-	ld e, PLAY_AREA_ARENA
-	call GetCardDamageAndMaxHP
-	; this seems useless since it was already
-	; checked that Arena card has damage,
-	; so card damage is at least 10.
-	cp 10 + 1
-	jr c, .check_remaining
-	ld a, 10
-	; a = min(10, CardDamage)
-
-; checks if Defending Pokemon can still KO
-; if Heal is used on this card.
-; if Heal prevents KO, return carry.
-.check_remaining
-	ld l, a
-	ld a, h ; load remaining HP
-	add l ; add 1 counter to account for heal
-	sub d ; subtract damage of strongest opponent attack
+	add 10 - 1 ; amount of HP that would be healed minus 1 (so carry will be set if final HP = 0)
+	sub d ; subtract damage of the opponent's strongest attack
 	jr c, .check_bench
-	jr z, .check_bench
 
 .set_carry
 	xor a ; PLAY_AREA_ARENA
@@ -581,11 +558,9 @@ HandleAIHeal:
 	get_turn_duelist_var
 	ld d, a
 	lb bc, 0, 0
-	ld e, PLAY_AREA_BENCH_1
+	ld e, PLAY_AREA_ARENA
+	jr .next_bench
 .loop_bench
-	ld a, e
-	cp d
-	jr z, .done
 	push bc
 	call GetCardDamageAndMaxHP
 	pop bc
@@ -596,19 +571,17 @@ HandleAIHeal:
 	ld c, e ; store this Play Area location
 .next_bench
 	inc e
-	jr .loop_bench
+	dec d
+	jr nz, .loop_bench
 
 ; check if a Pokemon with damage counters was found
 ; in the Bench and, if so, return carry.
 .done
 	ld a, c
 	or a
-	jr z, .not_found
+	ret z ; nc
 ; found
 	scf
-	ret
-.not_found
-	or a
 	ret
 
 ; checks whether AI uses Shift.
@@ -678,7 +651,7 @@ HandleAIShift:
 .loop_play_area
 	ld a, [hli]
 	cp $ff
-	jr z, .false
+	ret z ; nc
 	ld a, c
 	call GetPlayAreaCardColor
 	call TranslateColorToWR
@@ -688,9 +661,6 @@ HandleAIShift:
 	jr .loop_play_area
 .true
 	scf
-	ret
-.false
-	or a
 	ret
 
 ; checks whether AI uses Peek.
@@ -757,7 +727,6 @@ HandleAIPeek:
 	ret z ; return if no cards in Hand
 ; shuffle list and pick the first entry to Peek
 	ld hl, wDuelTempList
-	call CountCardsInDuelTempList
 	call ShuffleCards
 	ld a, [wDuelTempList]
 	or AI_PEEK_TARGET_HAND
@@ -876,8 +845,7 @@ HandleAICurse:
 
 .next_1
 	inc e
-	ld a, e
-	cp d
+	dec d
 	jr nz, .loop_play_area_1 ; reached end of Play Area
 
 	ld a, 1
@@ -915,6 +883,7 @@ HandleAICurse:
 	push bc
 	call GetCardDamageAndMaxHP
 	pop bc
+	or a
 	jr nz, .use_curse ; has damage counters, choose this card
 .next_2
 	inc e
@@ -946,12 +915,12 @@ HandleAICowardice:
 	call CountPokemonIDInBothPlayAreas
 	ret c ; return if there's Muk in play
 
-	farcall AIChooseRandomlyNotToDoAction
+	call AIChooseRandomlyNotToDoAction
 	ret c ; randomly return
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	cp 1
+	dec a
 	ret z ; return if only one Pokemon in Play Area
 
 	ld b, a
@@ -999,7 +968,6 @@ HandleAICowardice:
 	and CAN_EVOLVE_THIS_TURN
 	ret z ; return if was played this turn
 	call GetCardDamageAndMaxHP
-.asm_22678
 	or a
 	ret z ; return if has no damage counters
 
@@ -1034,7 +1002,7 @@ HandleAIDamageSwap:
 	dec a
 	ret z ; return if no Bench Pokemon
 
-	farcall AIChooseRandomlyNotToDoAction
+	call AIChooseRandomlyNotToDoAction
 	ret c
 
 	ld a, ALAKAZAM
@@ -1067,7 +1035,7 @@ HandleAIDamageSwap:
 	ld [wce06], a
 	ld a, ALAKAZAM
 	ld b, PLAY_AREA_BENCH_1
-	farcall LookForCardIDInPlayArea_Bank5
+	call LookForCardIDInPlayArea_Bank8
 	jr c, .is_in_bench
 
 ; Alakazam is Arena card
@@ -1148,8 +1116,7 @@ HandleAIDamageSwap:
 
 .next_play_area
 	inc c
-	ld a, c
-	cp b
+	dec b
 	jr nz, .loop_bench
 
 ; done
@@ -1174,7 +1141,7 @@ HandleAIDamageSwap:
 	ld d, c ; store damage
 	push de
 	ld e, c
-	call CountNumberOfEnergyCardsAttached_Bank8
+	call GetPlayAreaCardAttachedEnergies
 	pop de
 	or a
 	jr nz, .next_play_area ; ignore cards with attached energy

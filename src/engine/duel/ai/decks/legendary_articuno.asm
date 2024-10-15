@@ -117,7 +117,8 @@ ScoreLegendaryArticunoCards:
 	call LookForCardIDInPlayArea_Bank5
 	jr nc, .articuno
 	ld e, a
-	call CountNumberOfEnergyCardsAttached_Bank5
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + WATER]
 	cp 3
 	jr nc, .articuno
 	ld a, LAPRAS

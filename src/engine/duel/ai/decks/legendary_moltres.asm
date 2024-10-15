@@ -149,7 +149,7 @@ AIDoTurn_LegendaryMoltres:
 	call CreateEnergyCardListFromHand
 	jr c, .skip_attach_energy
 	ld e, PLAY_AREA_ARENA
-	call CountNumberOfEnergyCardsAttached_Bank5
+	call GetPlayAreaCardAttachedEnergies
 	or a
 	jr nz, .attach_normally
 	xor a ; PLAY_AREA_ARENA

@@ -95,7 +95,14 @@
 
 
 ## Code Optimization
-- **October 10, 2024:** 19 Files Changed
+- **October 15, 2024:** 16 Files Changed
+    - Countless optimizations and refactoring in engine/duel/ai files
+    - Several functions in said files were relocated and a few others were completely removed
+    - Numerous corrections were also made and some of the functions were even expanded
+
+<br/>
+
+- **[October 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/9512496c1b8161e7e0a0196bc3a7a38fcb17fa10):** 19 Files Changed
     - Miscellaneous optimizations, mostly related to storing information in RAM
 
 <br/>
