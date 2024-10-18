@@ -1,5 +1,5 @@
-; determine whether AI plays
-; basic cards from hand
+; determines whether AI plays Pokémon cards from its hand.
+; considers each Basic Pokémon and then moves on to the Evolution cards.
 AIDecidePlayPokemonCard:
 	call CreateHandCardList
 	call SortTempHandByIDList
@@ -22,8 +22,8 @@ AIDecidePlayPokemonCard:
 	ld [wAIScore], a
 	call AIDecidePlayLegendaryBirds
 
-; if Play Area has more than 4 Pokémon, decrease AI score
-; else, increase AI score
+; decrease the AI score if there are more than 4 play area Pokémon,
+; and increase the AI score if there aren't.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 4
@@ -35,17 +35,17 @@ AIDecidePlayPokemonCard:
 	ld a, 50
 	call AddToAIScore
 
-; if defending Pokémon can KO active card, increase AI score
+; increase the AI score if the Defending Pokémon can KO the AI's Active Pokémon.
 .check_defending_can_ko
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CheckIfDefendingPokemonCanKnockOut
 	jr nc, .check_energy_cards
 	ld a, 20
 	call AddToAIScore
 
-; if energy cards are found in hand
-; for this card's attacks, raise AI score
+; increase the AI score if there are Energy cards in the AI's hand
+; that can be used for this Pokémon's attacks.
 .check_energy_cards
 	ld a, [wTempAIPokemonCard]
 	call GetAttacksEnergyCostBits
@@ -54,8 +54,7 @@ AIDecidePlayPokemonCard:
 	ld a, 20
 	call AddToAIScore
 
-; if evolution card is found in hand
-; for this card, raise AI score
+; increase the AI score if an Evolution card in the hand matches this Pokémon.
 .check_evolution_hand
 	ld a, [wTempAIPokemonCard]
 	call CheckForEvolutionInList
@@ -63,8 +62,7 @@ AIDecidePlayPokemonCard:
 	ld a, 20
 	call AddToAIScore
 
-; if evolution card is found in deck
-; for this card, raise AI score
+; increase the AI score if an Evolution card in the deck matches this Pokémon.
 .check_evolution_deck
 	ld a, [wTempAIPokemonCard]
 	call CheckForEvolutionInDeck
@@ -72,7 +70,7 @@ AIDecidePlayPokemonCard:
 	ld a, 10
 	call AddToAIScore
 
-; if AI score is >= 180, play card from hand
+; if AI score is >= 180, play this Basic Pokémon from the hand.
 .check_score
 	ld a, [wAIScore]
 	cp 180
@@ -83,7 +81,7 @@ AIDecidePlayPokemonCard:
 	jr c, .skip
 	ld a, OPPACTION_PLAY_BASIC_PKMN
 	bank1call AIMakeDecision
-	jr c, .done
+	jr c, .done ; return if the opponent's turn ended
 .skip
 	pop hl
 	jr .next_hand_card
@@ -91,8 +89,9 @@ AIDecidePlayPokemonCard:
 	pop hl
 	ret
 
-; determine whether AI evolves
-; Pokémon in the Play Area
+
+; determines whether AI plays Evolution cards from its hand
+; to evolve Pokémon in the play area.
 AIDecideEvolution:
 ; check if Prehistoric Power is active
 	call IsPrehistoricPowerActive
@@ -112,23 +111,21 @@ AIDecideEvolution:
 	ld [wTempAIPokemonCard], a
 	push hl
 
-; load evolution data to buffer1
-; skip if it's not a Pokémon card
-; and if it's a basic stage card
+; load evolution data to buffer1.
+; skip if it's not a Pokémon card or if its stage is Basic.
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
 	jp nc, .done_hand_card
 	ld a, [wLoadedCard1Stage]
-	or a
+	or a ; cp BASIC
 	jp z, .done_hand_card
 
-; start looping Pokémon in Play Area
-; to find a card to evolve
+; start looping Pokémon in the play area to find a card to evolve.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld c, a
-	ld b, 0
+	ld b, PLAY_AREA_ARENA
 .next_bench_pokemon
 	ld e, b
 	ld a, [wTempAIPokemonCard]
@@ -137,8 +134,8 @@ AIDecideEvolution:
 	push bc
 	jp c, .done_bench_pokemon
 
-; store this Play Area location in wTempAI
-; and initialize the AI score
+; store this play area location offset in wTempAI
+; and initialize the AI score.
 	ld a, b
 	ld [wTempAI], a
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -147,34 +144,33 @@ AIDecideEvolution:
 	call AIDecideSpecialEvolutions
 
 ; check if the card can use any attacks
-; and if any of those attacks can KO
-	xor a
+; and if any of those attacks can KO.
+	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	ld [wSelectedAttack], a
 	call CheckIfSelectedAttackIsUnusable
 	jr nc, .can_attack
-	ld a, $01
+	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	call CheckIfSelectedAttackIsUnusable
 	jr c, .cant_attack_or_ko
 .can_attack
-	ld a, $01
+	ld a, TRUE
 	ld [wCurCardCanAttack], a
 	call CheckIfAnyAttackKnocksOutDefendingCard
 	jr nc, .check_evolution_attacks
 	call CheckIfSelectedAttackIsUnusable
 	jr c, .check_evolution_attacks
-	ld a, $01
+	ld a, TRUE
 	ld [wCurCardCanKO], a
 	jr .check_evolution_attacks
 .cant_attack_or_ko
-	xor a
+	xor a ; FALSE
 	ld [wCurCardCanAttack], a
 	ld [wCurCardCanKO], a
 
-; check evolution to see if it can use any of its attacks:
-; if it can, raise AI score;
-; if it can't, decrease AI score and if an energy card that is needed
-; can be played from the hand, raise AI score.
+; check the Evolution card to see if it can use any of its attacks, and
+; increase the AI score if it can. if it can't, then decrease the score, and
+; if an Energy card that is needed can be played from the hand, then increase the score.
 .check_evolution_attacks
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
@@ -182,11 +178,11 @@ AIDecideEvolution:
 	push af
 	ld a, [wTempAIPokemonCard]
 	ld [hl], a
-	xor a
+	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	ld [wSelectedAttack], a
 	call CheckIfSelectedAttackIsUnusable
 	jr nc, .evolution_can_attack
-	ld a, $01
+	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	call CheckIfSelectedAttackIsUnusable
 	jr c, .evolution_cant_attack
@@ -208,16 +204,17 @@ AIDecideEvolution:
 	ld a, 7
 	call AddToAIScore
 
-; if it's an active card:
-; if evolution can't KO but the current card can, lower AI score;
-; if evolution can KO as well, raise AI score.
+; if it's an Active Pokémon:
+; decrease the AI score if the Evolution card can't KO but the current Pokémon can.
+; increase the AI score if the Evolution card can also KO.
 .check_evolution_ko
 	ld a, [wCurCardCanAttack]
 	or a
 	jr z, .check_defending_can_ko_evolution
 	ld a, [wTempAI]
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	jr nz, .check_defending_can_ko_evolution
+	; it's the Active Pokémon
 	call CheckIfActiveCardCanKnockOut
 	jr nc, .evolution_cant_ko
 	ld a, 5
@@ -230,19 +227,19 @@ AIDecideEvolution:
 	ld a, 20
 	call SubFromAIScore
 
-; if defending Pokémon can KO evolution, lower AI score
+; decrease the AI score if the Defending Pokémon can still KO after evolution.
 .check_defending_can_ko_evolution
 	ld a, [wTempAI]
 	or a
 	jr nz, .check_mr_mime
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CheckIfDefendingPokemonCanKnockOut
 	jr nc, .check_mr_mime
 	ld a, 5
 	call SubFromAIScore
 
-; if evolution can't damage player's Mr Mime, lower AI score
+; decrease the AI score if the Evolution card can't damage the Player's Mr Mime.
 .check_mr_mime
 	ld a, [wTempAI]
 	call CheckDamageToMrMime
@@ -250,7 +247,7 @@ AIDecideEvolution:
 	ld a, 20
 	call SubFromAIScore
 
-; if defending Pokémon can KO current card, raise AI score
+; increase the AI score if the Defending Pokémon can KO the current card.
 .check_defending_can_ko
 	ld a, [wTempAI]
 	add DUELVARS_ARENA_CARD
@@ -260,23 +257,24 @@ AIDecideEvolution:
 	ld a, [wTempAI]
 	or a
 	jr nz, .check_2nd_stage_hand
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CheckIfDefendingPokemonCanKnockOut
 	jr nc, .check_status
 	ld a, 5
 	call AddToAIScore
 
-; if current card has a status condition, raise AI score
+; increase the AI score if the current card has a Special Condition.
 .check_status
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
-	or a
+	or a ; cp NO_STATUS
 	jr z, .check_2nd_stage_hand
 	ld a, 4
 	call AddToAIScore
 
-; if hand has 2nd stage card to evolve evolution card, raise AI score
+; increase the AI score by 2 if there's a Stage 2 Evolution card
+; in the hand that can be used to evolve this Evolution card.
 .check_2nd_stage_hand
 	ld a, [wTempAIPokemonCard]
 	call CheckForEvolutionInList
@@ -285,7 +283,8 @@ AIDecideEvolution:
 	call AddToAIScore
 	jr .check_damage
 
-; if deck has 2nd stage card to evolve evolution card, raise AI score
+; increase the AI score by 1 if there's a Stage 2 Evolution card
+; in the deck that can be used to evolve this Evolution card.
 .check_2nd_stage_deck
 	ld a, [wTempAIPokemonCard]
 	call CheckForEvolutionInDeck
@@ -306,9 +305,8 @@ AIDecideEvolution:
 	call ConvertHPToDamageCounters_Bank5
 	call SubFromAIScore
 
-; if is Mysterious Fossil or
-; wLoadedCard1Unknown2 is set to $02,
-; raise AI score
+; increase the AI score if it's Mysterious Fossil
+; or if wLoadedCard1Unknown2 is set to $02 (which is never true).
 .check_mysterious_fossil
 	ld a, [wTempAI]
 	add DUELVARS_ARENA_CARD
@@ -327,7 +325,7 @@ AIDecideEvolution:
 	ld a, 5
 	call AddToAIScore
 
-; in Pikachu Deck, decrease AI score for evolving Pikachu
+; decrease the AI score for evolving Pikachu if using the Pikachu Deck.
 .pikachu_deck
 	ld a, [wOpponentDeckID]
 	cp PIKACHU_DECK_ID
@@ -345,7 +343,7 @@ AIDecideEvolution:
 	ld a, 3
 	call SubFromAIScore
 
-; if AI score >= 133, go through with the evolution
+; if AI score >= 133, go through with the evolution.
 .check_score
 	ld a, [wAIScore]
 	cp 133
@@ -357,8 +355,7 @@ AIDecideEvolution:
 	ld a, OPPACTION_EVOLVE_PKMN
 	bank1call AIMakeDecision
 
-	; disregard PlusPower attack choice
-	; in case the Arena card evolved
+	; disregard PlusPower attack choice if the Active Pokémon evolved
 	ld a, [wTempAI]
 	or a
 	jr nz, .skip_reset_pluspower_atk
@@ -377,11 +374,11 @@ AIDecideEvolution:
 	pop hl
 	jp .next_hand_card
 
-; determine AI score for evolving
-; Charmeleon, Magikarp, Dragonair and Grimer
-; in certain decks
+
+; determines the AI score for evolving Charmeleon,
+; Magikarp, Dragonair, and Grimer in certain decks.
 ; input:
-;	[wLoadedCard2ID] = card ID of an evolving Pokemon to score
+;	[wLoadedCard2ID] = card ID of an evolving Pokémon to score
 AIDecideSpecialEvolutions:
 ; check if deck applies
 	ld a, [wOpponentDeckID]
@@ -403,8 +400,8 @@ AIDecideSpecialEvolutions:
 	jr z, .dragonair
 	ret
 
-; check if number of energy cards attached to Charmeleon are at least 3
-; and if adding the energy cards in hand makes at least 6 energy cards
+; check if there are at least 3 Energy cards attached to Charmeleon and
+; if adding the Energy cards in the hand brings the total to at least 6.
 .charmeleon
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
@@ -424,11 +421,11 @@ AIDecideSpecialEvolutions:
 	ld a, 10
 	jp SubFromAIScore
 
-; check if Magikarp is not the active card
-; and has at least 2 energy cards attached
+; check if Magikarp is not the Active Pokémon
+; and has at least 2 Energy cards attached to it.
 .magikarp
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a ; active card
+	or a ; cp PLAY_AREA_ARENA
 	ret z
 	ld e, a
 	call CountNumberOfEnergyCardsAttached
@@ -443,10 +440,10 @@ AIDecideSpecialEvolutions:
 	jr z, .grimer
 	ret
 
-; check if Grimer is not active card
+; check if Grimer is not the Active Pokémon
 .grimer
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a ; active card
+	or a ; cp PLAY_AREA_ARENA
 	ret z
 	ld a, 10
 	jp AddToAIScore
@@ -459,13 +456,12 @@ AIDecideSpecialEvolutions:
 
 .dragonair
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a ; active card
+	or a ; cp PLAY_AREA_ARENA
 	jr z, .is_active
 
-; if Dragonair is benched, check all Pokémon in Play Area
-; and sum all the damage in HP of all cards
-; if this result is >= 70, check if there's
-; a Muk in any duelist's Play Area
+; if Dragonair is Benched, count the number of damage counters on each of the AI's Pokémon.
+; decrease the AI score if there are fewer than 8 damage counters in the play area.
+; otherwise, check if there's a Muk in either play area.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld b, a
@@ -488,12 +484,11 @@ AIDecideSpecialEvolutions:
 	ld a, 10
 	jp SubFromAIScore
 
-; if Dragonair is active, check its damage in HP
-; if this result is >= 50,
-; and if at least 3 energy cards attached,
-; check if there's a Muk in any duelist's Play Area
+; if Dragonair is the Active Pokémon, check its damage/HP.
+; if this result is >= 50 and at least 3 Energy are attached,
+; then check if there's a Muk in either play area.
 .is_active
-	ld e, 0
+	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	cp 50
 	jr c, .lower_score
@@ -503,7 +498,7 @@ AIDecideSpecialEvolutions:
 	cp 3
 	jr c, .lower_score
 
-; if there's no Muk, raise score
+; increase the AI score if there isn't a Muk in the play area.
 .check_muk
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
@@ -511,8 +506,10 @@ AIDecideSpecialEvolutions:
 	ld a, 10
 	jp AddToAIScore
 
-; determine AI score for the legendary cards
-; Moltres, Zapdos and Articuno
+
+; determines the AI score for playing the promotional Articuno, Zapdos, and Moltres cards.
+; input:
+;	[wLoadedCard2ID] = card ID for the Pokémon being checked
 AIDecidePlayLegendaryBirds:
 ; check if deck applies
 	ld a, [wOpponentDeckID]
@@ -536,7 +533,7 @@ AIDecidePlayLegendaryBirds:
 	ret
 
 .articuno
-	; exit if not enough Pokemon in Play Area
+	; exit if there aren't enough Pokémon in the play area
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 2
@@ -549,26 +546,26 @@ AIDecidePlayLegendaryBirds:
 	call AIDecideWhetherToRetreat
 	jr c, .subtract
 
-	; checks for player's active card status
+	; check if the Defending Pokémon is Asleep, Confused, or Paralyzed
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
 	and CNF_SLP_PRZ
 	or a
 	jr nz, .subtract
 
-	; checks for player's Pokemon Power
+	; check for a Defending Pokémon's Pokémon Power
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	ld d, a
-	ld e, $00
+	ld e, FIRST_ATTACK_OR_PKMN_POWER
 	call CopyAttackDataAndDamage_FromDeckIndex
 	rst SwapTurn
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
 	jr z, .check_muk_and_snorlax
 
-	; return if no space on the bench
+	; return if no space on the Bench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp MAX_BENCH_POKEMON
@@ -576,11 +573,11 @@ AIDecidePlayLegendaryBirds:
 	ret
 
 .check_muk_and_snorlax
-	; checks for Muk in both Play Areas
+	; check for a Muk in either play area
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	jr c, .subtract
-	; checks if player's active card is Snorlax
+	; check if the Defending Pokémon is a Snorlax
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -594,11 +591,11 @@ AIDecidePlayLegendaryBirds:
 	jp AddToAIScore
 
 .moltres
-	; checks for Muk in both Play Areas
+	; check for a Muk in either play area
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	jr c, .subtract
-	; checks if there's enough cards in deck
+	; check if there are enough cards in the deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	cp 56 ; max number of cards not in deck to activate
@@ -608,7 +605,7 @@ AIDecidePlayLegendaryBirds:
 	jp SubFromAIScore
 
 .zapdos
-	; checks for Muk in both Play Areas
+	; check for a Muk in either play area
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	jr c, .subtract

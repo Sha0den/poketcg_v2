@@ -1,9 +1,9 @@
-; sets up the initial hand of boss deck.
-; always draws at least 2 Basic Pokemon cards and 2 Energy cards.
+; sets up the initial hand for a boss deck.
+; always draws at least 2 Basic Pokémon cards and 2 Energy cards.
 ; also sets up so that the next cards to be drawn have
-; some minimum number of Basic Pokemon and Energy cards.
+; some minimum number of Basic Pokémon and Energy cards.
 SetUpBossStartingHandAndDeck:
-; shuffle all hand cards in deck
+; shuffle all hand cards into the deck
 	ld a, DUELVARS_HAND
 	get_turn_duelist_var
 	ld b, STARTING_HAND_SIZE
@@ -18,8 +18,8 @@ SetUpBossStartingHandAndDeck:
 .shuffle_deck
 	call ShuffleDeck
 
-; count number of Energy and basic Pokemon cards
-; in the first STARTING_HAND_SIZE in deck.
+; count the number of Basic Pokémon and Energy cards
+; in the top STARTING_HAND_SIZE (7) cards of the deck.
 .count_energy_basic
 	xor a
 	ld [wAISetupBasicPokemonCount], a
@@ -30,7 +30,7 @@ SetUpBossStartingHandAndDeck:
 	ld b, STARTING_HAND_SIZE
 	call .Loop_Deck
 
-; tally the number of Energy and basic Pokemon cards
+; tally the number of Basic Pokémon and Energy cards,
 ; and if any of them is smaller than 2, re-shuffle deck.
 	ld a, [wAISetupBasicPokemonCount]
 	cp 2
@@ -39,8 +39,8 @@ SetUpBossStartingHandAndDeck:
 	cp 2
 	jr c, .shuffle_deck
 
-; now check the following 6 cards (prize cards).
-; re-shuffle deck if any of these cards is listed in wAICardListAvoidPrize.
+; now check the following 6 cards (potential Prize cards).
+; re-shuffle the deck if any of these cards is listed in wAICardListAvoidPrize.
 	ld b, 6
 .check_card_ids
 	ld a, [hli]
@@ -52,7 +52,7 @@ SetUpBossStartingHandAndDeck:
 	jr nz, .check_card_ids
 
 ; finally, check 6 cards after that.
-; if Energy or Basic Pokemon counter is below 4
+; if Energy or Basic Pokémon counter is below 4
 ; (counting with the ones found in the initial hand)
 ; then re-shuffle deck.
 	ld b, 6
@@ -65,7 +65,7 @@ SetUpBossStartingHandAndDeck:
 	cp 4
 	jr c, .shuffle_deck
 
-; draw new set of hand cards
+; draw the new starting hand
 	ld a, DUELVARS_DECK_CARDS
 	get_turn_duelist_var
 	ld b, STARTING_HAND_SIZE
@@ -77,10 +77,14 @@ SetUpBossStartingHandAndDeck:
 	jr nz, .draw_loop
 	ret
 
-; return carry if card ID corresponding
-; to the input deck index is listed in wAICardListAvoidPrize;
+
+; preserves hl
 ; input:
-;	- a = deck index of card to check
+;	a = deck index of the card that should be checked
+;	wAICardListAvoidPrize = $00-terminated list of card IDs
+; output:
+;	carry = set:  if the card ID corresponding to the input deck index
+;	              was listed in wAICardListAvoidPrize
 .CheckIfIDIsInList
 	ld b, a
 	ld a, [wAICardListAvoidPrize + 1]
@@ -109,6 +113,16 @@ SetUpBossStartingHandAndDeck:
 	or a
 	ret
 
+
+; looks at b cards from the list of deck indices at hl and
+; counts how many of them are Basic Pokémon and Energy cards.
+; preserves de
+; input:
+;	hl = list with deck indices of cards to check
+;	 b = number of cards to check from the list
+; output:
+;	[wAISetupEnergyCount] += number of Energy cards that were found
+;	[wAISetupBasicPokemonCount] += number of Basic Pokémon that were found
 .Loop_Deck
 	ld a, [hli]
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -126,7 +140,7 @@ SetUpBossStartingHandAndDeck:
 
 .pokemon_card
 	ld a, [wLoadedCard1Stage]
-	or a
+	or a ; cp BASIC
 	jr nz, .next_card_deck
 	ld a, [wAISetupBasicPokemonCount]
 	inc a

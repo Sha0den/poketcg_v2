@@ -1,24 +1,26 @@
 ; AI card retreat score bonus
 ; when the AI retreat routine runs through the Bench to choose
-; a Pokemon to switch to, it looks up in this list and if
-; a card ID matches, applies a retreat score bonus to this card.
+; a Pokémon to switch to, it checks this list, and if a card ID matches,
+; it applies a retreat score bonus to this Pokémon.
 ; positive (negative) means more (less) likely to switch to this card.
 MACRO ai_retreat
 	db \1       ; card ID
 	db $80 + \2 ; retreat score (ranges between -128 and 127)
 ENDM
 
+
 ; AI card energy attach score bonus
-; when the AI energy attachment routine runs through the Play Area to choose
-; a Pokemon to attach an energy card, it looks up in this list and if
-; a card ID matches, skips this card if the maximum number of energy
-; cards attached has been reached. If it hasn't been reached, additionally
-; applies a positive (or negative) AI score to attach energy to this card.
+; when the AI Energy attachment routine runs through the play area to choose a Pokémon
+; to attach the Energy card to, it checks this list, and if a card ID matches,
+; then it skips this Pokémon if the maximum amount of attached Energy
+; has already been reached. If it hasn't, it also applies a positive
+; (or negative) AI score to attach the Energy card to this Pokémon.
 MACRO ai_energy
 	db \1       ; card ID
 	db \2       ; maximum number of attached cards
 	db $80 + \3 ; energy score (ranges between -128 and 127)
 ENDM
+
 
 ; stores in WRAM pointer to data in argument
 ; e.g. store_list_pointer wSomeListPointer, SomeData
@@ -30,36 +32,37 @@ MACRO store_list_pointer
 	ld [hl], d
 ENDM
 
+
 ; deck AIs are specialized to work on a given deck ID.
-; they decide what happens during a turn, what Pokemon cards
+; they decide what happens during a turn, what Pokémon cards
 ; to pick during the start of the duel, etc.
-; the different scenarios these are used are listed in AIACTION_* constants.
-; each of these have a pointer table with the following structure:
-; dw .do_turn       : never called;
+; these scenarios are listed in AIACTION_* constants.
+; each deck has a pointer table with the following structure:
+; dw .do_turn       : never called
 ;
 ; dw .do_turn       : called to handle the main turn logic, from the beginning
-;                     of the turn up to the attack (or lack thereof);
+;                     of the turn up to the attack (or lack thereof)
 ;
 ; dw .start_duel    : called at the start of the duel to initialize some
-;                     variables and optionally set up CPU hand and deck;
+;                     variables and optionally set up CPU hand and deck
 ;
-; dw .forced_switch : logic to determine what Pokemon to pick when there's
-;                     an effect that forces AI to switch to Bench card;
+; dw .forced_switch : logic to determine what Pokémon to pick when there's
+;                     an effect that forces the AI to switch in a Benched Pokémon
 ;
-; dw .ko_switch     : logic for picking which card to use after a KO;
+; dw .ko_switch     : logic for picking a new Active Pokémon after a KO
 ;
-; dw .take_prize    : logic to decide which prize card to pick.
+; dw .take_prize    : logic to decide which Prize card to pick
 
 ; optionally, decks can also declare card lists that will add
 ; more specialized logic during various generic AI routines,
 ; and read during the .start_duel routines.
 ; the pointers to these lists are stored in memory:
-; wAICardListAvoidPrize    : list of cards to avoid being placed as prize;
-; wAICardListArenaPriority : priority list of Arena card at duel start;
-; wAICardListBenchPriority : priority list of Bench cards at duel start;
-; wAICardListPlayFromHandPriority : priority list of cards to play from hand;
-; wAICardListRetreatBonus  : scores given to certain cards for retreat;
-; wAICardListEnergyBonus   : max number of energy cards and card scores.
+; wAICardListAvoidPrize    : list of cards to avoid being placed as Prizes
+; wAICardListArenaPriority : priority list for selecting an initial Active Pokémon
+; wAICardListBenchPriority : priority list for selecting initial Benched Pokémon
+; wAICardListPlayFromHandPriority : priority list of cards to play from hand
+; wAICardListRetreatBonus  : scores given to certain cards for retreating
+; wAICardListEnergyBonus   : max number of Energy cards and card scores
 
 INCLUDE "engine/duel/ai/decks/general.asm"
 INCLUDE "engine/duel/ai/decks/sams_practice.asm"

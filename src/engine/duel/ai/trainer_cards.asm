@@ -2,6 +2,11 @@ INCLUDE "data/duel/ai_trainer_card_logic.asm"
 
 _AIProcessHandTrainerCards:
 	ld [wAITrainerCardPhase], a
+	
+; exit if an effect such as Headache is preventing Trainer cards from being played.
+	call CheckCantUseTrainerDueToHeadache
+	ret c
+
 ; create hand list in wDuelTempList and wTempHandCardList.
 	call CreateHandCardList
 	ld hl, wDuelTempList
@@ -16,104 +21,85 @@ _AIProcessHandTrainerCards:
 	ret z
 
 	push hl
-	ld a, [wAITrainerCardPhase]
-	ld d, a
 	ld hl, AITrainerCardLogic
 .loop_data
+	ld a, [wAITrainerCardPhase]
+	ld d, a
 	xor a
 	ld [wCurrentAIFlags], a
 	ld a, [hli]
 	cp $ff
-	jp z, .pop_hl
+	jr z, .next_hand_card
 
 ; compare input to first byte in data and continue if equal.
 	cp d
-	jp nz, .inc_hl_by_5
+	jr nz, .inc_hl_by_5
 
 	ld a, [hli]
 	ld [wAITrainerLogicCard], a
 	ld a, [wAITrainerCardToPlay]
 	call _GetCardIDFromDeckIndex
+	ld b, a
 	cp SWITCH
 	jr nz, .skip_switch_check
 
-	ld b, a
 	ld a, [wPreviousAIFlags]
 	and AI_FLAG_USED_SWITCH
-	jr nz, .inc_hl_by_4
-	ld a, b
+	jr nz, .next_hand_card
 
 .skip_switch_check
 ; compare hand card to second byte in data and continue if equal.
-	ld b, a
 	ld a, [wAITrainerLogicCard]
 	cp b
 	jr nz, .inc_hl_by_4
 
 ; found Trainer card
 	push hl
-	push de
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
-
-; if Headache effects prevent playing card
-; move on to the next item in list.
-	call CheckCantUseTrainerDueToHeadache
-	jr c, .next_in_data
-
 	call LoadNonPokemonCardEffectCommands
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
-	jr c, .next_in_data
-
-; AI can randomly choose not to play card.
-	call AIChooseRandomlyNotToDoAction
-	jr c, .next_in_data
-
-; call routine to decide whether to play Trainer card
-	pop de
 	pop hl
+	jr c, .next_hand_card
+
+; AI can randomly choose not to play any card.
+	call AIChooseRandomlyNotToDoAction
+	jr c, .next_hand_card
+
+; call routine to decide whether to play the Trainer card
 	push hl
 	call CallIndirect
 	pop hl
-	jr nc, .inc_hl_by_4
+	jr nc, .next_hand_card
 
-; routine returned carry, which means
-; this card should be played.
+; routine returned carry, which means this card should be played.
 	inc hl
 	inc hl
 	ld [wAITrainerCardParameter], a
 
 ; show Play Trainer Card screen
-	push de
 	push hl
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
 	ld a, OPPACTION_PLAY_TRAINER
 	bank1call AIMakeDecision
 	pop hl
-	pop de
-	jr c, .inc_hl_by_2
+	jr c, .inc_hl_by_2 ; is this actually possible?
 
 ; execute the effects of the Trainer card
-	push hl
 	call CallIndirect
-	pop hl
-
-	inc hl
-	inc hl
-	ld a, [wPreviousAIFlags]
-	ld b, a
+	ld hl, wPreviousAIFlags
 	ld a, [wCurrentAIFlags]
-	or b
-	ld [wPreviousAIFlags], a
-	pop hl
+	or [hl]
+	ld [hl], a
 	and AI_FLAG_MODIFIED_HAND
-	jp z, .loop_hand
+.next_hand_card
+	pop hl
+	jr z, .loop_hand
 
-; the hand was modified during the Trainer effect
-; so it needs to be re-listed again and
-; looped from the top.
+; the hand was modified during the Trainer effect,
+; so it needs to be re-listed again and looped from the top.
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wTempHandCardList
@@ -134,19 +120,6 @@ _AIProcessHandTrainerCards:
 	inc hl
 	inc hl
 	jp .loop_data
-
-.next_in_data
-	pop de
-	pop hl
-	inc hl
-	inc hl
-	inc hl
-	inc hl
-	jp .loop_data
-
-.pop_hl
-	pop hl
-	jp .loop_hand
 
 
 ; plays a Trainer card that doesn't require any input variables
@@ -194,38 +167,47 @@ AIPlay_Potion:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
 	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a
+	ldh [hTemp_ffa0], a ; target Pokémon's play area location offset
 	ld e, a
 	call GetCardDamageAndMaxHP
 	cp 20
 	jr c, .play_card
 	ld a, 20
 .play_card
-	ldh [hTempPlayAreaLocation_ffa1], a
+	ldh [hTempPlayAreaLocation_ffa1], a ; amount of damage to heal
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
 
 
-; if AI doesn't decide to retreat this card,
-; check if defending Pokémon can KO active card
-; next turn after using Potion.
-; if it cannot, return carry.
-; also take into account whether attack is high recoil.
+; if there are no plans to retreat the Active Pokémon and the AI doesn't intend
+; to use a high recoil attack, then it will use Potion on the Active Pokémon,
+; but only if doing so will prevent that Pokémon from being KO'd in the following turn.
+; output:
+;	a = PLAY_AREA_ARENA:  if the AI decided to play Potion
+;	carry = set:  if the AI decided to play Potion
 AIDecide_Potion1:
+; don't play Potion if the AI is going to retreat the Active Pokémon.
 	farcall AIDecideWhetherToRetreat
 	ccf
 	ret nc
+
+; don't play Potion if the AI is going to select a high recoil attack.
 	call AICheckIfAttackIsHighRecoil
 	ccf
 	ret nc
-	xor a ; active card
+
+; don't play Potion if the Defending Pokémon is unable to KO the AI's Active Pokémon.
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
 	ret nc
 
+; determine whether the Defending Pokémon can still KO this Pokémon,
+; next turn, even after having used a Potion on it, and if it can't,
+; then decide to play Potion and target the Active Pokémon.
 .check_if_can_prevent_ko
-	ld d, a
+	ld d, a ; largest amount of damage that the Defending Pokémon might do
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
 	ld h, a
@@ -233,37 +215,41 @@ AIDecide_Potion1:
 	call GetCardDamageAndMaxHP
 	cp 20 + 1 ; if damage <= 20
 	jr c, .calculate_hp
-	ld a, 20 ; amount of Potion HP healing
-
-; if damage done by defending Pokémon next turn will still
-; KO this card after healing, return no carry.
+	; Active Pokémon has more than 20 damage
+	ld a, 20 ; maximum amount of HP healed by Potion
 .calculate_hp
-	ld l, a
-	ld a, h
+	ld l, a ; amount of damage to heal
+	ld a, h ; current HP
 	add l
 	sub d
-	ret z ; nc
+	ret z ; return no carry if the damage will reduce the HP to exactly 0
+
+; play Potion on the Active Pokémon if it will prevent the KO.
 	ld a, e ; PLAY_AREA_ARENA
 	ccf
 	ret
 
 
-; finds a card in Play Area to use Potion on.
+; AI still prioritizes the Active Pokémon, especially if it can prevent a KO,
+; but it's now willing to consider Benched Pokémon as possible targets.
 ; output:
-;	a = card to use Potion on;
-;	carry set if Potion should be used.
+;	a = target Pokémon's play area location offset (PLAY_AREA_* constant)
+;	carry = set:  if the AI decided to play Potion
 AIDecide_Potion2:
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
 	jr nc, .start_from_active
-; can KO
+
+; determine whether the Defending Pokémon can still KO this Pokémon,
+; next turn, even after having used a Potion on it, and if it can't,
+; then decide to play Potion and target the Active Pokémon.
 	call AIDecide_Potion1.check_if_can_prevent_ko
 	ret c
 
-; using Potion on active card does not prevent a KO.
-; if player is at last prize, start loop with active card.
-; otherwise start loop at first bench Pokémon.
+; using Potion on the Active Pokémon does not prevent a KO.
+; if the Player is on their last Prize, start loop with the Active Pokémon.
+; otherwise, start loop at the first Benched Pokémon.
 .count_prizes
 	rst SwapTurn
 	call CountPrizes
@@ -273,8 +259,8 @@ AIDecide_Potion2:
 	ld e, PLAY_AREA_BENCH_1
 	jr .loop
 
-; find Play Area Pokémon with more than 10 damage.
-; skip Pokémon if it has a BOOST_IF_TAKEN_DAMAGE attack.
+; find a play area Pokémon with at least 20 damage.
+; skip a Pokémon if it has a BOOST_IF_TAKEN_DAMAGE attack.
 .start_from_active
 	ld e, PLAY_AREA_ARENA
 .loop
@@ -282,50 +268,55 @@ AIDecide_Potion2:
 	add e
 	get_turn_duelist_var
 	cp $ff
-	ret z
+	ret z ; return no carry if all of the Pokémon in play have been checked
 	push de
 	call .check_boost_if_taken_damage
 	pop de
-	jr c, .has_boost_damage
+	jr c, .next
 	call GetCardDamageAndMaxHP
 	cp 20 ; if damage >= 20
 	jr nc, .found
-.has_boost_damage
+.next
 	inc e
 	jr .loop
 
-; a card was found, now to check if it's active or benched.
+; a Pokémon was selected, now to check if it's Active or Benched.
 .found
 	ld a, e
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	jr z, .active_card
 
-; bench card
+; if the target is a Benched Pokémon, then only play Potion 70% of the time.
+; the random check is skipped if the Player is on their last Prize card.
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
 	dec a
 	jr z, .skip_random
+	; randomly decide to not play Potion 30% of the time.
 	ld a, 10
 	call Random
 	cp 3
 	ccf
 	ret nc
-; 7/10 chance of returning carry.
 .skip_random
 	ld a, e
 	scf
 	ret
 
-; return carry for active card if not High Recoil.
+; only decide to use Potion on the Active Pokémon
+; if the AI does not intend to use a High Recoil recoil.
 .active_card
 	call AICheckIfAttackIsHighRecoil
 	ld a, PLAY_AREA_ARENA
 	ccf
 	ret
 
-; return carry if either of the attacks are usable
-; and have the BOOST_IF_TAKEN_DAMAGE effect.
+
+; input:
+;	[hTempPlayAreaLocation_ff9d] = Pokémon's play area location offset (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if either of the attacks has the BOOST_IF_TAKEN_DAMAGE effect and can be used
 .check_boost_if_taken_damage
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	call .check_selected_attack_for_boost_if_taken_damage
@@ -333,8 +324,11 @@ AIDecide_Potion2:
 	ld a, SECOND_ATTACK
 ;	fallthrough
 
-; return carry if the attack in a is usable
-; and has the BOOST_IF_TAKEN_DAMAGE effect.
+; input:
+;	a = which attack to check (0 = first attack, 1 = second attack)
+;	[hTempPlayAreaLocation_ff9d] = Pokémon's play area location offset (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the given attack has the BOOST_IF_TAKEN_DAMAGE effect and can be used
 .check_selected_attack_for_boost_if_taken_damage
 	ld [wSelectedAttack], a
 	farcall CheckIfSelectedAttackIsUnusable
@@ -361,73 +355,89 @@ AIPlay_SuperPotion:
 	jr c, .play_card
 	ld a, 40
 .play_card
-	ldh [hTempRetreatCostCards], a
+	ldh [hPlayAreaEffectTarget], a
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
 
 
-; if AI doesn't decide to retreat this card and card has
-; any energy cards attached, check if defending Pokémon can KO
-; active card next turn after using Super Potion.
-; if it cannot, return carry.
-; also take into account whether attack is high recoil.
+; if there are no plans to retreat the Active Pokémon and the AI doesn't intend
+; to use a high recoil attack, then it will use Super Potion on the Active Pokémon,
+; but only if doing so will prevent that Pokémon from being KO'd in the following turn.
+; output:
+;	a = PLAY_AREA_ARENA:  if the AI decided to play Super Potion
+;	carry = set:  if the AI decided to play Super Potion
 AIDecide_SuperPotion1:
+; don't play Super Potion if the AI is going to retreat the Active Pokémon.
 	farcall AIDecideWhetherToRetreat
 	ccf
 	ret nc
+
+; don't play Super Potion if the AI is going to select a high recoil attack.
 	call AICheckIfAttackIsHighRecoil
 	ccf
 	ret nc
-	xor a
+
+; don't play Super Potion unless the Active Pokémon has an attached Energy card to discard.
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	ret z
+
+; don't play Super Potion if the Defending Pokémon is unable to KO the AI's Active Pokémon.
 	farcall CheckIfDefendingPokemonCanKnockOut
 	ret nc
 
+; determine whether the Defending Pokémon can still KO this Pokémon,
+; next turn, even after having used a Super Potion on it, and if it can't,
+; then decide to play Super Potion and target the Active Pokémon.
 .check_if_can_prevent_ko
-	ld d, a
+	ld d, a ; largest amount of damage that the Defending Pokémon might do
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
 	ld h, a
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
-	cp 40 + 1 ; if damage < 40
+	cp 40 + 1 ; if damage <= 40
 	jr c, .calculate_hp
-	ld a, 40
+	; Active Pokémon has more than 40 damage
+	ld a, 40 ; maximum amount of HP healed by Super Potion
 .calculate_hp
-	ld l, a
-	ld a, h
+	ld l, a ; amount of damage to heal
+	ld a, h ; current HP
 	add l
 	sub d
-	ret z ; nc
+	ret z ; return no carry if the damage will reduce the HP to exactly 0
 
 ; play Super Potion on the Active Pokémon if it will prevent the KO.
-	ld a, e
+	ld a, e ; PLAY_AREA_ARENA
 	ccf
 	ret
 
 
-; finds a card in Play Area to use Super Potion on.
+; AI still prioritizes the Active Pokémon, especially if it can prevent a KO,
+; but it's now willing to consider Benched Pokémon as possible targets.
 ; output:
-;	a = card to use Super Potion on;
-;	carry set if Super Potion should be used.
+;	a = target Pokémon's play area location offset (PLAY_AREA_* constant)
+;	carry = set:  if the AI decided to play Super Potion
 AIDecide_SuperPotion2:
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
 	jr nc, .start_from_active
-; can KO
+
+; determine whether the Defending Pokémon can still KO this Pokémon,
+; next turn, even after having used a Super Potion on it, and if it can't,
+; then decide to play Super Potion and target the Active Pokémon.
 	call AIDecide_SuperPotion1.check_if_can_prevent_ko
 	ret c
 
-; using Super Potion on active card does not prevent a KO.
-; if player is at last prize, start loop with active card.
-; otherwise start loop at first bench Pokémon.
+; using Super Potion on the Active Pokémon does not prevent a KO.
+; if the Player is on their last Prize, start loop with the Active Pokémon.
+; otherwise, start loop at the first Benched Pokémon.
 .count_prizes
 	rst SwapTurn
 	call CountPrizes
@@ -437,10 +447,10 @@ AIDecide_SuperPotion2:
 	ld e, PLAY_AREA_BENCH_1
 	jr .loop
 
-; find Play Area Pokémon with more than 30 damage.
-; skip Pokémon if it doesn't have any energy attached,
-; has a BOOST_IF_TAKEN_DAMAGE attack,
-; or if discarding makes any attack of its attacks unusable.
+; find a play area Pokémon with at least 40 damage.
+; skip a Pokémon if it doesn't have any attached Energy,
+; or if it has a valid BOOST_IF_TAKEN_DAMAGE attack,
+; or if discarding would make any of its attacks unusable.
 .start_from_active
 	ld e, PLAY_AREA_ARENA
 .loop
@@ -448,7 +458,7 @@ AIDecide_SuperPotion2:
 	add e
 	get_turn_duelist_var
 	cp $ff
-	ret z
+	ret z ; return no carry if all of the Pokémon in the play area have been checked
 	ld d, a
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
@@ -469,30 +479,32 @@ AIDecide_SuperPotion2:
 	inc e
 	jr .loop
 
-; a card was found, now to check if it's active or benched.
+; a Pokémon was selected, now to check if it's Active or Benched.
 .found
 	ld a, e
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	jr z, .active_card
 
-; bench card
+; if the target is a Benched Pokémon, then only play Super Potion 70% of the time.
+; the random check is skipped if the Player is on their last Prize card.
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
 	dec a
 	jr z, .skip_random
+	; randomly decide to not play Super Potion 30% of the time.
 	ld a, 10
 	call Random
 	cp 3
 	ccf
 	ret nc
-; 7/10 chance of returning carry.
 .skip_random
 	ld a, e
 	scf
 	ret
 
-; return carry for active card if not Hgh Recoil.
+; only decide to use Super Potion on the Active Pokémon
+; if the AI does not intend to use a High Recoil recoil.
 .active_card
 	call AICheckIfAttackIsHighRecoil
 	ld a, PLAY_AREA_ARENA
@@ -502,19 +514,22 @@ AIDecide_SuperPotion2:
 
 
 
+; AI always attaches a Defender card to the Active Pokémon.
 AIPlay_Defender:
 	ld a, [wAITrainerCardToPlay]
 	ldh [hTempCardIndex_ff9f], a
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTemp_ffa0], a
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
 
 
-; returns carry if using Defender can prevent a KO
-; by the defending Pokémon.
-; this takes into account both attacks and whether they're useable.
+; AI will only play Defender if it can be used to prevent the
+; Defending Pokémon from KOing its Active Pokémon in the following turn.
+; this takes into account both of its attacks and whether they're useable.
+; output:
+;	carry = set:  if the AI decided to play Defender
 AIDecide_Defender1:
 ; don't play Defender if the AI's Active Pokémon could KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
@@ -538,9 +553,14 @@ AIDecide_Defender1:
 	ret
 
 
-; return carry if using Defender prevents Pokémon
-; from being knocked out by an attack with recoil.
+; AI will only play Defender if it would prevent its Active Pokémon
+; from being Knocked Out after using an attack with recoil damage.
+; input:
+;	[wLoadedAttack] = attack data for the Active Pokémon's chosen attack (atk_data_struct)
+; output:
+;	carry = set:  if the AI decided to play Defender
 AIDecide_Defender2:
+; don't play Defender unless the selected attack has a recoil effect.
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
 	call CheckLoadedAttackFlag
 	jr c, .recoil
@@ -553,7 +573,7 @@ AIDecide_Defender2:
 	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wSelectedAttack]
-	or a
+	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
 	jr nz, .second_attack
 ; first attack
 	ld a, [wLoadedCard2Atk1EffectParam]
@@ -561,19 +581,19 @@ AIDecide_Defender2:
 .second_attack
 	ld a, [wLoadedCard2Atk2EffectParam]
 
-; double recoil damage if card is weak to its own color.
+; double the recoil damage if the Active Pokémon has a Weakness to its own type/color.
 .check_weak
-	ld d, a
+	ld d, a ; store the amount of recoil damage
 	call GetArenaCardColor
 	call TranslateColorToWR
 	ld b, a
 	call GetArenaCardWeakness
 	and b
 	jr z, .check_resist
-	sla d
+	sla d ; double the amount of recoil damage
 
-; subtract 30 from recoil damage if card resists its own color.
-; if this yields a negative number, return no carry.
+; reduce the recoil damage by 30 if the Active Pokémon has a Resistance to its own type/color.
+; don't play Defender if this causes an underflow (i.e. the recoil damage is now a negative number).
 .check_resist
 	call GetArenaCardColor
 	call TranslateColorToWR
@@ -587,9 +607,9 @@ AIDecide_Defender2:
 	ret nc
 	ld d, a
 
-; subtract damage prevented by Defender.
-; if damage still knocks out card, return no carry.
-; if damage does not knock out, return carry.
+; don't play Defender if the current recoil damage is 0 or
+; if the Active Pokémon will still be KO'd after playing the Defender,
+; but if Defender prevents a KO, then return carry.
 .subtract
 	ld a, d
 	or a
@@ -612,27 +632,24 @@ AIPlay_Pluspower:
 	ret
 
 
-; returns carry if using a Pluspower can KO defending Pokémon
-; if active card cannot KO without the boost.
-; outputs in a the attack to use.
+; AI will only decide to play Pluspower if the additional damage
+; will allow its Active Pokémon to KO the Defending Pokémon.
+; output:
+;	a = attack index for the attack that should be used with PlusPower (0 = first attack, 1 = second attack)
+;	carry = set:  if the AI decided to play PlusPower
 AIDecide_Pluspower1:
-; continue if no attack can knock out.
-; if there's an attack that can, only continue
-; if it's unusable and there's no card in hand
-; to fulfill its energy cost.
+; don't play PlusPower if the AI's Active Pokémon can already KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
 
-; cannot use an attack that knocks out.
-; get active Pokémon's info.
+; get Active Pokémon's info.
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	ld [wTempTurnDuelistCardID], a
 
-; get defending Pokémon's info and check
-; its No Damage or Effect substatus.
-; if substatus is active, return.
+; get the Defending Pokémon's info and check its No Damage or Effect substatus.
+; don't play PlusPower if the Defending Pokémon is temporarily protected from all damage.
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -643,9 +660,9 @@ AIDecide_Pluspower1:
 	ccf
 	ret nc
 
-; check both attacks and decide which one
-; can KO with Pluspower boost.
-; if neither can KO, return no carry.
+; check both of the Active Pokémon's attacks and decide which
+; would be able to KO the Defending Pokémon after using PlusPower.
+; if neither can, then return no carry.
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	call .check_ko_with_pluspower
 	jr c, .kos_with_pluspower
@@ -655,18 +672,26 @@ AIDecide_Pluspower1:
 
 ; selected attack can KO with Pluspower.
 .kos_with_pluspower
-	call AIDecide_Pluspower2.check_mr_mime
+	call AIDecide_Pluspower2.check_if_can_damage_mr_mime_after_pluspower
 	ret nc
 	ld a, [wSelectedAttack]
 	ret ; carry set
 
-; return carry if attack is useable and KOs
-; defending Pokémon with Pluspower boost.
+
+; input:
+;	a = which attack to check (0 = first attack, 1 = second attack)
+;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Attacking Pokémon
+;	                               (it should be PLAY_AREA_ARENA, or 0)
+; output:
+;	carry = set: if the given attack can be used and it is only able to KO
+;	             the Defending Pokémon after applying the PlusPower bonus.
 .check_ko_with_pluspower
 	ld [wSelectedAttack], a
 	farcall CheckIfSelectedAttackIsUnusable
 	ccf
-	ret nc
+	ret nc ; return no carry if the given attack can't be used
+
+; return no carry if the attack can KO the Defending Pokémon without using PlusPower.
 	ld a, [wSelectedAttack]
 	farcall EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
@@ -674,31 +699,35 @@ AIDecide_Pluspower1:
 	ld b, a
 	ld hl, wDamage
 	sub [hl]
-	ret z ; nc
+	ret z ; return no carry if the damage reduces the Pokémon's HP to exactly 0
 	ccf
-	ret nc
+	ret nc ; return no carry if the damage exceeds the Pokémon's HP
+
+; check if the attack can KO the Defending Pokémon after applying the PlusPower bonus.
 	ld a, [hl]
 	or a
 	ret z ; return no carry if the attack won't do any damage before using PlusPower
-	add 10 + 1 ; add Pluspower boost plus 1 (so carry will be set if final HP = 0)
+	add 10 + 1 ; add PlusPower boost plus 1 (so carry will be set if final HP = 0)
 	ld c, a
 	ld a, b
 	sub c
 	ret
 
 
-; returns carry 7/10 of the time
-; if selected attack is useable, can't KO without Pluspower boost
-; can damage Mr. Mime even with Pluspower boost
-; and has a minimum damage > 0.
-; outputs in a the attack to use.
+; AI will randomly decide to play PlusPower 70% of the time as long as
+; it's Active Pokémon is going to damage (but not KO) the Defending Pokémon.
+; input:
+;	[wSelectedAttack] = attack index for the attack being used (0 = first attack, 1 = second attack)
+; output:
+;	carry = set:  if the AI decided to play PlusPower
 AIDecide_Pluspower2:
 ; don't play PlusPower if the selected attack isn't usable.
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfSelectedAttackIsUnusable
 	ccf
 	ret nc
+
 ; don't play PlusPower if the selected attack can already KO the Defending Pokémon.
 	ld a, [wSelectedAttack]
 	farcall EstimateDamage_VersusDefendingCard
@@ -706,25 +735,32 @@ AIDecide_Pluspower2:
 	call GetNonTurnDuelistVariable
 	ld hl, wDamage
 	sub [hl]
-	ret z ; nc
+	ret z ; return no carry if the damage reduces the Pokémon's HP to exactly 0
 	ccf
-	ret nc
+	ret nc ; return no carry if the damage exceeds the Pokémon's HP
+
 ; don't play PlusPower if the selected attack might not do any damage.
 	ld a, [wAIMinDamage]
 	or a
 	ret z ; nc
-; randomly decide to not play PlusPower 30% of the time.
+
+; randomly decide to not play PlusPower 70% of the time.
 	ld a, 10
 	call Random
 	cp 3
 	ret nc
 
-; returns carry if Pluspower boost does
-; not exceed 30 damage when facing Mr. Mime.
-.check_mr_mime
+; play PlusPower as long as it doesn't trigger Mr. Mime's Invisible Wall.
+; preserve bc and de
+; input:
+;	[wDamage] = damage that would be dealt to the Defending Pokémon
+; output:
+;	carry = set:  if the damage is still less than 30 after using PlusPower
+;	              or if the Defending Pokémon isn't a Mr. Mime
+.check_if_can_damage_mr_mime_after_pluspower
 	ld a, [wDamage]
-	add 10 ; add Pluspower boost
-	cp 30 ; no danger in preventing damage
+	add 10 ; add PlusPower boost
+	cp 30 ; minimum damage prevented by Invisible Wall
 	ret c
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
@@ -733,7 +769,7 @@ AIDecide_Pluspower2:
 	rst SwapTurn
 	cp MR_MIME
 	ret z
-; damage is >= 30 but not Mr. Mime
+; damage is >= 30 but Defending Pokémon isn't Mr. Mime
 	scf
 	ret
 
@@ -755,9 +791,15 @@ AIPlay_Switch:
 	ret
 
 
-; returns carry if the active card has less energy cards
-; than the retreat cost and if AI can't play an energy
-; card from the hand to fulfill the cost
+; this function is only called after the AI has already decided to retreat.
+; AI will play Switch if its Active Pokémon can't retreat due to an effect/status
+; or if the Active Pokémon's Retreat Cost is 3 or more
+; or if its Active Pokémon won't have enough Energy to pay its Retreat Cost.
+; input:
+;	[wAIPlayAreaCardToSwitch] = play area location offset of the Benched Pokémon to switch with the Active
+; output:
+;	a = [wAIPlayAreaCardToSwitch]
+;	carry = set:  if the AI decided to play Switch
 AIDecide_Switch:
 ; play Switch if the Active Pokémon is unable to retreat due to an effect.
 	ld a, DUELVARS_ARENA_CARD_STATUS
@@ -770,40 +812,38 @@ AIDecide_Switch:
 	call CheckCantRetreatDueToAttackEffect
 	jr c, .switch
 
-; check if AI can already play an energy card from hand to retreat
+; check whether the AI can play an Energy card from its hand to retreat.
 	ld a, [wAIPlayEnergyCardForRetreat]
 	or a
 	jr z, .check_cost_amount
 
-; can't play energy card from hand to retreat
-; compare number of energy cards attached to retreat cost
+; AI can play an Energy card from its hand to help pay the Active Pokémon's Retreat Cost.
+; compare the amount of attached Energy with the Active Pokémon's Retreat Cost, and
+; play Switch if the Retreat Cost is at least 2 more than the amount of attached Energy.
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-	ld b, a
+	ld b, a ; wTotalAttachedEnergies
 	call GetPlayAreaCardRetreatCost
 	sub b
-	; jump if cards attached > retreat cost
-	jr c, .check_cost_amount
+	jr c, .check_cost_amount ; skip ahead if amount of attached Energy > Retreat Cost
 	cp 2
-	; jump if retreat cost is 2 more energy cards
-	; than the number of cards attached
 	jr nc, .switch
 
 .check_cost_amount
+; play Switch if the Active Pokémon's Retreat Cost is 3 or more.
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetPlayAreaCardRetreatCost
 	cp 3
-	; jump if retreat cost >= 3
 	jr nc, .switch
 
+; play Switch if the Active Pokémon doesn't have enough Energy to pay its Retreat Cost.
 	ld b, a
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
 	cp b
-	; jump if energy cards attached < retreat cost
 	ret nc
 
 .switch
@@ -827,27 +867,42 @@ AIPlay_GustOfWind:
 	ret
 
 
+; AI won't play Gust of Wind if another copy was already played this turn,
+; or if its Active Pokémon can only use a residual attack, or if it might
+; KO the Defending Pokémon this turn, or if its Active Pokémon has Psywave/Psychic.
+; if none of these are true, then it tries to target a Benched Pokémon that can be KO'd,
+; then a Benched Pokémon that has a relevant Weakness, then a Benched Pokémon that
+; has no attached Energy, and finally whichever Benched Pokémon has the least amount of HP.
+; Benched Pokémon that the AI's Active Pokémon wouldn't be able to damage are ignored,
+; and the logic stops after the Weakness checks if the AI can damage the Defending Pokémon.
+; output:
+;	a = play area location offset of the chosen Pokemon on the Player's Bench
+;	carry = set:  if the AI decided to play Gust of Wind
 AIDecide_GustOfWind:
+; can't play Gust of Wind if there are no Pokémon on the Player's Bench.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	dec a
 	or a
-	ret z ; no bench cards
+	ret z ; return no carry if the Player doesn't have any Benched Pokémon
 
-; if used Gust Of Wind already,
-; do not use it again.
+; don't play Gust of Wind if it was already played previously in the turn.
 	ld a, [wPreviousAIFlags]
 	and AI_FLAG_USED_GUST_OF_WIND
-	ret nz
+	ret nz ; nc
 
+; don't play Gust of Wind unless the AI's Active Pokémon can use a
+; non-residual attack. (i.e. an attack that affects the Defending Pokémon)
 	farcall CheckIfActivePokemonCanUseAnyNonResidualAttack
-	ret nc ; no non-residual attack can be used
+	ret nc
 
 ; don't play Gust of Wind if the AI's Active Pokémon could KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
 
-	; skip if current active card is MEW_LV23 or MEWTWO_LV53
+; don't play Gust of Wind if the AI's Active Pokémon is MEW_LV23 or MEWTWO_LV53.
+; this is likely because the damage boost from Psywave/Psychic
+; isn't applied properly in the upcoming damage calculations.
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
@@ -856,15 +911,18 @@ AIDecide_GustOfWind:
 	cp MEWTWO_LV53
 	ret z ; return no carry if MewtwoLv53 is the AI's Active Pokémon
 
-	call .FindBenchCardToKnockOut
+; if there's any Pokémon on the Player's Bench that can be KO'd by the
+; AI's Active Pokémon, then play Gust of Wind targeting that Pokémon.
+	call FindBenchCardToKnockOut
 	ret c
 
 	xor a ; PLAY_AREA_ARENA
 	farcall CheckIfCanDamageDefendingPokemon
-	jr nc, .check_bench_energy
+	jr nc, .check_bench_energy ; skip ahead if Active can't damage Defending
 
-	; skip if current arena card's color is
-	; the defending card's weakness
+; decide to play Gust of Wind if there's a Pokémon on the Player's Bench that
+; has Weakness to the AI's Active Pokémon and that the Active Pokémon can damage,
+; but only if the Defending Pokémon doesn't already meet those requirements.
 	call GetArenaCardColor
 	call TranslateColorToWR
 	ld b, a
@@ -872,23 +930,29 @@ AIDecide_GustOfWind:
 	call GetArenaCardWeakness
 	rst SwapTurn
 	and b
-	jr z, .FindBenchCardWithWeakness
-	ret ; nc
+	jr z, FindBenchCardWithWeakness
+	; Defending Pokémon has a relevant Weakness and can be damaged, so return no carry
+	ret
 
-; being here means AI's arena card cannot damage player's arena card
+; being here means the AI's Active Pokémon cannot damage the Player's Active Pokémon.
 .check_bench_energy
-	; return carry if there's a bench card with weakness
+; check if there is a Pokémon on the Player's Bench that has Weakness
+; to the AI's Active Pokémon and that the Active Pokémon can damage.
+; if there is, then play Gust of Wind targeting that Pokémon.
 	call GetArenaCardColor
 	call TranslateColorToWR
 	ld b, a
-	call .FindBenchCardWithWeakness
+	call FindBenchCardWithWeakness
 	ret c
 
+; next, check if there is a Pokémon on the Player's Bench that
+; has no attached Energy cards and that the Active Pokémon can damage.
+; if there is, then play Gust of Wind targeting that Pokémon.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	ld d, a
 	ld e, PLAY_AREA_ARENA
-; loop through bench and check attached energy cards
+; loop through the Bench and check attached Energy cards
 .loop_1
 	inc e
 	dec d
@@ -898,24 +962,26 @@ AIDecide_GustOfWind:
 	rst SwapTurn
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
-	jr nz, .loop_1 ; skip if has energy attached
-	call .CheckIfCanDamageBenchedCard
+	jr nz, .loop_1 ; skip if it has attached Energy
+	call CheckIfCanDamageBenchedCard
 	jr nc, .loop_1
 	ld a, e
 	scf
 	ret
 
+; finally, check if the AI's Active Pokémon can damage any of the Player's Benched Pokémon.
+; if any are found, play Gust of Wind targeting whichever of those Pokémon has the least HP.
 .check_bench_hp
 	ld a, $ff
 	ld [wce06], a
 	xor a
 	ld [wce08], a
-	ld e, a
+	ld e, a ; PLAY_AREA_ARENA
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	ld d, a
 
-; find bench card with least amount of available HP
+; find the Benched Pokémon with the least amount of available HP
 .loop_2
 	inc e
 	dec d
@@ -925,12 +991,12 @@ AIDecide_GustOfWind:
 	ld l, a
 	ld b, [hl]
 	ld a, [wce06]
-	inc b
+	inc b ; add 1 so carry will be set if this HP value is equal to the stored one
 	cp b
 	jr c, .loop_2
-	call .CheckIfCanDamageBenchedCard
+	call CheckIfCanDamageBenchedCard
 	jr nc, .loop_2
-	dec b
+	dec b ; subtract the 1 that was added earlier
 	ld a, b
 	ld [wce06], a
 	ld a, e
@@ -941,20 +1007,25 @@ AIDecide_GustOfWind:
 	ld a, [wce08]
 	or a
 	ret z ; return no carry if no suitable Pokémon was found
-; a card was found
-
-.set_carry
+	; a Pokémon was found, so return carry with its play area location in a
 	scf
 	ret
 
-; returns carry if any of the player's
-; benched cards is weak to color in b
-; and has a way to damage it
-.FindBenchCardWithWeakness
+
+; preserves bc and d
+; input:
+;	b = Weakness to look for (WR_* constant)
+; output:
+;	a = play area location offset of a Pokémon on the Player's Bench that has
+;	    the given Weakness and can be damaged by the AI's Active Pokémon, if any
+;	carry = set:  if any of the Player's Benched Pokémon have the given Weakness
+;	              and if the AI's Active Pokémon could damage that Pokémon
+;	              after using Gust of Wind to switch it with Defending Pokémon
+FindBenchCardWithWeakness:
 	ld a, DUELVARS_BENCH
 	call GetNonTurnDuelistVariable
 	ld e, PLAY_AREA_ARENA
-.loop_3
+.loop_bench
 	inc e
 	ld a, [hli]
 	cp $ff
@@ -964,25 +1035,29 @@ AIDecide_GustOfWind:
 	rst SwapTurn
 	ld a, [wLoadedCard1Weakness]
 	and b
-	jr z, .loop_3
+	jr z, .loop_bench
 
 .check_can_damage
-	call .CheckIfCanDamageBenchedCard
-	jr nc, .loop_3
+	call CheckIfCanDamageBenchedCard
+	jr nc, .loop_bench
 	ld a, e
-	ret ; c
+	ret ; carry set
 
-; returns carry if there is a player's bench card that
-; the opponent's current active card can KO
-.FindBenchCardToKnockOut
+
+; preserves d
+; output:
+;	a = play area location offset of a Pokémon on the Player's Bench
+;	    that the AI's Active Pokémon can KO, if any (PLAY_AREA_* constant)
+;	carry = set:  if the AI's Active Pokémon could KO one of the Player's Benched Pokémon
+FindBenchCardToKnockOut:
 	ld a, DUELVARS_BENCH
 	call GetNonTurnDuelistVariable
 	ld e, PLAY_AREA_ARENA
 
-.loop_4
+.loop_bench
 	ld a, [hli]
 	cp $ff
-	ret z
+	ret z ; return no carry if there are no more Benched Pokémon to check
 	inc e
 	push de
 	push hl
@@ -1064,22 +1139,30 @@ AIDecide_GustOfWind:
 	ld [hl], b
 	pop hl
 	pop de
-	jr c, .loop_4
+	jr c, .loop_bench
 
 ; found a Benched Pokémon that can be KO'd, so return carry with its location in a.
 	ld a, e
 	scf
 	ret
 
-; returns carry if opponent's arena card can damage
-; this benched card if it were switched with
-; the player's arena card
-.CheckIfCanDamageBenchedCard
+
+; preserves all registers except af
+; input:
+;	e = play area location offset of a Pokémon on the Player's Bench (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the AI's Active Pokémon could damage the given Pokémon
+;	              after using Gust of Wind to switch it with Defending Pokémon
+CheckIfCanDamageBenchedCard:
 	push bc
 	push de
 	push hl
 
-	; overwrite arena card data
+; overwrite a variety of Defending Pokémon variables.
+; this includes its deck index, HP, attached Defenders,
+; Status, Substatus 1/2, and changed Weakness/Resistance.
+; could also consider including card stage and changed type.
+	; copy the the given Pokémon's deck index
 	ld a, e
 	add DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
@@ -1088,7 +1171,7 @@ AIDecide_GustOfWind:
 	ld b, [hl]
 	ld [hl], d
 
-	; overwrite arena card HP
+	; copy the given Pokémon's HP
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
 	ld l, a
@@ -1098,7 +1181,7 @@ AIDecide_GustOfWind:
 	ld [hl], d
 	push bc ; backup Defending Pokémon's card deck index and HP
 
-	; overwrite arena card Defenders
+	; copy the given Pokémon's attached Defenders
 	ld a, e
 	add DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
 	ld l, a
@@ -1107,7 +1190,8 @@ AIDecide_GustOfWind:
 	ld b, [hl]
 	ld [hl], d
 
-	; clear arena card status, substatus1/2, and changed Weakness/Resistance
+	; clear the Defending Pokémon's Special Conditions, Substatus1,
+	; Substatus2, changed Weakness, and changed Resistance.
 	xor a
 	ld l, DUELVARS_ARENA_CARD_STATUS
 	ld c, [hl]
@@ -1129,6 +1213,7 @@ AIDecide_GustOfWind:
 	push bc ; backup Defending Pokémon's changed Weakness/Resistance
 	push hl
 
+; return carry if the AI's Active Pokémon can damage the new Pokémon. otherwise, no carry.
 	xor a ; PLAY_AREA_ARENA
 	farcall CheckIfCanDamageDefendingPokemon
 
@@ -1164,7 +1249,10 @@ AIDecide_GustOfWind:
 ; Bill uses 'AIPlay_TrainerCard_NoVars'
 
 
-; return carry if cards in deck > 9
+; AI will play Bill if it has at least 10 cards in its deck.
+; preserves bc and de
+; output:
+;	carry = set:  if the AI decided to play Bill
 AIDecide_Bill:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
@@ -1177,23 +1265,28 @@ AIDecide_Bill:
 ; Energy Removal uses 'AIPlay_TrainerCard_TwoVars'
 
 
-; picks an energy card in the player's Play Area to remove
+; AI will play Energy Removal as long as there is a valid target in the Player's play area.
+; The Defending Pokémon is only considered if it isn't going to be KO'd this turn.
+; output:
+;	a = play area location offset of the chosen Pokémon (PLAY_AREA_* constant)
+;	[wce1a] = deck index of the Energy card to discard from the chosen Pokémon (0-59)
+;	carry = set:  if the AI decided to play Energy Removal
 AIDecide_EnergyRemoval:
-; check if the current active card can KO player's card
-; if it's possible to KO, then do not consider the player's
-; active card to remove its attached energy
+; check if the current Active Pokémon can KO the Defending Pokémon.
+; if it's possible to KO, then skip the Player's Active Pokémon
+; and look for a target on the Player's Bench.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ld e, PLAY_AREA_ARENA
 	jr c, .defending_pokemon_not_excluded
 	; Active can KO, so start loop from the first Benched Pokémon.
 	inc e
 
-; loop each card and check if it has enough Energy to use any attack
-; if it does, then proceed to pick an Energy card to remove
+; loop each card and check if it has enough Energy to use any attack.
+; if it does, then proceed to pick an Energy card to remove.
 .defending_pokemon_not_excluded
 	rst SwapTurn
 	ld a, e
-	ld [wce0f], a
+	ld [wce0f], a ; store default location (Defending Pokémon will also need to be skipped later)
 
 .loop_1
 	ld a, DUELVARS_ARENA_CARD
@@ -1210,38 +1303,37 @@ AIDecide_EnergyRemoval:
 	push de
 	call .CheckIfNotEnoughEnergyToAttack
 	pop de
-	jr nc, .pick_energy ; jump if enough energy to attack
+	jr nc, .pick_energy ; jump if enough Energy to attack
 .next_1
 	inc e
 	jr .loop_1
 
-; if no card in player's Play Area was found with enough energy
-; to attack, just pick an energy card from player's active card
-; (in case the AI cannot KO it this turn)
+; if none of the Player's Pokémon have enough Energy to attack,
+; just pick an Energy card attached to the Defending Pokémon,
+; but only if it has attached Energy and the AI won't KO it this turn.
 .default
 	ld a, [wce0f]
 	or a
-	jr nz, .check_bench_damage ; not active card
+	jr nz, .check_bench_damage ; skip checking the Defending Pokémon if it's about to be KO'd
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr nz, .pick_energy
 
-; lastly, check what attack on player's Play Area is highest damaging
-; and pick an energy card attached to that Pokemon to remove
+; the Player's Active Pokémon isn't a viable target, so find the
+; Benched Pokémon that can do the most damage to the AI's Active Pokémon,
+; but skip any Pokémon that doesn't have any attached Energy.
 .check_bench_damage
 	ld e, PLAY_AREA_BENCH_1
 	call FindEnergizedPokemonWithHighestDamagingAttack
 	ld a, [wce08]
 	or a
-	jr z, .done ; skip if none found
+	jr z, .done ; return no carry if no Pokémon was found
 	ld e, a
 
+; output the deck index and location of the chosen Energy card and then set carry.
 .pick_energy
-; a play area card was picked to remove energy
-; store the picked energy card to remove in wce1a
-; and set carry
 	ld a, e
 	push af
 	call PickAttachedEnergyCardToRemove
@@ -1251,24 +1343,28 @@ AIDecide_EnergyRemoval:
 .done
 	jp SwapTurn
 
-; returns carry if this card does not
-; have enough energy for either of its attacks
+
+; input:
+;	e = play area location offset to check (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the Pokémon in the given location doesn't have enough Energy to use any attack
+;	           OR if there's more than enough Energy to use the Pokémon's second attack
 .CheckIfNotEnoughEnergyToAttack
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	ld [wSelectedAttack], a
 	farcall CheckEnergyNeededForAttack
-	ret nc ; return no carry if enough Energy
+	ret nc ; return no carry if there's enough attached Energy to satisfy the first attack's cost
 
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	farcall CheckEnergyNeededForAttack
-	ret c ; return carry if neither attack has enough energy
+	ret c ; return carry if neither of the Pokémon's attacks can be used
 
-; first attack doesn't have enough energy (or is just a Pokemon Power)
-; but second attack has enough energy to be used
-; check if there's surplus energy for attack and, if so, return carry
+; the first attack doesn't have enough Energy (or is just a Pokémon Power),
+; but the second attack has enough Energy to be used. now, check if the amount
+; of attached Energy is greater than the attack's cost, and if so, return carry.
 	farcall CheckIfNoSurplusEnergyForAttack
 	ccf
 	ret
@@ -1297,42 +1393,50 @@ AIPlay_SuperEnergyRemoval:
 	ret
 
 
-; picks two energy cards in the player's Play Area to remove
+; AI only plays Super Energy Removal if it is able to discard an Energy card
+; from one of its Benched Pokémon and also prevent one of the Player's Pokémon
+; from being able to attack.
+; output:
+;	      a = chosen AI Pokémon's play area location offset (PLAY_AREA_* constant)
+;	[wce1a] = deck index of an Energy card attached to the chosen AI Pokémon (0-59)
+;	[wce1b] = chosen Player Pokémon's play area location offset (PLAY_AREA_* constant)
+;	[wce1c] = deck index of an Energy card attached to the chosen Player Pokémon (0-59)
+;	[wce1d] = deck index of another Energy card attached to the chosen Player Pokémon (0-59)
+;	carry = set:  if the AI decided to play Super Energy Removal
 AIDecide_SuperEnergyRemoval:
-; first find an Arena card with a color energy card
-; to discard for card effect
-; return immediately if no Arena cards
+; first, find a Benched Pokémon with an attached
+; Basic Energy card for the first discard effect.
+; don't play Super Energy Removal if none are found.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld c, a
-.loop_1
+.loop_bench
 	dec c ; go through play area Pokémon in reverse order
 	ld a, c
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	ret z ; return no carry if we reached the Active Pokémon
 	ld a, CARD_LOCATION_ARENA
 	add c
 	call FindBasicEnergyCardsInLocation
-	jr c, .loop_1
+	jr c, .loop_bench
 
-; card in Play Area location c was found with
-; a basic energy card
+; the Pokémon in c location has a Basic Energy card attached to it
 	ld a, c
 	ld [wce0f], a
 
-; check if the current active card can KO player's card
-; if it's possible to KO, then do not consider the player's
-; active card to remove its attached energy
+; check if the current Active Pokémon can KO the Defending Pokémon.
+; if it's possible to KO, then skip the Defending Pokémon
+; and look for a target on the Player's Bench.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	rst SwapTurn
 	ld e, PLAY_AREA_ARENA
-	jr c, .loop_3
+	jr c, .loop_opposing_play_area
 	; Active can KO, so start loop from the first Benched Pokémon.
 	inc e
 
-; loop each card and check if it has enough energy to use any attack
-; if it does, then proceed to pick energy cards to remove
-.loop_3
+; loop each card and check if it has enough Energy to use any attack.
+; if it does, then proceed to pick Energy cards to remove.
+.loop_opposing_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
@@ -1346,21 +1450,20 @@ AIDecide_SuperEnergyRemoval:
 	push de
 	call .CheckIfNotEnoughEnergyToAttack
 	pop de
-	jr nc, .found_card ; jump if enough energy to attack
+	jr nc, .found_card ; jump if enough Energy to attack
 .next_1
 	inc e
-	jr .loop_3
+	jr .loop_opposing_play_area
 
 .found_card
-; a play area card was picked to remove energy
-; if this is not the Arena Card, then check
-; entire bench to pick the highest damage
+; one of the Player's Pokémon was selected as the target.
+; if this is not the Active Pokémon, then check the
+; entire Bench to pick the highest damaging Pokémon.
 	ld a, e
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	jr nz, .check_bench_damage
 
-; store the picked energy card to remove in wce1a
-; and set carry
+; store the Energy cards that should be discarded and their locations and then set carry.
 .pick_energy
 	ld [wce1b], a
 	call PickTwoAttachedEnergyCards
@@ -1376,8 +1479,9 @@ AIDecide_SuperEnergyRemoval:
 	scf
 	ret
 
-; check what attack on player's Play Area is highest damaging
-; and pick an energy card attached to that Pokemon to remove
+; find the Pokémon in the Player's play area that can do the most damage
+; to the AI's Active Pokémon, but only if it has at least 2 Energy cards
+; attached to it and also enough Energy to attack (but not extra).
 .check_bench_damage
 	xor a
 	ld [wce06], a
@@ -1408,25 +1512,28 @@ AIDecide_SuperEnergyRemoval:
 .done
 	jp SwapTurn
 
-; returns carry if this card does not
-; have enough energy for either of its attacks
+
+; input:
+;	e = play area location offset to check (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the Pokémon in the given location doesn't have enough Energy to use any attack or
+;	              if the amount of attached Energy is at least 2 more than the cost of the Pokémon's second attack
 .CheckIfNotEnoughEnergyToAttack
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	ld [wSelectedAttack], a
 	farcall CheckEnergyNeededForAttack
-	ret nc ; return no carry if enough Energy
+	ret nc ; return no carry if there's enough attached Energy to satisfy the first attack's cost
 
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	farcall CheckEnergyNeededForAttack
-	ret c ; return carry if neither attack has enough energy
+	ret c ; return carry if neither of the Pokémon's attacks can be used
 
-; first attack doesn't have enough energy (or is just a Pokemon Power)
-; but second attack has enough energy to be used
-; check if there's surplus energy for attack and, if so,
-; return carry if this surplus energy is at least 2
+; the first attack doesn't have enough Energy (or is just a Pokémon Power),
+; but the second attack has enough Energy to be used. now, check if the amount of
+; attached Energy is at least 2 greater than the attack's cost, and if so, return carry.
 	farcall CheckIfNoSurplusEnergyForAttack
 	cp 2
 	ccf
@@ -1438,7 +1545,12 @@ AIDecide_SuperEnergyRemoval:
 ; Pokémon Breeder uses 'AIPlay_TrainerCard_TwoVars'.
 
 
+; output:
+;	a = deck index of the Stage 2 Evolution card in the AI's hand
+;	[wce1a] = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
+;	carry = set:  if the AI decided to play Pokémon Breeder
 AIDecide_PokemonBreeder:
+; can't play Pokémon Breeder if there's an active Prehistoric Power.
 	call IsPrehistoricPowerActive
 	ccf
 	ret nc
@@ -1449,14 +1561,15 @@ AIDecide_PokemonBreeder:
 
 	call CreateHandCardList
 	ld hl, wDuelTempList
-
 .loop_hand_1
 	ld a, [hli]
 	cp $ff
 	jr z, .not_found_in_hand
 
-; check if card in hand is any of the following
-; stage 2 Pokemon cards
+; check if the Evolution card in the hand is any of the following Stage 2 Pokémon.
+; having a Stage 2 Evolution card listed here means that its Basic Pokémon doesn't
+; need to have at least 2 Energy attached to it before it's considered a valid target.
+; these Stage 2 cards either have a useful Pokémon Power or can attack with only 1 Energy.
 	ld d, a
 	call _GetCardIDFromDeckIndex
 	cp VENUSAUR_LV64
@@ -1480,8 +1593,7 @@ AIDecide_PokemonBreeder:
 	ld c, a
 	ld e, PLAY_AREA_ARENA
 
-; check Play Area for card that can evolve into
-; the picked stage 2 Pokemon
+; check the play area for a Pokémon that can evolve into the chosen Stage 2 Pokémon.
 .loop_play_area_1
 	push hl
 	push bc
@@ -1501,7 +1613,7 @@ AIDecide_PokemonBreeder:
 	or a
 	jr z, .check_evolution_and_dragonite
 
-; an evolution has been found before
+; a valid Evolution card was found during the initial hand check.
 	xor a
 	ld [wce06], a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -1509,7 +1621,7 @@ AIDecide_PokemonBreeder:
 	ld c, a
 	lb de, $00, $00
 
-; find highest score in wce08
+; find the highest score from what was stored in wce08-wce0d.
 .loop_score_1
 	ld hl, wce08
 	add hl, de
@@ -1517,10 +1629,10 @@ AIDecide_PokemonBreeder:
 	cp [hl]
 	jr nc, .not_higher
 
-; store this score to wce06
+; store this score at wce06.
 	ld a, [hl]
 	ld [wce06], a
-; store this PLay Area location to wce07
+; store this play area location at wce07.
 	ld a, e
 	ld [wce07], a
 
@@ -1529,10 +1641,8 @@ AIDecide_PokemonBreeder:
 	dec c
 	jr nz, .loop_score_1
 
-; store the deck index of the stage 2 card
-; that has been decided in a,
-; return the Play Area location of card
-; to evolve in wce1a and return carry
+; store the play area location offset of the Pokémon to evolve in wce1a and
+; store the deck index of the chosen Stage 2 Evolution card in a. then, return carry.
 	ld a, [wce07]
 	ld [wce1a], a
 	ld e, a
@@ -1573,8 +1683,7 @@ AIDecide_PokemonBreeder:
 	call nc, .HandleDragoniteLv41Evolution
 	call nc, .StoreEvolutionInformation
 
-; not possible to evolve or returned carry
-; when handling DragoniteLv41 evolution
+; evolution isn't possible or the HandleDragoniteLv41Evolution returned carry.
 	pop bc
 	inc e
 	dec c
@@ -1598,8 +1707,7 @@ AIDecide_PokemonBreeder:
 	ld c, a
 	lb de, $00, $00
 
-; find highest score in wce08 with at least
-; 2 energy cards attached
+; find the highest score in wce08 with at least 2 Energy attached to the evolving Pokémon.
 .loop_score_2
 	ld hl, wce08
 	add hl, de
@@ -1607,19 +1715,17 @@ AIDecide_PokemonBreeder:
 	cp [hl]
 	jr nc, .next_score
 
-; take the lower 4 bits (total energy cards)
-; and skip if less than 2
+; take the lower 4 bits (total Energy) and skip if the amount is less than 2.
 	ld a, [hl]
 	ld b, a
 	and %00001111
 	cp 2
 	jr c, .next_score
 
-; has at least 2 energy cards
-; store the score in wce06
+; has at least 2 Energy, so store this score at wce06.
 	ld a, b
 	ld [wce06], a
-; store this PLay Area location to wce07
+; store this play area location at wce07.
 	ld a, e
 	ld [wce07], a
 
@@ -1630,7 +1736,7 @@ AIDecide_PokemonBreeder:
 
 	ld a, [wce07]
 	cp $ff
-	ret z
+	ret z ; return no carry if none of the evolving Pokémon had at least 2 Energy.
 
 ; store the play area location offset of the Pokémon to evolve in wce1a and
 ; store the deck index of the chosen Stage 2 Evolution card in a. then, return carry.
@@ -1642,6 +1748,16 @@ AIDecide_PokemonBreeder:
 	scf
 	ret
 
+
+; preserves de
+; input:
+;	d = deck index of the Stage 2 Evolution card being considered
+;	e = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
+; output:
+;	[wce06] += 1
+;	[wce08 + e] = some information about the Pokémon in the location from e input (lower 4 bits store
+;	              its attached Energy amount and upper 4 bits store its remaining HP divided by 10)
+;	[wce0f + e] = deck index from d input
 .StoreEvolutionInformation
 	ld a, DUELVARS_ARENA_CARD_HP
 	add e
@@ -1650,8 +1766,7 @@ AIDecide_PokemonBreeder:
 	swap a
 	ld b, a
 
-; count number of energy cards attached and keep
-; the lowest 4 bits (capped at $0f)
+; count the amount of attached Energy and keep the lowest 4 bits (capped at $0f).
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
 	cp $10
@@ -1660,60 +1775,65 @@ AIDecide_PokemonBreeder:
 .not_maxed_out
 	or b
 
-; 4 high bits of a = HP counters Pokemon still has
-; 4 low  bits of a = number of energy cards attached
+; 4 high bits of a = this Pokémon's remaining HP (in damage counters)
+; 4 low  bits of a = amount of Energy attached to this Pokémon
 
-; store this score in wce08 + PLAY_AREA*
+; store this score in wce08 + PLAY_AREA_* in e.
 	ld hl, wce08
 	ld c, e
 	ld b, $00
 	add hl, bc
 	ld [hl], a
 
-; store the deck index of stage 2 Pokemon in wce0f + PLAY_AREA*
+; store the deck index of the Stage 2 Evolution card in wce0f + PLAY_AREA_* in e.
 	ld hl, wce0f
 	add hl, bc
 	ld [hl], d
 
-; increase wce06 by one
+; increase wce06 by one.
 	ld hl, wce06
 	inc [hl]
 	ret
 
-; return carry if card is evolving to DragoniteLv41 and if
-; - the card that is evolving is not Arena card and Toxic Gas is active
-;   or number of damage counters in Play Area is under 8;
-; - the card that is evolving is Arena card and has under 5
-;   damage counters or has less than 3 energy cards attached.
+
+; preserves all registers except af
+; input:
+;	d = deck index of the Stage 2 Evolution card being considered
+;	e = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if a Benched Pokémon is being evolved into DragoniteLv41 and
+;	              Toxic Gas would negate DragoniteLv41's Pokémon Power or
+;	              there are fewer than 8 damage counters in the AI's play area
+;	           OR if the Active Pokémon is being evolved into DragoniteLv41 and
+;	              its damage counters < 5 or its amount of attached Energy < 3
 .HandleDragoniteLv41Evolution
 	push bc
 	push de
 	push hl
 
-; check card ID
+; return no carry if the Evolution card being considered isn't DragoniteLv41.
 	ld a, d
 	call _GetCardIDFromDeckIndex
 	cp DRAGONITE_LV41
 	jr nz, .no_carry
 
-; check card Play Area location
+; check whether DragoniteLv41 is being used to evolve the Active Pokémon.
 	ld a, e
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	jr z, .active_card_dragonite
 
-; the card that is evolving is not active card
+; the Pokémon being evolved is on the Bench.
 ; return carry if DragoniteLv41's Pokémon Power would be negated.
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	jr c, .done
-	
+
+; count all of the damage counters in the play area.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld b, a
 	ld c, 0 ; damage counter counter
 	ld e, c ; PLAY_AREA_ARENA
-
-; count damage counters in Play Area
 .loop_play_area_damage
 	push bc
 	call GetCardDamageAndMaxHP
@@ -1725,23 +1845,19 @@ AIDecide_PokemonBreeder:
 	dec b
 	jr nz, .loop_play_area_damage
 
-; compare number of total damage counters
-; with 7, if less or equal to that, set carry
+; return carry if there are fewer than 8 damage counters in the AI's play area.
 	ld a, 7
 	cp c
 	ccf
 	jr .done
 
 .active_card_dragonite
-; the card that is evolving is active card
-; compare number of this card's damage counters
-; with 5, if less than that, set carry
+; return carry if the Active Pokémon has fewer than 5 damage counters on it.
 	call GetCardDamageAndMaxHP
 	cp 50
 	jr c, .done
 
-; compare number of this card's attached energy cards
-; with 3, if less than that, set carry
+; return carry if the Active Pokémon has fewer than 3 attached Energy.
 	call GetPlayAreaCardAttachedEnergies
 	cp 3
 	jr c, .done
@@ -1767,15 +1883,19 @@ AIPlay_ProfessorOak:
 	ret
 
 
-; sets carry if AI determines a score of playing
-; Professor Oak is over a certain threshold.
+; AI won't play Professor Oak if it's deck count is too low.
+; otherwise, it will tally a score and play Professor Oak if the result is high enough.
+; there are also several subroutines for specific decks.
+; output:
+;	carry = set:  if the AI decided to play Professor Oak
 AIDecide_ProfessorOak:
-; return if cards in deck <= 6
+; don't play Professor Oak if there are fewer than 7 cards left in the AI's deck.
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	cp DECK_SIZE - 6
 	ret nc
 
+; handle some decks differently.
 	ld a, [wOpponentDeckID]
 	cp LEGENDARY_ARTICUNO_DECK_ID
 	jp z, .HandleLegendaryArticunoDeck
@@ -1784,26 +1904,26 @@ AIDecide_ProfessorOak:
 	cp WONDERS_OF_SCIENCE_DECK_ID
 	jp z, .HandleWondersOfScienceDeck
 
-; return if cards in deck <= 14
+; don't play Professor Oak if there are fewer than 15 cards left in the AI's deck.
 .check_cards_deck
 	ld a, [hl]
 	cp DECK_SIZE - 14
 	ret nc
 
-; initialize score
-	ld a, $1e
+; initialize the score for playing Professor Oak.
+	ld a, 30
 	ld [wce06], a
 
-; check number of cards in hand
+; check the number of cards in the AI's hand.
 .check_cards_hand
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	cp 4
 	jr nc, .more_than_3_cards
 
-; less than 4 cards in hand
+; increase the score by 50 because there are less than 4 cards in the AI's hand.
 	ld a, [wce06]
-	add $32
+	add 50
 	ld [wce06], a
 	jr .check_energy_cards
 
@@ -1811,18 +1931,18 @@ AIDecide_ProfessorOak:
 	cp 9
 	jr c, .check_energy_cards
 
-; more than 8 cards
+; decrease the score by 30 because there are more than 8 cards in the AI's hand.
 	ld a, [wce06]
-	sub $1e
+	sub 30
 	ld [wce06], a
 
 .check_energy_cards
 	farcall CreateEnergyCardListFromHand
 	jr nc, .handle_blastoise
 
-; no energy cards in hand
+; increase the score by 40 because there are no Energy cards in the AI's hand.
 	ld a, [wce06]
-	add $28
+	add 40
 	ld [wce06], a
 
 .handle_blastoise
@@ -1830,19 +1950,20 @@ AIDecide_ProfessorOak:
 	call CountPokemonIDInBothPlayAreas
 	jr c, .check_hand
 
-; no Muk in Play Area
+; Toxic Gas isn't in effect.
 	ld a, BLASTOISE
 	call CountPokemonIDInPlayArea
 	jr nc, .check_hand
 
-; at least one Blastoise in AI Play Area
+; at least one Blastoise is in the AI's play area.
 	ld a, WATER_ENERGY
 	farcall LookForCardIDInHand
 	jr nc, .check_hand
 
-; no Water energy in hand
+; increase the score by 10 because Rain Dance is active,
+; and none of the Energy in the AI's hand are Water Energy.
 	ld a, [wce06]
-	add $0a
+	add 10
 	ld [wce06], a
 
 .check_hand
@@ -1856,8 +1977,9 @@ AIDecide_ProfessorOak:
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_hand
 
+; increase the score by 10 because there is at least one Basic Pokémon in the AI's hand.
 	ld a, [wce06]
-	add $0a
+	add 10
 	ld [wce06], a
 
 .check_evolution
@@ -1883,7 +2005,7 @@ AIDecide_ProfessorOak:
 
 .not_in_hand
 ; check if a card that can evolve was found at all
-; if not, go to the next card in the Play Area
+; if not, go to the next card in the play area
 	ld a, [wce08]
 	cp $01
 	jr nz, .next_play_area
@@ -1907,30 +2029,33 @@ AIDecide_ProfessorOak:
 	or a
 	jr nz, .check_score
 
-; ...add to the score
+; ...increase the score by 10.
 	ld a, [wce06]
-	add $0a
+	add 10
 	ld [wce06], a
 
-; only return carry if score >  $3c
+; only play Professor Oak if the final score is at least twice that of the inital score.
 .check_score
 	ld a, [wce06]
-	ld b, $3c
+	ld b, 60
 	cp b
 	ccf
 	ret
 
-; return carry if there's a card in the hand that
-; can evolve the card in Play Area location in e.
-; sets wce08 to $01 if any card is found that can
-; evolve regardless of card location.
+
+; preserves bc and e
+; input:
+;	e = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
+; output:
+;	carry = if an Evolution card in the AI's hand can evolve the Pokémon in the given location
+;	[wce08] = $01:  if an Evolution card in any card location can evolve the Pokémon in the given location
 .LookForEvolution
 	xor a
 	ld [wce08], a
 	ld d, DECK_SIZE
 
 ; loop through the whole deck to check if there's
-; a card that can evolve this Pokemon.
+; a card that can evolve this Pokémon.
 .loop_deck_evolution
 	dec d ; go through deck indices in reverse order
 	call CheckIfCanEvolveInto
@@ -1939,7 +2064,7 @@ AIDecide_ProfessorOak:
 	ld a, d
 	or a
 	jr nz, .loop_deck_evolution
-	ret
+	ret ; nc
 
 ; a card was found that can evolve, set wce08 to $01
 ; and if the card is in the hand, return carry.
@@ -1951,9 +2076,9 @@ AIDecide_ProfessorOak:
 	get_turn_duelist_var
 	cp CARD_LOCATION_HAND
 	jr nz, .evolution_not_in_hand
-
 	scf
 	ret
+
 
 ; handles Legendary Articuno Deck AI logic.
 .HandleLegendaryArticunoDeck
@@ -1962,25 +2087,24 @@ AIDecide_ProfessorOak:
 	cp 3
 	jr nc, .check_playable_cards
 
-; has less than 3 Pokemon in Play Area.
+; AI has less than 3 Pokémon in the play area, so play Professor Oak
+; if none of the Evolution cards in hand can be used to evolve those Pokémon.
 	push af
 	call CreateHandCardList
 	pop af
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 
-; if no cards in hand evolve cards in Play Area,
-; returns carry.
 .loop_play_area_articuno
 	ld a, DUELVARS_ARENA_CARD
 	add e
-
 	push de
 	get_turn_duelist_var
 	farcall CheckForEvolutionInList
 	pop de
 	jr c, .check_playable_cards
 
+; can't evolve, so move on to the next Pokémon.
 	inc e
 	dec d
 	jr nz, .loop_play_area_articuno
@@ -1989,24 +2113,21 @@ AIDecide_ProfessorOak:
 	scf
 	ret
 
-; if there are more than 3 energy cards in hand,
-; return no carry, otherwise check for playable cards.
 .check_playable_cards
+; don't play Professor Oak if there are more than 3 Energy cards in hand.
 	farcall CreateEnergyCardListFromHand
 	cp 4
 	ret nc
 
-; remove both Professor Oak cards from list
-; before checking for playable cards
+; remove both Professor Oak cards from the list before checking for playable cards.
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld c, PROFESSOR_OAK
 	farcall RemoveCardIDInList
 	farcall RemoveCardIDInList
 
-; look in hand for cards that can be played.
-; if a card that cannot be played is found, return no carry.
-; otherwise return carry.
+; don't play Professor Oak if any other card in the AI's hand can be played,
+; but if they're all unplayable, then return carry.
 .loop_hand_articuno
 	ld a, [hli]
 	cp $ff
@@ -2017,35 +2138,39 @@ AIDecide_ProfessorOak:
 	jr c, .loop_hand_articuno
 	ret
 
+
 ; handles Excavation deck AI logic.
-; sets score depending on whether there's no
-; Mysterious Fossil in play and in hand.
+; uses a significantly boosted initial score if it doesn't have any Mysterious Fossil in play or in hand.
 .HandleExcavationDeck
-; return no carry if cards in deck < 15
+; don't play Professor Oak if there are fewer than 15 cards left in the AI's deck.
 	ld a, [hl]
-	cp 46
+	cp DECK_SIZE - 14
 	ret nc
 
-; look for Mysterious Fossil
+; search the AI's hand and play area for Mysterious Fossil.
+; if none are found, then massively increase the initial score
+; before returning to the default logic.
 	ld a, MYSTERIOUS_FOSSIL
 	call LookForCardIDInHandAndPlayArea
 	jr c, .found_mysterious_fossil
-	ld a, $50
+	ld a, 80
 	ld [wce06], a
 	jp .check_cards_hand
 .found_mysterious_fossil
-	ld a, $1e
+	ld a, 30 ; default initial score
 	ld [wce06], a
 	jp .check_cards_hand
 
+
 ; handles Wonders of Science AI logic.
-; if there's either Grimer or Muk in hand,
-; do not play Professor Oak.
+; do not play Professor Oak if there's either a Grimer or a Muk in the AI's hand.
+; if neither are in the hand, then return to the default logic.
 .HandleWondersOfScienceDeck
 	ld a, GRIMER
 	call LookForCardIDInHandList_Bank8
 	ccf
 	ret nc
+
 	ld a, MUK
 	call LookForCardIDInHandList_Bank8
 	ccf
@@ -2078,18 +2203,20 @@ AIPlay_EnergyRetrieval:
 	ret
 
 
-; checks whether AI can play Energy Retrieval and
-; picks the energy cards from the discard pile,
-; and duplicate cards in hand to discard.
+; AI will only play Energy Retrieval if there are no Energy cards in its hand and
+; only if there are multiple copies of the same card in the hand for the discard.
+; output:
+;	a       = deck index of the card that will be discarded from the AI's hand
+;	[wce1a] = deck index of a Basic Energy card in the AI's discard pile
+;	[wce1b] = deck index of another Basic Energy card in the AI's discard pile, if any
+;	carry = set:  if the AI decided to play Energy Retrieval
 AIDecide_EnergyRetrieval:
-; return no carry if no cards in hand
+; don't play Energy Retrieval if there are any Energy cards in the AI's hand.
 	farcall CreateEnergyCardListFromHand
 	ret nc
 
-; handle Go Go Rain Dance deck
-; return no carry if there's no Muk card in play and
-; if there's no Blastoise card in Play Area
-; if there's a Muk in play, continue as normal
+; the Go Go Rain Dance deck has some additional logic.
+; don't play Energy Retrieval unless Rain Dance is active.
 	ld a, [wOpponentDeckID]
 	cp GO_GO_RAIN_DANCE_DECK_ID
 	jr nz, .start
@@ -2101,38 +2228,37 @@ AIDecide_EnergyRetrieval:
 	ret nc
 
 .start
-; find duplicate cards in hand
+; don't play Energy Retrieval unless there is a duplicate card in the hand to discard.
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	call FindDuplicateCards
 	ret nc
+	ld [wce06], a ; store the deck index of the duplicate card that will be discarded
 
-	ld [wce06], a
+; can't play Energy Retrieval if there aren't any Basic Energy card in the AI's discard pile.
 	ld a, CARD_LOCATION_DISCARD_PILE
 	call FindBasicEnergyCardsInLocation
 	ccf
 	ret nc
 
-; some basic energy cards were found in Discard Pile
+; at least one Basic Energy card was found in the discard pile, so initialize some variables.
 	ld hl, wce1a
 	ld a, $ff
 	ld [hli], a ; [wce1a] = $ff
 	ld [hli], a ; [wce1b] = $ff
 	ld [hl], a  ; [wce1c] = $ff
 
+; go through the AI's play area Pokémon and check
+; if any of the Energy cards in the list are useful.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
-
-; first check if there are useful energy cards in the list
-; and choose them for retrieval first
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
 
-; load this card's ID in wTempCardID
-; and this card's Type in wTempCardType
+; store this card's ID in wTempCardID and this card's Type in wTempCardType.
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
@@ -2140,8 +2266,7 @@ AIDecide_EnergyRetrieval:
 	or TYPE_ENERGY
 	ld [wTempCardType], a
 
-; loop the energy cards in the Discard Pile
-; and check if they are useful for this Pokemon
+; loop the Energy cards in the discard pile and check if they are useful for this Pokémon.
 	ld hl, wDuelTempList
 .loop_energy_cards_1
 	ld a, [hli]
@@ -2152,14 +2277,13 @@ AIDecide_EnergyRetrieval:
 	farcall CheckIfEnergyIsUseful
 	jr nc, .loop_energy_cards_1
 
+; if another card was already chosen, then return carry after storing the second deck index.
 	ld a, [wce1a]
 	cp $ff
 	jr nz, .second_energy
 
-; check if there were already chosen cards,
-; if this is the second chosen card, return carry
-
-; first energy card found
+; the first Energy card was found. store its deck index
+; and remove it from the discard pile list.
 	ld a, b
 	ld [wce1a], a
 	call RemoveCardFromList
@@ -2169,9 +2293,8 @@ AIDecide_EnergyRetrieval:
 	dec d
 	jr nz, .loop_play_area
 
-; next, if there are still energy cards left to choose,
-; loop through the energy cards again and select
-; them in order.
+; next, if there are still Energy cards left to choose,
+; loop through the Energy cards again and select them in order.
 	ld hl, wDuelTempList
 .loop_energy_cards_2
 	ld a, [hli]
@@ -2194,7 +2317,7 @@ AIDecide_EnergyRetrieval:
 	scf
 	ret
 
-; will set carry if at least one has been chosen
+; decide to play Energy Retrieval if at least one Basic Energy card was chosen.
 .check_chosen
 	ld a, [wce1a]
 	cp $ff
@@ -2235,15 +2358,23 @@ AIPlay_SuperEnergyRetrieval:
 	ret
 
 
+; AI will only play Super Energy Retrieval if there are no Energy cards in its hand
+; and only if there are at least 2 duplicate cards in the hand to discard.
+; output:
+;	a       = deck index of the 1st card that will be discarded from the AI's hand
+;	[wce1a] = deck index of the 2nd card that will be discarded from the AI's hand
+;	[wce1b] = deck index of a Basic Energy card in the AI's discard pile
+;	[wce1c] = deck index of a 2nd Basic Energy card in the AI's discard pile, if any
+;	[wce1d] = deck index of a 3rd Basic Energy card in the AI's discard pile, if any
+;	[wce1e] = deck index of a 4th Basic Energy card in the AI's discard pile, if any
+;	carry = set:  if the AI decided to play Super Energy Retrieval
 AIDecide_SuperEnergyRetrieval:
-; return no carry if no cards in hand
+; don't play Super Energy Retrieval if there are any Energy cards in the AI's hand.
 	farcall CreateEnergyCardListFromHand
 	ret nc
 
-; handle Go Go Rain Dance deck
-; return no carry if there's no Muk card in play and
-; if there's no Blastoise card in Play Area
-; if there's a Muk in play, continue as normal
+; the Go Go Rain Dance deck has some additional logic.
+; don't play Super Energy Retrieval unless Rain Dance is active.
 	ld a, [wOpponentDeckID]
 	cp GO_GO_RAIN_DANCE_DECK_ID
 	jr nz, .start
@@ -2255,27 +2386,28 @@ AIDecide_SuperEnergyRetrieval:
 	ret nc
 
 .start
-; find duplicate cards in hand
+; don't play Super Energy Retrieval unless there are duplicate cards in the AI's hand.
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	call FindDuplicateCards
 	ret nc
 
-; remove the duplicate card in hand
-; and run the hand check again
+; store the found deck index. remove it from the list, and look for another duplicate.
+; don't play Super Energy Retrieval unless another duplicate is found.
 	ld [wce06], a
 	ld hl, wDuelTempList
 	call FindAndRemoveCardFromList
 	call FindDuplicateCards
 	ret nc
-	ld b, a
+	ld b, a ; store the deck index of the second duplicate card
 
+; can't play Super Energy Retrieval if there aren't any Basic Energy card in the AI's discard pile.
 	ld a, CARD_LOCATION_DISCARD_PILE
 	call FindBasicEnergyCardsInLocation
 	ccf
 	ret nc
 
-; some basic energy cards were found in Discard Pile
+; at least one Basic Energy card was found in the discard pile, so initialize some variables.
 	ld a, b
 	ld hl, wce1a
 	ld [hli], a
@@ -2286,19 +2418,17 @@ AIDecide_SuperEnergyRetrieval:
 	ld [hli], a ; [wce1e] = $ff
 	ld [hl], a  ; [wce1f] = $ff
 
+; go through the AI's play area Pokémon and check
+; if any of the Energy cards in the list are useful.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld d, a
 	ld e, PLAY_AREA_ARENA
-
-; first check if there are useful energy cards in the list
-; and choose them for retrieval first
 .loop_play_area
 	ld a, DUELVARS_ARENA_CARD
 	add e
 
-; load this card's ID in wTempCardID
-; and this card's Type in wTempCardType
+; store this card's ID in wTempCardID and this card's Type in wTempCardType.
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
@@ -2306,8 +2436,7 @@ AIDecide_SuperEnergyRetrieval:
 	or TYPE_ENERGY
 	ld [wTempCardType], a
 
-; loop the energy cards in the Discard Pile
-; and check if they are useful for this Pokemon
+; loop the Energy cards in the discard pile and check if they are useful for this Pokémon.
 	ld hl, wDuelTempList
 .loop_energy_cards_1
 	ld a, [hli]
@@ -2350,21 +2479,20 @@ AIDecide_SuperEnergyRetrieval:
 	dec d
 	jr nz, .loop_play_area
 
-; next, if there are still energy cards left to choose,
-; loop through the energy cards again and select
-; them in order.
+; next, if there are still Energy cards left to choose,
+; loop through the Energy cards again and select them in order.
 	ld hl, wDuelTempList
 .loop_energy_cards_2
 	ld a, [hli]
 	cp $ff
 	jr z, .check_chosen
 	ld b, a
+
+; first energy
 	ld a, [wce1b]
 	cp $ff
 	jr nz, .second_energy_2
 	ld a, b
-
-; first energy
 	ld [wce1b], a
 	call RemoveCardFromList
 	jr .loop_energy_cards_2
@@ -2396,7 +2524,7 @@ AIDecide_SuperEnergyRetrieval:
 	scf
 	ret
 
-; will set carry if at least one has been chosen
+; decide to play Super Energy Retrieval if at least one Basic Energy card was chosen.
 .check_chosen
 	ld a, [wce1b]
 	cp $ff
@@ -2406,19 +2534,23 @@ AIDecide_SuperEnergyRetrieval:
 
 
 
-; Pokemon Center uses 'AIPlay_TrainerCard_NoVars'
+; Pokémon Center uses 'AIPlay_TrainerCard_NoVars'
 
 
+; AI gathers max HP, damage, and attached Energy data for each of its Pokémon,
+; and then uses that data to decide whether or not to play Pokémon Center.
+; output:
+;	carry = set:  if the AI decided to play Pokémon Center
 AIDecide_PokemonCenter:
-; return if active Pokemon can KO player's card.
+; don't play Pokémon Center if the AI's Active Pokémon could KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
 
 .start
 	xor a
-	ld [wce06], a
-	ld [wce08], a
-	ld [wce0f], a
+	ld [wce06], a ; used for max HP total
+	ld [wce08], a ; used for damage total
+	ld [wce0f], a ; used for attached Energy total
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
@@ -2431,8 +2563,7 @@ AIDecide_PokemonCenter:
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 
-; get this Pokemon's current HP in number of counters
-; and add it to the total.
+; get this Pokémon's current HP in number of counters and add it to the total.
 	ld a, [wLoadedCard1HP]
 	call ConvertHPToDamageCounters_Bank8
 	ld b, a
@@ -2440,8 +2571,7 @@ AIDecide_PokemonCenter:
 	add b
 	ld [wce06], a
 
-; get this Pokemon's current damage counters
-; and add it to the total.
+; get this Pokémon's current damage counters and add it to the total.
 	call GetCardDamageAndMaxHP
 	call ConvertHPToDamageCounters_Bank8
 	ld b, a
@@ -2449,9 +2579,8 @@ AIDecide_PokemonCenter:
 	add b
 	ld [wce08], a
 
-; get this Pokemon's number of attached energy cards
-; and add it to the total.
-; if there's overflow, return no carry.
+; get the amount of Energy attached to this Pokémon and add it to the total.
+; don't play Pokémon Center if there's an overflow (i.e. more than 255 attached Energy).
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
 	ld b, a
@@ -2465,8 +2594,7 @@ AIDecide_PokemonCenter:
 	dec d
 	jr nz, .loop_play_area
 
-; if (number of damage counters / 2) < (total energy cards attached)
-; return no carry.
+; don't play Pokémon Center if (total number of damage counters / 2) < (total number of attached Energy cards).
 	ld a, [wce08]
 	srl a
 	ld hl, wce0f
@@ -2474,13 +2602,13 @@ AIDecide_PokemonCenter:
 	ccf
 	ret nc
 
-; if (number of HP counters * 6 / 10) >= (number of damage counters)
-; return no carry. otherwise, return carry.
+; don't play Pokémon Center if (number of HP counters * 6 / 10) >= (number of damage counters).
+; essentially, only play Pokémon Center if combined HP of all play area Pokémon is less than 60% of max.
 	ld a, [wce06]
 	ld l, a
 	ld h, 6
 	call HtimesL
-	call CalculateWordTensDigit
+	call HLDividedBy10
 	ld a, l
 	ld hl, wce08
 	cp [hl]
@@ -2492,23 +2620,30 @@ AIDecide_PokemonCenter:
 ; Imposter Professor Oak uses 'AIPlay_TrainerCard_NoVars'
 
 
-; sets carry depending on player's number of cards
-; in deck in in hand.
+; AI checks the number of cards in the Player's deck and hand
+; and only decides to play Imposter Professor Oak if:
+;	- Player's deck > 14 cards and Player's hand > 8 cards
+;	- Player's deck < 15 cards and Player's hand < 6 cards
+; basically, the early game goal is to limit the Player's resources,
+; and the late game goal is to encourage the Player to lose via deck out.
+; preserves bc and de
+; output:
+;	carry = set:  if the AI decided to play Imposter Professor Oak
 AIDecide_ImposterProfessorOak:
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetNonTurnDuelistVariable
 	cp DECK_SIZE - 14
 	jr c, .more_than_14_cards
 
-; if player has less than 14 cards in deck, only
-; set carry if number of cards in their hands < 6
+; if the Player has fewer than 15 cards left in their deck, then only
+; play Imposter Professor Oak if there are fewer than 6 cards in the Player's hand.
 	ld l, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	ld a, [hl]
 	cp 6
 	ret
 
-; if player has more than 14 cards in deck, only
-; set carry if number of cards in their hands >= 9
+; if the Player has more than 14 cards left in their deck, then only
+; play Imposter Professor Oak if there are at least 9 cards in the Player's hand.
 .more_than_14_cards
 	ld l, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	ld a, [hl]
@@ -2523,41 +2658,49 @@ AIDecide_ImposterProfessorOak:
 
 
 ; AI checks for playing Energy Search
+; output:
+;	carry = set:  if the AI decided to play Energy Search
 AIDecide_EnergySearch:
 ; don't play Energy Search if there is at least one Energy card
 ; in the AI's hand that is useful to a Pokémon in the play area.
 	farcall CreateEnergyCardListFromHand
 	jr c, .start
+	; there is already at least one Energy card in the AI's hand
 	call LookForUsefulEnergyCardInList
-	ret nc
+	ret nc ; return if at least one of those Energy cards is useful.
 
 .start
-; if no energy cards in deck, return no carry
+; can't play Energy Search if there are no Basic Energy cards left in the AI's deck.
 	ld a, CARD_LOCATION_DECK
 	call FindBasicEnergyCardsInLocation
 	ccf
 	ret nc
 
-; handle some decks differently
+; handle some decks differently.
 	ld a, [wOpponentDeckID]
 	cp HEATED_BATTLE_DECK_ID
 	jr z, LookForUsefulEnergyCardInList_OnlyCheckFireAndLightningPokemon
 	cp WONDERS_OF_SCIENCE_DECK_ID
 	jr z, LookForUsefulEnergyCardInList_OnlyCheckGrassPokemon
 
-; if any of the energy cards in deck is useful
-; return carry right away...
+; if any of the Basic Energy cards in the deck is useful
+; for a play area Pokémon, then pick one of them and return carry.
 	call LookForUsefulEnergyCardInList
 	ret c
 
-; ...otherwise save the list in a before return carry.
+; otherwise, just pick the first Basic Energy card that was found.
 	ld a, [wDuelTempList]
 	scf
 	ret
 
-; checks whether there are useful energies
-; only for Fire and Lightning type Pokemon cards
-; in Play Area. If any are found, return carry.
+
+; preserves c
+; input:
+;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
+; output:
+;	a & b = deck index of an Energy card in wDuelTempList that can be
+;	        used by a Fire or Lightning Pokémon in the AI's play area, if any
+;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList_OnlyCheckFireAndLightningPokemon:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
@@ -2569,51 +2712,58 @@ LookForUsefulEnergyCardInList_OnlyCheckFireAndLightningPokemon:
 	add e
 	get_turn_duelist_var
 
-; get card's ID and Type
+; store the Pokémon's card ID and equivalent Energy type.
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
 	ld a, [wLoadedCard1Type]
-
-; only do check if the Pokemon's type
-; is either Fire or Lightning
 	cp TYPE_PKMN_FIRE
 	jr z, .fire_or_lightning
 	cp TYPE_PKMN_LIGHTNING
-	jr nz, .next_play_area
-
-; loop each energy card in list
+	jr nz, .next_play_area ; skip if not a Fire or Lightning Pokémon
 .fire_or_lightning
 	or TYPE_ENERGY
 	ld [wTempCardType], a
+
+; try to find a useful Energy in wDuelTempList.
 	ld hl, wDuelTempList
 .loop_energy
 	ld a, [hli]
 	cp $ff
 	jr z, .next_play_area
-
-; if this energy card is useful, return carry.
 	ld b, a
 	farcall CheckIfEnergyIsUseful
 	jr nc, .loop_energy
 
+; a useful Energy card was found, so output the deck index in a and return carry.
 	ld a, b
-	ret ; c
+	ret
 
 .next_play_area
 	inc e
 	ld a, e
 	cp d
 	jr nz, .loop_play_area
-; no card was found to be useful for Fire/Lightning type Pokemon.
-	ret ; nc
+	; no useful Energy cards were found, so return no carry.
+	ret
 
-; checks whether there are useful energies
-; only for Grass type Pokemon cards
-; in Play Area. If any are found, return carry.
+
+; input:
+;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
+; output:
+;	a & b = deck index of an Energy card in wDuelTempList that can be
+;	        used by a Grass Pokémon in the AI's play area, if any
+;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList_OnlyCheckGrassPokemon:
 	ld c, TYPE_PKMN_GRASS
 ;	fallthrough
 
+; input:
+;	c = TYPE_PKMN_* constant
+;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
+; output:
+;	a & b = deck index of an Energy card in wDuelTempList that can be
+;	        used by a Pokémon of the given type in the AI's play area, if any
+;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList_OnlyCheckPokemonOfGivenType:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
@@ -2625,40 +2775,45 @@ LookForUsefulEnergyCardInList_OnlyCheckPokemonOfGivenType:
 	add e
 	get_turn_duelist_var
 
-; get card's ID and Type
+; store the Pokémon's card ID and equivalent Energy type.
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
 	ld a, [wLoadedCard1Type]
 	cp c
 	jr nz, .next_play_area ; skip this Pokémon if it's type doesn't match c input
-
-; loop each energy card in list
 	or TYPE_ENERGY
 	ld [wTempCardType], a
+
+; try to find a useful Energy in wDuelTempList.
 	ld hl, wDuelTempList
 .loop_energy
 	ld a, [hli]
 	cp $ff
 	jr z, .next_play_area
-
-; if this energy card is useful, return carry.
 	ld b, a
 	farcall CheckIfEnergyIsUseful
 	jr nc, .loop_energy
 
+; a useful Energy card was found, so output the deck index in a and return carry.
 	ld a, b
-	ret ; c
+	ret
 
 .next_play_area
 	inc e
 	ld a, e
 	cp d
 	jr nz, .loop_play_area
-; no card was found to be useful for Pokemon of given type.
-	ret ; nc
+	; no useful Energy cards were found, so return no carry.
+	ret
 
-; return carry if cards in wDuelTempList are
-; useful to any of the Play Area Pokemon
+
+; preserves c
+; input:
+;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
+; output:
+;	a & b = deck index of an Energy card in wDuelTempList that can be
+;	        used by one of the Pokémon in the AI's play area, if any
+;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
@@ -2670,15 +2825,14 @@ LookForUsefulEnergyCardInList:
 	add e
 	get_turn_duelist_var
 
-; store ID and type of card
+; store the Pokémon's card ID and equivalent Energy type.
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld [wTempCardID], a
 	ld a, [wLoadedCard1Type]
 	or TYPE_ENERGY
 	ld [wTempCardType], a
 
-; look in list for a useful energy,
-; is any is found return no carry.
+; try to find a useful Energy in wDuelTempList.
 	ld hl, wDuelTempList
 .loop_energy
 	ld a, [hli]
@@ -2688,14 +2842,16 @@ LookForUsefulEnergyCardInList:
 	farcall CheckIfEnergyIsUseful
 	jr nc, .loop_energy
 
+; a useful Energy card was found, so output the deck index in a and return carry.
 	ld a, b
-	ret ; c
+	ret
 
 .next_play_area
 	inc e
 	dec d
 	jr nz, .loop_play_area
-	ret ; nc
+	; no useful Energy cards were found, so return no carry.
+	ret
 
 
 
@@ -2721,33 +2877,50 @@ AIPlay_Pokedex:
 	ret
 
 
+; AI will only play Pokédex if it's been at least 5 turns since
+; a Pokédex was last played and there's at least 5 cards in the deck.
+; if both are true, then there's a 30% chance that the card will be played.
+; most decks will prioritize Energy, then Pokémon, then Trainers,
+; but Rick's Wonders of Science deck will pick Pokémon, Trainers, and then Energy.
+; input:
+;	[wce1a] = deck index of the card that should be placed on top of the deck
+;	[wce1b] = deck index of the card that should be placed below the previous card
+;	[wce1c] = deck index of the card that should be placed below the previous card
+;	[wce1d] = deck index of the card that should be placed below the previous card
+;	[wce1e] = deck index of the card that should be placed below the previous card
+;	carry = set:  if the AI decided to play Pokédex
 AIDecide_Pokedex:
+; don't play Pokédex if it hasn't been at least 5 turns since the last Pokédex was played.
 	ld a, [wAIPokedexCounter]
 	cp 5
 	ccf
-	ret nc ; return if counter hasn't reached 5 yet
+	ret nc
 
-; return no carry if number of cards in deck <= 4
+; don't play Pokédex if there aren't at least 5 cards in the AI's deck.
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	cp DECK_SIZE - 4
 	ret nc
 
-; has a 3 in 10 chance of actually playing card
+; randomly decide to not play Pokédex 70% of the time.
 	ld a, 10
 	call Random
 	cp 3
 	ret nc
 
+; switch to a custom subroutine if the NPC opponent is using the Wonders of Science deck.
 .pick_cards
 	ld a, [wOpponentDeckID]
 	cp WONDERS_OF_SCIENCE_DECK_ID
-	jp nz, PickPokedexCards
-	; fallthrough
+	jp nz, PickPokedexCards_EnergyPokemonTrainer
+	; fallthrough for the Wonders of Science deck
 
-; picks order of the cards in deck from the effects of Pokedex.
-; prioritizes Pokemon cards, then Trainer cards, then energy cards.
-; stores the resulting order in wce1a.
+; picks the new order for the top 5 cards of the AI's deck.
+; prioritizes Pokémon cards, then Trainer cards, then Energy cards.
+; stores the resulting order in wce1a, wce1b, wce1c, wce1d, and wce1e.
+; output:
+;	carry = set
+PickPokedexCards_PokemonTrainerEnergy:
 	xor a
 	ld [wAIPokedexCounter], a ; reset counter
 
@@ -2755,8 +2928,8 @@ AIDecide_Pokedex:
 	get_turn_duelist_var
 	add DUELVARS_DECK_CARDS
 	ld l, a
-	lb de, $00, $00
-	ld b, 5
+	ld de, 0 ; offset for storing the cards in wram
+	ld b, 5  ; number of cards that should be reordered
 
 ; run through 5 of the remaining cards in deck
 .next_card
@@ -2786,12 +2959,11 @@ AIDecide_Pokedex:
 
 	ld de, wce1a
 
-; find Pokemon
+; find Pokémon
 	ld hl, wce08
 	lb bc, 0, -1
 
-; run through the stored cards
-; and look for any Pokemon cards.
+; run through the stored cards and look for any Pokémon cards.
 .loop_pokemon
 	inc c
 	ld a, [hli]
@@ -2799,8 +2971,7 @@ AIDecide_Pokedex:
 	jr z, .find_trainers
 	cp TYPE_ENERGY
 	jr nc, .loop_pokemon
-; found a Pokemon card
-; store it in wce1a list
+; found a Pokémon, so store it in wce1a list
 	push hl
 	ld hl, wce0f
 	add hl, bc
@@ -2810,8 +2981,7 @@ AIDecide_Pokedex:
 	inc de
 	jr .loop_pokemon
 
-; run through the stored cards
-; and look for any Trainer cards.
+; run through the stored cards and look for any Trainer cards.
 .find_trainers
 	ld hl, wce08
 	lb bc, 0, -1
@@ -2838,8 +3008,7 @@ AIDecide_Pokedex:
 	ld hl, wce08
 	lb bc, 0, -1
 
-; run through the stored cards
-; and look for any energy cards.
+; run through the stored cards and look for any Energy cards.
 .loop_energy
 	inc c
 	ld a, [hli]
@@ -2847,7 +3016,7 @@ AIDecide_Pokedex:
 	jr z, .done
 	and TYPE_ENERGY
 	jr z, .loop_energy
-; found an energy card
+; found an Energy card
 ; store it in wce1a list
 	push hl
 	ld hl, wce0f
@@ -2863,19 +3032,21 @@ AIDecide_Pokedex:
 	ret
 
 
-; picks order of the cards in deck from the effects of Pokedex.
-; prioritizes energy cards, then Pokemon cards, then Trainer cards.
-; stores the resulting order in wce1a.
-PickPokedexCards:
+; picks the new order for the top 5 cards of the AI's deck.
+; prioritizes Energy cards, then Pokémon cards, then Trainer cards.
+; stores the resulting order in wce1a, wce1b, wce1c, wce1d, and wce1e.
+; output:
+;	carry = set
+PickPokedexCards_EnergyPokemonTrainer:
 	xor a
-	ld [wAIPokedexCounter], a ; reset counter ; reset counter
+	ld [wAIPokedexCounter], a ; reset counter
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	add DUELVARS_DECK_CARDS
 	ld l, a
-	lb de, $00, $00
-	ld b, 5
+	ld de, 0 ; offset for storing the cards in wram
+	ld b, 5  ; number of cards that should be reordered
 
 ; run through 5 of the remaining cards in deck
 .next_card
@@ -2909,8 +3080,7 @@ PickPokedexCards:
 	ld hl, wce08
 	lb bc, 0, -1
 
-; run through the stored cards
-; and look for any energy cards.
+; run through the stored cards and look for any Energy cards.
 .loop_energy
 	inc c
 	ld a, [hli]
@@ -2918,7 +3088,7 @@ PickPokedexCards:
 	jr z, .find_pokemon
 	and TYPE_ENERGY
 	jr z, .loop_energy
-; found an energy card
+; found an Energy card
 ; store it in wce1a list
 	push hl
 	ld hl, wce0f
@@ -2933,8 +3103,7 @@ PickPokedexCards:
 	ld hl, wce08
 	lb bc, 0, -1
 
-; run through the stored cards
-; and look for any Pokemon cards.
+; run through the stored cards and look for any Pokémon cards.
 .loop_pokemon
 	inc c
 	ld a, [hli]
@@ -2942,8 +3111,7 @@ PickPokedexCards:
 	jr z, .find_trainers
 	cp TYPE_ENERGY
 	jr nc, .loop_pokemon
-; found a Pokemon card
-; store it in wce1a list
+; found a Pokémon, so store it in wce1a list
 	push hl
 	ld hl, wce0f
 	add hl, bc
@@ -2953,8 +3121,7 @@ PickPokedexCards:
 	inc de
 	jr .loop_pokemon
 
-; run through the stored cards
-; and look for any Trainer cards.
+; run through the stored cards and look for any Trainer cards.
 .find_trainers
 	ld hl, wce08
 	lb bc, 0, -1
@@ -2987,12 +3154,16 @@ PickPokedexCards:
 ; Full Heal uses 'AIPlay_TrainerCard_NoVars'
 
 
+; AI will always play Full Heal if its Active Pokémon is Poisoned,
+; but it will run through various checks before deciding whether or not to
+; play the card if its Active Pokémon is Asleep, Confused, or Paralyzed.
+; output:
+;	carry = set:  if the AI decided to play Full Heal
 AIDecide_FullHeal:
+; can't play Full Heal unless the AI's Active Pokémon is affected by a Special Condition.
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
-
-; skip if no status on arena card
-	or a ; NO_STATUS
+	or a ; cp NO_STATUS
 	ret z ; return no carry if there are no Special Conditions to remove
 
 	and CNF_SLP_PRZ
@@ -3008,8 +3179,11 @@ AIDecide_FullHeal:
 	scf
 	ret
 
-; returns carry if player's Arena card
-; is card in register a
+; preserves de
+; input:
+;	a = card ID to look for
+; output:
+;	carry = set:  if the Player's Active Pokémon is a copy of the given card
 .CheckPlayerArenaCard:
 	rst SwapTurn
 	ld b, PLAY_AREA_ARENA
@@ -3017,8 +3191,8 @@ AIDecide_FullHeal:
 	jp SwapTurn
 
 .asleep
-; set carry if any of the following
-; cards are in the Play Area.
+; set carry if there's a HaunterLv22 or any Gastly in the
+; Player's play area (due to Haunter's Dream Eater attack).
 	ld a, GASTLY_LV8
 	call .CheckPlayerArenaCard
 	ret c
@@ -3028,9 +3202,10 @@ AIDecide_FullHeal:
 	ld a, HAUNTER_LV22
 	call .CheckPlayerArenaCard
 	ret c
+;	fallthrough
 
 .paralyzed
-; if Scoop Up is in hand and decided to be played, skip.
+; don't play Full Heal if the AI will decide to play Scoop Up later in the turn.
 	ld a, SCOOP_UP
 	call LookForCardIDInHandList_Bank8
 	jr nc, .no_scoop_up_prz
@@ -3038,11 +3213,9 @@ AIDecide_FullHeal:
 	ccf
 	ret nc
 
+; return carry if the Active Pokémon can damage the Defending Pokémon.
 .no_scoop_up_prz
-; return carry if Arena card
-; can damage the defending Pokémon
-
-; temporarily remove status effect for damage checking
+; temporarily remove status effect to check the damage.
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
 	ld b, [hl]
@@ -3056,7 +3229,7 @@ AIDecide_FullHeal:
 	ld [hl], b
 	ret c
 
-; if it can play an energy card to retreat, set carry.
+; if it can play an Energy card to retreat, set carry.
 	ld a, [wAIPlayEnergyCardForRetreat]
 	or a
 	jr nz, .set_carry
@@ -3068,7 +3241,7 @@ AIDecide_FullHeal:
 	ret
 
 .confused
-; if Scoop Up is in hand and decided to be played, skip.
+; don't play Full Heal if the AI will decide to play Scoop Up later in the turn.
 	ld a, SCOOP_UP
 	call LookForCardIDInHandList_Bank8
 	jr nc, .no_scoop_up_cnf
@@ -3077,11 +3250,11 @@ AIDecide_FullHeal:
 	ret nc
 
 .no_scoop_up_cnf
-; if card can damage defending Pokemon...
+; if this Pokémon can damage the Defending Pokémon...
 	xor a ; PLAY_AREA_ARENA
 	farcall CheckIfCanDamageDefendingPokemon
 	ret nc
-; ...and can play an energy card to retreat, set carry.
+; ...and can play an Energy card to retreat, set carry.
 	ld a, [wAIPlayEnergyCardForRetreat]
 	or a
 	jr nz, .set_carry
@@ -3094,23 +3267,27 @@ AIDecide_FullHeal:
 ; Mr. Fuji uses 'AIPlay_TrainerCard_OneVar'
 
 
-; AI logic for playing Mr Fuji
+; AI will only play Mr. Fuji if it has a Benched Pokémon
+; with remaining HP that's less than 1/3 its maximum HP.
+; output:
+;	a & [wce06] = chosen Pokémon's play area location offset (PLAY_AREA_* constant)
+;	carry = set:  if the AI decided to play Mr. Fuji
 AIDecide_MrFuji:
 	ld a, $ff
 	ld [wce06], a
 	ld [wce08], a
 
-; if just one Pokemon in Play Area, skip.
+; can't play Mr. Fuji if the AI doesn't have any Benched Pokémon.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	dec a
 	or a
-	ret z
+	ret z ; return no carry if there are no Benched Pokémon
 
 	ld d, a
 	ld e, PLAY_AREA_BENCH_1
 
-; find a Pokemon in the bench that has damage counters.
+; find a Benched Pokémon that has damage counters.
 .loop_bench
 	ld a, DUELVARS_ARENA_CARD
 	add e
@@ -3126,8 +3303,8 @@ AIDecide_MrFuji:
 	or a
 	jr z, .next
 
-; a = damage counters
-; b = hp left
+; a = number of damage counters on the Pokémon
+; b = the Pokémon's remaining HP
 	call CalculateBDividedByA_Bank8
 	cp 20
 	jr nc, .next
@@ -3161,29 +3338,32 @@ AIDecide_MrFuji:
 ; Scoop Up uses 'AIPlay_TrainerCard_TwoVars'
 
 
+; most AI opponents will only play Scoop Up on their Active Pokémon and
+; only if it can't KO or retreat and has less than 30% of its max HP.
+; The Legendary Articuno and Legendary Ronald decks have their own logic.
+; output:
+;	a = play area location offset of the Pokemon to scoop up (PLAY_AREA_* constant)
+;	[wce1a] = play area location offset of the Benched Pokemon to switch in:  if a = PLAY_AREA_ARENA
+;	carry = set:  if the AI decided to play Scoop Up
 AIDecide_ScoopUp:
-; if only one Pokemon in Play Area, skip.
+; can't play Scoop Up unless the AI has at least 2 Pokémon in play.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 1
 	ret z ; return no carry if there are no Benched Pokémon
 
-; handle some decks differently
+; handle some decks differently.
 	ld a, [wOpponentDeckID]
 	cp LEGENDARY_ARTICUNO_DECK_ID
 	jr z, .HandleLegendaryArticuno
 	cp LEGENDARY_RONALD_DECK_ID
 	jp z, .HandleLegendaryRonald
 
-; if can't KO defending Pokemon, check if defending Pokemon
-; can KO this card. If so, then continue.
-; If not, return no carry.
-
-; if it can KO the defending Pokemon this turn,
-; return no carry.
+; don't play Scoop Up if the AI's Active Pokémon could KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
 
+; Active Pokémon won't be able to KO, so check if it can retreat.
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
 	and CNF_SLP_PRZ
@@ -3194,10 +3374,9 @@ AIDecide_ScoopUp:
 	call CheckCantRetreatDueToAttackEffect
 	jr c, .cannot_retreat
 
-; doesn't have a status that prevents retreat.
-; so check if it has enough energy to retreat.
-; if not, return no carry.
-	xor a
+; nothing is preventing the Active Pokémon from retreating, so check if
+; it has enough Energy to retreat, and if it does, then don't play Scoop Up.
+	xor a ; PLAY_AREA_ARENA
 	ld e, a
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetPlayAreaCardRetreatCost
@@ -3221,10 +3400,8 @@ AIDecide_ScoopUp:
 	or a
 	ret z ; return no carry if the Active Pokémon isn't damaged
 
-; if (total damage / total HP counters) < 7
-; return carry.
-; (this corresponds to damage counters
-; being under 70% of the max HP)
+; don't play Scoop Up if (total damage / total HP counters) < 7.
+; (this corresponds to damage counters being under 70% of the max HP)
 	ld b, a
 	ld a, d
 	call CalculateBDividedByA_Bank8
@@ -3232,33 +3409,33 @@ AIDecide_ScoopUp:
 	ccf
 	ret nc
 
-; store Pokemon to switch to in wce1a and set carry.
+; store Pokémon to switch to in wce1a and set carry.
 .decide_switch
 	farcall AIDecideBenchPokemonToSwitchTo
 	ccf
-	ret nc
+	ret nc ; can't play Scoop Up if there are no Benched Pokémon to switch with.
 	ld [wce1a], a
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	scf
 	ret
 
 ; this deck will use Scoop Up on a Benched ARTICUNO_LV37
-; or on an Active ArticunoLv37/Chansey.
+; or on an Active ArticunoLv37/Chansey under specific circumstances.
 .HandleLegendaryArticuno
-; if less than 3 Play Area Pokemon cards, skip.
+; don't play Scoop Up unless the AI has at least 3 Pokémon in play.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 3
 	ccf
 	ret nc
 
-; look for ArticunoLv37 in bench
+; look for ArticunoLv37 on the Bench
 	ld a, ARTICUNO_LV37
 	ld b, PLAY_AREA_BENCH_1
 	call LookForCardIDInPlayArea_Bank8
 	jr c, .articuno_bench
 
-; check Arena card
+; check the Active Pokémon
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
@@ -3269,24 +3446,22 @@ AIDecide_ScoopUp:
 	or a
 	ret
 
-; here either ArticunoLv37 or Chansey
-; is the Arena Card.
+; either ArticunoLv37 or Chansey is the Active Pokémon. if it can't KO the
+; Defending Pokémon but the Defending Pokémon can KO it, then set carry.
+; return no carry in all other scenarios.
 .articuno_or_chansey
-; if can't KO defending Pokemon, check if defending Pokemon
-; can KO this card. If so, then continue.
-; If not, return no carry.
-
-; if it can KO the defending Pokemon this turn,
-; return no carry.
+; don't play Scoop Up if the AI's Active Pokémon could KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
 
+; next, check if the Defending Pokémon can KO the AI's Active Pokémon next turn,
+; and only decide to play Scoop Up if it can.
 	farcall CheckIfDefendingPokemonCanKnockOut
 	ret nc
 	jr .decide_switch
 
 .articuno_bench
-; skip if the defending card is Snorlax
+; skip if the Defending Pokémon is a Snorlax
 	ld e, a
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
@@ -3296,7 +3471,7 @@ AIDecide_ScoopUp:
 	cp SNORLAX
 	ret z ; return no carry if the Defending Pokémon is a Snorlax
 
-; check attached energy cards.
+; check attached Energy cards.
 ; if it has any, return no carry.
 	ld a, e
 .check_attached_energy
@@ -3305,39 +3480,41 @@ AIDecide_ScoopUp:
 	or a
 	ret nz ; return no carry if this Pokémon has any attached Energy cards
 
-; return no carry if there's a Muk in either play area
+; don't play Scoop Up if Muk's Toxic Gas is currently in effect.
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
 	ccf
 	ret nc
 
-; has decided to Scoop Up benched card,
-; store $ff as the Pokemon card to switch to
+; has decided to Scoop Up a Benched Pokémon,
+; store $ff as the Pokémon card to switch to
 ; because there's no need to switch.
 	ld a, $ff
 	ld [wce1a], a
 	ld a, e
 	ret
 
-; this deck will use Scoop Up on a benched ArticunoLv37, ZapdosLv68 or MoltresLv37.
+; this deck will use Scoop Up on a Benched ArticunoLv37, ZapdosLv68 or MoltresLv37
+; if it doesn't have any attached Energy cards and there's no Muk in the play area.
 .HandleLegendaryRonald
-; if less than 3 Play Area Pokemon cards, skip.
+; don't play Scoop Up unless the AI has at least 3 Pokémon in play.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 3
 	ccf
 	ret nc
 
+; look for specific Pokémon on the AI's Bench.
 	ld a, ARTICUNO_LV37
 	ld b, PLAY_AREA_BENCH_1
 	call LookForCardIDInPlayArea_Bank8
 	call c, .articuno_bench
-	ret c
+	ret c ; return if AI decided to use Scoop Up on a Benched ArticunoLv37
 	ld a, ZAPDOS_LV68
 	ld b, PLAY_AREA_BENCH_1
 	call LookForCardIDInPlayArea_Bank8
 	call c, .check_attached_energy
-	ret c
+	ret c ; return if AI decided to use Scoop up on a Benched ZapdosLv68
 	ld a, MOLTRES_LV37
 	ld b, PLAY_AREA_BENCH_1
 	call LookForCardIDInPlayArea_Bank8
@@ -3362,22 +3539,28 @@ AIPlay_Maintenance:
 	ret
 
 
-; AI logic for playing Maintenance
+; all AI opponents other than Imakuni? will only play Maintenance
+; if there are duplicate card in the hand to shuffle back into the deck.
+; Imakuni? will randomly decide to play Maintenance 20% of the time.
+; output:
+;	[wce1a] = deck index of the first card that was selected from the AI's hand
+;	[wce1b] = deck index of the second card that was selected from the AI's hand
+;	carry = set:  if the AI decided to play Maintenance
 AIDecide_Maintenance:
-; Imakuni? has his own thing
+; switch to a custom subroutine if the NPC opponent is Imakuni?.
 	ld a, [wOpponentDeckID]
 	cp IMAKUNI_DECK_ID
 	jr z, .imakuni
 
-; skip if number of cars in hand < 4.
+; don't play Maintenance if there are fewer than 4 cards in the AI's hand.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	cp 4
 	ccf
 	ret nc
 
-; list out all the hand cards and remove
-; wAITrainerCardToPlay from list.Then find any duplicate cards.
+; create a list of the cards in the AI's hand and remove wAITrainerCardToPlay
+; from the list. then, try to find duplicate cards to discard.
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld a, [wAITrainerCardToPlay]
@@ -3387,7 +3570,7 @@ AIDecide_Maintenance:
 	ret nc
 
 ; store the first duplicate card and remove it from the list.
-; run duplicate check again.
+; then, search for another duplicate.
 	ld [wce1a], a
 	ld hl, wDuelTempList
 	call FindAndRemoveCardFromList
@@ -3397,30 +3580,29 @@ AIDecide_Maintenance:
 
 ; store the second duplicate card and return carry.
 	ld [wce1b], a
-	ret
+	ret ; carry set
 
 .imakuni
-; has a 2 in 10 chance of not skipping.
+; Imakuni? randomly decides to not play Maintenance 80% of the time.
 	ld a, 10
 	call Random
 	cp 2
 	ret nc
 
-; skip if number of cards in hand < 3.
+; can't play Maintenance if there are fewer than 3 cards (including Maintenance) in hand.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	cp 3
 	ccf
 	ret nc
 
-; shuffle hand cards
+; create a randomized list of every card in the AI's hand.
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	call ShuffleCards
 
-; go through each card and find
-; cards that are different from wAITrainerCardToPlay.
-; if found, add those cards to wce1a and wce1a+1.
+; find the first 2 cards that are different from wAITrainerCardToPlay
+; and store those deck indices in wce1a and wce1b.
 	ld a, [wAITrainerCardToPlay]
 	ld b, a
 	ld c, 2
@@ -3463,14 +3645,18 @@ AIPlay_Recycle:
 	ret
 
 
-; AI uses Recycle on a discarded Trainer when not using one of decks with a given
+; AI uses Recycle on a discarded Trainer when not using a deck with a given
 ; priority list, which includes Ken's Fire Charge deck and Robert's Ghost Deck.
+; output:
+;	a = deck index of the card that was chosen from the discard pile
+;	carry = set:  if the AI decided to play Recycle
 AIDecide_Recycle:
-; no use checking if no cards in Discard Pile
+; can't play Recycle if there are no cards in the AI's discard pile.
 	call CreateDiscardPileCardList
 	ccf
 	ret nc
 
+; initialize a priority list.
 	ld hl, wce08
 	ld a, $ff
 	ld [hli], a
@@ -3479,7 +3665,7 @@ AIDecide_Recycle:
 	ld [hli], a
 	ld [hl], a
 
-; handle Ghost deck differently
+; try to jump to a customized priority list with up to 5 card IDs to look for.
 	ld hl, wDuelTempList
 	ld a, [wOpponentDeckID]
 	cp FIRE_CHARGE_DECK_ID
@@ -3501,7 +3687,7 @@ AIDecide_Recycle:
 	scf
 	ret
 
-; priority list for Fire Charge deck
+; priority list for Ken's Fire Charge deck
 .fire_charge_search_loop
 	ld a, [hli]
 	cp $ff
@@ -3510,7 +3696,7 @@ AIDecide_Recycle:
 	ld b, a
 	call _GetCardIDFromDeckIndex
 
-; double colorless
+; double colorless energy
 	cp DOUBLE_COLORLESS_ENERGY
 	jr nz, .chansey
 	ld a, b
@@ -3538,8 +3724,8 @@ AIDecide_Recycle:
 	ld [wce08 + 3], a
 	jr .fire_charge_search_loop
 
-; loop through wce08 and set carry
-; on the first that was found in Discard Pile.
+; loop through wce08 and set carry after outputting
+; the deck index of the first card that was found.
 ; if none were found, return no carry.
 .done
 	ld hl, wce08
@@ -3552,7 +3738,7 @@ AIDecide_Recycle:
 	jr nz, .loop_found
 	ret
 
-; priority list for Ghost deck
+; priority list for Robert's Ghost deck
 .ghost_search_loop
 	ld a, [hli]
 	cp $ff
@@ -3610,16 +3796,20 @@ AIPlay_Lass:
 	ret
 
 
+; AI will only play Lass if there are no other Trainer cards in its hand.
+; the Player must also have at least 7 cards in their hand.
+; output:
+;	carry = set:  if the AI decided to play Lass
 AIDecide_Lass:
-; skip if player has less than 7 cards in hand
+; skip if the Player has less than 7 cards in hand.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	call GetNonTurnDuelistVariable
 	cp 7
 	ccf
 	ret nc
 
-; look for Trainer cards in hand (except for Lass)
-; if any is found, return no carry.
+; look for Trainer cards in the AI's hand (except for Lass).
+; if any are found, return no carry.
 ; otherwise, return carry.
 	call CreateHandCardList
 	ld hl, wDuelTempList
@@ -3627,7 +3817,7 @@ AIDecide_Lass:
 	ld a, [hli]
 	cp $ff
 	scf
-	ret z
+	ret z ; return carry if there are no more cards to check
 	ld b, a
 	call LoadCardDataToBuffer1_FromDeckIndex
 	cp LASS
@@ -3664,6 +3854,11 @@ AIPlay_ItemFinder:
 ; unless they have 2 duplicate cards in their hand to discard for the cost.
 ; Stephanie's Strange Power deck will only use Item Finder on a discarded Energy Removal
 ; and also refuses to discard a duplicate Mr. Mime or Pokémon Trader card from her hand.
+; output:
+;	a = deck index of a Trainer card in the AI's discard pile (to add to the hand)
+;	[wce1a] = deck index of a duplicate card in the AI's hand (to discard)
+;	[wce1b] = deck index of another duplicate card in the AI's hand (to discard)
+;	carry = set:  if the AI decided to play Item Finder
 AIDecide_ItemFinder:
 ; can't play Item Finder if there are no Trainer cards in the AI's discard pile.
 	farcall CreateTrainerCardListFromDiscardPile
@@ -3689,34 +3884,34 @@ AIDecide_ItemFinder:
 	ld a, b
 	ld [wce06], a
 
-; choose cards to discard from hand.
+; choose 2 cards to discard from the hand.
 	call CreateHandCardList
 .choose_discard
 	ld hl, wDuelTempList
 
-; do not discard wAITrainerCardToPlay
+; do not discard wAITrainerCardToPlay.
 	ld a, [wAITrainerCardToPlay]
 	call FindAndRemoveCardFromList
-; find any duplicates, if not found, return no carry.
+; look for a duplicate and return no carry if none were found.
 	call FindDuplicateCards
 	ret nc
 
-; store the duplicate found in wce1a and
-; remove it from the hand list.
+; store the duplicate's deck index in wce1a and remove it from the hand list.
 	ld [wce1a], a
 	ld hl, wDuelTempList
 	call FindAndRemoveCardFromList
-; find duplicates again, if not found, return no carry.
+; look for another duplicate and return no carry if none were found.
 	call FindDuplicateCards
 	ret nc
 
-; store the duplicate found in wce1b.
-; output the card to be recovered from the Discard Pile.
+; store the duplicate's deck index in wce1b and
+; output the card to be recovered from the discard pile.
 	ld [wce1b], a
 	ld a, [wce06]
 	ret ; carry set
 
-; look for Energy Removal in Discard Pile
+
+; look for Energy Removal in the discard pile
 .loop_discard_pile_strange_power
 	ld a, [hli]
 	cp $ff
@@ -3729,8 +3924,8 @@ AIDecide_ItemFinder:
 	ld a, b
 	ld [wce06], a
 
-; before looking for cards to discard in hand,
-; remove any Mr Mime and Pokemon Trader cards.
+; before looking for cards to discard from the hand,
+; remove any Mr. Mime and Pokémon Trader cards.
 ; this way these are guaranteed to not be discarded.
 	call CreateHandCardList
 	ld hl, wDuelTempList
@@ -3755,7 +3950,10 @@ AIDecide_ItemFinder:
 ; Imakuni? uses 'AIPlay_TrainerCard_NoVars'
 
 
-; only sets carry if Active card is not confused.
+; AI will decide to play Imakuni? if it's Active Pokémon isn't already Confused.
+; preserves bc and de
+; output:
+;	carry = set:  if the AI decided to play Imakuni?
 AIDecide_Imakuni:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
@@ -3806,16 +4004,20 @@ AIPlay_Gambler:
 	ret
 
 
-; checks whether to play Gambler.
-; aside from Imakuni?, all other opponents only
-; play this card if Player is running MewtwoLv53-only deck.
+; all AI opponents other than Imakuni? will only play Gambler
+; if the Player is using a MewtwoLv53 stall deck and only once
+; they have less than 5 cards left in their deck.
+; Imakuni? will randomly decide to play Gambler 20% of the time.
+; preserves bc and de
+; output:
+;	carry = set:  if the AI decided to play Gambler
 AIDecide_Gambler:
-; Imakuni? has his own routine
+; switch to a custom subroutine if the NPC opponent is Imakuni?.
 	ld a, [wOpponentDeckID]
 	cp IMAKUNI_DECK_ID
 	jr z, .imakuni
 
-; check if flag is set for Player using MewtwoLv53 only deck
+; check if the Player is using a deck with only MewtwoLv53.
 	ld a, [wAIBarrierFlagCounter]
 	and AI_MEWTWO_MILL
 	ret z ; return no carry if the Player isn't using a Mewtwo Barrier deck
@@ -3830,7 +4032,7 @@ AIDecide_Gambler:
 	ret
 
 .imakuni
-; has a 2 in 10 chance of returning carry
+; Imakuni? randomly decides to play Gambler exactly 20% of the time.
 	ld a, 10
 	call Random
 	cp 2
@@ -3845,14 +4047,17 @@ AIDecide_Gambler:
 ; all AI opponents other than Chris will use Revive on the Basic Pokémon
 ; with the highest HP in their discard pile, but only if it has
 ; at least 50 HP and only if there are fewer than 3 Benched Pokémon.
-; Chris's Muscles for Brains deck will try to use this card on specific Pokémon.
+; Chris's Muscles for Brains deck will try to target specific Pokémon in the discard pile.
+; output:
+;	a = deck index of the Basic Pokémon card that was chosen
+;	carry = set:  if the AI decided to play Revive
 AIDecide_Revive:
-; skip if no cards in Discard Pile
+; can't play Revive if there are no cards in the AI's discard pile.
 	call CreateDiscardPileCardList
 	ccf
 	ret nc
 
-; skip if number of Pokemon cards in Play Area >= 4
+; don't play Revive if there's already 3 or more Benched Pokémon.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 4
@@ -3870,7 +4075,7 @@ AIDecide_Revive:
 	ld a, $ff
 	ld [wce08], a
 
-; find the Basic Pokémon with the highest HP in the discard pile
+; find the Basic Pokémon with the highest HP in the discard pile.
 .loop_discard_pile
 	ld a, [hli]
 	cp $ff
@@ -3902,7 +4107,7 @@ AIDecide_Revive:
 	ccf
 	ret
 
-; look in Discard Pile for specific cards.
+; look in the discard pile for specific Pokémon.
 .muscles_for_brains_loop
 	ld a, [hli]
 	cp $ff
@@ -3926,22 +4131,30 @@ AIDecide_Revive:
 
 
 
-; Pokemon Flute uses 'AIPlay_TrainerCard_OneVar'
+; Pokémon Flute uses 'AIPlay_TrainerCard_OneVar'
 
 
+; all AI opponents other than Imakuni? will only play Pokémon Flute
+; if there's a Basic Pokémon with less than 50 HP in the Player's discard pile.
+; Imakuni? will randomly decide to play Pokémon Flute 20% of the time,
+; and he'll target the first Basic Pokémon in the Player's discard pile.
+; output:
+;	a = deck index of the Basic Pokémon card that was chosen
+;	carry = set:  if the AI decided to play Pokémon Flute
 AIDecide_PokemonFlute:
-; if player has no Discard Pile, skip.
+; can't play Pokémon Flute if the Player has no cards in their discard pile.
 	rst SwapTurn
 	call CreateDiscardPileCardList
 	ccf
 	jr nc, .done
 
-; if player's Play Area is already full, skip.
+; can't play Pokémon Flute if there's no room on the Player's Bench.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .done
 
+; switch to a custom subroutine if the NPC opponent is Imakuni?.
 	ld a, [wOpponentDeckID]
 	cp IMAKUNI_DECK_ID
 	jr z, .imakuni
@@ -3950,7 +4163,7 @@ AIDecide_PokemonFlute:
 	ld [wce06], a
 	ld [wce08], a
 
-; find Basic stage Pokemon with lowest HP in Discard Pile
+; find the Basic Pokémon with the lowest HP in the discard pile.
 	ld hl, wDuelTempList
 .loop_1
 	ld a, [hli]
@@ -3968,14 +4181,14 @@ AIDecide_PokemonFlute:
 	cp [hl]
 	pop hl
 	jr nc, .loop_1
-; if lower, store this one
+; if lower, store this card's HP and deck index
 	ld [wce06], a
 	ld a, b
 	ld [wce08], a
 	jr .loop_1
 
 .check_lowest_hp
-; if lowest HP found < 50, return carry
+; only play Pokémon Flute if the lowest HP value was less than 50.
 	ld a, [wce06]
 	cp 50
 	ld a, [wce08]
@@ -3983,13 +4196,13 @@ AIDecide_PokemonFlute:
 	jp SwapTurn
 
 .imakuni
-; has 2 in 10 chance of not skipping
+; Imakuni? randomly decides to not play Pokémon Flute 80% of the time.
 	ld a, 10
 	call Random
 	cp 2
 	jr nc, .done
 
-; look for any Basic Pokemon card
+; look for any Basic Pokémon card.
 	ld hl, wDuelTempList
 .loop_2
 	ld a, [hli]
@@ -3999,7 +4212,7 @@ AIDecide_PokemonFlute:
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .loop_2
 
-; a Basic stage Pokemon was found, return carry
+; return carry with the Basic Pokémon's deck index in a.
 	rst SwapTurn
 	ld a, b
 	ret ; carry set
@@ -4010,16 +4223,20 @@ AIDecide_PokemonFlute:
 ; Clefairy Doll and Mysterious Fossil use 'AIPlay_TrainerCard_NoVars'
 
 
-; AI logic for playing Clefairy Doll
+; AI will only play Clefairy Doll or Mysterious Fossil if it has
+; fewer than 3 Benched Pokémon or if its Active Pokémon is Wigglytuff.
+; preserves de and c
+; output:
+;	carry = set:  if the AI decided to play this card
 AIDecide_ClefairyDollOrMysteriousFossil:
-; if has max number of Play Area Pokemon, skip
+; can't play this card if the Bench is already full.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld b, a
 	cp MAX_PLAY_AREA_POKEMON
 	ret nc
 
-; if the Arena card is Wigglytuff, return carry
+; always play this card if the Active Pokémon is Wigglytuff.
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
@@ -4027,7 +4244,7 @@ AIDecide_ClefairyDollOrMysteriousFossil:
 	scf
 	ret z
 
-; if number of Play Area Pokemon >= 4, return no carry
+; don't play this card if there's already 3 or more Benched Pokémon.
 	ld a, b
 	cp 4
 	ret
@@ -4058,8 +4275,11 @@ AIPlay_Pokeball:
 ; if Poké Ball is in a deck that isn't listed, then the AI will
 ; look for a Basic Pokémon if it has fewer than 3 Pokémon in play,
 ; then a card that evolves from a play area Pokémon, then any Pokémon.
+; output:
+;	a = deck index of the Pokémon card that was chosen from the deck
+;	carry = set:  if the AI decided to play Poké Ball
 AIDecide_Pokeball:
-; go to the routines associated with deck ID
+; use the opponent's Deck ID to switch to the correct subroutine.
 	ld a, [wOpponentDeckID]
 	cp FIRE_CHARGE_DECK_ID
 	jr z, .fire_charge
@@ -4133,6 +4353,7 @@ AIDecide_Pokeball:
 	ld a, b
 	ret ; carry set
 
+
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
 .fire_charge
@@ -4148,6 +4369,7 @@ AIDecide_Pokeball:
 	ld a, CARD_LOCATION_DECK
 	jp LookForCardIDInLocation_Bank8
 
+
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
 .hard_pokemon
@@ -4162,6 +4384,7 @@ AIDecide_Pokeball:
 	ld e, ONIX
 	ld a, CARD_LOCATION_DECK
 	jp LookForCardIDInLocation_Bank8
+
 
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
@@ -4186,9 +4409,10 @@ AIDecide_Pokeball:
 	ld a, CARD_LOCATION_DECK
 	jp LookForCardIDInLocation_Bank8
 
+
 ; this deck runs a deck check for specific
 ; card IDs in order of decreasing priority
-; given a specific energy card in hand.
+; given a specific Energy card in the hand.
 ; also it avoids redundancy, so if it already
 ; has that card ID in the hand, it is skipped.
 .etcetera
@@ -4271,41 +4495,47 @@ AIDecide_Pokeball:
 	or a
 	ret
 
-; this deck looks for card evolutions if
-; its pre-evolution is in hand or in Play Area.
-; if none of these are found, it looks for pre-evolutions
-; of cards it has in hand.
-; it does this for both the NidoranM (first)
-; and NidoranF (second) families.
+
+; this deck looks for Evolution cards if a pre-evolution is in either the hand or the play area.
+; if none of these are found, it looks for pre-evolutions of cards it has in hand.
+; it does this for both the NidoranM (first) and NidoranF (second) families.
 .lovely_nidoran
+; pick Nidorino if it was found in the deck but not the hand/play area and Nidoran M was also found in the hand/play area.
 	ld b, NIDORANM
 	ld a, NIDORINO
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	ret c
+; pick Nidoking if it was found in the deck but not the hand/play area and Nidorino was also found in the hand/play area.
 	ld b, NIDORINO
 	ld a, NIDOKING
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	ret c
+; pick Nidoran M if it was found in the deck but not the hand/play area and Nidorino was also found in the hand.
 	ld a, NIDORANM
 	ld b, NIDORINO
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret c
+; pick Nidorino if it was found in the deck but not the hand/play area and Nidoking was also found in the hand.
 	ld a, NIDORINO
 	ld b, NIDOKING
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret c
+; pick Nidorina if it was found in the deck but not the hand/play area and Nidoran F was also found in the hand/play area.
 	ld b, NIDORANF
 	ld a, NIDORINA
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	ret c
+; pick Nidoqueen if it was found in the deck but not the hand/play area and Nidorina was also found in the hand/play area.
 	ld b, NIDORINA
 	ld a, NIDOQUEEN
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	ret c
+; pick Nidoran F if it was found in the deck but not the hand/play area and Nidorina was also found in the hand.
 	ld a, NIDORANF
 	ld b, NIDORINA
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret c
+; pick Nidorina if it was found in the deck but not the hand/play area and Nidoqueen was also found in the hand.
 	ld a, NIDORINA
 	ld b, NIDOQUEEN
 	jp LookForCardIDInDeck_GivenCardIDInHand
@@ -4332,15 +4562,20 @@ AIPlay_ComputerSearch:
 	ret
 
 
-; checks what Deck ID AI is playing and handle
-; them in their own routine.
+; every deck that contains Computer Search has its own subroutine.
+; output:
+;	a = deck index of the card to move from the deck to the hand
+;	[wce1a] = deck index of the first card to discard from the hand
+;	[wce1b] = deck index of the second card to discard from the hand
+;	carry = set:  if the AI decided to play Computer Search
 AIDecide_ComputerSearch:
-; skip if number of cards in hand < 3
+; can't play Computer Serach if there aren't at least 2 other cards in the AI's hand.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	cp 3
 	jr c, .no_carry
 
+; use the opponent's Deck ID to switch to the correct subroutine.
 	ld a, [wOpponentDeckID]
 	cp ROCK_CRUSHER_DECK_ID
 	jr z, AIDecide_ComputerSearch_RockCrusher
@@ -4356,38 +4591,38 @@ AIDecide_ComputerSearch:
 	ret
 
 
+; the Rock Crusher deck tries to search for either a Professor Oak card or
+; a specific Evolution card, depending on the other cards in its hand.
 AIDecide_ComputerSearch_RockCrusher:
-; if number of cards in hand is equal to 3,
-; target Professor Oak in deck
+; if there are exactly 3 cards in the AI's hand,
+; then only search for a Professor Oak card.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	cp 3
 	jr nz, .graveler
 
+; don't play Computer Search unless there's a Professor Oak card in the AI's deck.
 	ld e, PROFESSOR_OAK
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
 	ret nc
 
-	ld [wce06], a
-	ld hl, wce1a
-	ld a, $ff
-	ld [hli], a ; [wce1a] = $ff
-	ld [hl], a  ; [wce1b] = $ff
-
+	ld [wce06], a ; store the deck index of the Professor Oak card that was found for later
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wce1a
+	ld b, 2 ; number of cards that need to be discarded
+	ld a, [wAITrainerCardToPlay]
+	ld c, a
 .loop_hand_1
 	ld a, [hli]
 	cp $ff
-	jr z, .check_discard_cards
+	ret z ; return no carry if there are no more cards in the hand to check
+	cp c
+	jr z, .loop_hand_1 ; skip this card if it's the Trainer card that's being decided
 
-	ld c, a
+; don't play Computer Search if any of the following cards are in the AI's hand.
 	call _GetCardIDFromDeckIndex
-
-; if any of the following cards are in the hand,
-; return no carry.
 	cp PROFESSOR_OAK
 	ret z ; return no carry if it's a Professor Oak
 	cp FIGHTING_ENERGY
@@ -4399,37 +4634,26 @@ AIDecide_ComputerSearch_RockCrusher:
 	cp GEODUDE
 	ret z ; return no carry if it's a Geodude
 	cp ONIX
-	ret z ; return no carry if it's a Onix
+	ret z ; return no carry if it's an Onix
 	cp RHYHORN
 	ret z ; return no carry if it's a Rhyhorn
-
-; if it's same as wAITrainerCardToPlay, skip this card.
-	ld a, [wAITrainerCardToPlay]
-	cp c
-	jr z, .loop_hand_1
 
 ; store this card index in memory
 	ld [de], a
 	inc de
-	jr .loop_hand_1
+	dec b
+	jr nz, .loop_hand_1
 
-.check_discard_cards
-; check if two cards were found
-; if so, output in a the deck index
-; of Professor Oak card found in deck and set carry.
-	ld a, [wce1b]
-	cp $ff
-	ret z ; return no carry if a deck index wasn't stored
+; two cards were found, so output in a the deck index of
+; the Professor Oak card that was found in the deck and set carry.
 	ld a, [wce06]
 	scf
 	ret
 
-; more than 3 cards in hand, so look for
-; specific evolution cards.
-
-; checks if there is a Graveler card in the deck to target.
-; if so, check if there's Geodude in hand or Play Area,
-; and if there's no Graveler card in hand, proceed.
+; there are more than 3 cards in the AI's hand, so look for specific Evolution cards.
+; first, check if there is a Graveler card in the deck to target.
+; if so, check if there's a Geodude in the hand or the play area,
+; and if there's no Graveler card in the hand, proceed.
 ; also removes Geodude from hand list so that it is not discarded.
 .graveler
 	ld e, GRAVELER
@@ -4449,9 +4673,9 @@ AIDecide_ComputerSearch_RockCrusher:
 	farcall RemoveCardIDInList
 	jr .find_discard_cards_2
 
-; checks if there is a Golem card in the deck to target.
-; if so, check if there's Graveler in Play Area,
-; and if there's no Golem card in hand, proceed.
+; next, check if there is a Golem card in the deck to target.
+; if so, check if there's a Graveler in the play area,
+; and if there's no Golem card in the hand, proceed.
 .golem
 	ld e, GOLEM
 	ld a, CARD_LOCATION_DECK
@@ -4468,9 +4692,8 @@ AIDecide_ComputerSearch_RockCrusher:
 	ld hl, wDuelTempList
 	jr .find_discard_cards_2
 
-; checks if there is a Dugtrio card in the deck to target.
-; if so, check if there's Diglett in Play Area,
-; and if there's no Dugtrio card in hand, proceed.
+; finally, check if there's a Diglett in the play area
+; and a Dugtrio in the deck but not the hand.
 .dugtrio
 	ld e, DUGTRIO
 	ld a, CARD_LOCATION_DECK
@@ -4494,17 +4717,16 @@ AIDecide_ComputerSearch_RockCrusher:
 	ld [bc], a
 	dec bc
 	ld [bc], a
-	ld d, $00 ; start considering Trainer cards only
+	ld d, $00 ; start by trying to discard only Trainer cards
 
 ; stores wAITrainerCardToPlay in e so that
 ; all routines ignore it for the discard effects.
 	ld a, [wAITrainerCardToPlay]
 	ld e, a
 
-; this loop will store in wce1a cards to discard from hand.
-; at the start it will only consider Trainer cards,
-; then if there are still needed to discard,
-; move on to Pokemon cards, and finally to Energy cards.
+; this loop will store in wce1a the cards that should be discarded from the hand.
+; at the start, it will only consider Trainer cards, but if it can't find enough
+; Trainer cards, then it will move on to Pokémon cards and finally, to Energy cards.
 .loop_hand_2
 	call RemoveFromListDifferentCardOfGivenType
 	jr c, .found
@@ -4513,40 +4735,43 @@ AIDecide_ComputerSearch_RockCrusher:
 	cp d
 	ret z ; return no carry if there are no more card types to consider
 	jr .loop_hand_2
+
 .found
-; store this card in memory,
-; and if there's still one more card to search for,
-; jump back into the loop.
+; store this card in memory, and if there's still one more card
+; to search for,then jump back into the loop.
 	ld [bc], a
 	inc bc
 	ld a, [wce1b]
 	cp $ff
 	jr z, .loop_hand_2
 
-; output in a Computer Search target and set carry.
+; output in a the Computer Search target and set carry.
 	ld a, [wce06]
 	scf
 	ret
 
 
+; the Wonders of Science deck tries to search for either a Professor Oak card
+; or a Grimer/Muk, depending on the other cards in its hand.
 AIDecide_ComputerSearch_WondersOfScience:
-; if number of cards in hand < 5, target Professor Oak in deck
+; if there are fewer than 5 cards in the AI's hand,
+; then try to search for a Professor Oak card.
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	cp 5
 	jr nc, .look_in_hand
 
-; target Professor Oak for Computer Search
+; if there's a Professor Oak in the deck, then store its deck index
+; and move on to choosing cards in the hand to discard.
 	ld e, PROFESSOR_OAK
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
 	jr nc, .look_in_hand
 	jr CheckHandForTwoTrainerCards
 
-; Professor Oak not in deck, move on to
-; look for other cards instead.
-; if Grimer or Muk are not in hand,
-; check whether to use Computer Search on them.
+; Professor Oak wasn't found in the deck, so try to
+; search for either a Grimer or a Muk if there
+; isn't already one in the AI's hand or play area.
 .look_in_hand
 	ld a, GRIMER
 	call LookForCardIDInHandAndPlayArea
@@ -4557,8 +4782,8 @@ AIDecide_ComputerSearch_WondersOfScience:
 	or a
 	ret
 
-; first check Grimer
-; if in deck, check cards to discard.
+; if there's a Grimer in the deck, then store its deck index
+; and move on to choosing cards in the hand to discard.
 .target_grimer
 	ld e, GRIMER
 	ld a, CARD_LOCATION_DECK
@@ -4566,8 +4791,8 @@ AIDecide_ComputerSearch_WondersOfScience:
 	ret nc
 	jr CheckHandForTwoTrainerCards
 
-; first check Muk
-; if in deck, check cards to discard.
+; if there's a Muk in the deck, then store its deck index
+; and move on to choosing cards in the hand to discard.
 .target_muk
 	ld e, MUK
 	ld a, CARD_LOCATION_DECK
@@ -4576,9 +4801,8 @@ AIDecide_ComputerSearch_WondersOfScience:
 	jr CheckHandForTwoTrainerCards
 
 
+; the Fire Charge deck tries to search for specific Pokémon that aren't already in the hand.
 AIDecide_ComputerSearch_FireCharge:
-; pick target card in deck from highest to lowest priority.
-; if not found in hand, go to corresponding branch.
 	ld a, CHANSEY
 	call LookForCardIDInHandList_Bank8
 	jr nc, .chansey
@@ -4591,9 +4815,8 @@ AIDecide_ComputerSearch_FireCharge:
 	or a
 	ret
 
-; for each card targeted, check if it's in deck and,
-; if not, then return no carry.
-; else, look for cards to discard.
+; don't play Computer Search if the given card isn't in the deck,
+; but if a copy was found, then check the hand for Trainer cards to discard.
 .chansey
 	ld e, CHANSEY
 	ld a, CARD_LOCATION_DECK
@@ -4613,18 +4836,17 @@ AIDecide_ComputerSearch_FireCharge:
 	ret nc
 ;	fallthrough
 
-; only discard Trainer cards from hand.
-; if there are less than 2 Trainer cards to discard,
-; then return with no carry.
-; else, store the cards to discard and the
-; target card deck index, and return carry.
+; preserves a (only if carry is set)
+; output:
+;	carry = set:  if at least 2 Trainer cards were found in the AI's hand
+;	[wce1a] = deck index of a Trainer card in the AI's hand, if any
+;	[wce1b] = deck index of another Trainer card in the AI's hand, if any
 CheckHandForTwoTrainerCards:
 	ld [wce06], a
 	call CreateHandCardList
 	ld hl, wDuelTempList
-	ld d, $00 ; first consider Trainer cards
-
-; ignore wAITrainerCardToPlay for the discard effects.
+	ld d, $00 ; only look for Trainer cards
+	; ignore wAITrainerCardToPlay for the discard effects.
 	ld a, [wAITrainerCardToPlay]
 	ld e, a
 	call RemoveFromListDifferentCardOfGivenType
@@ -4638,32 +4860,35 @@ CheckHandForTwoTrainerCards:
 	ret
 
 
+; the Anger deck uses a priority list to search for specific Pokémon,
+; depending on the cards in its hand and play area.
 AIDecide_ComputerSearch_Anger:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick Raticate if it was found in the deck but not the hand/play area and Rattata was also found in the hand/play area.
 	ld b, RATTATA
 	ld a, RATICATE
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, CheckHandForTwoTrainerCards
+; pick Rattata if it was found in the deck but not the hand/play area and Raticate was also found in the hand.
 	ld a, RATTATA
 	ld b, RATICATE
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, CheckHandForTwoTrainerCards
+; pick ArcanineLv34 if it was found in the deck but not the hand/play area and Growlithe was also found in the hand/play area.
 	ld b, GROWLITHE
 	ld a, ARCANINE_LV34
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, CheckHandForTwoTrainerCards
+; pick Growlithe if it was found in the deck but not the hand/play area and ArcanineLv34 was also found in the hand.
 	ld a, GROWLITHE
 	ld b, ARCANINE_LV34
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, CheckHandForTwoTrainerCards
+; pick Dodrio if it was found in the deck but not the hand/play area and Doduo was also found in the hand/play area.
 	ld b, DODUO
 	ld a, DODRIO
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, CheckHandForTwoTrainerCards
+; pick Doduo if it was found in the deck but not the hand/play area and Dodrio was also found in the hand.
 	ld a, DODUO
 	ld b, DODRIO
 	call LookForCardIDInDeck_GivenCardIDInHand
@@ -4673,12 +4898,16 @@ AIDecide_ComputerSearch_Anger:
 
 
 
-; Pokemon Trader uses 'AIPlay_TrainerCard_TwoVars'
+; Pokémon Trader uses 'AIPlay_TrainerCard_TwoVars'
 
 
+; every deck that contains Pokémon Trader has its own subroutine.
+; output:
+;	a = deck index of the card to move from the hand to the deck
+;	[wce1a] = deck index of the card to move from the deck to the hand
+;	carry = set:  if the AI decided to play Pokémon Trader
 AIDecide_PokemonTrader:
-; each deck has their own routine for picking
-; what Pokemon to look for.
+; use the opponent's Deck ID to switch to the correct subroutine.
 	ld a, [wOpponentDeckID]
 	cp LEGENDARY_MOLTRES_DECK_ID
 	jr z, AIDecide_PokemonTrader_LegendaryMoltres
@@ -4704,9 +4933,9 @@ AIDecide_PokemonTrader:
 	ret
 
 
+; AI only plays Pokémon Trader if it can target a MoltresLv37 in its deck and
+; trade it with a Pokémon in its hand other than MoltresLv35.
 AIDecide_PokemonTrader_LegendaryMoltres:
-; look for MoltresLv37 card in deck to trade with a
-; card in hand different from MoltresLv35.
 	ld a, MOLTRES_LV37
 	ld e, MOLTRES_LV35
 	call LookForCardIDToTradeWithDifferentHandCard
@@ -4717,8 +4946,10 @@ AIDecide_PokemonTrader_LegendaryMoltres:
 	ret ; carry set
 
 
+; AI only plays Pokémon Trader if it can target a needed Seel or Dewgong in its deck
+; and trade it with a duplicate Chansey, Ditto, or ArticunoLv37 in its hand.
 AIDecide_PokemonTrader_LegendaryArticuno:
-; if has none of these cards in Hand or Play Area, proceed
+; don't play Pokémon Trader if there's a Lapras or ArticunoLv35 in the AI's hand or play area.
 	ld a, ARTICUNO_LV35
 	call LookForCardIDInHandAndPlayArea
 	ccf
@@ -4728,9 +4959,8 @@ AIDecide_PokemonTrader_LegendaryArticuno:
 	ccf
 	ret nc
 
-; if doesn't have Seel in Hand or Play Area,
-; look for it in the deck.
-; otherwise, look for Dewgong instead.
+; if AI doesn't have a Seel in its hand or play area, then look for it in the deck.
+; otherwise, look for a Dewgong instead.
 	ld a, SEEL
 	call LookForCardIDInHandAndPlayArea
 	jr c, .dewgong
@@ -4750,159 +4980,173 @@ AIDecide_PokemonTrader_LegendaryArticuno:
 	call LookForCardIDInLocation_Bank8
 	ret nc
 
-; a Seel or Dewgong was found in deck,
-; check hand for card to trade for
+; a Seel or Dewgong was found in the deck, so look for a
+; duplicate Chansey, Ditto, or ArticunoLv37 in the hand to trade.
 .check_hand
 	ld [wce1a], a
 	ld a, CHANSEY
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Chansey
 	ld a, DITTO
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Ditto
 	ld a, ARTICUNO_LV37
-	jp CheckIfHasCardIDInHand
+	jp CheckIfHasDuplicateCardIDInHand
 
 
+; unless the AI has at least 5 total Pokémon and 5 total Energy cards in its hand and play area,
+; then only search the deck for a Kangaskhan. otherwise, uses a priority list to decide the deck target.
+; The card to trade from the hand is also chosen from a priority list (and it must be a duplicate).
 AIDecide_PokemonTrader_LegendaryDragonite:
-; if has less than 5 cards of energy
-; and of Pokemon in hand/Play Area,
-; target a Kangaskhan in deck.
+; If the AI's hand/play area doesn't have at least 5 Energy cards and 5 Pokémon,
+; then target a Kangaskhan in the deck.
 	farcall CountOppEnergyCardsInHandAndAttached
 	cp 5
 	jr c, .kangaskhan
 	call CountPokemonCardsInHandAndInPlayArea
 	cp 5
 	jr c, .kangaskhan
-	; total number of energy cards >= 5
-	; total number of Pokemon cards >= 5
+	; total number of Energy cards >= 5
+	; total number of Pokémon cards >= 5
 
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick Gyarados if it was found in the deck but not the hand/play area and Magikarp was also found in the hand/play area.
 	ld b, MAGIKARP
 	ld a, GYARADOS
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Magikarp if it was found in the deck but not the hand/play area and Gyarados was also found in the hand.
 	ld a, MAGIKARP
 	ld b, GYARADOS
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Dragonair if it was found in the deck but not the hand/play area and Dratini was also found in the hand/play area.
 	ld b, DRATINI
 	ld a, DRAGONAIR
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick DragoniteLv41 if it was found in the deck but not the hand/play area and Dragonair was also found in the hand/play area.
 	ld b, DRAGONAIR
 	ld a, DRAGONITE_LV41
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Dratini if it was found in the deck but not the hand/play area and Dragonair was also found in the hand.
 	ld a, DRATINI
 	ld b, DRAGONAIR
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Dragonair if it was found in the deck but not the hand/play area and DragoniteLv41 was also found in the hand.
 	ld a, DRAGONAIR
 	ld b, DRAGONITE_LV41
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Charmeleon if it was found in the deck but not the hand/play area and Charmander was also found in the hand/play area.
 	ld b, CHARMANDER
 	ld a, CHARMELEON
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Charizard if it was found in the deck but not the hand/play area and Charmeleon was also found in the hand/play area.
 	ld b, CHARMELEON
 	ld a, CHARIZARD
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Charmander if it was found in the deck but not the hand/play area and Charmeleon was also found in the hand.
 	ld a, CHARMANDER
 	ld b, CHARMELEON
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Charmeleon if it was found in the deck but not the hand/play area and Charizard was also found in the hand.
 	ld a, CHARMELEON
 	ld b, CHARIZARD
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
 	ret
 
+; don't play Pokémon Trader if Kangaskhan isn't in the deck.
 .kangaskhan
 	ld e, KANGASKHAN
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
 	ret nc
 
-; card was found as target in deck,
-; look for card in hand to trade with
+; a target was found in the deck, so look for a duplicate Pokémon in the hand to trade.
 .choose_hand
 	ld [wce1a], a
 	ld a, DRAGONAIR
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Dragonair
 	ld a, CHARMELEON
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Charmeleon
 	ld a, GYARADOS
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Gyarados
 	ld a, MAGIKARP
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Magikarp
 	ld a, CHARMANDER
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; found Charmander
 	ld a, DRATINI
-	jp CheckIfHasCardIDInHand
+	jp CheckIfHasDuplicateCardIDInHand
 
 
+; uses a priority list to decide which card should be targeted in the deck.
+; if a target is found, then pick a Legendary Articuno, Zapdos, or Moltres in the hand for the trade.
 AIDecide_PokemonTrader_LegendaryRonald:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick FlareonLv22 if it was found in the deck but not the hand/play area and Eevee was also found in the hand/play area.
 	ld b, EEVEE
 	ld a, FLAREON_LV22
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick VaporeonLv29 if it was found in the deck but not the hand/play area and Eevee was also found in the hand/play area.
 	ld b, EEVEE
 	ld a, VAPOREON_LV29
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick JolteonLv24 if it was found in the deck but not the hand/play area and Eevee was also found in the hand/play area.
 	ld b, EEVEE
 	ld a, JOLTEON_LV24
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Eevee if it was found in the deck but not the hand/play area and FlareonLv22 was also found in the hand.
 	ld a, EEVEE
 	ld b, FLAREON_LV22
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Eevee if it was found in the deck but not the hand/play area and VaporeonLv29 was also found in the hand.
 	ld a, EEVEE
 	ld b, VAPOREON_LV29
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Eevee if it was found in the deck but not the hand/play area and JolteonLv24 was also found in the hand.
 	ld a, EEVEE
 	ld b, JOLTEON_LV24
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Dragonair if it was found in the deck but not the hand/play area and Dratini was also found in the hand/play area.
 	ld b, DRATINI
 	ld a, DRAGONAIR
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick DragoniteLv41 if it was found in the deck but not the hand/play area and Dragonair was also found in the hand/play area.
 	ld b, DRAGONAIR
 	ld a, DRAGONITE_LV41
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Dratini if it was found in the deck but not the hand/play area and Dragonair was also found in the hand.
 	ld a, DRATINI
 	ld b, DRAGONAIR
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Dragonair if it was found in the deck but not the hand/play area and DragoniteLv41 was also found in the hand.
 	ld a, DRAGONAIR
 	ld b, DRAGONITE_LV41
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret nc
 	; fallthrough
 
-; card was found as target in deck,
-; look for card in hand to trade with
+; found the search target, so check if there's a legendary bird in the hand to trade.
+; if a duplicate is found, then return carry with its deck index in a.
 .choose_hand
 	ld [wce1a], a
 	ld a, ZAPDOS_LV68
@@ -4915,262 +5159,290 @@ AIDecide_PokemonTrader_LegendaryRonald:
 	jp LookForCardIDInHandList_Bank8
 
 
+; uses a priority list to decide which card should be targeted in the deck.
+; if a target is found, then pick any duplicate Pokémon in the hand for the trade.
 AIDecide_PokemonTrader_BlisteringPokemon:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick Rhydon if it was found in the deck but not the hand/play area and Rhyhorn was also found in the hand/play area.
 	ld b, RHYHORN
 	ld a, RHYDON
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Rhyhorn if it was found in the deck but not the hand/play area and Rhydon was also found in the hand.
 	ld a, RHYHORN
 	ld b, RHYDON
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick MarowakLv26 if it was found in the deck but not the hand/play area and Cubone was also found in the hand/play area.
 	ld b, CUBONE
 	ld a, MAROWAK_LV26
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Cubone if it was found in the deck but not the hand/play area and MarowakLv26 was also found in the hand.
 	ld a, CUBONE
 	ld b, MAROWAK_LV26
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Rapidash if it was found in the deck but not the hand/play area and Ponyta was also found in the hand/play area.
 	ld b, PONYTA
 	ld a, RAPIDASH
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Ponyta if it was found in the deck but not the hand/play area and Rapidash was also found in the hand.
 	ld a, PONYTA
 	ld b, RAPIDASH
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret nc
 	; fallthrough
 
-; a card in deck was found to look for,
-; check if there are duplicates in hand to trade with.
-; return carry if duplicates were found.
+; found the search target, so check if there's a duplicate Pokémon in the hand to trade.
+; if a duplicate is found, then return carry with its deck index in a.
 .find_duplicates
 	ld [wce1a], a
 	jp FindDuplicatePokemonCards
 
 
+; uses a priority list to decide which card should be targeted in the deck.
+; The card to trade from the hand is also chosen from a priority list (and it must be a duplicate).
 AIDecide_PokemonTrader_SoundOfTheWaves:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick Dewgong if it was found in the deck but not the hand/play area and Seel was also found in the hand/play area.
 	ld b, SEEL
 	ld a, DEWGONG
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Seel if it was found in the deck but not the hand/play area and Dewgong was also found in the hand.
 	ld a, SEEL
 	ld b, DEWGONG
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Kingler if it was found in the deck but not the hand/play area and Krabby was also found in the hand/play area.
 	ld b, KRABBY
 	ld a, KINGLER
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Krabby if it was found in the deck but not the hand/play area and Kingler was also found in the hand.
 	ld a, KRABBY
 	ld b, KINGLER
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Cloyster if it was found in the deck but not the hand/play area and Shellder was also found in the hand/play area.
 	ld b, SHELLDER
 	ld a, CLOYSTER
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Shellder if it was found in the deck but not the hand/play area and Cloyster was also found in the hand.
 	ld a, SHELLDER
 	ld b, CLOYSTER
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Seadra if it was found in the deck but not the hand/play area and Horsea was also found in the hand/play area.
 	ld b, HORSEA
 	ld a, SEADRA
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Horsea if it was found in the deck but not the hand/play area and Seadra was also found in the hand.
 	ld a, HORSEA
 	ld b, SEADRA
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .choose_hand
+; pick Tentacruel if it was found in the deck but not the hand/play area and Tentacool was also found in the hand/play area.
 	ld b, TENTACOOL
 	ld a, TENTACRUEL
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .choose_hand
+; pick Tentacool if it was found in the deck but not the hand/play area and Tentacruel was also found in the hand.
 	ld a, TENTACOOL
 	ld b, TENTACRUEL
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret nc
 	; fallthrough
 
-; card was found as target in deck,
-; look for card in hand to trade with
+; a target was found in the deck, so look for a duplicate Pokémon in the hand to trade.
 .choose_hand
 	ld [wce1a], a
 	ld a, SEEL
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; Seel found
 	ld a, KRABBY
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; Krabby found
 	ld a, HORSEA
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; Horsea found
 	ld a, SHELLDER
-	call CheckIfHasCardIDInHand
+	call CheckIfHasDuplicateCardIDInHand
 	ret c ; Shellder found
 	ld a, TENTACOOL
-	jp CheckIfHasCardIDInHand
+	jp CheckIfHasDuplicateCardIDInHand
 
 
+; uses a priority list to decide which card should be targeted in the deck.
+; if a target is found, then pick any duplicate Pokémon in the hand for the trade.
 AIDecide_PokemonTrader_PowerGenerator:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick RaichuLv40 if it was found in the deck but not the hand/play area and PikachuLv14 was also found in the hand/play area.
 	ld b, PIKACHU_LV14
 	ld a, RAICHU_LV40
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jp c, .find_duplicates
+; pick RaichuLv40 if it was found in the deck but not the hand/play area and PikachuLv12 was also found in the hand/play area.
 	ld b, PIKACHU_LV12
 	ld a, RAICHU_LV40
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick PikachuLv14 if it was found in the deck but not the hand/play area and RaichuLv40 was also found in the hand.
 	ld a, PIKACHU_LV14
 	ld b, RAICHU_LV40
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick PikachuLv12 if it was found in the deck but not the hand/play area and RaichuLv40 was also found in the hand.
 	ld a, PIKACHU_LV12
 	ld b, RAICHU_LV40
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick ElectrodeLv42 if it was found in the deck but not the hand/play area and Voltorb was also found in the hand/play area.
 	ld b, VOLTORB
 	ld a, ELECTRODE_LV42
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick ElectrodeLv35 if it was found in the deck but not the hand/play area and Voltorb was also found in the hand/play area.
 	ld b, VOLTORB
 	ld a, ELECTRODE_LV35
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Voltorb if it was found in the deck but not the hand/play area and ElectrodeLv42 was also found in the hand.
 	ld a, VOLTORB
 	ld b, ELECTRODE_LV42
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Voltorb if it was found in the deck but not the hand/play area and ElectrodeLv35 was also found in the hand.
 	ld a, VOLTORB
 	ld b, ELECTRODE_LV35
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick MagnetonLv35 if it was found in the deck but not the hand/play area and MagnemiteLv13 was also found in the hand/play area.
 	ld b, MAGNEMITE_LV13
 	ld a, MAGNETON_LV35
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick MagnetonLv35 if it was found in the deck but not the hand/play area and MagnemiteLv15 was also found in the hand/play area.
 	ld b, MAGNEMITE_LV15
 	ld a, MAGNETON_LV35
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick MagnetonLv28 if it was found in the deck but not the hand/play area and MagnemiteLv13 was also found in the hand/play area.
 	ld b, MAGNEMITE_LV13
 	ld a, MAGNETON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick MagnetonLv28 if it was found in the deck but not the hand/play area and MagnemiteLv15 was also found in the hand/play area.
 	ld b, MAGNEMITE_LV15
 	ld a, MAGNETON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick MagnemiteLv15 if it was found in the deck but not the hand/play area and MagnetonLv35 was also found in the hand.
 	ld a, MAGNEMITE_LV15
 	ld b, MAGNETON_LV35
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick MagnemiteLv13 if it was found in the deck but not the hand/play area and MagnetonLv35 was also found in the hand.
 	ld a, MAGNEMITE_LV13
 	ld b, MAGNETON_LV35
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick MagnemiteLv15 if it was found in the deck but not the hand/play area and MagnetonLv28 was also found in the hand.
 	ld a, MAGNEMITE_LV15
 	ld b, MAGNETON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick MagnemiteLv13 if it was found in the deck but not the hand/play area and MagnetonLv28 was also found in the hand.
 	ld a, MAGNEMITE_LV13
 	ld b, MAGNETON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret nc
 	; fallthrough
 
-; a card in deck was found to look for,
-; check if there are duplicates in hand to trade with.
-; return carry if duplicates were found.
+; found the search target, so check if there's a duplicate Pokémon in the hand to trade.
+; if a duplicate is found, then return carry with its deck index in a.
 .find_duplicates
 	ld [wce1a], a
 	jp FindDuplicatePokemonCards
 
 
+; uses a priority list to decide which card should be targeted in the deck.
+; if a target is found, then pick any duplicate Pokémon in the hand for the trade.
 AIDecide_PokemonTrader_FlowerGarden:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick Ivysaur if it was found in the deck but not the hand/play area and Bulbasaur was also found in the hand/play area.
 	ld b, BULBASAUR
 	ld a, IVYSAUR
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick VenusaurLv67 if it was found in the deck but not the hand/play area and Ivysaur was also found in the hand/play area.
 	ld b, IVYSAUR
 	ld a, VENUSAUR_LV67
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Bulbasaur if it was found in the deck but not the hand/play area and Ivysaur was also found in the hand.
 	ld a, BULBASAUR
 	ld b, IVYSAUR
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Ivysaur if it was found in the deck but not the hand/play area and VenusaurLv67 was also found in the hand/play area.
 	ld a, IVYSAUR
 	ld b, VENUSAUR_LV67
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Weepinbell if it was found in the deck but not the hand/play area and Bellsprout was also found in the hand/play area.
 	ld b, BELLSPROUT
 	ld a, WEEPINBELL
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Victreebel if it was found in the deck but not the hand/play area and Weepinbell was also found in the hand/play area.
 	ld b, WEEPINBELL
 	ld a, VICTREEBEL
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Bellsprout if it was found in the deck but not the hand/play area and Weepinbell was also found in the hand.
 	ld a, BELLSPROUT
 	ld b, WEEPINBELL
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Weepinbell if it was found in the deck but not the hand/play area and Victreebel was also found in the hand.
 	ld a, WEEPINBELL
 	ld b, VICTREEBEL
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Gloom if it was found in the deck but not the hand/play area and Oddish was also found in the hand/play area.
 	ld b, ODDISH
 	ld a, GLOOM
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Vileplume if it was found in the deck but not the hand/play area and Gloom was also found in the hand/play area.
 	ld b, GLOOM
 	ld a, VILEPLUME
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Oddish if it was found in the deck but not the hand/play area and Gloom was also found in the hand.
 	ld a, ODDISH
 	ld b, GLOOM
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Gloom if it was found in the deck but not the hand/play area and Vileplume was also found in the hand.
 	ld a, GLOOM
 	ld b, VILEPLUME
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret nc
 	; fallthrough
 
-; a card in deck was found to look for,
-; check if there are duplicates in hand to trade with.
-; return carry if duplicates were found.
+; found the search target, so check if there's a duplicate Pokémon in the hand to trade.
+; if a duplicate is found, then return carry with its deck index in a.
 .find_duplicates
 	ld [wce1a], a
 	jp FindDuplicatePokemonCards
 
 
+; trades any Pokémon in the hand for a Mr. Mime from the deck.
 AIDecide_PokemonTrader_StrangePower:
-; looks for a Pokemon in hand to trade with Mr Mime in deck.
-; inputting Mr Mime in register e for the function is redundant
-; since it already checks whether a Mr Mime exists in the hand.
+; inputting Mr Mime's card ID in register e for the function is redundant
+; since it already checks that there was no Mr Mime in the hand.
 	ld a, MR_MIME
 	ld e, a
 	call LookForCardIDToTradeWithDifferentHandCard
@@ -5182,57 +5454,63 @@ AIDecide_PokemonTrader_StrangePower:
 	ret
 
 
+; uses a priority list to decide which card should be targeted in the deck.
+; if a target is found, then pick any duplicate Pokémon in the hand for the trade.
 AIDecide_PokemonTrader_Flamethrower:
-; for each of the following cards,
-; first run a check if there's a pre-evolution in
-; Play Area or in the hand. If there is, choose it as target.
-; otherwise, check if the evolution card is in
-; hand and if so, choose it as target instead.
+; pick Charmeleon if it was found in the deck but not the hand/play area and Charmander was also found in the hand/play area.
 	ld b, CHARMANDER
 	ld a, CHARMELEON
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Charizard if it was found in the deck but not the hand/play area and Charmeleon was also found in the hand/play area.
 	ld b, CHARMELEON
 	ld a, CHARIZARD
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Charmander if it was found in the deck but not the hand/play area and Charmeleon was also found in the hand.
 	ld a, CHARMANDER
 	ld b, CHARMELEON
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick Charmeleon if it was found in the deck but not the hand/play area and Charizard was also found in the hand.
 	ld a, CHARMELEON
 	ld b, CHARIZARD
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick NinetalesLv32 if it was found in the deck but not the hand/play area and Vulpix was also found in the hand/play area.
 	ld b, VULPIX
 	ld a, NINETALES_LV32
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Vulpix if it was found in the deck but not the hand/play area and NinetalesLv32 was also found in the hand.
 	ld a, VULPIX
 	ld b, NINETALES_LV32
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick ArcanineLv45 if it was found in the deck but not the hand/play area and Growlithe was also found in the hand/play area.
 	ld b, GROWLITHE
 	ld a, ARCANINE_LV45
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Growlithe if it was found in the deck but not the hand/play area and ArcanineLv45 was also found in the hand.
 	ld a, GROWLITHE
 	ld b, ARCANINE_LV45
 	call LookForCardIDInDeck_GivenCardIDInHand
 	jr c, .find_duplicates
+; pick FlareonLv28 if it was found in the deck but not the hand/play area and Eevee was also found in the hand/play area.
 	ld b, EEVEE
 	ld a, FLAREON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHandAndPlayArea
 	jr c, .find_duplicates
+; pick Eevee if it was found in the deck but not the hand/play area and FlareonLv28 was also found in the hand.
 	ld a, EEVEE
 	ld b, FLAREON_LV28
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret nc
 	; fallthrough
 
-; a card in deck was found to look for,
-; check if there are duplicates in hand to trade with.
-; return carry if duplicates were found.
+; found the search target, so check if there's a duplicate Pokémon in the hand to trade.
+; if a duplicate is found, then return carry with its deck index in a.
 .find_duplicates
 	ld [wce1a], a
 	jp FindDuplicatePokemonCards

@@ -3,7 +3,7 @@
 ; to either return a positive score (value above $80)
 ; or a negative score (value below $80).
 ; input:
-;	hTempPlayAreaLocation_ff9d = location of card with attack.
+;	[hTempPlayAreaLocation_ff9d] = Attacking Pokémon's play area location offset (PLAY_AREA_* constant)
 HandleSpecialAIAttacks:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
@@ -57,8 +57,9 @@ HandleSpecialAIAttacks:
 	xor a
 	ret
 
-; if any of card ID in a is found in deck,
-; return a score of $80 + slots available in bench.
+
+; if another copy of the card ID in e (i.e. the Attacking Pokémon) is found in the deck,
+; return a score of $80 + slots available on the Bench.
 .CallForFamily:
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
@@ -76,8 +77,9 @@ HandleSpecialAIAttacks:
 	add $80
 	ret
 
-; if any of NidoranM or NidoranF is found in deck,
-; return a score of $80 + slots available in bench.
+
+; if any NidoranM or NidoranF is found in the deck,
+; return a score of $80 + slots available on the Bench.
 .NidoranFCallForFamily:
 	ld e, NIDORANM
 	ld a, CARD_LOCATION_DECK
@@ -90,9 +92,10 @@ HandleSpecialAIAttacks:
 	xor a
 	ret
 
-; checks for certain card IDs of Fighting color in deck.
+
+; checks for certain Basic Fighting Pokémon in the deck.
 ; if any of them are found, return a score of
-; $80 + slots available in bench.
+; $80 + slots available on the Bench.
 .CallForFriend:
 	ld e, GEODUDE
 	ld a, CARD_LOCATION_DECK
@@ -116,13 +119,15 @@ HandleSpecialAIAttacks:
 	xor a
 	ret
 
-; if any basic cards are found in deck,
-; return a score of $80 + slots available in bench.
+
+; if any Basic Pokémon are found in the deck,
+; return a score of $80 + slots available on the Bench.
 .FriendshipSong:
 	call CheckIfAnyBasicPokemonInDeck
 	jr c, .bench_space_bonus_score
 	xor a
 	ret
+
 
 ; if AI decides to retreat, return a score of $80 + 10.
 .Teleport:
@@ -131,10 +136,11 @@ HandleSpecialAIAttacks:
 	ld a, $8a
 	ret
 
+
 ; tests for the following conditions:
-; - player is under No Damage substatus;
-; - second attack is unusable;
-; - second attack deals no damage;
+; - Defending Pokémon has a No Damage substatus
+; - second attack is unusable
+; - second attack deals no damage
 ; if any are true, returns score of $80 + 5.
 .SwordsDanceAndFocusEnergy:
 	ld a, [wAICannotDamage]
@@ -153,10 +159,10 @@ HandleSpecialAIAttacks:
 	ld a, $85
 	ret
 
-; checks player's active card color, then
-; loops through own bench looking for a Pokémon
-; with that same color.
-; if none are found, returns score of $80 + 2.
+
+; checks the Defending Pokémon's type/color, then
+; loops through own Bench looking for a Pokémon with that color.
+; if none are found, returns score of $80 + 2. (If found, return 0)
 .ChainLightning:
 	rst SwapTurn
 	call GetArenaCardColor
@@ -179,14 +185,16 @@ HandleSpecialAIAttacks:
 	ld a, $82
 	ret
 
+
 .DevolutionBeam:
 	call LookForCardThatIsKnockedOutOnDevolution
 	jr nc, .zero_score
 	ld a, $85
 	ret
 
-; first checks if card is confused, and if so return 0.
-; then checks number of Pokémon in bench that are viable to use:
+
+; first checks if the Attacking Pokémon is Confused, and if so return 0.
+; then checks number of Benched Pokémon that are viable to use:
 ; - if that number is < 2  and this attack is Conversion 1 OR
 ; - if that number is >= 2 and this attack is Conversion 2
 ; then return score of $80 + 2.
@@ -199,7 +207,7 @@ HandleSpecialAIAttacks:
 	jr z, .zero_score
 
 	ld a, [wSelectedAttack]
-	or a
+	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
 	jr nz, .conversion_2
 
 ; conversion 1
@@ -220,7 +228,8 @@ HandleSpecialAIAttacks:
 	ld a, $81
 	ret
 
-; if any Psychic Energy is found in the Discard Pile,
+
+; if any Psychic Energy is found in the discard pile,
 ; return a score of $80 + 2.
 .EnergyAbsorption:
 	ld e, PSYCHIC_ENERGY
@@ -230,21 +239,22 @@ HandleSpecialAIAttacks:
 	ld a, $82
 	ret
 
-; if player has cards in hand, AI calls Random:
-; - 1/3 chance to encourage attack regardless;
-; - 1/3 chance to dismiss attack regardless;
-; - 1/3 change to make some checks to player's hand.
-; AI tallies number of basic cards in hand, and if this
-; number is >= 2, encourage attack.
-; otherwise, if it finds an evolution card in hand that
-; can evolve a card in player's deck, encourage.
+
+; if the Player has cards in their hand, AI calls Random:
+; - 1/3 chance to encourage the attack regardless
+; - 1/3 chance to dismiss the attack regardless
+; - 1/3 change to make some checks to the Player's hand
+; AI tallies number of Basic Pokémon in the hand, and if this
+; number is >= 2, encourage the attack.
+; otherwise, if it finds an Evolution card in the hand that
+; can evolve a Pokémon in the Player's play area, encourage.
 ; if encouraged, returns a score of $80 + 3.
 .MixUp:
 	rst SwapTurn
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
 	or a
-	jr z, .zero_score_after_swap_turn
+	jr z, .zero_score_after_swap_turn ; return if Player has no cards in hand
 
 	ld a, 3
 	call Random
@@ -254,21 +264,21 @@ HandleSpecialAIAttacks:
 	jr z, .zero_score_after_swap_turn
 	call CreateHandCardList
 ;	or a
-;	jr z, .zero_score_after_swap_turn ; return if no hand cards (again)
+;	jr z, .zero_score_after_swap_turn ; return if Player has no cards in hand (again)
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp 3
-	jr nc, .mix_up_check_play_area
+	jr nc, .mix_up_check_play_area ; skip checking the opponent's hand if they have more than 2 play area Pokémon
 
 	ld hl, wDuelTempList
-	ld b, 0
+	ld b, 0 ; counter
 .loop_mix_up_hand
 	ld a, [hli]
 	cp $ff
 	jr z, .tally_basic_cards
 	call CheckDeckIndexForBasicPokemon
-	jr nc, .loop_mix_up_hand
-	; is a basic Pokémon card
+	jr nc, .loop_mix_up_hand ; skip if card isn't a Basic Pokémon
+	; found a Basic Pokémon card
 	inc b
 	jr .loop_mix_up_hand
 .tally_basic_cards
@@ -276,7 +286,7 @@ HandleSpecialAIAttacks:
 	cp 2
 	jr nc, .encourage_mix_up
 
-; less than 2 basic cards in hand
+; less than 2 Basic Pokémon in hand
 .mix_up_check_play_area
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -300,10 +310,12 @@ HandleSpecialAIAttacks:
 	xor a
 	ret
 
+
 ; return score of $80 + 3.
 .BigThunder:
 	ld a, $83
 	ret
+
 
 ; dismiss attack if cards in deck <= 20.
 ; otherwise return a score of $80 + 0.
@@ -315,14 +327,15 @@ HandleSpecialAIAttacks:
 	ld a, $80
 	ret
 
-; dismiss the attack if the number of Pokemon on the user's Bench
+
+; dismiss the attack if the number of Pokémon on the user's Bench
 ; which would be KO'd after using Earthquake is greater than or equal to
 ; the number of Prize cards that the Player has not yet drawn
 .Earthquake:
 	ld a, DUELVARS_BENCH
 	get_turn_duelist_var
 
-	lb de, 0, 0
+	lb de, 0, PLAY_AREA_ARENA
 .loop_earthquake
 	inc e
 	ld a, [hli]
@@ -348,7 +361,8 @@ HandleSpecialAIAttacks:
 	ld a, $80
 	ret
 
-; if there's any lightning energy cards in deck,
+
+; if there are any Lightning Energy cards in the deck,
 ; return a score of $80 + 3.
 .EnergySpike:
 	ld a, CARD_LOCATION_DECK
@@ -360,14 +374,16 @@ HandleSpecialAIAttacks:
 	ld a, $83
 	ret
 
-; only incentivize attack if player's active card,
-; has any energy cards attached, and if so,
+
+; only incentivize the attack if the Player's Active Pokémon,
+; has any attached Energy cards, and if so,
 ; return a score of $80 + 3.
 .HyperBeam:
 	rst SwapTurn
 	ld e, PLAY_AREA_ARENA
 	call GetPlayAreaCardAttachedEnergies
 	rst SwapTurn
+;	ld a, [wTotalAttachedEnergies] ; already loaded
 	or a
 	jr z, .hyper_beam_neutral
 	ld a, $83
@@ -376,8 +392,10 @@ HandleSpecialAIAttacks:
 	ld a, $80
 	ret
 
-; returns carry if there are
-; any basic Pokémon cards in deck.
+
+; preserves bc and d
+; output:
+;	carry = set:  if there are any Basic Pokémon cards in the deck
 CheckIfAnyBasicPokemonInDeck:
 	ld e, DECK_SIZE
 .loop
@@ -393,4 +411,4 @@ CheckIfAnyBasicPokemonInDeck:
 	ld a, e
 	or a
 	jr nz, .loop
-	ret
+	ret ; nc

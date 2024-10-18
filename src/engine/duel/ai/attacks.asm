@@ -1,5 +1,6 @@
-; have AI choose an attack to use, but do not execute it.
-; return carry if an attack is chosen.
+; AI chooses an attack to use, but does not execute it.
+; output:
+;	carry = set:  if an attack was chosen
 AIProcessButDontUseAttack:
 	ld a, $01
 	ld [wAIExecuteProcessedAttack], a
@@ -16,19 +17,23 @@ AIProcessButDontUseAttack:
 	jr AIProcessAttacks
 
 
-; have AI choose and execute an attack.
-; return carry if an attack was chosen and attempted.
+; AI chooses an attack and then attempts to execute it.
+; output:
+;	carry = set:  if an attack was chosen
 AIProcessAndTryToUseAttack:
 	xor a
 	ld [wAIExecuteProcessedAttack], a
 ;	fallthrough
 
-; checks which of the Active card's attacks for AI to use.
+; checks which of the Active Pokémon's attacks should be used by the AI.
 ; If any of the attacks has enough AI score to be used,
 ; AI will use it if wAIExecuteProcessedAttack is 0.
 ; in either case, return carry if an attack is chosen to be used.
+; input:
+;	[wAIExecuteProcessedAttack] == 0:  try to execute the chosen attack
+;	[wAIExecuteProcessedAttack] != 0:  return after choosing an attack
 AIProcessAttacks:
-; if AI used Pluspower, load its attack index
+; if AI used Pluspower, load its attack index.
 	ld a, [wPreviousAIFlags]
 	and AI_FLAG_USED_PLUSPOWER
 	jr z, .no_pluspower
@@ -51,21 +56,20 @@ AIProcessAttacks:
 	ld a, SECOND_ATTACK
 	call GetAIScoreOfAttack
 
-; compare both attack scores
+; compare both attack scores.
 	ld c, SECOND_ATTACK
 	ld a, [wFirstAttackAIScore]
 	ld b, a
 	ld a, [wAIScore]
 	cp b
 	jr nc, .check_score
-	; first attack has higher score
-	dec c
+	; first attack has the higher score
+	dec c ; FIRST_ATTACK_OR_PKMN_POWER
 	ld a, b
 
-; c holds the attack index chosen by AI,
-; and a holds its AI score.
-; first check if chosen attack has at least minimum score.
-; then check if first attack is better than second attack
+; c holds the attack index chosen by AI, and a holds its AI score.
+; first, check if the chosen attack has at least the minimum score requirement.
+; then, check if the first attack is better than the second attack
 ; in case the second one was chosen.
 .check_score
 	cp $50 ; minimum score to use attack
@@ -78,13 +82,12 @@ AIProcessAttacks:
 	call nz, CheckWhetherToSwitchToFirstAttack
 
 .attack_chosen
-; check whether to execute the attack chosen
+; check whether to execute the attack chosen.
 	ld a, [wAIExecuteProcessedAttack]
 	or a
 	jr z, .execute
 
-; set carry and reset Play Area AI score
-; to the previous values.
+; set carry and reset the play area AI score to the previous values.
 	scf
 	jr RetrievePlayAreaAIScoreFromBackup
 
@@ -92,8 +95,7 @@ AIProcessAttacks:
 	ld a, AI_TRAINER_CARD_PHASE_14
 	call AIProcessHandTrainerCards
 
-; load this attack's damage output against
-; the current Defending Pokemon.
+; load this attack's damage output against the current Defending Pokémon.
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld a, [wSelectedAttack]
@@ -110,17 +112,16 @@ AIProcessAttacks:
 	jr .use_attack
 
 .check_damage_bench
-; check if it can otherwise damage player's bench
+; check if it can otherwise damage the Player's Bench
 	ld a, ATTACK_FLAG1_ADDRESS | DAMAGE_TO_OPPONENT_BENCH_F
 	call CheckLoadedAttackFlag
 	jr c, .can_damage
 
-; cannot damage either Defending Pokemon or Bench
+; cannot damage the Defending Pokémon or any of the Player's Benched Pokémon
 	ld hl, wAIRetreatScore
 	inc [hl]
 
-; return carry if attack is chosen
-; and AI tries to use it.
+; return carry after the AI tries to use the chosen attack.
 .use_attack
 	ld a, TRUE
 	ld [wAITriedAttack], a
@@ -139,7 +140,7 @@ AIProcessAttacks:
 	ld a, [wAIExecuteProcessedAttack]
 	or a
 	jr z, .failed_to_use
-;	fallthrough to reset Play Area AI score to the previous values
+;	fallthrough to reset the play area AI score to the previous values
 
 ; copies wTempPlayAreaAIScore to wPlayAreaAIScore
 ; and loads wAIScore with value in wTempAIScore.
@@ -150,21 +151,24 @@ RetrievePlayAreaAIScoreFromBackup:
 	ld hl, wTempPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
 	call CopyNBytesFromHLToDE
-
 	ld a, [hl]
 	ld [wAIScore], a
 	pop af
 	ret
 
-; determines the AI score of attack index in a
-; of card in Play Area location hTempPlayAreaLocation_ff9d.
+
+; determines the AI score of the attack index in a.
+; input:
+;	a = which attack should be evaluated (0 = first attack, 1 = second attack)
+; output:
+;	[wAIScore] = score assigned to the given attack
 GetAIScoreOfAttack:
 ; initialize AI score.
 	ld [wSelectedAttack], a
 	ld a, $50
 	ld [wAIScore], a
 
-	xor a
+	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call CheckIfSelectedAttackIsUnusable
 	jr nc, .usable
@@ -175,9 +179,9 @@ GetAIScoreOfAttack:
 	ld [wAIScore], a
 	ret
 
-; load arena card IDs
+; store the card IDs of both Active Pokémon
 .usable
-	xor a
+	xor a ; FALSE
 	ld [wAICannotDamage], a
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -189,17 +193,16 @@ GetAIScoreOfAttack:
 	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 
-; handle the case where the player has No Damage substatus.
-; in the case the player does, check if this attack
-; has a residual effect, or if it can damage the opposing bench.
+; take into account whether the Defending Pokémon has a No Damage substatus.
+; if it does, check if this attack has a residual effect or if it can damage the opposing Bench.
 ; If none of those are true, render the attack unusable.
-; also if it's a PKMN power, consider it unusable as well.
+; also render the attack unusable if it's a Pokémon Power.
 	call HandleNoDamageOrEffectSubstatus
 	rst SwapTurn
 	jr nc, .check_if_can_ko
 
-	; player is under No Damage substatus
-	ld a, $01
+	; Defending Pokémon has a No Damage substatus
+	ld a, TRUE
 	ld [wAICannotDamage], a
 	ld a, [wSelectedAttack]
 	call EstimateDamage_VersusDefendingCard
@@ -212,8 +215,8 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jr nc, .unusable
 
-; calculate damage to player to check if attack can KO.
-; encourage attack if it's able to KO.
+; calculate damage to check if the attack can KO the Defending Pokémon.
+; encourage the attack by increasing the score if it's able to KO.
 .check_if_can_ko
 	ld a, [wSelectedAttack]
 	call EstimateDamage_VersusDefendingCard
@@ -228,12 +231,12 @@ GetAIScoreOfAttack:
 	call AddToAIScore
 
 ; raise AI score by the number of damage counters that this attack deals.
-; if no damage is dealt, subtract AI score. in case wDamage is zero
-; but wMaxDamage is not, then encourage attack afterwards.
-; otherwise, if wMaxDamage is also zero, check for damage against
-; player's bench, and encourage attack in case there is.
+; if no damage is dealt, decrease AI score by 1.
+; if wDamage is zero but wMaxDamage is not, then encourage attack afterwards.
+; otherwise, if wMaxDamage is also zero, check for damage done to
+; the Player's Benched Pokémon, and encourage the attack if there is.
 .check_damage
-	xor a
+	xor a ; FALSE
 	ld [wAIAttackIsNonDamaging], a
 	ld a, [wDamage]
 	ld [wTempAI], a
@@ -244,14 +247,14 @@ GetAIScoreOfAttack:
 	jr .check_recoil
 .no_damage
 	ld a, $01
-	ld [wAIAttackIsNonDamaging], a
+	ld [wAIAttackIsNonDamaging], a ; TRUE
 	call SubFromAIScore
 	ld a, [wAIMaxDamage]
 	or a
 	jr z, .no_max_damage
 	ld a, 2
 	call AddToAIScore
-	xor a
+	xor a ; FALSE
 	ld [wAIAttackIsNonDamaging], a
 .no_max_damage
 	ld a, ATTACK_FLAG1_ADDRESS | DAMAGE_TO_OPPONENT_BENCH_F
@@ -269,8 +272,8 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jp nc, .check_defending_can_ko
 .is_recoil
-	; sub from AI score number of damage counters
-	; that attack deals to itself.
+	; subtract from the AI score the number of damage counters
+	; that the attack would put on the Attacking Pokémon.
 	ld a, [wLoadedAttackEffectParam]
 	or a
 	jp z, .check_defending_can_ko
@@ -295,12 +298,12 @@ GetAIScoreOfAttack:
 	call SubFromAIScore
 
 .high_recoil
-	; dismiss this attack if no benched Pokémon
+	; dismiss this attack if the AI has no Benched Pokémon
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	cp 2
-	jr c, .dismiss_high_recoil_atk
-	; has benched Pokémon
+	dec a
+	jr z, .dismiss_high_recoil_atk
+	; has Benched Pokémon
 
 ; here the AI handles high recoil attacks differently
 ; depending on what deck it's playing.
@@ -323,7 +326,7 @@ GetAIScoreOfAttack:
 
 ; Zapping Selfdestruct deck only uses this attack
 ; if number of cards in deck >= 30 and
-; HP of active card is < half max HP.
+; HP of Active Pokémon is < half max HP.
 .zapping_selfdestruct_deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
@@ -340,15 +343,15 @@ GetAIScoreOfAttack:
 	call _GetCardIDFromDeckIndex
 	cp MAGNEMITE_LV13
 	jr z, .magnemite1
-	ld b, 10 ; bench damage
+	ld b, 10 ; Bench damage
 .magnemite1
 	ld a, 10
 	add b
-	ld b, a ; 20 bench damage if not MagnemiteLv13
+	ld b, a ; 20 damage to the Bench if not MagnemiteLv13
 
-; if this attack causes player to win the duel by
-; knocking out own Pokémon, dismiss attack.
-	ld a, 1 ; count active Pokémon as KO'd
+; if this attack would cause the Player to win the duel by
+; KO'ing too many of the AI's Pokémon, then dismiss the attack.
+	ld a, 1 ; count Active Pokémon as KO'd
 	call .check_if_kos_bench
 	jr c, .dismiss_high_recoil_atk
 
@@ -356,14 +359,14 @@ GetAIScoreOfAttack:
 	ld a, 20
 	jp AddToAIScore
 
-; Rock Crusher Deck only uses this attack if
-; prize count is below 4 and attack wins (or potentially draws) the duel,
-; (i.e. at least gets KOs equal to prize cards left).
+; Rock Crusher Deck only uses this attack if the Prize count is below 4
+; and the attack wins (or potentially draws) the duel,
+; (i.e. number of KOs >= number of remaining Prize cards).
 .rock_crusher_deck
 	call CountPrizes
 	cp 4
 	jr nc, .dismiss_high_recoil_atk
-	; prize count < 4
+	; Prize count < 4
 	ld b, 20 ; damage dealt to bench
 	rst SwapTurn
 	xor a
@@ -373,8 +376,8 @@ GetAIScoreOfAttack:
 
 ; generic checks for all other deck IDs.
 ; encourage attack if it wins (or potentially draws) the duel,
-; (i.e. at least gets KOs equal to prize cards left).
-; dismiss it if it causes the player to win.
+; (i.e. number of KOs >= number of remaining Prize cards).
+; dismiss it if it causes the Player to win.
 .high_recoil_generic_checks
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -385,13 +388,13 @@ GetAIScoreOfAttack:
 	jr z, .magnemite1_or_weezing
 	cp WEEZING
 	jr z, .magnemite1_or_weezing
-	ld b, 20 ; bench damage
+	ld b, 20 ; 20 damage to the Bench
 	jr .check_bench_kos
 .magnemite1_or_weezing
-	ld b, 10 ; bench damage
+	ld b, 10 ; 10 damage to the Bench
 	jr .check_bench_kos
 .chansey
-	ld b, 0 ; no bench damage
+	ld b, 0 ; no damage to the Bench
 	; fallthrough
 
 .check_bench_kos
@@ -406,17 +409,17 @@ GetAIScoreOfAttack:
 	pop bc
 	jr nc, .count_own_ko_bench
 
-; attack causes player to draw all prize cards
+; attack would cause the Player to draw all of their remaining Prize cards
 	xor a
 	ld [wAIScore], a
 	ret
 
-; attack causes CPU to draw all prize cards
+; attack would cause the AI to draw all of its remaining Prize cards
 .wins_the_duel
 	ld a, 20
 	jp AddToAIScore
 
-; subtract from AI score number of own benched Pokémon KO'd
+; subtract from AI score number of own Benched Pokémon that would be KO'd
 .count_own_ko_bench
 	ld a, d
 	or a
@@ -424,13 +427,13 @@ GetAIScoreOfAttack:
 	dec a
 	call SubFromAIScore
 
-; add to AI score number of player benched Pokémon KO'd
+; add to AI score the number of Pokémon on the Player's Bench that would be KO'd
 .count_player_ko_bench
 	ld a, b
 	call AddToAIScore
 
-; if defending card can KO, encourage attack
-; unless attack is non-damaging.
+; if the Defending Pokémon can KO the AI's Active Pokémon,
+; then encourage the attack, unless it's non-damaging.
 .check_defending_can_ko
 	ld a, [wSelectedAttack]
 	push af
@@ -447,8 +450,7 @@ GetAIScoreOfAttack:
 	ld a, 5
 	call SubFromAIScore
 
-; subtract from AI score if this attack requires
-; discarding any energy cards.
+; subtract from AI score if this attack requires discarding any Energy cards.
 .check_discard
 	ld a, [wSelectedAttack]
 	ld e, a
@@ -471,7 +473,7 @@ GetAIScoreOfAttack:
 	ld a, [wLoadedAttackEffectParam]
 	call AddToAIScore
 
-; encourage attack if it has a nullify or weaken attack effect.
+; encourage the attack if it has a nullify or weaken attack effect.
 .check_nullify_flag
 	ld a, ATTACK_FLAG2_ADDRESS | NULLIFY_OR_WEAKEN_ATTACK_F
 	call CheckLoadedAttackFlag
@@ -479,7 +481,7 @@ GetAIScoreOfAttack:
 	ld a, 1
 	call AddToAIScore
 
-; encourage attack if it has an effect to draw a card.
+; encourage the attack if it has an effect to draw a card.
 .check_draw_flag
 	ld a, ATTACK_FLAG1_ADDRESS | DRAW_CARD_F
 	call CheckLoadedAttackFlag
@@ -516,9 +518,9 @@ GetAIScoreOfAttack:
 	call GetCardDamageAndMaxHP
 	call ConvertHPToDamageCounters_Bank5
 	pop bc
-	cp b ; wLoadedAttackEffectParam
+	cp b ; healing amount (in damage counters)
 	jr c, .add_heal_score
-	ld a, b
+	ld a, b ; use number of damage counters on Active Pokémon (because healing can't exceed max HP)
 .add_heal_score
 	call AddToAIScore
 
@@ -528,7 +530,7 @@ GetAIScoreOfAttack:
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
-	; skip if player has Snorlax
+	; skip if the Defending Pokémon is a Snorlax
 	cp SNORLAX
 	jp z, .handle_special_atks
 
@@ -536,20 +538,18 @@ GetAIScoreOfAttack:
 	call GetNonTurnDuelistVariable
 	ld [wTempAI], a
 
-; encourage a poison inflicting attack if opposing Pokémon
-; isn't (doubly) poisoned already.
-; if opposing Pokémon is only poisoned and not double poisoned,
-; and this attack has FLAG_2_BIT_6 set, discourage it
-; (possibly to make Nidoking's Toxic attack less likely to be chosen
-; if the other Pokémon is poisoned.)
+; encourage an attack that causes the Poisoned condition if the Defending Pokémon
+; isn't already Poisoned. discourage the attack if the Defending Pokémon is
+; already Double Poisoned and this attack has FLAG_2_BIT_6 set, likely to avoid
+; replacing toxic poison with regular poison or using a weaker second attack.
 	ld a, ATTACK_FLAG1_ADDRESS | INFLICT_POISON_F
 	call CheckLoadedAttackFlag
-	jr nc, .check_sleep
+	jr nc, .check_sleep ; skip ahead if the attack doesn't Poison
 	ld a, [wTempAI]
 	and DOUBLE_POISONED
-	jr z, .add_poison_score
-	and $40 ; only double poisoned?
-	jr z, .check_sleep
+	jr z, .add_poison_score ; increase score if Defending Pokémon isn't already Poisoned
+	and $40
+	jr z, .check_sleep ; skip ahead if Defending Pokémon is only Poisoned (not Toxic)
 	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_6_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_sleep
@@ -560,7 +560,8 @@ GetAIScoreOfAttack:
 	ld a, 2
 	call AddToAIScore
 
-; encourage sleep-inducing attack if other Pokémon isn't asleep.
+; encourage an attack that causes the Asleep condition
+; if the Defending Pokémon isn't already Asleep.
 .check_sleep
 	ld a, ATTACK_FLAG1_ADDRESS | INFLICT_SLEEP_F
 	call CheckLoadedAttackFlag
@@ -572,8 +573,8 @@ GetAIScoreOfAttack:
 	ld a, 1
 	call AddToAIScore
 
-; encourage paralysis-inducing attack if other Pokémon isn't asleep.
-; otherwise, if other Pokémon is asleep, discourage attack.
+; encourage an attack that causes the Paralyzed condition if the Defending Pokémon isn't Asleep.
+; discourage the attack if the Defending Pokémon is currently Asleep.
 .check_paralysis
 	ld a, ATTACK_FLAG1_ADDRESS | INFLICT_PARALYSIS_F
 	call CheckLoadedAttackFlag
@@ -589,10 +590,8 @@ GetAIScoreOfAttack:
 	ld a, 1
 	call SubFromAIScore
 
-; encourage confuse-inducing attack if other Pokémon isn't asleep
-; or confused already.
-; otherwise, if other Pokémon is asleep or confused,
-; discourage attack instead.
+; encourage an attack that causes the Confused condition if the Defending Pokémon
+; isn't already Asleep or Confused. otherwise, discourage the attack.
 .check_confusion
 	ld a, ATTACK_FLAG1_ADDRESS | INFLICT_CONFUSION_F
 	call CheckLoadedAttackFlag
@@ -612,7 +611,7 @@ GetAIScoreOfAttack:
 	ld a, 1
 	call SubFromAIScore
 
-; if this Pokémon is confused, subtract from score.
+; if this Pokémon is Confused, subtract from score.
 .check_if_confused
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
@@ -640,27 +639,29 @@ GetAIScoreOfAttack:
 	jp SubFromAIScore
 
 ; local function that gets called to determine damage to
-; benched Pokémon caused by a HIGH_RECOIL attack.
-; return carry if using attack causes number of benched Pokémon KOs
-; equal to or larger than remaining prize cards.
+; Benched Pokémon caused by a HIGH_RECOIL attack.
 ; this function is independent on duelist turn, so whatever
 ; turn it is when this is called, it's that duelist's
-; bench/prize cards that get checked.
+; Bench/Prize cards that get checked.
+; preserves bc
 ; input:
-;	a = initial number of KO's beside benched Pokémon,
-;		so that if the active Pokémon is KO'd by the attack,
-;		this counts towards the prize cards collected
-;	b = damage dealt to bench Pokémon
+;	a = initial number of KO's, other than Benched Pokémon,
+;	    so that if the Active Pokémon is KO'd by the attack,
+;	    this counts towards the number of Prize cards that will be drawn
+;	b = damage dealt to Benched Pokémon
+; output:
+;	carry = set:  if the attack would KO enough of the turn holder's Pokémon
+;	              for the opponent to draw all of their remaining Prize cards
 .check_if_kos_bench
 	ld d, a
 	ld a, DUELVARS_BENCH
 	get_turn_duelist_var
 	ld e, PLAY_AREA_ARENA
-.loop
+.loop_bench
 	inc e
 	ld a, [hli]
 	cp $ff
-	jr z, .exit_loop
+	jr z, .count_prizes
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
 	push hl
@@ -668,17 +669,19 @@ GetAIScoreOfAttack:
 	pop hl
 	dec a ; subtract 1 so carry will be set if final HP = 0
 	cp b
-	jr nc, .loop
-	; increase d if damage dealt KOs
+	jr nc, .loop_bench
+	; damage in b will KO this Pokémon, so increment the counter for KO'd Pokémon
 	inc d
-	jr .loop
-.exit_loop
+	jr .loop_bench
+
+.count_prizes
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
 	dec a ; subtract 1 so carry will be set if number of KO'd Pokémon = number of Prizes
 	cp d
 	ret
+
 
 ; called when second attack is determined by AI to have
 ; more AI score than the first attack, so that it checks

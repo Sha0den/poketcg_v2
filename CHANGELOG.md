@@ -64,6 +64,7 @@
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/2a907f7c823e298803449fb872d10db0aff2d1d6):** 1 File Changed
     - Fix the AI not checking the Unable_Retreat substatus before retreating (credit to Oats)
+    - This was updated in [this commit](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37) (it no longer prevents Switch from being played)
 
 <br/>
 
@@ -95,7 +96,13 @@
 
 
 ## Code Optimization
-- **October 15, 2024:** 16 Files Changed
+- **October 18, 2024:** 13 Files Changed
+    - Try to standardize the function comments that are used in the engine/duel/ai files (excluding the decks folder)
+    - Plus several more code changes in said files (only big change was to `_AIProcessHandTrainerCards`)
+
+<br/>
+
+- **[October 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37):** 16 Files Changed
     - Countless optimizations and refactoring in engine/duel/ai files
     - Several functions in said files were relocated and a few others were completely removed
     - Numerous corrections were also made and some of the functions were even expanded

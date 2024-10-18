@@ -1,3 +1,4 @@
+; preserves bc and de
 InitAIDuelVars:
 	ld a, wAIDuelVarsEnd - wAIDuelVars
 	ld hl, wAIDuelVars
@@ -8,9 +9,11 @@ InitAIDuelVars:
 	ld [wAIPeekedPrizes], a
 	ret
 
+
 ; initializes some variables and sets value of wAIBarrierFlagCounter.
 ; if Player uses Barrier 3 times in a row, AI checks if Player's deck
-; has only MewtwoLv53 Pokemon cards (running a MewtwoLv53 mill deck).
+; has only MewtwoLv53 Pokémon cards (running a MewtwoLv53 mill deck).
+; preserves bc
 InitAITurnVars:
 ; increase Pokedex counter by 1
 	ld a, [wAIPokedexCounter]
@@ -55,10 +58,9 @@ InitAITurnVars:
 	cp 3
 	ret c
 
-; this means that the Player used Barrier
-; at least 3 turns in a row.
-; check if Player is running MewtwoLv53-only deck,
-; if so, set wAIBarrierFlagCounter flag.
+; this means that the Player used Barrier at least 3 turns in a row.
+; check if the opponent is using a deck with no Pokémon other than MewtwoLv53,
+; and if so, set the wAIBarrierFlagCounter flag.
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
