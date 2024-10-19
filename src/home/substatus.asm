@@ -688,9 +688,6 @@ HandleStrikesBack_AgainstDamagingAttack::
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
 	ret nz ; return if the Pokemon being attacked isn't a Machamp
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	ret c ; return if there's a Muk in play
 	ld a, [wLoadedAttackCategory] ; category of attack used
 	cp POKEMON_POWER
 	ret z ; return if the damage is being dealt by a Pokémon Power

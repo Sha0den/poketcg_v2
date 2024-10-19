@@ -12,11 +12,6 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **October 19, 2024:** 1 File Changed
-    - Prevent a Benched Machamp's Strike Back power from being used while Toxic Gas is active
-
-<br/>
-
 - **[September 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/cba5b2646b518893a6dc61d6e2991eb13db057e0):** 1 File Changed
     - Prevent the Morph attack from transforming the user into a copy of the exact same card
 
@@ -101,6 +96,12 @@
 
 
 ## Code Optimization
+- **[October 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/1926adefc60d7ab79ab845eca4308e801035f9ba):** 1 Files Changed
+    - Condense the Pokémon Power checks being performed during `HandleStrikesBack_AgainstDamagingAttack`
+    - This was accidentally spread out over two commits.
+
+<br/>
+
 - **[October 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f):** 13 Files Changed
     - Try to standardize the function comments that are used in the engine/duel/ai files (excluding the decks folder)
     - Plus several more code changes in said files (only big change was to `_AIProcessHandTrainerCards`)
