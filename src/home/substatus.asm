@@ -151,9 +151,8 @@ HandleDamageReductionOrNoDamageFromPkmnPowerEffects::
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
 	ret z ; return if the damage is being dealt by a Pokémon Power
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	ret c ; return if there's a Muk in play
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	ret c ; return if Pokémon Powers can't be used
 	ld a, [wTempPlayAreaLocation_cceb]
 	or a
 	call nz, HandleDamageReductionExceptSubstatus2.pkmn_power
@@ -434,8 +433,7 @@ IsPrehistoricPowerActive::
 	ld a, AERODACTYL
 	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret nc ; return if there isn't an Aerodactyl in play
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	ldtx hl, UnableToEvolveDueToPrehistoricPowerText
 	ccf
 	ret
@@ -445,10 +443,9 @@ IsPrehistoricPowerActive::
 ; output:
 ;	carry = set:  if the turn holder has an Omanyte with an active Clairvoyance Pokemon Power
 IsClairvoyanceActive::
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	ccf
-	ret nc ; return if there's a Muk in play
+	ret nc ; return no carry if Pokémon Powers can't be used
 	ld a, OMANYTE
 ;	fallthrough
 
@@ -505,6 +502,15 @@ CountTurnDuelistPokemonWithActivePkmnPower::
 	ret
 
 
+; checks both play areas for a Muk with an active Toxic Gas Pokémon Power.
+; preserves all registers except af
+; output:
+;	a = number of Muk in play with an active Toxic Gas Pokémon Power
+;	carry = set:  if Toxic Gas is preventing Pokémon Powers from being used
+CheckIfPkmnPowersAreCurrentlyDisabled::
+	ld a, MUK
+;	fallthrough
+
 ; checks both play areas for a specific Pokemon, but the Active Pokemon is
 ; ignored if it's Asleep, Confused, or Paralyzed (i.e. Pokemon Power-incapable).
 ; preserves all registers except af
@@ -532,7 +538,7 @@ CountPokemonWithActivePkmnPowerInBothPlayAreas::
 
 
 ; checks whether the Active Pokémon can use a Pokémon Power, more specifically,
-; if the Active Active Pokémon is Asleep, Confused, or Paralyzed or if there's a Muk in play.
+; if the Active Pokémon is Asleep, Confused, or Paralyzed or if Toxic Gas is active.
 ; preserves bc and de
 ; output:
 ;	hl = ID for notification text

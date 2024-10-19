@@ -945,10 +945,9 @@ PlayTrainerCard:
 ; output:
 ;	carry = set:  if the turn holder has a Blastoise and its Rain Dance Pokemon Power is active
 IsRainDanceActive:
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	ccf
-	ret nc ; retun no carry if Toxic Gas is active
+	ret nc ; return no carry if Pokémon Powers can't be used
 	ld a, BLASTOISE
 	jp CountTurnDuelistPokemonWithActivePkmnPower
 

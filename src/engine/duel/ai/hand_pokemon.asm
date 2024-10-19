@@ -486,7 +486,7 @@ AIDecideSpecialEvolutions:
 
 ; if Dragonair is the Active Pokémon, check its damage/HP.
 ; if this result is >= 50 and at least 3 Energy are attached,
-; then check if there's a Muk in either play area.
+; then check if Dragonite's Pokémon Power can be used.
 .is_active
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -498,10 +498,9 @@ AIDecideSpecialEvolutions:
 	cp 3
 	jr c, .lower_score
 
-; increase the AI score if there isn't a Muk in the play area.
+; increase the AI score if Dragonite's Healing Wind power can be used.
 .check_muk
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .lower_score
 	ld a, 10
 	jp AddToAIScore
@@ -573,9 +572,8 @@ AIDecidePlayLegendaryBirds:
 	ret
 
 .check_muk_and_snorlax
-	; check for a Muk in either play area
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	; check if Articuno's Quickfreeze power can be used
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .subtract
 	; check if the Defending Pokémon is a Snorlax
 	rst SwapTurn
@@ -591,9 +589,8 @@ AIDecidePlayLegendaryBirds:
 	jp AddToAIScore
 
 .moltres
-	; check for a Muk in either play area
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	; check if Moltres's Firegiver power can be used
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .subtract
 	; check if there are enough cards in the deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
@@ -605,8 +602,7 @@ AIDecidePlayLegendaryBirds:
 	jp SubFromAIScore
 
 .zapdos
-	; check for a Muk in either play area
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	; check if Zapdos's Peal of Thunder power can be used
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .subtract
 	ret

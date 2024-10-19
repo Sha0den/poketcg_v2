@@ -102,11 +102,10 @@ AIProcessEnergyCards:
 	ld a, 1
 	call AddToAIScore
 
-; if there's a VenusaurLv67 in the AI's play area and
-; no Muk in either play area, then increase the AI score by 1.
+; if there's a VenusaurLv67 in the AI's play area with
+; an active Energy Trans, then increase the AI score by 1.
 .check_venusaur
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .check_if_active
 	ld a, VENUSAUR_LV67
 	call CountTurnDuelistPokemonWithActivePkmnPower

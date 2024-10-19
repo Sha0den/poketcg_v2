@@ -109,9 +109,8 @@ AIDoTurn_LegendaryMoltres:
 	get_turn_duelist_var
 	cp DECK_SIZE - 9
 	jr nc, .skip_moltres ; skip if cards in deck <= 9
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	jr c, .skip_moltres ; skip if Muk in play
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	jr c, .skip_moltres ; skip if Moltres's Firegiver power can't be used
 	ld a, MOLTRES_LV37
 	call LookForCardIDInHandList_Bank5
 	jr nc, .skip_moltres ; skip if no MoltresLv37 in hand

@@ -96,9 +96,14 @@
 
 
 ## Code Optimization
-- **[October 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/1926adefc60d7ab79ab845eca4308e801035f9ba):** 1 Files Changed
+- **October 19, 2024:** 9 Files Changed
+    - Make a dedicated function for checking if Toxic Gas is in effect (labeled `CheckIfPkmnPowersAreCurrentlyDisabled` in case other disabling effects are added)
+
+<br/>
+
+- **[October 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/1926adefc60d7ab79ab845eca4308e801035f9ba):** 1 File Changed
     - Condense the Pokémon Power checks being performed during `HandleStrikesBack_AgainstDamagingAttack`
-    - This was accidentally spread out over two commits.
+    - The changes were spread out over two commits because I mistakenly thought that the developers overlooked something. [SECOND COMMIT](https://github.com/Sha0den/poketcg_v2/commit/012e2841921122bdf43c6cdd115436ef9f90a076)
 
 <br/>
 

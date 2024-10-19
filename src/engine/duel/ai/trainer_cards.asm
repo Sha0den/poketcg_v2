@@ -1824,8 +1824,7 @@ AIDecide_PokemonBreeder:
 
 ; the Pokémon being evolved is on the Bench.
 ; return carry if DragoniteLv41's Pokémon Power would be negated.
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .done
 
 ; count all of the damage counters in the play area.
@@ -1946,8 +1945,7 @@ AIDecide_ProfessorOak:
 	ld [wce06], a
 
 .handle_blastoise
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .check_hand
 
 ; Toxic Gas isn't in effect.
@@ -2220,8 +2218,7 @@ AIDecide_EnergyRetrieval:
 	ld a, [wOpponentDeckID]
 	cp GO_GO_RAIN_DANCE_DECK_ID
 	jr nz, .start
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .start
 	ld a, BLASTOISE
 	call CountTurnDuelistPokemonWithActivePkmnPower
@@ -2378,8 +2375,7 @@ AIDecide_SuperEnergyRetrieval:
 	ld a, [wOpponentDeckID]
 	cp GO_GO_RAIN_DANCE_DECK_ID
 	jr nz, .start
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .start
 	ld a, BLASTOISE
 	call CountTurnDuelistPokemonWithActivePkmnPower
@@ -3480,9 +3476,8 @@ AIDecide_ScoopUp:
 	or a
 	ret nz ; return no carry if this Pokémon has any attached Energy cards
 
-; don't play Scoop Up if Muk's Toxic Gas is currently in effect.
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+; don't play Scoop Up unless Pokémon Powers can be used.
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	ccf
 	ret nc
 

@@ -1982,14 +1982,13 @@ GetLoadedCard1RetreatCost::
 	ld a, c
 	or a
 	jr nz, .dodrio_found
-.muk_found
-	ld a, [wLoadedCard1RetreatCost] ; use the default Retreat Cost
+.use_default_retreat_cost
+	ld a, [wLoadedCard1RetreatCost]
 	ret
 
 .dodrio_found
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	jr c, .muk_found
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	jr c, .use_default_retreat_cost
 	ld a, [wLoadedCard1RetreatCost]
 	sub c ; apply Retreat Aid for each Dodrio on the turn holder's Bench
 	ret nc ; return if the Pokémon's Retreat Cost isn't a negative number

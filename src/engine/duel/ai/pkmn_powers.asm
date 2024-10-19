@@ -22,9 +22,8 @@ HandleAIEnergyTrans:
 	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc ; return if no VenusaurLv67 was found in the AI's play area
 
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	ret c ; return if a Muk was found in either play area
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	ret c ; return if Pokémon Powers can't be used
 
 	ld a, [wce06]
 	cp AI_ENERGY_TRANS_RETREAT
@@ -385,10 +384,9 @@ AIEnergyTransTransferEnergyToBench:
 ; output:
 ;	carry = set:  if the turn ended
 HandleAIPkmnPowers:
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	ccf
-	ret nc ; return no carry if Muk is in play
+	ret nc ; return no carry if Pokémon Powers can't be used
 
 	call AIChooseRandomlyNotToDoAction
 	ccf
@@ -937,9 +935,8 @@ HandleAICurse:
 
 ; handles AI logic for Cowardice
 HandleAICowardice:
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	ret c ; return if there's Muk in play
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	ret c ; return if Pokémon Powers can't be used
 
 	call AIChooseRandomlyNotToDoAction
 	ret c ; randomly return
@@ -1039,9 +1036,8 @@ HandleAIDamageSwap:
 	ld a, ALAKAZAM
 	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc ; return if no Alakazam
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	ret c ; return if there's Muk in play
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	ret c ; return if Pokémon Powers can't be used
 
 ; only take damage off certain Active Pokémon
 	ld a, DUELVARS_ARENA_CARD
@@ -1195,9 +1191,8 @@ HandleAIGoGoRainDanceEnergy:
 	ld a, BLASTOISE
 	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc ; return if no Blastoise
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
-	ret c ; return if there's Muk in play
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	ret c ; return if Pokémon Powers can't be used
 
 ; play all the Energy cards that are needed.
 .loop
