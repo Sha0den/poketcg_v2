@@ -1,4 +1,3 @@
-; formerly Func_b177
 HandleGiftCenter::
 	ld a, [wGiftCenterChoice]
 	and $3
@@ -317,8 +316,8 @@ GiftCenter_ReceiveDeck:
 ; initializes WRAM variables to start creating a deck configuration to send
 PrepareToBuildDeckConfigurationToSend:
 	ld hl, wCurDeckCards
-	ld a, wCurDeckCardsEnd - wCurDeckCards
-	call ClearNBytesFromHL
+	ld a, wCurDeckCardsEnd - wCurDeckCards ; number of bytes that will be cleared
+	call ClearMemory_Bank2
 	ld a, $ff
 	ld [wCurDeck], a
 	ld hl, .text
@@ -440,9 +439,9 @@ ShowReceivedCardsList:
 
 
 Func_b088:
-	ld a, CARD_COLLECTION_SIZE - 1
+	ld a, CARD_COLLECTION_SIZE - 1 ; number of bytes that will be cleared
 	ld hl, wTempCardCollection
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld de, wDuelTempList
 	call .Func_b0b2
 	ld a, $ff
@@ -478,12 +477,12 @@ Func_b088:
 	push de
 	push hl
 	push af
-	ld a, DECK_SIZE
+	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
 	ld hl, wOwnedCardsCountList
-	call ClearNBytesFromHL
-	ld a, DECK_SIZE
+	call ClearMemory_Bank2
+;	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
 	ld hl, wFilteredCardList
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	pop af
 	ld hl, $0
 	ld de, $0

@@ -378,7 +378,7 @@ OncePerTurnPokePowerCheck:
 	and USED_PKMN_POWER_THIS_TURN
 	jr nz, .already_used
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	jp CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	jp CheckIsIncapableOfUsingPkmnPower
 .already_used
 	ldtx hl, OnlyOncePerTurnText
 ;	fallthrough
@@ -404,7 +404,6 @@ IsPlayerTurn:
 	ret
 
 
-; formerly Func_61a1
 SetupPlayAreaScreen:
 	xor a
 	ld [wExcludeArenaPokemon], a
@@ -419,7 +418,6 @@ SetupPlayAreaScreen:
 
 ; sets up and draws the screen that shows the turn holder's play area Pokemon.
 ; the cursor is set to the given location and A/B input from the Player exits the screen.
-; formerly Func_2c10b
 ; input:
 ;	a = play area location offset (PLAY_AREA_* constant)
 DrawPlayAreaScreenToShowChanges:
@@ -430,7 +428,6 @@ DrawPlayAreaScreenToShowChanges:
 	ret
 
 
-; formerly Func_2fea9
 ; preserves de
 ; input:
 ;	a = attack animation to play
@@ -752,10 +749,9 @@ AddCardFromDeckToHandEffect:
 	bank1call DisplayCardDetailScreen
 ;	fallthrough
 
-; formerly Func_2c0bd
 ShuffleCardsInDeck:
 	call ExchangeRNG
-	bank1call DeckShuffleAnimation
+	bank1call PlayDeckShuffleAnimation
 	jp ShuffleDeck
 
 
@@ -1021,7 +1017,6 @@ CallForRandomBasic50PercentEffect:
 	jp ShuffleCardsInDeck
 
 
-; formerly Func_2c12e
 ; preserves de
 ; input:
 ;	a = which attack animation to play (ATK_ANIM_* constant)
@@ -1829,7 +1824,7 @@ QueueStatusCondition:
 	jr nz, .can_induce_status
 	rst SwapTurn
 	; ...unless already so, or if affected by Muk's Toxic Gas
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	rst SwapTurn
 	jr c, .can_induce_status
 
@@ -6071,7 +6066,7 @@ MirrorMove_AfterDamage:
 EnergyTransCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; can't use due to status or Toxic Gas
 
 ; search play area for at least 1 Grass Energy
@@ -6560,7 +6555,7 @@ Firegiver_AddToHandEffect:
 CowardiceCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; can't use due to status or Toxic Gas
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -6726,7 +6721,7 @@ Peek_SelectEffect:
 DamageSwapCheck:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; can't use due to a Special Condition or Toxic Gas
 	jp YourPokemon_DamageCheck
 
@@ -6876,7 +6871,7 @@ StrangeBehaviorCheck:
 ; can Pokemon Power be used?
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; return if the user has a Special Condition or if Toxic Gas is active
 ; can Slowbro receive any damage counters without KO-ing?
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -8089,7 +8084,7 @@ ImakuniEffect:
 ; Snorlax cannot become Confused if its Pokemon Power is active
 	cp SNORLAX
 	jr nz, .success
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	jr c, .success
 	; fallthrough if Thick Skinned is active
 
@@ -9242,19 +9237,16 @@ SwitchEffect:
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; formerly Func_2c087
 ; preserves hl
 ;Serial_TossZeroCoins:
 ;	xor a
 ;	jr Serial_TossCoinATimes
 ;
-; formerly Func_2c08a
 ; preserves hl
 ;Serial_TossCoin:
 ;	ld a, $1
 ;	; fallthrough
 ;
-; formerly Func_2c08c
 ; input:
 ;	a = number of coin tosses
 ; output:
@@ -9280,7 +9272,7 @@ SwitchEffect:
 ;	ldh [hTemp_ffa0], a
 ;	ld a, OPPACTION_6B30
 ;	call SetOppAction_SerialSendDuelData
-;	bank1call DeckShuffleAnimation
+;	bank1call PlayDeckShuffleAnimation
 ;	ld c, a
 ;	pop af
 ;	ldh [hTemp_ffa0], a
@@ -9328,7 +9320,7 @@ SwitchEffect:
 ;	carry = set:  if Energy Burn cannot be used or
 ;	              if the Active Pokemon is not Charizard
 ;EnergyBurnCheck_Unreferenced:
-;	call CheckCannotUseDueToStatus
+;	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 ;	ret c ; can't use due to status or Toxic Gas
 ;	ld a, DUELVARS_ARENA_CARD
 ;	get_turn_duelist_var

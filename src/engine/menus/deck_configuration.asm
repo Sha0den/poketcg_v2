@@ -123,9 +123,9 @@ DrawDecksScreen:
 	call PlaceTextItems
 
 ; mark all decks as invalid
-	ld a, NUM_DECKS
+	ld a, NUM_DECKS ; number of bytes that will be cleared (4)
 	ld hl, wDecksValid
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 
 ; for each deck, check if it has cards and if so,
 ; then mark it as valid in wDecksValid
@@ -811,12 +811,12 @@ DismantleDeck:
 	ld a, [hl]
 	or a
 	jr z, .done_dismantle
-	ld a, NAME_BUFFER_LENGTH
-	call ClearNBytesFromHL
+	ld a, NAME_BUFFER_LENGTH ; number of bytes that will be cleared (16)
+	call ClearMemory_Bank2
 	call GetPointerToDeckCards
 	call AddDeckToCollection
-	ld a, DECK_SIZE
-	call ClearNBytesFromHL
+	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
+	call ClearMemory_Bank2
 .done_dismantle
 	add sp, $2
 	jp DisableSRAM
@@ -1066,12 +1066,12 @@ CreateFilteredCardList:
 
 ; clear wOwnedCardsCountList and wFilteredCardList
 	push af
-	ld a, DECK_SIZE
+	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
 	ld hl, wOwnedCardsCountList
-	call ClearNBytesFromHL
-	ld a, DECK_SIZE
+	call ClearMemory_Bank2
+	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
 	ld hl, wFilteredCardList
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	pop af
 
 ; loops all cards in collection
@@ -1199,11 +1199,14 @@ IsCardInAnyDeck:
 	jp DisableSRAM
 
 
+; zeroes a bytes starting from hl.
+; this function is identical to 'ClearMemory_Bank5',
+; as well as 'ClearMemory_Bank6' and 'ClearMemory_Bank8'.
 ; preserves all registers
 ; input:
-;	hl = start of bytes to set to $0
-;	a = number of bytes to set to $0
-ClearNBytesFromHL:
+;	a = number of bytes to clear
+;	hl = where to begin erasing
+ClearMemory_Bank2:
 	push af
 	push bc
 	push hl
@@ -2403,9 +2406,9 @@ OpenDeckConfirmationMenu:
 	ld hl, wCurDeckCards
 	call CopyDeckFromSRAM
 
-	ld a, NUM_FILTERS
+	ld a, NUM_FILTERS ; number of bytes that will be cleared
 	ld hl, wCardFilterCounts
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld a, DECK_SIZE
 	ld [wTotalCardCount], a
 	ld hl, wCardFilterCounts

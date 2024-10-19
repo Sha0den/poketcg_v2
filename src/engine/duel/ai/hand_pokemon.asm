@@ -501,7 +501,7 @@ AIDecideSpecialEvolutions:
 ; increase the AI score if there isn't a Muk in the play area.
 .check_muk
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .lower_score
 	ld a, 10
 	jp AddToAIScore
@@ -575,7 +575,7 @@ AIDecidePlayLegendaryBirds:
 .check_muk_and_snorlax
 	; check for a Muk in either play area
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .subtract
 	; check if the Defending Pokémon is a Snorlax
 	rst SwapTurn
@@ -593,7 +593,7 @@ AIDecidePlayLegendaryBirds:
 .moltres
 	; check for a Muk in either play area
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .subtract
 	; check if there are enough cards in the deck
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
@@ -607,6 +607,6 @@ AIDecidePlayLegendaryBirds:
 .zapdos
 	; check for a Muk in either play area
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .subtract
 	ret

@@ -19,11 +19,11 @@ HandleAIEnergyTrans:
 	ret z ; return if there are no Benched Pokémon
 
 	ld a, VENUSAUR_LV67
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc ; return if no VenusaurLv67 was found in the AI's play area
 
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if a Muk was found in either play area
 
 	ld a, [wce06]
@@ -386,7 +386,7 @@ AIEnergyTransTransferEnergyToBench:
 ;	carry = set:  if the turn ended
 HandleAIPkmnPowers:
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ccf
 	ret nc ; return no carry if Muk is in play
 
@@ -938,7 +938,7 @@ HandleAICurse:
 ; handles AI logic for Cowardice
 HandleAICowardice:
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if there's Muk in play
 
 	call AIChooseRandomlyNotToDoAction
@@ -1037,10 +1037,10 @@ HandleAIDamageSwap:
 	ret c
 
 	ld a, ALAKAZAM
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc ; return if no Alakazam
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if there's Muk in play
 
 ; only take damage off certain Active Pokémon
@@ -1193,10 +1193,10 @@ HandleAIGoGoRainDanceEnergy:
 	ret nz ; return if not Go Go Rain Dance deck
 
 	ld a, BLASTOISE
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc ; return if no Blastoise
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if there's Muk in play
 
 ; play all the Energy cards that are needed.

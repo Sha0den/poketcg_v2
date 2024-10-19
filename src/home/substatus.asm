@@ -112,7 +112,7 @@ HandleDamageReductionExceptSubstatus2::
 	cp SUBSTATUS1_HALVE_DAMAGE
 	jr z, HalveDamage_RoundedDown
 .not_affected_by_substatus1
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	ret c ; return if Pokemon Powers can't be used because of status or Toxic Gas
 .pkmn_power
 	ld a, [wLoadedAttackCategory]
@@ -152,7 +152,7 @@ HandleDamageReductionOrNoDamageFromPkmnPowerEffects::
 	cp POKEMON_POWER
 	ret z ; return if the damage is being dealt by a Pokémon Power
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if there's a Muk in play
 	ld a, [wTempPlayAreaLocation_cceb]
 	or a
@@ -224,7 +224,7 @@ HandleNoDamageOrEffectSubstatus::
 	ldtx hl, NoDamageOrEffectDueToAttackText
 	cp SUBSTATUS1_IMMUNITY
 	jr z, .no_damage_or_effect
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	ccf
 	ret nc ; return if Pokemon Power can't be used because of a Special Condition or Toxic Gas
 
@@ -278,7 +278,7 @@ HandleTransparency::
 	cp POKEMON_POWER
 	ret z ; return nc if the damage is being dealt by a Pokémon Power
 	ld a, [wTempPlayAreaLocation_cceb]
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	jr c, .done
 	xor a
 	ld [wDuelDisplayedScreen], a
@@ -395,7 +395,7 @@ HandleAmnesiaSubstatus::
 ; output:
 ;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
-CheckCantRetreatDueToAttackEffect::
+CheckUnableToRetreatDueToEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	get_turn_duelist_var
 	or a
@@ -415,7 +415,7 @@ CheckCantRetreatDueToAttackEffect::
 ; output:
 ;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the turn holder can't play any Trainer cards because of an effect
-CheckCantUseTrainerDueToHeadache::
+CheckCantUseTrainerDueToEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	get_turn_duelist_var
 	or a
@@ -432,10 +432,10 @@ CheckCantUseTrainerDueToHeadache::
 ;	carry = set:  if there's an Aerodactyl in play with an active Prehistoric Power
 IsPrehistoricPowerActive::
 	ld a, AERODACTYL
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret nc ; return if there isn't an Aerodactyl in play
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ldtx hl, UnableToEvolveDueToPrehistoricPowerText
 	ccf
 	ret
@@ -446,7 +446,7 @@ IsPrehistoricPowerActive::
 ;	carry = set:  if the turn holder has an Omanyte with an active Clairvoyance Pokemon Power
 IsClairvoyanceActive::
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ccf
 	ret nc ; return if there's a Muk in play
 	ld a, OMANYTE
@@ -460,7 +460,7 @@ IsClairvoyanceActive::
 ; output:
 ;	a = number of Pokemon with the ID from input that are in the turn holder's play area
 ;	carry = set:  if there's at least 1 of that Pokemon in the turn holder's play area
-CountPokemonIDInPlayArea::
+CountTurnDuelistPokemonWithActivePkmnPower::
 	push hl
 	push de
 	push bc
@@ -513,14 +513,14 @@ CountPokemonIDInPlayArea::
 ; output:
 ;	a = number of Pokemon with the ID from input that are in either play area
 ;	carry = set:  if there's at least 1 of that Pokemon in either play area
-CountPokemonIDInBothPlayAreas::
+CountPokemonWithActivePkmnPowerInBothPlayAreas::
 	push bc
 	ld [wTempPokemonID_ce7c], a
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	ld c, a
 	rst SwapTurn
 	ld a, [wTempPokemonID_ce7c]
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	rst SwapTurn
 	add c
 	or a
@@ -537,7 +537,7 @@ CountPokemonIDInBothPlayAreas::
 ; output:
 ;	hl = ID for notification text
 ;	carry = set:  if the turn holder's Active Pokémon is unable to use its Pokémon Power
-CheckCannotUseDueToStatus::
+CheckIsIncapableOfUsingPkmnPower_ArenaCard::
 	xor a ; PLAY_AREA_ARENA
 ;	fallthrough
 
@@ -549,7 +549,7 @@ CheckCannotUseDueToStatus::
 ; output:
 ;	hl = ID for notification text
 ;	carry = set:  if the Pokémon in the given location is unable to use its Pokémon Power
-CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
+CheckIsIncapableOfUsingPkmnPower::
 	or a
 	jr nz, .check_toxic_gas
 	ld a, DUELVARS_ARENA_CARD_STATUS
@@ -560,7 +560,7 @@ CheckCannotUseDueToStatus_OnlyToxicGasIfANon0::
 	ret nz ; return carry if it's Asleep, Confused, or Paralyzed
 .check_toxic_gas
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ldtx hl, UnableDueToToxicGasText
 	ret
 
@@ -689,7 +689,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 	cp MACHAMP
 	ret nz ; return if the Defending Pokemon isn't a Machamp
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if there's a Muk in play
 	ld a, [wLoadedAttackCategory] ; category of attack used
 	cp POKEMON_POWER
@@ -697,7 +697,7 @@ HandleStrikesBack_AgainstDamagingAttack::
 	ld a, [wTempPlayAreaLocation_cceb] ; Defending Pokemon's PLAY_AREA_*
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .in_bench
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	ret c ; return if Pokemon Power can't be used because of status or Toxic Gas
 .in_bench
 	push hl

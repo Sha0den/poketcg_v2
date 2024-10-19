@@ -775,7 +775,7 @@ AITryToRetreat:
 	jr z, .unable_to_retreat
 	cp PARALYZED
 	jr z, .unable_to_retreat
-	call CheckCantRetreatDueToAttackEffect
+	call CheckUnableToRetreatDueToEffect
 	jr nc, .check_can_play_energy
 
 .unable_to_retreat

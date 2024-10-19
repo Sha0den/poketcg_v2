@@ -4,7 +4,7 @@ _AIProcessHandTrainerCards:
 	ld [wAITrainerCardPhase], a
 	
 ; exit if an effect such as Headache is preventing Trainer cards from being played.
-	call CheckCantUseTrainerDueToHeadache
+	call CheckCantUseTrainerDueToEffect
 	ret c
 
 ; create hand list in wDuelTempList and wTempHandCardList.
@@ -809,7 +809,7 @@ AIDecide_Switch:
 	jr z, .switch
 	cp PARALYZED
 	jr z, .switch
-	call CheckCantRetreatDueToAttackEffect
+	call CheckUnableToRetreatDueToEffect
 	jr c, .switch
 
 ; check whether the AI can play an Energy card from its hand to retreat.
@@ -1825,7 +1825,7 @@ AIDecide_PokemonBreeder:
 ; the Pokémon being evolved is on the Bench.
 ; return carry if DragoniteLv41's Pokémon Power would be negated.
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .done
 
 ; count all of the damage counters in the play area.
@@ -1947,12 +1947,12 @@ AIDecide_ProfessorOak:
 
 .handle_blastoise
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .check_hand
 
 ; Toxic Gas isn't in effect.
 	ld a, BLASTOISE
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	jr nc, .check_hand
 
 ; at least one Blastoise is in the AI's play area.
@@ -2221,10 +2221,10 @@ AIDecide_EnergyRetrieval:
 	cp GO_GO_RAIN_DANCE_DECK_ID
 	jr nz, .start
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .start
 	ld a, BLASTOISE
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc
 
 .start
@@ -2379,10 +2379,10 @@ AIDecide_SuperEnergyRetrieval:
 	cp GO_GO_RAIN_DANCE_DECK_ID
 	jr nz, .start
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .start
 	ld a, BLASTOISE
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	ret nc
 
 .start
@@ -3371,7 +3371,7 @@ AIDecide_ScoopUp:
 	jr z, .cannot_retreat
 	cp ASLEEP
 	jr z, .cannot_retreat
-	call CheckCantRetreatDueToAttackEffect
+	call CheckUnableToRetreatDueToEffect
 	jr c, .cannot_retreat
 
 ; nothing is preventing the Active Pokémon from retreating, so check if
@@ -3482,7 +3482,7 @@ AIDecide_ScoopUp:
 
 ; don't play Scoop Up if Muk's Toxic Gas is currently in effect.
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ccf
 	ret nc
 

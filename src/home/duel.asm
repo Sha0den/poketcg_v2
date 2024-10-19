@@ -1988,7 +1988,7 @@ GetLoadedCard1RetreatCost::
 
 .dodrio_found
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .muk_found
 	ld a, [wLoadedCard1RetreatCost]
 	sub c ; apply Retreat Aid for each Dodrio on the turn holder's Bench

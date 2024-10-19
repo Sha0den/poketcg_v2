@@ -7,12 +7,12 @@
 ;	wOwnedCardsCountList = $ff-terminated list with card counts of every card in the given set
 CreateCardSetList:
 	push af
-	ld a, DECK_SIZE ; max number of cards in a card set (currently set to 60)
+	ld a, DECK_SIZE ; number of bytes that will be cleared (max number of cards in a set = 60)
 	ld hl, wFilteredCardList
-	call ClearNBytesFromHL
-	ld a, DECK_SIZE ; max number of cards in a card set (currently set to 60)
+	call ClearMemory_Bank2
+	ld a, DECK_SIZE ; number of bytes that will be cleared (max number of cards in a set = 60)
 	ld hl, wOwnedCardsCountList
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	xor a
 	ld [wOwnedPhantomCardFlags], a
 	pop af
@@ -951,9 +951,9 @@ CardAlbum:
 	call PlaceTextItems
 
 	; set all Card Sets as available
-	ld a, NUM_CARD_SETS
+	ld a, NUM_CARD_SETS ; number of bytes that will be cleared
 	ld hl, wUnavailableAlbumCardSets
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 
 	; check if the player has received any promotional cards
 	call EnableSRAM

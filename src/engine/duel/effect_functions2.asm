@@ -1234,7 +1234,6 @@ ReorderCardsOnTopOfDeck:
 	jr .loop_selection
 
 
-; formerly Func_5735
 ; preserves bc
 ; output:
 ;	[wPrintSortNumberInCardListPtr] = pointer for PrintSortNumberInCardList function
@@ -1250,7 +1249,6 @@ PrintSortNumberInCardList_SetPointer:
 	ret
 
 
-; formerly Func_5744
 PrintSortNumberInCardList_CallFromPointer:
 	ld hl, wPrintSortNumberInCardListPtr
 	jp CallIndirect

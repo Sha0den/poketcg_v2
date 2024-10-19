@@ -12,9 +12,9 @@ HandleDeckMissingCardsList:
 	ld hl, wCurDeckCards
 	call CopyDeckFromSRAM
 
-	ld a, NUM_FILTERS
+	ld a, NUM_FILTERS ; number of bytes that will be cleared
 	ld hl, wCardFilterCounts
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld a, DECK_SIZE
 	ld [wTotalCardCount], a
 	ld hl, wCardFilterCounts
@@ -489,10 +489,9 @@ SetDeckMachineTitleText:
 
 ; saves all sSavedDecks pointers in wMachineDeckPtrs
 GetSavedDeckPointers:
-	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
-	add a
+	ld a, 2 * NUM_DECK_SAVE_MACHINE_SLOTS ; number of bytes that will be cleared
 	ld hl, wMachineDeckPtrs
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld de, wMachineDeckPtrs
 	ld hl, sSavedDecks
 	ld bc, DECK_STRUCT_SIZE
@@ -1026,8 +1025,8 @@ TryDeleteSavedDeck:
 	call EnableSRAM
 	call CopyDeckName
 	pop hl
-	ld a, DECK_STRUCT_SIZE
-	call ClearNBytesFromHL
+	ld a, DECK_STRUCT_SIZE ; number of bytes that will be cleared
+	call ClearMemory_Bank2
 	call DisableSRAM
 	; zero wTxRam2 so that the deck name just loaded to wDefaultText is printed
 	ld hl, wTxRam2
@@ -1127,8 +1126,8 @@ HandleDismantleDeckToMakeSpace:
 	add hl, bc
 	call AddDeckToCollection
 	pop hl
-	ld a, DECK_STRUCT_SIZE
-	call ClearNBytesFromHL
+	ld a, DECK_STRUCT_SIZE ; number of bytes that will be cleared
+	call ClearMemory_Bank2
 	call DisableSRAM
 
 	; redraw deck screen
@@ -1328,8 +1327,8 @@ TryBuildDeckMachineDeck:
 	add hl, bc
 	call AddDeckToCollection
 	pop hl
-	ld a, DECK_STRUCT_SIZE
-	jp ClearNBytesFromHL
+	ld a, DECK_STRUCT_SIZE ; number of bytes that will be cleared
+	jp ClearMemory_Bank2
 
 ; collects cards missing from the player's collection
 ; and shows its confirmation list
@@ -1741,9 +1740,9 @@ HandleAutoDeckMenu:
 ; writes to wMachineDeckPtrs the pointers
 ; to the Auto Decks in sAutoDecks
 .CreateAutoDeckPointerList
-	ld a, 2 * NUM_DECK_MACHINE_SLOTS
+	ld a, 2 * NUM_DECK_MACHINE_SLOTS ; number of bytes that will be cleared
 	ld hl, wMachineDeckPtrs
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld de, wMachineDeckPtrs
 	ld hl, sAutoDecks
 	ld bc, DECK_STRUCT_SIZE

@@ -34,7 +34,6 @@ AssertSFXFinished::
 	ret
 
 
-; formerly Func_3794
 ; preserves all registers except af
 PlaySFX_InvalidChoice::
 	ld a, SFX_DENIED

@@ -78,7 +78,6 @@ InitAndPrintMenu:
 	ret
 
 
-; formerly Unknown_10d98
 PauseMenuParams:
 	db 12,  0 ; start menu coordinates
 	db  8, 14 ; start menu text box dimensions
@@ -95,7 +94,6 @@ PauseMenuParams:
 	dw NULL ; function pointer if non-0
 
 
-; formerly Unknown_10da9
 PCMenuParams:
 	db 10,  0 ; start menu coordinates
 	db 10, 12 ; start menu text box dimensions

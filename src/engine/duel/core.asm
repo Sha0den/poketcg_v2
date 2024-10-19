@@ -613,7 +613,6 @@ OpenActivePokemonScreen:
 	jp OpenCardPage_FromCheckPlayArea
 
 
-; formerly Func_4597
 ; called when the Player presses SELECT while inside the main duel interface
 ; - 1st SELECT press displays the full play area screen
 ; - 2nd SELECT press displays the screen that lists the Player's play area Pokemon
@@ -906,7 +905,7 @@ PlayPokemonCard:
 ; output:
 ;	carry = set:  if the Trainer card wasn't played
 PlayTrainerCard:
-	call CheckCantUseTrainerDueToHeadache
+	call CheckCantUseTrainerDueToEffect
 	jr c, .cant_use
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempCardIndex_ff9f], a
@@ -947,11 +946,11 @@ PlayTrainerCard:
 ;	carry = set:  if the turn holder has a Blastoise and its Rain Dance Pokemon Power is active
 IsRainDanceActive:
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ccf
 	ret nc ; retun no carry if Toxic Gas is active
 	ld a, BLASTOISE
-	jp CountPokemonIDInPlayArea
+	jp CountTurnDuelistPokemonWithActivePkmnPower
 
 
 ; preserves all registers except af
@@ -981,7 +980,7 @@ CheckRainDanceScenario:
 ;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the Active Pokemon is unable to retreat
 CheckAbleToRetreat:
-	call CheckCantRetreatDueToAttackEffect
+	call CheckUnableToRetreatDueToEffect
 	ret c
 	call CheckIfActiveCardParalyzedOrAsleep
 	ret c
@@ -1953,7 +1952,6 @@ _DisplayCardDetailScreen:
 	jp DrawWideTextBox_WaitForInput
 
 
-; formerly Func_4b38
 ; input:
 ;	wDuelTempList = $ff terminated list with deck indices of cards
 DisplayCardListDetails:
@@ -2540,8 +2538,7 @@ PlayShuffleAndDrawCardsAnimation:
 	ret
 
 
-; formerly Func_4f2d
-DeckShuffleAnimation:
+PlayDeckShuffleAnimation:
 	ld a, [wDuelDisplayedScreen]
 	cp SHUFFLE_DECK
 	jr z, .skip_draw_scene
@@ -3428,7 +3425,6 @@ SetDiscardPileScreenTexts:
 	jp SetCardListHeaderText
 
 
-; formerly Func_5591
 ; output:
 ;	carry = set:  if [wDuelTempList] = $ff (i.e. the list is empty)
 InitAndDrawCardListScreenLayout_WithSelectCheckMenu:
@@ -5534,7 +5530,6 @@ PrintPlayAreaCardList:
 
 
 
-; formerly Func_6194
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset (PLAY_AREA_* constant)
 InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox:
@@ -5545,7 +5540,6 @@ InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox:
 	jp SetCursorParametersForTextBox_Default
 
 
-; formerly Func_6186
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset (PLAY_AREA_* constant)
 InitAndPrintPlayAreaCardInformationAndLocation:
@@ -7036,7 +7030,7 @@ OppAction_6b30:
 	push af
 	ldh a, [hTemp_ffa0]
 	ldh [hWhoseTurn], a
-	call DeckShuffleAnimation
+	call PlayDeckShuffleAnimation
 	pop af
 	ldh [hWhoseTurn], a
 	ret
@@ -7618,7 +7612,6 @@ ApplyStatusConditionToArenaPokemon:
 	ret
 
 
-; formerly Func_6e49
 ; output:
 ;	carry = set:  if the duel has ended
 HandleDestinyBondAndBetweenTurnKnockOuts::
@@ -8333,7 +8326,7 @@ ProcessPlayedPokemonCard::
 	cp MUK
 	jr z, .use_pokemon_power
 	ld a, PLAY_AREA_BENCH_1 ; check only Muk
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	jr nc, .use_pokemon_power
 	call DisplayUsePokemonPowerScreen
 	ldtx hl, UnableDueToToxicGasText
@@ -8512,7 +8505,7 @@ PlayAttackAnimation_DealAttackDamage::
 	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
 	call TryExecuteEffectCommandFunction
 	call ApplyDamageModifiers_DamageToTarget
-	call LastChanceToNegateFinalDamage
+	call ApplyTransparencyIfApplicable
 	ld hl, wDealtDamage
 	ld [hl], e
 	inc hl
@@ -8727,13 +8720,12 @@ Func_1bb4:
 	jp ExchangeRNG
 
 
-; formerly Func_189d
 ; checks for anything else that might prevent the attack's damage.
 ; damage is set to 0 if anything is found.
 ; input:
 ;	de = damage being dealt by the attack
 ;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
-LastChanceToNegateFinalDamage:
+ApplyTransparencyIfApplicable:
 	ld a, [wLoadedAttackCategory]
 	bit RESIDUAL_F, a
 	ret nz ; return if the attack is residual
@@ -8786,7 +8778,7 @@ HandleStrikesBack_AgainstResidualAttack:
 	or a
 	ret z
 	rst SwapTurn
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	rst SwapTurn
 	ret c  ; return if Pokemon Power can't be used because of status or Toxic Gas
 	ld hl, 10 ; amount of damage to give the Attacking Pokemon

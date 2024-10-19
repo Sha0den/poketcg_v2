@@ -182,9 +182,9 @@ DeckSelectionSubMenu:
 	ld d, h
 	ld hl, wCurDeckCards
 	call CopyDeckFromSRAM
-	ld a, 20
+	ld a, MAX_DECK_NAME_LENGTH ; number of bytes that will be cleared (20)
 	ld hl, wCurDeckName
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld de, wCurDeckName
 	call GetPointerToDeckName
 	call CopyListFromHLToDEInSRAM
@@ -228,9 +228,9 @@ DeckSelectionSubMenu:
 	call PrintThereIsNoDeckHereText
 	jp DeckSelectionMenu.init_menu_params
 .get_input_deck_name
-	ld a, 20
+	ld a, MAX_DECK_NAME_LENGTH ; number of bytes that will be cleared (20)
 	ld hl, wCurDeckName
-	call ClearNBytesFromHL
+	call ClearMemory_Bank2
 	ld de, wCurDeckName
 	call GetPointerToDeckName
 	call CopyListFromHLToDEInSRAM

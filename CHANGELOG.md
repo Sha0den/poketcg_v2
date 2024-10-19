@@ -96,7 +96,7 @@
 
 
 ## Code Optimization
-- **October 18, 2024:** 13 Files Changed
+- **[October 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f):** 13 Files Changed
     - Try to standardize the function comments that are used in the engine/duel/ai files (excluding the decks folder)
     - Plus several more code changes in said files (only big change was to `_AIProcessHandTrainerCards`)
 

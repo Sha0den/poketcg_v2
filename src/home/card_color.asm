@@ -32,7 +32,7 @@ GetPlayAreaCardColor::
 	ret
 .has_changed_color
 	ld a, e
-	call CheckCannotUseDueToStatus_OnlyToxicGasIfANon0
+	call CheckIsIncapableOfUsingPkmnPower
 	jr c, .regular_color ; jump if can't use Shift
 	ld a, e
 	add DUELVARS_ARENA_CARD_CHANGED_TYPE
@@ -137,7 +137,7 @@ HandleEnergyBurn::
 	call _GetCardIDFromDeckIndex
 	cp CHARIZARD
 	ret nz
-	call CheckCannotUseDueToStatus
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	ret c
 	ld hl, wAttachedEnergies
 	ld c, NUM_COLORED_TYPES

@@ -659,7 +659,7 @@ CheckIfCardCanBePlayed:
 	ret
 
 .trainer_card
-	call CheckCantUseTrainerDueToHeadache
+	call CheckCantUseTrainerDueToEffect
 	ret c
 	call LoadNonPokemonCardEffectCommands
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
@@ -991,8 +991,8 @@ CopyListWithFFTerminatorFromHLToDE_Bank5:
 
 
 ; zeroes a bytes starting from hl.
-; this function is identical to 'ClearNBytesFromHL' in Bank $2,
-; as well as ClearMemory_Bank6' and 'ClearMemory_Bank8'.
+; this function is identical to 'ClearMemory_Bank2',
+; as well as 'ClearMemory_Bank6' and 'ClearMemory_Bank8'.
 ; preserves all registers
 ; input:
 ;	a = number of bytes to clear

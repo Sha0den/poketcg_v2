@@ -106,10 +106,10 @@ AIProcessEnergyCards:
 ; no Muk in either play area, then increase the AI score by 1.
 .check_venusaur
 	ld a, MUK
-	call CountPokemonIDInBothPlayAreas
+	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	jr c, .check_if_active
 	ld a, VENUSAUR_LV67
-	call CountPokemonIDInPlayArea
+	call CountTurnDuelistPokemonWithActivePkmnPower
 	jr nc, .check_if_active
 	ld a, 1
 	call AddToAIScore
