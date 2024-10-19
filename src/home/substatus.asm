@@ -685,21 +685,18 @@ HandleStrikesBack_AgainstDamagingAttack::
 	ld a, [wIsDamageToSelf]
 	or a
 	ret nz ; return nc if the damage isn't being dealt by an opponent's Pokémon
-	ld a, [wTempNonTurnDuelistCardID] ; ID of Defending Pokemon
+	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
-	ret nz ; return if the Defending Pokemon isn't a Machamp
+	ret nz ; return if the Pokemon being attacked isn't a Machamp
 	ld a, MUK
 	call CountPokemonWithActivePkmnPowerInBothPlayAreas
 	ret c ; return if there's a Muk in play
 	ld a, [wLoadedAttackCategory] ; category of attack used
 	cp POKEMON_POWER
 	ret z ; return if the damage is being dealt by a Pokémon Power
-	ld a, [wTempPlayAreaLocation_cceb] ; Defending Pokemon's PLAY_AREA_*
-	or a ; cp PLAY_AREA_ARENA
-	jr nz, .in_bench
-	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+	ld a, [wTempPlayAreaLocation_cceb]
+	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; return if Pokemon Power can't be used because of status or Toxic Gas
-.in_bench
 	push hl
 	push de
 	; subtract 10 HP from Attacking Pokemon (turn holder's Active Pokemon)

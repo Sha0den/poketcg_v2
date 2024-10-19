@@ -12,6 +12,11 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **October 19, 2024:** 1 File Changed
+    - Prevent a Benched Machamp's Strike Back power from being used while Toxic Gas is active
+
+<br/>
+
 - **[September 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/cba5b2646b518893a6dc61d6e2991eb13db057e0):** 1 File Changed
     - Prevent the Morph attack from transforming the user into a copy of the exact same card
 
