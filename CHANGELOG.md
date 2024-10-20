@@ -96,7 +96,12 @@
 
 
 ## Code Optimization
-- **October 19, 2024:** 9 Files Changed
+- **October 20, 2024:** 3 Files Changed
+    - Various optimizations in engine/duel/core.asm, home/duel.asm, and home/substatus.asm
+
+<br/>
+
+- **[October 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/b0f134ded8387b4fefba042be505ea42cdadd2d4):** 9 Files Changed
     - Make a dedicated function for checking if Toxic Gas is in effect (labeled `CheckIfPkmnPowersAreCurrentlyDisabled` in case other disabling effects are added)
 
 <br/>

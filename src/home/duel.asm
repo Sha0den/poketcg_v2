@@ -457,10 +457,10 @@ FindLastCardInHand::
 
 ; shuffles the turn holder's deck
 ; if less than 60 cards remain in the deck, it makes sure that the rest are ignored
+; preserves de and c
 ShuffleDeck::
 	ldh a, [hWhoseTurn]
 	ld h, a
-	ld d, a
 	ld a, DECK_SIZE
 	ld l, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	sub [hl]
@@ -1228,42 +1228,36 @@ GetPlayAreaCardAttachedEnergies::
 	ld [hli], a
 	dec c
 	jr nz, .zero_energies_loop
+	ld b, a              ; b  = $00
+	; a = DUELVARS_CARD_LOCATIONS
+	get_turn_duelist_var ; hl = address for current player's card location data
+	ld d, DECK_SIZE      ; d  = number of cards to check (60)
 	ld a, CARD_LOCATION_PLAY_AREA
 	or e ; if e is non-0, a bench location is checked instead
 	ld e, a
-	ldh a, [hWhoseTurn]
-	ld h, a
-	ld l, DUELVARS_CARD_LOCATIONS
-	ld c, DECK_SIZE
-.next_card
+.loop_all_cards
 	ld a, [hl]
 	cp e
-	jr nz, .not_in_requested_location
-
-	push hl
-	push de
+	jr nz, .next_card ; skip if wrong location
 	ld a, l
 	call GetCardTypeFromDeckIndex_SaveDE
 	bit TYPE_ENERGY_F, a
-	jr z, .not_an_energy_card
+	jr z, .next_card ; skip if wrong card type
 	and TYPE_PKMN ; zero bit 3 to extract the type
-	ld e, a
-	ld d, $0
+	ld c, a
+	push hl
 	ld hl, wAttachedEnergies
-	add hl, de
+	add hl, bc
 	inc [hl] ; increment the number of Energy cards of this type
 	cp COLORLESS
 	jr nz, .not_colorless
 	inc [hl] ; each Colorless Energy counts as two
-.not_an_energy_card
 .not_colorless
-	pop de
 	pop hl
-
-.not_in_requested_location
+.next_card
 	inc l
-	dec c
-	jr nz, .next_card
+	dec d
+	jr nz, .loop_all_cards
 	; all 60 cards checked
 	ld hl, wAttachedEnergies
 	ld c, NUM_TYPES
@@ -1288,24 +1282,25 @@ GetPlayAreaCardAttachedEnergies::
 ;	a = how many of the given card exists in the given location
 CountCardIDInLocation::
 	push bc
-	ldh a, [hWhoseTurn]
-	ld h, a
-	ld l, DUELVARS_CARD_LOCATIONS
-	ld c, $0
-.next_card
+	xor a
+	ld c, a ; initial counter = 0
+	; a = DUELVARS_CARD_LOCATIONS
+	get_turn_duelist_var
+	; hl = address for current player's card location data
+.loop_all_cards
 	ld a, [hl]
 	cp b
-	jr nz, .unmatching_card_location_or_ID
+	jr nz, .next_card ; skip if wrong location
 	ld a, l
 	call _GetCardIDFromDeckIndex
 	cp e
-	jr nz, .unmatching_card_location_or_ID
+	jr nz, .next_card ; skip if wrong card ID
 	inc c
-.unmatching_card_location_or_ID
+.next_card
 	inc l
 	ld a, l
 	cp DECK_SIZE
-	jr c, .next_card
+	jr c, .loop_all_cards
 	ld a, c
 	pop bc
 	ret
@@ -1973,9 +1968,8 @@ GetLoadedCard1RetreatCost::
 	jr z, .no_more_bench
 	call _GetCardIDFromDeckIndex
 	cp DODRIO
-	jr nz, .not_dodrio
+	jr nz, .check_bench_loop
 	inc c
-.not_dodrio
 	jr .check_bench_loop
 
 .no_more_bench

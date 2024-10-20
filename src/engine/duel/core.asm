@@ -710,7 +710,7 @@ OpenPlayerHandScreen:
 	bit TYPE_ENERGY_F, c
 	jr nz, PlayEnergyCard
 	call PlayPokemonCard
-	jr c, ReloadCardListScreen ; jump if card not played
+	jp c, ReloadCardListScreen ; jump if card not played
 	jp DuelMainInterface
 .trainer_card
 	call PlayTrainerCard
@@ -747,11 +747,14 @@ SortHandCardsByID:
 PlayEnergyCard:
 	ld a, c
 	cp TYPE_ENERGY_WATER
-	jr nz, .not_water_energy
-	call IsRainDanceActive
-	jr c, .rain_dance_active
+	jr nz, .rain_dance_not_active
+	ld a, BLASTOISE
+	call CountTurnDuelistPokemonWithActivePkmnPower
+	jr nc, .rain_dance_not_active
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	jr nc, .rain_dance_active
 
-.not_water_energy
+.rain_dance_not_active
 	ld a, [wAlreadyPlayedEnergy]
 	or a
 	jr nz, .already_played_energy
@@ -939,17 +942,6 @@ PlayTrainerCard:
 .done
 	or a
 	ret
-
-
-; preserves all registers except af
-; output:
-;	carry = set:  if the turn holder has a Blastoise and its Rain Dance Pokemon Power is active
-IsRainDanceActive:
-	call CheckIfPkmnPowersAreCurrentlyDisabled
-	ccf
-	ret nc ; return no carry if Pokémon Powers can't be used
-	ld a, BLASTOISE
-	jp CountTurnDuelistPokemonWithActivePkmnPower
 
 
 ; preserves all registers except af
@@ -8324,8 +8316,7 @@ ProcessPlayedPokemonCard::
 	ld a, [wLoadedCard1ID]
 	cp MUK
 	jr z, .use_pokemon_power
-	ld a, PLAY_AREA_BENCH_1 ; check only Muk
-	call CheckIsIncapableOfUsingPkmnPower
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr nc, .use_pokemon_power
 	call DisplayUsePokemonPowerScreen
 	ldtx hl, UnableDueToToxicGasText

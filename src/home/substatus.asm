@@ -399,14 +399,11 @@ CheckUnableToRetreatDueToEffect::
 	get_turn_duelist_var
 	or a
 	ret z ; return nc if the Active Pokémon isn't affected by any SUBSTATUS2 effects
-	cp SUBSTATUS2_UNABLE_RETREAT
-	jr z, .cant_retreat
-	or a
-	ret
-
-.cant_retreat
 	ldtx hl, UnableToRetreatDueToAcidText
+	cp SUBSTATUS2_UNABLE_RETREAT
 	scf
+	ret z ; return carry if the Active Pokémon can't retreat because of a Substatus
+	or a
 	ret
 
 
@@ -461,39 +458,34 @@ CountTurnDuelistPokemonWithActivePkmnPower::
 	push hl
 	push de
 	push bc
-	ld [wTempPokemonID_ce7c], a
+	ld b, a ; originally stored in wTempPokemonID_ce7c
 	ld c, 0 ; initial counter
-	ld a, DUELVARS_ARENA_CARD
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	cp $ff
-	jr z, .check_bench ; skip checking the Arena if there's no Active Pokémon
-	call GetCardIDFromDeckIndex
-	ld a, [wTempPokemonID_ce7c]
-	cp e
-	jr nz, .check_bench
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
+	ld d, a
+	ld e, PLAY_AREA_ARENA
+	ld l, DUELVARS_ARENA_CARD_STATUS
+	ld a, [hl]
 	and CNF_SLP_PRZ
-	jr nz, .check_bench ; skip the Active Pokémon if it's Alseep, Confused, or Paralyzed
-	inc c
-.check_bench
-	ld a, DUELVARS_BENCH
+	jr nz, .next_bench_slot ; skip the Active Pokémon if it's Alseep, Confused, or Paralyzed
+
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add e
 	get_turn_duelist_var
-.next_bench_slot
-	ld a, [hli]
-	cp $ff
-	jr z, .done ; finish if there are no more Pokémon to check
-	call GetCardIDFromDeckIndex
-	ld a, [wTempPokemonID_ce7c]
-	cp e
+	call _GetCardIDFromDeckIndex
+	cp b
 	jr nz, .next_bench_slot
 	inc c
-	jr .next_bench_slot
+.next_bench_slot
+	inc e
+	dec d
+	jr nz, .loop_play_area
 
 .done
 	ld a, c
 	or a
-	jr z, .return ; return no carry if none of that Pokémon were found
+	jr z, .return ; return no carry if none of that Pokémon were found with an active power
 	scf
 .return
 	pop bc
@@ -521,11 +513,11 @@ CheckIfPkmnPowersAreCurrentlyDisabled::
 ;	carry = set:  if there's at least 1 of that Pokemon in either play area
 CountPokemonWithActivePkmnPowerInBothPlayAreas::
 	push bc
-	ld [wTempPokemonID_ce7c], a
+	ld b, a
 	call CountTurnDuelistPokemonWithActivePkmnPower
 	ld c, a
 	rst SwapTurn
-	ld a, [wTempPokemonID_ce7c]
+	ld a, b
 	call CountTurnDuelistPokemonWithActivePkmnPower
 	rst SwapTurn
 	add c
@@ -651,7 +643,6 @@ HandleDestinyBondSubstatus::
 	or a
 	ret z ; return if Attacking Pokémon's HP = 0
 	ld [hl], 0
-	push hl
 	ldh a, [hBankROM]
 	push af
 	ld a, BANK(DrawDuelMainScene)
@@ -660,9 +651,8 @@ HandleDestinyBondSubstatus::
 	call DrawDuelHUDs ; also in bank $01
 	pop af
 	rst BankswitchROM
-	pop hl
-	ld l, DUELVARS_ARENA_CARD
-	ld a, [hl]
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld hl, wLoadedCard2Name
 	ld a, [hli]
