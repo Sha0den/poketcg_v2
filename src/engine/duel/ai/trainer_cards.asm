@@ -102,6 +102,7 @@ _AIProcessHandTrainerCards:
 .relist_hand
 ; the hand was modified during the Trainer effect,
 ; so it needs to be re-listed again and looped from the top.
+	pop hl
 	call CreateHandCardList
 	ld hl, wDuelTempList
 	ld de, wTempHandCardList

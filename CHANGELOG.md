@@ -855,7 +855,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **October 21, 2024:** 1 File Changed
+- **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/bacaa181c7e2fc484b038c37ee17a5f345540796):** 1 File Changed
     - Fix an oversight with the new `_AIProcessHandTrainerCards` code
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f)*
 
