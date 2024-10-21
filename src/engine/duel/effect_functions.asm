@@ -8773,14 +8773,14 @@ CreatePokemonCardListFromHand:
 ; and sets the amount of damage to heal
 ; output:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
-;	[hTempPlayAreaLocation_ffa1] = amount of HP to heal (usually 20, 10 if capped)
+;	[hTemp_ffa0] = amount of HP to heal (usually 20, 10 if capped)
+;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
 Potion_PlayerSelection:
 	bank1call HasAlivePokemonInPlayArea
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
-	ldh [hTemp_ffa0], a
+	ldh [hTempPlayAreaLocation_ffa1], a
 	ld e, a
 	call GetCardDamageAndMaxHP
 	or a
@@ -8792,18 +8792,18 @@ Potion_PlayerSelection:
 	ld c, a
 .skip_cap
 	ld a, c
-	ldh [hTempPlayAreaLocation_ffa1], a
+	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
 ; input:
-;	[hTemp_ffa0] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
-;	[hTempPlayAreaLocation_ffa1] = amount of HP to heal
+;	[hTemp_ffa0] = amount of HP to heal
+;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
 HealEffect:
-	ldh a, [hTemp_ffa0]
-	ldh [hTempPlayAreaLocation_ff9d], a
 	ldh a, [hTempPlayAreaLocation_ffa1]
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ldh a, [hTemp_ffa0]
 ;	fallthrough
 
 ; heals a given amount of damage from the Pokemon in a given location.

@@ -165,29 +165,15 @@ AIPlay_TrainerCard_TwoVars:
 
 
 
-; makes AI use Potion card.
-AIPlay_Potion:
-	ld a, [wAITrainerCardToPlay]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wAITrainerCardParameter]
-	ldh [hTemp_ffa0], a ; target Pokémon's play area location offset
-	ld e, a
-	call GetCardDamageAndMaxHP
-	cp 20
-	jr c, .play_card
-	ld a, 20
-.play_card
-	ldh [hTempPlayAreaLocation_ffa1], a ; amount of damage to heal
-	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
-	bank1call AIMakeDecision
-	ret
+; Potion uses 'AIPlay_TrainerCard_TwoVars'
 
 
 ; if there are no plans to retreat the Active Pokémon and the AI doesn't intend
 ; to use a high recoil attack, then it will use Potion on the Active Pokémon,
 ; but only if doing so will prevent that Pokémon from being KO'd in the following turn.
 ; output:
-;	a = PLAY_AREA_ARENA:  if the AI decided to play Potion
+;	a = amount of damage to heal, if any (usually 20)
+;	[wce1a] = PLAY_AREA_ARENA:  if the AI decided to play Potion
 ;	carry = set:  if the AI decided to play Potion
 AIDecide_Potion1:
 ; don't play Potion if the AI is going to retreat the Active Pokémon.
@@ -229,6 +215,8 @@ AIDecide_Potion1:
 
 ; play Potion on the Active Pokémon if it will prevent the KO.
 	ld a, e ; PLAY_AREA_ARENA
+	ld [wce1a], a
+	ld a, l
 	ccf
 	ret
 
@@ -236,7 +224,8 @@ AIDecide_Potion1:
 ; AI still prioritizes the Active Pokémon, especially if it can prevent a KO,
 ; but it's now willing to consider Benched Pokémon as possible targets.
 ; output:
-;	a = target Pokémon's play area location offset (PLAY_AREA_* constant)
+;	a = amount of damage to heal, if any (usually 20)
+;	[wce1a] = target Pokémon's play area location offset (PLAY_AREA_* constant)
 ;	carry = set:  if the AI decided to play Potion
 AIDecide_Potion2:
 	xor a ; PLAY_AREA_ARENA
@@ -286,6 +275,7 @@ AIDecide_Potion2:
 ; a Pokémon was selected, now to check if it's Active or Benched.
 .found
 	ld a, e
+	ld [wce1a], a
 	or a ; cp PLAY_AREA_ARENA
 	jr z, .active_card
 
@@ -303,7 +293,7 @@ AIDecide_Potion2:
 	ccf
 	ret nc
 .skip_random
-	ld a, e
+	ld a, 20
 	scf
 	ret
 
@@ -311,7 +301,7 @@ AIDecide_Potion2:
 ; if the AI does not intend to use a High Recoil recoil.
 .active_card
 	call AICheckIfAttackIsHighRecoil
-	ld a, PLAY_AREA_ARENA
+	ld a, 20
 	ccf
 	ret
 

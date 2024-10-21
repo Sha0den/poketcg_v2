@@ -96,7 +96,12 @@
 
 
 ## Code Optimization
-- **October 21, 2024:** 6 Files Changed
+- **October 21, 2024:** 3 Files Changed
+    - Swap some variables in the Potion effect functions and AI logic to eliminate the need for a separate `AIPlay_Potion` function
+
+<br/>
+
+- **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/a3d1a4e0a10be97ec18bb0bcca5b446267720286):** 6 Files Changed
     - Remove the `EnergyRemoval_AISelection` effect function since Trainer cards don't use AISelection effect commands
     - Replace the call to that function in `DiscardEnergyDefendingPokemon_AISelection` with a farcall to the real Energy Removal AI logic
     - Move `CheckIfEnergyIsUseful` from engine/duel/ai/core.asm to engine/duel/ai/common.asm to minimize farcalls
