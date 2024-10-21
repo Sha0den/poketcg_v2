@@ -96,7 +96,7 @@
 
 
 ## Code Optimization
-- **October 21, 2024:** 3 Files Changed
+- **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/d8ad3a6a2c866fca574781a9e1ece79b0d261631):** 3 Files Changed
     - Swap some variables in the Potion effect functions and AI logic to eliminate the need for a separate `AIPlay_Potion` function
 
 <br/>

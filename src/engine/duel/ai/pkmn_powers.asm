@@ -1,381 +1,3 @@
-; handles AI routines for Energy Trans.
-; uses AI_ENERGY_TRANS_* constants as input:
-;	- AI_ENERGY_TRANS_RETREAT: transfers enough Grass Energy cards to
-;	  the Active Pokémon for it to be able to pay its Retreat Cost.
-;	- AI_ENERGY_TRANS_ATTACK: transfers enough Grass Energy cards to
-;	  the Active Pokémon for it to be able to use its second attack.
-;	- AI_ENERGY_TRANS_TO_BENCH: transfers all Grass Energy cards from the
-;	  Active Pokémon to the Bench in case the Active Pokémon will be KO'd.
-HandleAIEnergyTrans:
-	ld [wce06], a
-
-; choose to randomly return
-	call AIChooseRandomlyNotToDoAction
-	ret c
-
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	dec a
-	ret z ; return if there are no Benched Pokémon
-
-	ld a, VENUSAUR_LV67
-	call CountTurnDuelistPokemonWithActivePkmnPower
-	ret nc ; return if no VenusaurLv67 was found in the AI's play area
-
-	call CheckIfPkmnPowersAreCurrentlyDisabled
-	ret c ; return if Pokémon Powers can't be used
-
-	ld a, [wce06]
-	cp AI_ENERGY_TRANS_RETREAT
-	jr z, .check_retreat
-
-	cp AI_ENERGY_TRANS_TO_BENCH
-	jp z, AIEnergyTransTransferEnergyToBench
-
-	; AI_ENERGY_TRANS_ATTACK
-	call .CheckEnoughGrassEnergyCardsForAttack
-	ret nc
-	jr .TransferEnergyToArena
-
-.check_retreat
-	call .CheckEnoughGrassEnergyCardsForRetreatCost
-	ret nc
-
-; use Energy Trans to move Grass Energy cards from the Bench to the Active Pokémon.
-; input:
-;	a = number of Grass Energy cards that should be transferred to the Active Pokémon
-.TransferEnergyToArena
-	ld [wAINumberOfEnergyTransCards], a
-
-; look for a VenusaurLv67 in the play area
-; so that its Pokémon Power can be used.
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	dec a ; convert into the last play area location offset
-	ld b, a
-.loop_play_area
-	ld a, DUELVARS_ARENA_CARD
-	add b
-	get_turn_duelist_var
-	ldh [hTempCardIndex_ff9f], a
-	call _GetCardIDFromDeckIndex
-	cp VENUSAUR_LV67
-	jr z, .use_pkmn_power
-
-	ld a, b
-	or a ; cp PLAY_AREA_ARENA
-	ret z ; return if there are no more Pokémon to check in the play area
-
-	dec b
-	jr .loop_play_area
-
-; use Energy Trans Pkmn Power
-.use_pkmn_power
-	ld a, b
-	ldh [hTemp_ffa0], a
-	ld a, OPPACTION_USE_PKMN_POWER
-	bank1call AIMakeDecision
-	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
-	bank1call AIMakeDecision
-
-	xor a ; PLAY_AREA_ARENA
-	ldh [hAIEnergyTransPlayAreaLocation], a
-	ld a, [wAINumberOfEnergyTransCards]
-	ld d, a
-
-; look for Grass Energy cards that
-; are currently attached to a Benched Pokémon.
-	ld e, 0 ; initial deck index
-.loop_deck_locations
-	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
-	get_turn_duelist_var
-	and %00011111
-	cp CARD_LOCATION_BENCH_1
-	jr c, .next_card
-
-	and %00001111
-	ldh [hTempPlayAreaLocation_ffa1], a
-
-	ld a, e
-	call _GetCardIDFromDeckIndex
-	cp GRASS_ENERGY
-	jr nz, .next_card
-
-	; store the deck index of the Energy card
-	ld a, e
-	ldh [hAIEnergyTransEnergyCard], a
-
-	; 30 frame delay
-	ld a, 30
-	call DoAFrames
-
-	push de
-	ld a, OPPACTION_6B15
-	bank1call AIMakeDecision
-	pop de
-	dec d
-	jr z, .done_transfer
-
-.next_card
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop_deck_locations
-
-; transfer is done, perform delay
-; and return to main scene.
-.done_transfer
-	ld a, 60
-	call DoAFrames
-	ld a, OPPACTION_DUEL_MAIN_SCENE
-	bank1call AIMakeDecision
-	ret
-
-; assumes that there are no attacks that have both Grass Energy
-; and another non-Colorless Energy in their attack cost.
-; output:
-;	a = amount of Energy that should be transferred to the Active Pokémon
-;	    so that it can use its second attack:  if the below condition is true
-;	carry = set:  if transferring Grass Energy from Benched Pokémon would
-;	              allow the Active Pokémon to use its second attack
-.CheckEnoughGrassEnergyCardsForAttack
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
-	cp EXEGGUTOR
-	jr z, .is_exeggutor
-
-	xor a ; PLAY_AREA_ARENA
-	ldh [hTempPlayAreaLocation_ff9d], a
-	ld a, SECOND_ATTACK
-	ld [wSelectedAttack], a
-	farcall CheckEnergyNeededForAttack
-	ret nc ; return if no Energy needed
-
-; check if only Colorless Energy is needed...
-	ld a, b
-	or a
-	jr nz, .need_colored_energy
-	ld a, c
-	or a
-	jr nz, .count_if_enough
-	ret
-
-; ...otherwise check if the needed Basic Energy is Grass.
-.need_colored_energy
-	farcall GetEnergyCardNeeded
-	cp GRASS_ENERGY
-	jr nz, .no_carry
-	ld a, b
-	add c
-	ld c, a ; c = total number of Energy needed for the attack
-
-.count_if_enough
-; if there's enough Grass Energy cards in the Bench
-; to satisfy the attack's Energy cost, return carry.
-	call .CountGrassEnergyInBench
-	cp c
-	ccf
-	ld a, c
-	ret
-
-.is_exeggutor
-; in case Exeggutor is the Active Pokémon, return carry
-; if there are any Grass Energy cards attached to Benched Pokémon.
-	call .CountGrassEnergyInBench
-	or a
-	ret z ; return no carry if there are no Grass Energy to transfer
-	scf
-	ret
-
-.no_carry
-	or a
-	ret
-
-; preserves bc and e
-; output:
-;	a & d = number of Grass Energy cards attached to all of the AI's Benched Pokémon
-.CountGrassEnergyInBench
-	xor a
-	ld d, a ; initial Grass Energy counter = 0
-	; a = DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
-	; hl = starting address for AI's card location data
-.count_loop
-	ld a, [hl]
-	and %00011111
-	cp CARD_LOCATION_BENCH_1
-	jr c, .count_next ; skip if not in Bench
-
-; card is in the Bench
-	ld a, l
-	call _GetCardIDFromDeckIndex
-	cp GRASS_ENERGY
-	jr nz, .count_next ; skip if not a Basic Grass Energy card
-	inc d
-.count_next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .count_loop
-	ld a, d
-	ret
-
-; output:
-;	a & c = number of Energy cards that need to be transferred before the Active
-;	        Pokémon can pay its Retreat Cost:  if the below condition is true
-;	carry = set:  if the Active Pokémon can't pay its Retreat Cost without more Energy 
-;	              and if Energy Trans can be used to make up the difference
-.CheckEnoughGrassEnergyCardsForRetreatCost
-	xor a ; PLAY_AREA_ARENA
-	ld e, a
-	ldh [hTempPlayAreaLocation_ff9d], a
-	call GetPlayAreaCardRetreatCost
-	ld b, a
-	call GetPlayAreaCardAttachedEnergies
-	cp b
-	ret nc ; return if the Active Pokémon already has enough Energy to retreat
-
-; see if there's enough Grass Energy cards
-; in the Bench to satisfy the Retreat Cost
-	ld c, a
-	ld a, b
-	sub c
-	ld c, a
-	call .CountGrassEnergyInBench
-	cp c
-	jr c, .no_carry ; return if there aren't enough Grass Energy to pay for the Retreat Cost
-
-; output number of cards needed to retreat
-	ld a, c
-	scf
-	ret
-
-; AI logic to determine whether to use the Energy Trans Pokémon Power
-; to transfer Energy cards from the Active Pokémon to some Pokémon on the Bench.
-AIEnergyTransTransferEnergyToBench:
-; return if the Active Pokémon has no Grass Energy cards attached to it.
-	ld e, PLAY_AREA_ARENA
-	call GetPlayAreaCardAttachedEnergies
-	ld a, [wAttachedEnergies + GRASS]
-	or a
-	ret z
-
-; return if the Defending Pokémon can't KO the AI's Active Pokémon.
-	xor a ; PLAY_AREA_ARENA
-	ldh [hTempPlayAreaLocation_ff9d], a
-	farcall CheckIfDefendingPokemonCanKnockOut
-	ret nc
-
-; return if any of the Active Pokémon's attacks would be used by AI.
-	farcall AIProcessButDontUseAttack
-	ret c
-
-; return if the AI decided that none of its Benched Pokémon need more Energy.
-	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
-	ret nc
-
-; AI decided that an Energy card is needed, so find
-; VenusaurLv67 in the play area and use its Pokémon Power.
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	dec a ; convert into the last play area location offset
-	ld b, a
-.loop_play_area
-	ld a, DUELVARS_ARENA_CARD
-	add b
-	get_turn_duelist_var
-	ldh [hTempCardIndex_ff9f], a
-	ld [wAIVenusaurLv67DeckIndex], a
-	call _GetCardIDFromDeckIndex
-	cp VENUSAUR_LV67
-	jr z, .use_pkmn_power
-
-	ld a, b
-	or a ; cp PLAY_AREA_ARENA
-	ret z ; return if there are no more Pokémon to check in the play area
-
-	dec b
-	jr .loop_play_area
-
-; use the Energy Trans Pokémon Power
-.use_pkmn_power
-	ld a, b
-	ldh [hTemp_ffa0], a
-	ld [wAIVenusaurLv67PlayAreaLocation], a
-	ld a, OPPACTION_USE_PKMN_POWER
-	bank1call AIMakeDecision
-	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
-	bank1call AIMakeDecision
-
-; loop for transferring the Grass Energy cards.
-.loop_energy
-	xor a
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ld a, [wAIVenusaurLv67PlayAreaLocation]
-	ldh [hTemp_ffa0], a
-
-	; returns when the Active Pokémon has no Grass Energy cards attached to it.
-	ld e, PLAY_AREA_ARENA
-	call GetPlayAreaCardAttachedEnergies
-	ld a, [wAttachedEnergies + GRASS]
-	or a
-	jr z, .done_transfer
-
-; look for Grass Energy cards that
-; are currently attached to the Active Pokémon.
-	ld e, 0 ; initial deck index
-.loop_deck_locations
-	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
-	get_turn_duelist_var
-	cp CARD_LOCATION_ARENA
-	jr nz, .next_card
-
-	ld a, e
-	call _GetCardIDFromDeckIndex
-	cp GRASS_ENERGY
-	jr nz, .next_card
-
-	; store the deck index of the Energy card
-	ld a, e
-	ldh [hAIEnergyTransEnergyCard], a
-
-.transfer
-; get the Benched Pokémon's location to transfer the Grass Energy card to.
-	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
-	jr nc, .done_transfer
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hAIEnergyTransPlayAreaLocation], a
-
-	; 30 frame delay
-	ld a, 30
-	call DoAFrames
-
-	ld a, [wAIVenusaurLv67DeckIndex]
-	ldh [hTempCardIndex_ff9f], a
-	ld d, a
-	ld e, FIRST_ATTACK_OR_PKMN_POWER
-	call CopyAttackDataAndDamage_FromDeckIndex
-	ld a, OPPACTION_6B15
-	bank1call AIMakeDecision
-	jr .loop_energy
-
-.next_card
-	inc e
-	ld a, DECK_SIZE
-	cp e
-	jr nz, .loop_deck_locations
-
-; transfer is done, perform delay
-; and return to main scene.
-.done_transfer
-	ld a, 60
-	call DoAFrames
-	ld a, OPPACTION_DUEL_MAIN_SCENE
-	bank1call AIMakeDecision
-	ret
-
-
 ; handles AI logic for using some Pokémon Powers that need to be activated.
 ; The Pokémon Powers which are handled here are:
 ;	- Vileplume's Heal
@@ -479,7 +101,6 @@ HandleAIPkmnPowers:
 	cp b
 	jr nz, .loop_play_area
 	ret
-
 
 
 ; checks whether AI uses Dragonite's Step In.
@@ -936,6 +557,388 @@ HandleAICurse:
 	ret
 
 
+
+
+; handles AI routines for Energy Trans.
+; uses AI_ENERGY_TRANS_* constants as input:
+;	- AI_ENERGY_TRANS_RETREAT: transfers enough Grass Energy cards to
+;	  the Active Pokémon for it to be able to pay its Retreat Cost.
+;	- AI_ENERGY_TRANS_ATTACK: transfers enough Grass Energy cards to
+;	  the Active Pokémon for it to be able to use its second attack.
+;	- AI_ENERGY_TRANS_TO_BENCH: transfers all Grass Energy cards from the
+;	  Active Pokémon to the Bench in case the Active Pokémon will be KO'd.
+HandleAIEnergyTrans:
+	ld [wce06], a
+
+; choose to randomly return
+	call AIChooseRandomlyNotToDoAction
+	ret c
+
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	dec a
+	ret z ; return if there are no Benched Pokémon
+
+	ld a, VENUSAUR_LV67
+	call CountTurnDuelistPokemonWithActivePkmnPower
+	ret nc ; return if no VenusaurLv67 was found in the AI's play area
+
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	ret c ; return if Pokémon Powers can't be used
+
+	ld a, [wce06]
+	cp AI_ENERGY_TRANS_RETREAT
+	jr z, .check_retreat
+
+	cp AI_ENERGY_TRANS_TO_BENCH
+	jp z, AIEnergyTransTransferEnergyToBench
+
+	; AI_ENERGY_TRANS_ATTACK
+	call .CheckEnoughGrassEnergyCardsForAttack
+	ret nc
+	jr .TransferEnergyToArena
+
+.check_retreat
+	call .CheckEnoughGrassEnergyCardsForRetreatCost
+	ret nc
+
+; use Energy Trans to move Grass Energy cards from the Bench to the Active Pokémon.
+; input:
+;	a = number of Grass Energy cards that should be transferred to the Active Pokémon
+.TransferEnergyToArena
+	ld [wAINumberOfEnergyTransCards], a
+
+; look for a VenusaurLv67 in the play area
+; so that its Pokémon Power can be used.
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	dec a ; convert into the last play area location offset
+	ld b, a
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add b
+	get_turn_duelist_var
+	ldh [hTempCardIndex_ff9f], a
+	call _GetCardIDFromDeckIndex
+	cp VENUSAUR_LV67
+	jr z, .use_pkmn_power
+
+	ld a, b
+	or a ; cp PLAY_AREA_ARENA
+	ret z ; return if there are no more Pokémon to check in the play area
+
+	dec b
+	jr .loop_play_area
+
+; use Energy Trans Pkmn Power
+.use_pkmn_power
+	ld a, b
+	ldh [hTemp_ffa0], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+
+	xor a ; PLAY_AREA_ARENA
+	ldh [hAIEnergyTransPlayAreaLocation], a
+	ld a, [wAINumberOfEnergyTransCards]
+	ld d, a
+
+; look for Grass Energy cards that
+; are currently attached to a Benched Pokémon.
+	ld e, 0 ; initial deck index
+.loop_deck_locations
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
+	get_turn_duelist_var
+	and %00011111
+	cp CARD_LOCATION_BENCH_1
+	jr c, .next_card
+
+	and %00001111
+	ldh [hTempPlayAreaLocation_ffa1], a
+
+	ld a, e
+	call _GetCardIDFromDeckIndex
+	cp GRASS_ENERGY
+	jr nz, .next_card
+
+	; store the deck index of the Energy card
+	ld a, e
+	ldh [hAIEnergyTransEnergyCard], a
+
+	; 30 frame delay
+	ld a, 30
+	call DoAFrames
+
+	push de
+	ld a, OPPACTION_6B15
+	bank1call AIMakeDecision
+	pop de
+	dec d
+	jr z, .done_transfer
+
+.next_card
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop_deck_locations
+
+; transfer is done, perform delay
+; and return to main scene.
+.done_transfer
+	ld a, 60
+	call DoAFrames
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; assumes that there are no attacks that have both Grass Energy
+; and another non-Colorless Energy in their attack cost.
+; output:
+;	a = amount of Energy that should be transferred to the Active Pokémon
+;	    so that it can use its second attack:  if the below condition is true
+;	carry = set:  if transferring Grass Energy from Benched Pokémon would
+;	              allow the Active Pokémon to use its second attack
+.CheckEnoughGrassEnergyCardsForAttack
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call _GetCardIDFromDeckIndex
+	cp EXEGGUTOR
+	jr z, .is_exeggutor
+
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ld a, SECOND_ATTACK
+	ld [wSelectedAttack], a
+	farcall CheckEnergyNeededForAttack
+	ret nc ; return if no Energy needed
+
+; check if only Colorless Energy is needed...
+	ld a, b
+	or a
+	jr nz, .need_colored_energy
+	ld a, c
+	or a
+	jr nz, .count_if_enough
+	ret
+
+; ...otherwise check if the needed Basic Energy is Grass.
+.need_colored_energy
+	farcall GetEnergyCardNeeded
+	cp GRASS_ENERGY
+	jr nz, .no_carry
+	ld a, b
+	add c
+	ld c, a ; c = total number of Energy needed for the attack
+
+.count_if_enough
+; if there's enough Grass Energy cards in the Bench
+; to satisfy the attack's Energy cost, return carry.
+	call .CountGrassEnergyInBench
+	cp c
+	ccf
+	ld a, c
+	ret
+
+.is_exeggutor
+; in case Exeggutor is the Active Pokémon, return carry
+; if there are any Grass Energy cards attached to Benched Pokémon.
+	call .CountGrassEnergyInBench
+	or a
+	ret z ; return no carry if there are no Grass Energy to transfer
+	scf
+	ret
+
+.no_carry
+	or a
+	ret
+
+; preserves bc and e
+; output:
+;	a & d = number of Grass Energy cards attached to all of the AI's Benched Pokémon
+.CountGrassEnergyInBench
+	xor a
+	ld d, a ; initial Grass Energy counter = 0
+	; a = DUELVARS_CARD_LOCATIONS
+	get_turn_duelist_var
+	; hl = starting address for AI's card location data
+.count_loop
+	ld a, [hl]
+	and %00011111
+	cp CARD_LOCATION_BENCH_1
+	jr c, .count_next ; skip if not in Bench
+
+; card is in the Bench
+	ld a, l
+	call _GetCardIDFromDeckIndex
+	cp GRASS_ENERGY
+	jr nz, .count_next ; skip if not a Basic Grass Energy card
+	inc d
+.count_next
+	inc l
+	ld a, l
+	cp DECK_SIZE
+	jr c, .count_loop
+	ld a, d
+	ret
+
+; output:
+;	a & c = number of Energy cards that need to be transferred before the Active
+;	        Pokémon can pay its Retreat Cost:  if the below condition is true
+;	carry = set:  if the Active Pokémon can't pay its Retreat Cost without more Energy 
+;	              and if Energy Trans can be used to make up the difference
+.CheckEnoughGrassEnergyCardsForRetreatCost
+	xor a ; PLAY_AREA_ARENA
+	ld e, a
+	ldh [hTempPlayAreaLocation_ff9d], a
+	call GetPlayAreaCardRetreatCost
+	ld b, a
+	call GetPlayAreaCardAttachedEnergies
+	cp b
+	ret nc ; return if the Active Pokémon already has enough Energy to retreat
+
+; see if there's enough Grass Energy cards
+; in the Bench to satisfy the Retreat Cost
+	ld c, a
+	ld a, b
+	sub c
+	ld c, a
+	call .CountGrassEnergyInBench
+	cp c
+	jr c, .no_carry ; return if there aren't enough Grass Energy to pay for the Retreat Cost
+
+; output number of cards needed to retreat
+	ld a, c
+	scf
+	ret
+
+; AI logic to determine whether to use the Energy Trans Pokémon Power
+; to transfer Energy cards from the Active Pokémon to some Pokémon on the Bench.
+AIEnergyTransTransferEnergyToBench:
+; return if the Active Pokémon has no Grass Energy cards attached to it.
+	ld e, PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + GRASS]
+	or a
+	ret z
+
+; return if the Defending Pokémon can't KO the AI's Active Pokémon.
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	farcall CheckIfDefendingPokemonCanKnockOut
+	ret nc
+
+; return if any of the Active Pokémon's attacks would be used by AI.
+	farcall AIProcessButDontUseAttack
+	ret c
+
+; return if the AI decided that none of its Benched Pokémon need more Energy.
+	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
+	ret nc
+
+; AI decided that an Energy card is needed, so find
+; VenusaurLv67 in the play area and use its Pokémon Power.
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	dec a ; convert into the last play area location offset
+	ld b, a
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add b
+	get_turn_duelist_var
+	ldh [hTempCardIndex_ff9f], a
+	ld [wAIVenusaurLv67DeckIndex], a
+	call _GetCardIDFromDeckIndex
+	cp VENUSAUR_LV67
+	jr z, .use_pkmn_power
+
+	ld a, b
+	or a ; cp PLAY_AREA_ARENA
+	ret z ; return if there are no more Pokémon to check in the play area
+
+	dec b
+	jr .loop_play_area
+
+; use the Energy Trans Pokémon Power
+.use_pkmn_power
+	ld a, b
+	ldh [hTemp_ffa0], a
+	ld [wAIVenusaurLv67PlayAreaLocation], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+
+; loop for transferring the Grass Energy cards.
+.loop_energy
+	xor a
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ld a, [wAIVenusaurLv67PlayAreaLocation]
+	ldh [hTemp_ffa0], a
+
+	; returns when the Active Pokémon has no Grass Energy cards attached to it.
+	ld e, PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + GRASS]
+	or a
+	jr z, .done_transfer
+
+; look for Grass Energy cards that
+; are currently attached to the Active Pokémon.
+	ld e, 0 ; initial deck index
+.loop_deck_locations
+	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
+	get_turn_duelist_var
+	cp CARD_LOCATION_ARENA
+	jr nz, .next_card
+
+	ld a, e
+	call _GetCardIDFromDeckIndex
+	cp GRASS_ENERGY
+	jr nz, .next_card
+
+	; store the deck index of the Energy card
+	ld a, e
+	ldh [hAIEnergyTransEnergyCard], a
+
+.transfer
+; get the Benched Pokémon's location to transfer the Grass Energy card to.
+	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
+	jr nc, .done_transfer
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh [hAIEnergyTransPlayAreaLocation], a
+
+	; 30 frame delay
+	ld a, 30
+	call DoAFrames
+
+	ld a, [wAIVenusaurLv67DeckIndex]
+	ldh [hTempCardIndex_ff9f], a
+	ld d, a
+	ld e, FIRST_ATTACK_OR_PKMN_POWER
+	call CopyAttackDataAndDamage_FromDeckIndex
+	ld a, OPPACTION_6B15
+	bank1call AIMakeDecision
+	jr .loop_energy
+
+.next_card
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop_deck_locations
+
+; transfer is done, perform delay
+; and return to main scene.
+.done_transfer
+	ld a, 60
+	call DoAFrames
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+
+
+
 ; handles AI logic for Cowardice
 HandleAICowardice:
 	call CheckIfPkmnPowersAreCurrentlyDisabled
@@ -1020,6 +1023,8 @@ HandleAICowardice:
 	bank1call AIMakeDecision
 	scf
 	ret
+
+
 
 
 ; AI logic for Damage Swap to transfer damage from the Active Pokémon
@@ -1183,6 +1188,8 @@ HandleAIDamageSwap:
 .set_carry
 	scf
 	ret
+
+
 
 
 ; handles AI logic for attaching Energy cards in the Go Go Rain Dance deck.
