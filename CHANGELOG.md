@@ -37,6 +37,7 @@
 - **[June 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/3996431c2ce63dd11d4743483eaa071a7e2fbba7):** 2 Files Changed
     - Fix AI logic for using Dugtrio's Earthquake attack
     - Add AI logic for using Dragonite's Step In Pokémon Power (taken from poketcg2)
+        - `HandleAIStepIn` correction: `CheckIfDefendingPokemonCanKnockOut` should use `farcall`
 
 <br/>
 
@@ -96,6 +97,13 @@
 
 
 ## Code Optimization
+- **October 21, 2024:** 3 Files Changed
+    - Merge the Cowardice Pokémon Power logic (`HandleAICowardice`) into the `HandleAIPkmnPowers` function
+    - Put `HandleAIStepIn` in the proper place (after the other functions that are called by `HandleAIPkmnPowers`)
+    - The Energy Trans AI functions were also moved below the HandleAIPkmnPowers functions in the [previous commit](https://github.com/Sha0den/poketcg_v2/commit/e2ca1d888cf7692ab13db66819e742c47bd3ca31)
+
+<br/>
+
 - **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/d8ad3a6a2c866fca574781a9e1ece79b0d261631):** 3 Files Changed
     - Swap some variables in the Potion effect functions and AI logic to eliminate the need for a separate `AIPlay_Potion` function
 

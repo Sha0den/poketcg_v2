@@ -41,7 +41,6 @@ AIMainTurnLogic:
 	farcall HandleAIDamageSwap
 	farcall HandleAIPkmnPowers
 	ret c ; return if turn ended
-	farcall HandleAICowardice
 ; process Trainer cards
 ; phase 2 through 4.
 	ld a, AI_TRAINER_CARD_PHASE_02

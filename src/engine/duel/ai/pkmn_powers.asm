@@ -2,6 +2,7 @@
 ; The Pokémon Powers which are handled here are:
 ;	- Vileplume's Heal
 ;	- Venomoth's Shift
+;	- Tentacool's Cowardice
 ;	- Mankey's Peek
 ;	- Slowbro's Strange Behavior
 ;	- Gengar's Curse
@@ -67,8 +68,13 @@ HandleAIPkmnPowers:
 	jr .next_1
 .check_shift
 	cp VENOMOTH
-	jr nz, .check_peek
+	jr nz, .check_cowardice
 	call HandleAIShift
+	jr .next_1
+.check_cowardice
+	cp TENTACOOL
+	jr nz, .check_peek
+	call HandleAICowardice
 	jr .next_1
 .check_peek
 	cp MANKEY
@@ -100,36 +106,6 @@ HandleAIPkmnPowers:
 	ld a, c
 	cp b
 	jr nz, .loop_play_area
-	ret
-
-
-; checks whether AI uses Dragonite's Step In.
-; Step In is only activated if the AI's Active Pokémon is about to be KO'd.
-; the user must also have 4 Energy so that it can attack.
-; input:
-;	c = user's play area location offset (PLAY_AREA_* constant)
-HandleAIStepIn:
-	ld a, c
-	ldh [hTemp_ffa0], a
-	xor a ; PLAY_AREA_ARENA
-	ldh [hTempPlayAreaLocation_ff9d], a
-	call CheckIfDefendingPokemonCanKnockOut
-	ret nc ; Defending Pokémon cannot KO
-	ldh a, [hTemp_ffa0]
-	ld e, a
-	call GetPlayAreaCardAttachedEnergies
-;	ld a, [wTotalAttachedEnergies] ; already loaded
-	cp 4
-	ccf
-	ret nc ; user doesn't have enough Energy to attack
-	ld a, [wce08]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_USE_PKMN_POWER
-	bank1call AIMakeDecision
-	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
-	bank1call AIMakeDecision
-	ld a, OPPACTION_DUEL_MAIN_SCENE
-	bank1call AIMakeDecision
 	ret
 
 
@@ -303,6 +279,52 @@ HandleAIShift:
 .true
 	scf
 	ret
+
+
+; checks whether AI uses Tentacool's Cowardice. user must have 1 or more damage counters.
+; also, if the user has any attached Energy, then the AI will only use Cowardice
+; if it's the Active Pokémon and the Defending Pokémon can KO it during the next turn.
+; input:
+;	c = user's play area location offset (PLAY_AREA_* constant)
+HandleAICowardice:
+	ld e, c
+	call GetCardDamageAndMaxHP
+	or a
+	ret z ; return if this Pokémon doesn't have any damage counters
+	ld a, e
+	ldh [hTemp_ffa0], a
+	or a ; cp PLAY_AREA_ARENA
+	jr z, .is_active
+	; user is on the Bench
+	call GetPlayAreaCardAttachedEnergies
+	or a
+	ret nz ; return if this Pokémon has any attached Energy
+	ld a, $ff
+.use_cowardice
+	push af
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	pop af
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+.is_active
+	call GetPlayAreaCardAttachedEnergies
+	or a
+	jr z, .decide_switch_target ; use power if this Pokémon has no attached Energy
+	farcall CheckIfActiveCardCanKnockOut
+	ret c ; return if this Pokémon can KO the Defending Pokémon
+	farcall CheckIfDefendingPokemonCanKnockOut
+	ret nc ; return if Defending Pokémon can't KO this Pokémon
+.decide_switch_target
+	farcall AIDecideBenchPokemonToSwitchTo
+	jr .use_cowardice
 
 
 ; checks whether AI uses Mankey's Peek. only used 6% of the time and
@@ -546,6 +568,36 @@ HandleAICurse:
 	ld a, e
 	ldh [hTempPlayAreaLocation_ffa1], a
 	rst SwapTurn
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+
+; checks whether AI uses Dragonite's Step In.
+; Step In is only activated if the AI's Active Pokémon is about to be KO'd.
+; the user must also have 4 Energy so that it can attack.
+; input:
+;	c = user's play area location offset (PLAY_AREA_* constant)
+HandleAIStepIn:
+	ld a, c
+	ldh [hTemp_ffa0], a
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	farcall CheckIfDefendingPokemonCanKnockOut
+	ret nc ; Defending Pokémon cannot KO
+	ldh a, [hTemp_ffa0]
+	ld e, a
+	call GetPlayAreaCardAttachedEnergies
+;	ld a, [wTotalAttachedEnergies] ; already loaded
+	cp 4
+	ccf
+	ret nc ; user doesn't have enough Energy to attack
 	ld a, [wce08]
 	ldh [hTempCardIndex_ff9f], a
 	ld a, OPPACTION_USE_PKMN_POWER
@@ -934,94 +986,6 @@ AIEnergyTransTransferEnergyToBench:
 	call DoAFrames
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
-	ret
-
-
-
-
-; handles AI logic for Cowardice
-HandleAICowardice:
-	call CheckIfPkmnPowersAreCurrentlyDisabled
-	ret c ; return if Pokémon Powers can't be used
-
-	call AIChooseRandomlyNotToDoAction
-	ret c ; randomly return
-
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	dec a
-	ret z ; return if there are no Benched Pokémon
-
-	ld b, a
-	ld c, PLAY_AREA_ARENA
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	jr nz, .next
-.loop
-	ld a, DUELVARS_ARENA_CARD
-	add c
-	get_turn_duelist_var
-	ld [wce08], a
-	call _GetCardIDFromDeckIndex
-	push bc
-	cp TENTACOOL
-	call z, .CheckWhetherToUseCowardice
-	pop bc
-	jr nc, .next
-
-	dec b ; subtract 1 from the number of Pokémon in the play area
-	ld a, 1
-	cp b
-	ret z ; return if there are no more Benched Pokémon
-	ld c, PLAY_AREA_ARENA ; reset back to the Active Pokémon
-	jr .loop
-
-.next
-	inc c
-	ld a, c
-	cp b
-	jr nz, .loop
-	ret
-
-; checks whether AI uses Tentacool's Cowardice.
-; input:
-;	c = user's play area location offset (PLAY_AREA_* constant)
-; output:
-;	carry = set:  if the Cowardice Pokémon Power was used
-.CheckWhetherToUseCowardice
-	ld a, c
-	ldh [hTemp_ffa0], a
-	ld e, a
-	add DUELVARS_ARENA_CARD_FLAGS
-	get_turn_duelist_var
-	and CAN_EVOLVE_THIS_TURN
-	ret z ; return no carry if was played this turn
-
-	call GetCardDamageAndMaxHP
-	or a
-	ret z ; return no carry if it doesn't have any damage counters
-
-	ldh a, [hTemp_ffa0]
-	or a ; cp PLAY_AREA_ARENA
-	jr nz, .is_benched
-	farcall AIDecideBenchPokemonToSwitchTo
-	jr .use_cowardice
-.is_benched
-	ld a, $ff
-.use_cowardice
-	push af
-	ld a, [wce08]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, OPPACTION_USE_PKMN_POWER
-	bank1call AIMakeDecision
-	pop af
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
-	bank1call AIMakeDecision
-	ld a, OPPACTION_DUEL_MAIN_SCENE
-	bank1call AIMakeDecision
-	scf
 	ret
 
 
