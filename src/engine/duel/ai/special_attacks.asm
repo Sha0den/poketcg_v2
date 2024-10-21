@@ -393,22 +393,23 @@ HandleSpecialAIAttacks:
 	ret
 
 
-; preserves bc and d
+; preserves bc and de
 ; output:
 ;	carry = set:  if there are any Basic Pokémon cards in the deck
 CheckIfAnyBasicPokemonInDeck:
-	ld e, DECK_SIZE
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop
-	dec e ; go through deck indices in reverse order
-	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
-	get_turn_duelist_var
+	dec l ; go through deck indices in reverse order
+	ld a, [hl]
 	cp CARD_LOCATION_DECK
 	jr nz, .next
-	ld a, e
+	ld a, l
 	call CheckDeckIndexForBasicPokemon
 	ret c
 .next
-	ld a, e
+	ld a, l
 	or a
 	jr nz, .loop
 	ret ; nc

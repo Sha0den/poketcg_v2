@@ -194,9 +194,11 @@ ActivePokemon_StatusCheck:
 ; output:
 ;	carry = set:  if none of the turn holder's Pokemon have any attached Energy
 YourPokemon_AttachedEnergyCheck:
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop_deck
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	bit CARD_LOCATION_PLAY_AREA_F, a
 	jr z, .next_card ; skip if not in the play area
@@ -205,10 +207,9 @@ YourPokemon_AttachedEnergyCheck:
 	and TYPE_ENERGY
 	ret nz ; return no carry if an Energy card was found
 .next_card
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_deck
+	or a
+	jr nz, .loop_deck
 	scf
 	ret
 
@@ -3404,17 +3405,19 @@ GetCardOneStageBelow:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or CARD_LOCATION_ARENA
 	ld c, a
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp c
-	jr nz, .next
+	jr nz, .next ; skip if wrong card location
 	ld a, l
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	cp TYPE_ENERGY
-	jr nc, .next
+	jr nc, .next ; skip if not a Pokémon
 	ld b, l
 	push hl
 	ld a, [wLoadedCard2Stage]
@@ -3425,10 +3428,9 @@ GetCardOneStageBelow:
 	ld [hl], b
 	pop hl
 .next
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop
+	or a
+	jr nz, .loop
 
 ; if card at hTempPlayAreaLocation_ff9d is a stage 1, load d with basic card.
 ; otherwise if stage 2, load d with the stage 1 card.
@@ -3564,9 +3566,9 @@ ReturnDefendingPokemonToTheHandEffect:
 ; look at the location of every one of the opponent's cards and
 ; put all cards that are in the opposing Arena into the opponent's hand.
 	rst SwapTurn
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop_locations
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp CARD_LOCATION_ARENA
 	jr nz, .next_card
@@ -3574,10 +3576,9 @@ ReturnDefendingPokemonToTheHandEffect:
 	ld a, l
 	call AddCardToHand
 .next_card
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_locations
+	or a
+	jr nz, .loop_locations
 
 ; empty the Arena card slot
 	ld l, DUELVARS_ARENA_CARD
@@ -3739,10 +3740,11 @@ DefendingPokemonEnergy_10MoreDamageEffect:
 ;	de = 10 times the number of Energy cards attached to the Defending Pokemon
 DefendingPokemonEnergyDamageMultiplier:
 	rst SwapTurn
-	ld a, DUELVARS_CARD_LOCATIONS
+	xor a
+	ld c, a ; initial Energy card counter = 0
+	; a = DUELVARS_CARD_LOCATIONS
 	get_turn_duelist_var
-
-	ld c, 0 ; counter for number of attached Energy cards
+	; hl = starting address for turn holder's card location data
 .loop
 	ld a, [hl]
 	cp CARD_LOCATION_ARENA
@@ -4429,10 +4431,12 @@ CreateListOfFireEnergyAttachedToActive:
 ;	wDuelTempList = $ff-terminated list with deck indices of the relevant Energy cards
 CreateListOfEnergyAttachedToActive:
 	ld b, a
-	ld c, 0 ; counter for number of attached Energy cards
+	xor a
+	ld c, a ; initial Energy card counter = 0
 	ld de, wDuelTempList
-	ld a, DUELVARS_CARD_LOCATIONS
+	; a = DUELVARS_CARD_LOCATIONS
 	get_turn_duelist_var
+	; hl = starting address for turn holder's card location data
 .loop
 	ld a, [hl]
 	cp CARD_LOCATION_ARENA
@@ -5520,13 +5524,15 @@ OpponentHand_ReplacePokemonInEffect:
 
 ; removes and then randomly reattaches all Energy cards in the turn holder's play area
 ShuffleAttachedEnergyEffect:
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
-
-; writes in wDuelTempList all deck indices of Energy cards
-; that are attached to 1 of the turn holder's Pokemon
+	xor a
+	ld c, a ; initial Energy card counter = 0
 	ld de, wDuelTempList
-	ld c, 0 ; counter for number of attached Energy cards
+	; a = DUELVARS_CARD_LOCATIONS
+	get_turn_duelist_var
+	; hl = starting address for turn holder's card location data
+
+; writes in wDuelTempList the deck indices of any Energy card
+; that is attached to 1 of the turn holder's Pokemon
 .loop_card_locations
 	ld a, [hl]
 	and CARD_LOCATION_PLAY_AREA
@@ -6070,9 +6076,11 @@ EnergyTransCheck:
 	ret c ; can't use due to status or Toxic Gas
 
 ; search play area for at least 1 Grass Energy
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop_deck
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	and CARD_LOCATION_PLAY_AREA
 	jr z, .next
@@ -6081,10 +6089,9 @@ EnergyTransCheck:
 	cp TYPE_ENERGY_GRASS
 	ret z ; return if it's a Grass Energy
 .next
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_deck
+	or a
+	jr nz, .loop_deck
 
 ; none found
 	ldtx hl, NoGrassEnergyText
@@ -6184,35 +6191,32 @@ EnergyTrans_TransferEffect:
 	jr .loop_input_take
 
 
-; preserves bc
+; preserves bc and d
 ; input:
 ;	a =  play area location offset to check (PLAY_AREA_* constant)
 ; output:
+;	a = deck index of a Grass Energy card attached to the Pokémon in the given location, if any
 ;	carry = set:  if no Grass Energy are attached to the Pokemon in that location
 CheckIfCardHasGrassEnergyAttached:
 	or CARD_LOCATION_PLAY_AREA
 	ld e, a
-
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp e
-	jr nz, .next
 	ld a, l
+	jr nz, .next ; skip if wrong location
 	call GetCardTypeFromDeckIndex_SaveDE
 	cp TYPE_ENERGY_GRASS
-	jr z, .no_carry
+	ld a, l
+	ret z ; return no carry with current deck index in a if it's a Grass Energy card
 .next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop
-	scf
-	ret
-.no_carry
-	ld a, l
 	or a
+	jr nz, .loop
+	scf
 	ret
 
 
@@ -6435,10 +6439,12 @@ Shift_ChangeColorEffect:
 ; randomly puts 1-4 Fire Energy cards from the turn holder's deck into their hand
 Firegiver_AddToHandEffect:
 ; fill wDuelTempList with all Fire Energy card deck indices
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	xor a
+	ld c, a ; initial Fire Energy counter = 0
 	ld de, wDuelTempList
-	ld c, 0 ; Fire Energy counter
+	; a = DUELVARS_CARD_LOCATIONS
+	get_turn_duelist_var
+	; hl = starting address for turn holder's card location data
 .loop_cards
 	ld a, [hl]
 	cp CARD_LOCATION_DECK
@@ -8272,19 +8278,18 @@ MrFuji_ReturnToDeckEffect:
 	ldh a, [hTemp_ffa0]
 	or CARD_LOCATION_PLAY_AREA
 	ld e, a
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop_cards
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp e
 	jr nz, .next_card
 	ld a, l
 	call ReturnCardToDeck
 .next_card
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_cards
+	or a
+	jr nz, .loop_cards
 
 ; clear the Play Area location of the card
 	ldh a, [hTemp_ffa0]
@@ -8600,9 +8605,9 @@ PokemonCenter_HealDiscardEnergyEffect:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or CARD_LOCATION_PLAY_AREA
 	ld e, a
-	ld a, 0 ; initial deck index
-	get_turn_duelist_var
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop_deck
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp e
 	jr nz, .next_card_deck ; skip if not attached to any card
@@ -8613,10 +8618,9 @@ PokemonCenter_HealDiscardEnergyEffect:
 	ld a, l
 	call PutCardInDiscardPile
 .next_card_deck
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_deck
+	or a
+	jr nz, .loop_deck
 
 	pop de
 .next_pkmn
@@ -9077,11 +9081,13 @@ ScoopUp_ReturnToHandEffect:
 	or CARD_LOCATION_PLAY_AREA
 	ld d, a
 
-; find Basic Pokemon card that is in the selected Play Area location
-; and add it to the hand, discarding all attached cards.
-	ld a, DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
+; find any Basic Pokemon card that are in the selected play area location
+; and add them to the hand, discarding all attached cards.
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp d
 	jr nz, .next_card ; skip if not in the selected location
@@ -9093,10 +9099,9 @@ ScoopUp_ReturnToHandEffect:
 	ldh [hTempCardIndex_ff98], a
 	call AddCardToHand
 .next_card
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .loop
+	or a
+	jr nz, .loop
 
 ; since the card has been moved to the hand, MovePlayAreaCardToDiscardPile will
 ; take care of discarding every higher stage card and any other attached cards.

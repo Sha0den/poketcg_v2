@@ -96,7 +96,12 @@
 
 
 ## Code Optimization
-- **October 20, 2024:** 3 Files Changed
+- **October 21, 2024:** 7 Files Changed
+    - Reformat a lot of functions that loop through DUELVARS_CARD_LOCATIONS
+
+<br/>
+
+- **[October 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/67be952c18bc41bf4f67ebb785d895869e65a730):** 3 Files Changed
     - Various optimizations in engine/duel/core.asm, home/duel.asm, and home/substatus.asm
 
 <br/>

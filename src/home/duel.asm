@@ -377,10 +377,12 @@ EmptyDuelTempListAndSetCarry::
 CreateArenaOrBenchEnergyCardList::
 	or CARD_LOCATION_PLAY_AREA
 	ld c, a
-	ld b, 0 ; initial counter
-	ld de, wDuelTempList
-	ld a, DUELVARS_CARD_LOCATIONS
+	xor a
+	ld b, a ; initial counter = 0
+	; a = DUELVARS_CARD_LOCATIONS
 	get_turn_duelist_var
+	; hl = starting address for turn holder's card location data
+	ld de, wDuelTempList
 .next_card_loop
 	ld a, [hl]
 	cp c
@@ -1039,15 +1041,16 @@ PutHandCardInPlayArea::
 
 
 ; moves the turn holder's Pokemon in location e to the discard pile
-; preserves bc
+; preserves bc and e
 ; input:
 ;	e = play area location offset (PLAY_AREA_* constant)
 MovePlayAreaCardToDiscardPile::
 	call EmptyPlayAreaSlot
 	ld l, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	dec [hl]
-	ld l, DUELVARS_CARD_LOCATIONS
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .next_card
+	dec l ; go through deck indices in reverse order
 	ld a, e
 	or CARD_LOCATION_PLAY_AREA
 	cp [hl]
@@ -1055,16 +1058,15 @@ MovePlayAreaCardToDiscardPile::
 	ld a, l
 	call PutCardInDiscardPile
 .not_in_location
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .next_card
+	or a
+	jr nz, .next_card
 	ret
 
 
 ; initializes a turn holder's play area slot to empty
 ; which slot (arena or benchx) is determined by the play area location offset in e
-; preserves bc
+; preserves bc and e
 ; input:
 ;	e = play area location offset (PLAY_AREA_* constant)
 EmptyPlayAreaSlot::
@@ -1168,9 +1170,10 @@ SwapPlayAreaPokemon::
 	call .swap_duelvar
 	set CARD_LOCATION_PLAY_AREA_F, d
 	set CARD_LOCATION_PLAY_AREA_F, e
-	ld l, DUELVARS_CARD_LOCATIONS
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .update_card_locations_loop
 	; update card locations of the two swapped cards
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	cp e
 	jr nz, .next1
@@ -1183,10 +1186,9 @@ SwapPlayAreaPokemon::
 .update_location
 	ld [hl], a
 .next2
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .update_card_locations_loop
+	or a
+	jr nz, .update_card_locations_loop
 .done
 	pop hl
 	pop de
@@ -1230,7 +1232,7 @@ GetPlayAreaCardAttachedEnergies::
 	jr nz, .zero_energies_loop
 	ld b, a              ; b  = $00
 	; a = DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var ; hl = address for current player's card location data
+	get_turn_duelist_var ; hl = starting address for turn holder's card location data
 	ld d, DECK_SIZE      ; d  = number of cards to check (60)
 	ld a, CARD_LOCATION_PLAY_AREA
 	or e ; if e is non-0, a bench location is checked instead
@@ -1286,7 +1288,7 @@ CountCardIDInLocation::
 	ld c, a ; initial counter = 0
 	; a = DUELVARS_CARD_LOCATIONS
 	get_turn_duelist_var
-	; hl = address for current player's card location data
+	; hl = starting address for turn holder's card location data
 .loop_all_cards
 	ld a, [hl]
 	cp b

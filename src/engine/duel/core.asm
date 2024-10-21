@@ -7235,8 +7235,9 @@ DiscardAttachedDefenders:
 MoveCardToDiscardPileIfInArena:
 	ld c, e
 	ld b, d
-	ld l, DUELVARS_CARD_LOCATIONS
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .next_card
+	dec l ; go through deck indices in reverse order
 	ld a, [hl]
 	and CARD_LOCATION_ARENA ; all Bench locations also have this bit set
 	jr z, .skip ; jump if the card isn't in the play area
@@ -7251,10 +7252,9 @@ MoveCardToDiscardPileIfInArena:
 	ld a, l
 	call PutCardInDiscardPile
 .skip
-	inc l
 	ld a, l
-	cp DECK_SIZE
-	jr c, .next_card
+	or a
+	jr nz, .next_card
 	ret
 
 

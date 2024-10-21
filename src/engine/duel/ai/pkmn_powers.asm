@@ -192,29 +192,32 @@ HandleAIEnergyTrans:
 	or a
 	ret
 
-; preserves bc
+; preserves bc and e
 ; output:
 ;	a & d = number of Grass Energy cards attached to all of the AI's Benched Pokémon
 .CountGrassEnergyInBench
-	lb de, 0, DECK_SIZE
-.count_loop
-	dec e ; go through deck indices in reverse order
-	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
+	xor a
+	ld d, a ; initial Grass Energy counter = 0
+	; a = DUELVARS_CARD_LOCATIONS
 	get_turn_duelist_var
+	; hl = starting address for AI's card location data
+.count_loop
+	ld a, [hl]
 	and %00011111
 	cp CARD_LOCATION_BENCH_1
-	jr c, .count_next
+	jr c, .count_next ; skip if not in Bench
 
 ; card is in the Bench
-	ld a, e
+	ld a, l
 	call _GetCardIDFromDeckIndex
 	cp GRASS_ENERGY
-	jr nz, .count_next
+	jr nz, .count_next ; skip if not a Basic Grass Energy card
 	inc d
 .count_next
-	ld a, e
-	or a
-	jr nz, .count_loop
+	inc l
+	ld a, l
+	cp DECK_SIZE
+	jr c, .count_loop
 	ld a, d
 	ret
 

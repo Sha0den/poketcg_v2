@@ -428,26 +428,27 @@ CalculateBDividedByA_Bank8:
 	ret
 
 
+; preserves bc and e
 ; input:
 ;	a = CARD_LOCATION_* constant
 ;	e = card ID to look for
 ; output:
-;	a & e = deck index of a matching card, if any
+;	a & l = deck index of a matching card, if any
 ;	carry = set:  if the given card was found in the given location
 LookForCardIDInLocation_Bank8:
-	ld b, a
-	ld c, e
-	ld e, DECK_SIZE
+	ld d, a
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop
-	dec e ; go through deck indices in reverse order
-	ld a, e ; DUELVARS_CARD_LOCATIONS + current deck index
-	get_turn_duelist_var
-	cp b
-	jr nz, .next
-	ld a, e
+	dec l ; go through deck indices in reverse order
+	ld a, [hl]
+	cp d
+	ld a, l
+	jr nz, .next ; skip if wrong location
 	call _GetCardIDFromDeckIndex
-	cp c
-	ld a, e
+	cp e
+	ld a, l
 	scf
 	ret z ; return carry with deck index in a if a match was found
 .next
