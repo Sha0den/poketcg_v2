@@ -96,7 +96,7 @@
 
 
 ## Code Optimization
-- **October 21, 2024:** 7 Files Changed
+- **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/ad68f274e15acb7fff1fd8243e229afbf5621a7a):** 7 Files Changed
     - Reformat a lot of functions that loop through DUELVARS_CARD_LOCATIONS
 
 <br/>
@@ -120,6 +120,7 @@
 - **[October 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f):** 13 Files Changed
     - Try to standardize the function comments that are used in the engine/duel/ai files (excluding the decks folder)
     - Plus several more code changes in said files (only big change was to `_AIProcessHandTrainerCards`)
+    - A small (but very important) mistake in `_AIProcessHandTrainerCards` was fixed in another commit
 
 <br/>
 
@@ -854,6 +855,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **October 21, 2024:** 1 File Changed
+    - Fix an oversight with the new `_AIProcessHandTrainerCards` code
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f)*
+
+<br/>
+
 - **[September 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/1125a231a37aa3217d2684badcbfff5776fad9bc):** 3 Files Changed
     - Make `DrawTextBoxSeparator` function SGB-compatible (it no longer crashes the game)
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/b16b83b296ee35aa3d05b7066ed8c649343e0879)*

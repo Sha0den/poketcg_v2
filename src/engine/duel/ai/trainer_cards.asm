@@ -94,10 +94,12 @@ _AIProcessHandTrainerCards:
 	or [hl]
 	ld [hl], a
 	and AI_FLAG_MODIFIED_HAND
+	jr nz, .relist_hand
 .next_hand_card
 	pop hl
-	jr z, .loop_hand
+	jr .loop_hand
 
+.relist_hand
 ; the hand was modified during the Trainer effect,
 ; so it needs to be re-listed again and looped from the top.
 	call CreateHandCardList
