@@ -96,6 +96,13 @@
 
 
 ## Code Optimization
+- **October 21, 2024:** 6 Files Changed
+    - Remove the `EnergyRemoval_AISelection` effect function since Trainer cards don't use AISelection effect commands
+    - Replace the call to that function in `DiscardEnergyDefendingPokemon_AISelection` with a farcall to the real Energy Removal AI logic
+    - Move `CheckIfEnergyIsUseful` from engine/duel/ai/core.asm to engine/duel/ai/common.asm to minimize farcalls
+
+<br/>
+
 - **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/ad68f274e15acb7fff1fd8243e229afbf5621a7a):** 7 Files Changed
     - Reformat a lot of functions that loop through DUELVARS_CARD_LOCATIONS
 
@@ -120,7 +127,7 @@
 - **[October 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f):** 13 Files Changed
     - Try to standardize the function comments that are used in the engine/duel/ai files (excluding the decks folder)
     - Plus several more code changes in said files (only big change was to `_AIProcessHandTrainerCards`)
-    - A small (but very important) mistake in `_AIProcessHandTrainerCards` was fixed in another commit
+    - A small (but very important) mistake in `_AIProcessHandTrainerCards` was fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/bacaa181c7e2fc484b038c37ee17a5f345540796) and [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f5567f7a3860ed5dc502bcf75458002735427448)
 
 <br/>
 
@@ -856,8 +863,9 @@
 
 ## Other Bug Fixes And Commit Reversions
 - **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/bacaa181c7e2fc484b038c37ee17a5f345540796):** 1 File Changed
-    - Fix an oversight with the new `_AIProcessHandTrainerCards` code
-    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f)*
+    - Fix an oversight (merging 2 jumps when one of them was conditional) with the new `_AIProcessHandTrainerCards` code
+    - Ended up making another oversight (missing `pop hl`) that was addressed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f5567f7a3860ed5dc502bcf75458002735427448)
+    - *These are bug fixes for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f)*
 
 <br/>
 

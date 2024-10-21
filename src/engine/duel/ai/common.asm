@@ -120,6 +120,75 @@ FindBasicEnergyCardsInLocation:
 	ret
 
 
+; checks if a given Energy card can be selected to be discarded from a given Pokémon.
+; preserves all registers except af
+; input:
+;	a = deck index of an Energy card (that's attached to the Pokémon being considered)
+;	[wTempCardType] = useful TYPE_ENERGY_* constant for the Pokémon being considered
+;	[wTempCardID] = card ID of the Pokémon being considered
+; output:
+;	carry = set:  if [wTempCardType] was Colorless
+;	           OR if the given Energy card is Double Colorless Energy
+;	           OR if the given Energy card provides the same type as [wTempCardType]
+;	           OR if the Pokémon has an attack that needs Energy from the given Energy card
+;	           OR if the Pokémon is Eevee and the Energy card provides Water, Fire or Lightning Energy
+CheckIfEnergyIsUseful:
+	push de
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp DOUBLE_COLORLESS_ENERGY
+	jr z, .set_carry
+	ld a, [wTempCardType]
+	cp TYPE_ENERGY_DOUBLE_COLORLESS
+	jr z, .set_carry
+	ld a, [wTempCardID]
+
+	ld d, PSYCHIC_ENERGY
+	cp EXEGGCUTE
+	jr z, .check_energy
+	cp EXEGGUTOR
+	jr z, .check_energy
+	cp PSYDUCK
+	jr z, .check_energy
+	cp GOLDUCK
+	jr z, .check_energy
+
+	ld d, WATER_ENERGY
+	cp SURFING_PIKACHU_LV13
+	jr z, .check_energy
+	cp SURFING_PIKACHU_ALT_LV13
+	jr z, .check_energy
+
+	cp EEVEE
+	jr nz, .check_type
+	ld a, e
+	cp WATER_ENERGY
+	jr z, .set_carry
+	cp FIRE_ENERGY
+	jr z, .set_carry
+	cp LIGHTNING_ENERGY
+	jr z, .set_carry
+
+.check_type
+	call GetCardType
+	ld d, a
+	ld a, [wTempCardType]
+	cp d
+	jr z, .set_carry
+	pop de
+	or a
+	ret
+
+.check_energy
+	ld a, d
+	cp e
+	jr nz, .check_type
+.set_carry
+	pop de
+	scf
+	ret
+
+
 ; chooses an Energy card attached to the Pokémon in the given location,
 ; to be discarded by the AI for an effect. tries to pick an Energy that isn't important.
 ; input:
@@ -151,7 +220,7 @@ AIPickEnergyCardToDiscard:
 	ld a, [hli]
 	cp $ff
 	jr z, PickAttachedEnergyCardToRemove.random_energy
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr c, .loop
 	; found an Energy that wasn't useful
 	dec hl
@@ -206,7 +275,7 @@ PickAttachedEnergyCardToRemove:
 	ld a, [hli]
 	cp $ff
 	jr z, .random_energy
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr c, .found ; the current Energy card is useful, so pick that
 	jr .loop_2
 
@@ -285,7 +354,7 @@ PickTwoAttachedEnergyCards:
 	ld a, [hl]
 	cp $ff
 	jr z, .default
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr c, .found_useful
 	inc hl
 	jr .loop_2

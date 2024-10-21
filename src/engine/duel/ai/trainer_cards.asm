@@ -2274,7 +2274,7 @@ AIDecide_EnergyRetrieval:
 	jr z, .next_play_area
 
 	ld b, a
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr nc, .loop_energy_cards_1
 
 ; if another card was already chosen, then return carry after storing the second deck index.
@@ -2443,7 +2443,7 @@ AIDecide_SuperEnergyRetrieval:
 	jr z, .next_play_area
 
 	ld b, a
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr nc, .loop_energy_cards_1
 
 ; first energy
@@ -2730,7 +2730,7 @@ LookForUsefulEnergyCardInList_OnlyCheckFireAndLightningPokemon:
 	cp $ff
 	jr z, .next_play_area
 	ld b, a
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr nc, .loop_energy
 
 ; a useful Energy card was found, so output the deck index in a and return carry.
@@ -2790,7 +2790,7 @@ LookForUsefulEnergyCardInList_OnlyCheckPokemonOfGivenType:
 	cp $ff
 	jr z, .next_play_area
 	ld b, a
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr nc, .loop_energy
 
 ; a useful Energy card was found, so output the deck index in a and return carry.
@@ -2838,7 +2838,7 @@ LookForUsefulEnergyCardInList:
 	cp $ff
 	jr z, .next_play_area
 	ld b, a
-	farcall CheckIfEnergyIsUseful
+	call CheckIfEnergyIsUseful
 	jr nc, .loop_energy
 
 ; a useful Energy card was found, so output the deck index in a and return carry.

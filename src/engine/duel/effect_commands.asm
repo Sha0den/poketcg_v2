@@ -954,7 +954,6 @@ DevolutionSprayEffectCommands:
 EnergyRemovalEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, EnergyRemovalCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyRemoval_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, EnergyRemoval_AISelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyRemoval_DiscardEffect
 	db  $00
 

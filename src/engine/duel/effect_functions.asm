@@ -2870,12 +2870,17 @@ DiscardEnergyDefendingPokemon_PlayerSelection:
 	jp SwapTurn
 
 
+; AI tries to pick an attached Double Colorless Energy. if none are found,
+; AI tries to pick an Energy card that is useful for the Defending Pokémon.
+; if none are found again, then the Energy card is chosen at random.
 ; output:
-;	[hTemp_ffa0] = deck index of the selected Energy card
+;	[hTemp_ffa0] = deck index of the selected Energy card ($ff is no Energy was found)
 DiscardEnergyDefendingPokemon_AISelection:
-	call EnergyRemoval_AISelection
+	rst SwapTurn
+	xor a ; PLAY_AREA_ARENA
+	farcall PickAttachedEnergyCardToRemove
 	ldh [hTemp_ffa0], a
-	ret
+	jp SwapTurn
 
 
 ; discards a given Energy card from the opponent's Active Pokemon
@@ -7566,70 +7571,6 @@ EnergyRemoval_PlayerSelection:
 	rst SwapTurn
 	call HandlePokemonAndEnergySelectionScreen
 	jp SwapTurn
-
-
-; AI only looks at the opponent's Active Pokemon
-; output:
-;	a = deck index of the selected Energy card ($ff is no Energy was found)
-EnergyRemoval_AISelection:
-	rst SwapTurn
-	xor a ; PLAY_AREA_ARENA
-	call CreateArenaOrBenchEnergyCardList
-	jr nc, .has_energy
-	; no Energy, so return
-	ld a, $ff
-	jp SwapTurn ; done
-
-.has_energy
-	ld e, PLAY_AREA_ARENA
-	call GetPlayAreaCardAttachedEnergies
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld e, COLORLESS
-	ld a, [wAttachedEnergies + COLORLESS]
-	or a
-	jr nz, .pick_color ; choose a Double Colorless Energy
-
-	; no Colorless Energy are attached to the Defending Pokemon.
-	; if the Defending Pokemon is Colorless, just pick a random Energy card.
-	ld a, [wLoadedCard1Type]
-	cp COLORLESS
-	jr nc, .choose_random
-
-	; check if there's an attached Energy card
-	; that is the same color as the Defending Pokemon
-	; if not, just pick a random Energy card.
-	ld e, a
-	ld d, $00
-	ld hl, wAttachedEnergies
-	add hl, de
-	ld a, [hl]
-	or a
-	jr z, .choose_random
-
-; choose an attached Energy card with the same color as e
-.pick_color
-	ld hl, wDuelTempList
-.loop_energy
-	ld a, [hli]
-	cp $ff
-	jr z, .choose_random
-	call GetCardTypeFromDeckIndex_SaveDE
-	and TYPE_PKMN
-	cp e
-	jr nz, .loop_energy
-	dec hl
-
-.done_chosen
-	ld a, [hl]
-	jp SwapTurn
-
-.choose_random
-	call CountCardsInDuelTempList
-	ld hl, wDuelTempList
-	call ShuffleCards
-	jr .done_chosen
 
 
 ; discards a given Energy card from a given Pokemon in the opponent's play area

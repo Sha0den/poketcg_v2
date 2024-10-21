@@ -920,7 +920,7 @@ AITryToRetreat:
 	cp $ff
 	jr z, .any_energy
 	ld [de], a
-	call CheckIfEnergyIsUseful
+	farcall CheckIfEnergyIsUseful
 	jr c, .loop_3
 	ld a, [de]
 	call RemoveCardFromDuelTempList
