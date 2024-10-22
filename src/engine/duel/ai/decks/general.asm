@@ -1,32 +1,16 @@
 ; AI logic used by general decks
 AIActionTable_GeneralDecks:
-	dw .do_turn ; unused
-	dw .do_turn
+	dw AIMainTurnLogic                ; .do_turn (unused)
+	dw AIMainTurnLogic                ; .do_turn
 	dw .start_duel
-	dw .forced_switch
-	dw .ko_switch
-	dw .take_prize
-
-.do_turn
-	call AIMainTurnLogic
-	ret
+	dw AIDecideBenchPokemonToSwitchTo ; .forced_switch
+	dw AIDecideBenchPokemonToSwitchTo ; .ko_switch
+	dw AIPickPrizeCards               ; .take_prize
 
 .start_duel
 	call InitAIDuelVars
-	call AIPlayInitialBasicCards
-	ret
+	jp AIPlayInitialBasicCards
 
-.forced_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.ko_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.take_prize:
-	call AIPickPrizeCards
-	ret
 
 ; handle AI routines for a whole turn
 AIMainTurnLogic:
@@ -75,6 +59,7 @@ AIMainTurnLogic:
 	call z, AIProcessAndTryToPlayEnergy
 ; play Pokemon from hand again
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 ; handle Pkmn Powers again
 	farcall HandleAIDamageSwap
 	farcall HandleAIPkmnPowers
@@ -121,6 +106,7 @@ AIMainTurnLogic:
 	or a
 	call z, AIProcessAndTryToPlayEnergy
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 	farcall HandleAIDamageSwap
 	farcall HandleAIPkmnPowers
 	ret c ; return if turn ended
@@ -140,6 +126,7 @@ AIMainTurnLogic:
 	ld a, OPPACTION_FINISH_NO_ATTACK
 	bank1call AIMakeDecision
 	ret
+
 
 ; handles AI retreating logic
 AIProcessRetreat:
@@ -166,16 +153,14 @@ AIProcessRetreat:
 	and AI_FLAG_USED_SWITCH
 	jr nz, .used_switch
 ; ... else try retreating normally.
+	ld a, AI_ENERGY_TRANS_RETREAT
+	farcall HandleAIEnergyTrans
 	ld a, [wAIPlayAreaCardToSwitch]
-	call AITryToRetreat
-	ret
+	jp AITryToRetreat
 
 .used_switch
 ; if AI used switch, unset its AI flag
 	ld a, [wPreviousAIFlags]
 	and ~AI_FLAG_USED_SWITCH ; clear Switch flag
 	ld [wPreviousAIFlags], a
-
-	ld a, AI_ENERGY_TRANS_RETREAT
-	farcall HandleAIEnergyTrans
 	ret

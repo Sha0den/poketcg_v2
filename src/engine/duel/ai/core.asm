@@ -170,19 +170,6 @@ AITryUseAttack:
 	ret
 
 
-; picks a random Pokémon on the Bench.
-; preserves bc and de
-; output:
-;	a = play area location offset of the Benched Pokémon that was chosen (PLAY_AREA_* constant)
-PickRandomBenchPokemon:
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	dec a
-	call Random
-	inc a
-	ret
-
-
 AIPickPrizeCards:
 	ld a, [wNumberPrizeCardsToTake]
 	ld b, a

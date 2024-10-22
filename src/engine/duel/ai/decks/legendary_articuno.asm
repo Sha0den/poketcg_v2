@@ -1,14 +1,10 @@
 AIActionTable_LegendaryArticuno:
-	dw .do_turn ; unused
-	dw .do_turn
+	dw AIDoTurn_LegendaryArticuno     ; .do_turn (unused)
+	dw AIDoTurn_LegendaryArticuno     ; .do_turn
 	dw .start_duel
-	dw .forced_switch
-	dw .ko_switch
-	dw .take_prize
-
-.do_turn
-	call AIDoTurn_LegendaryArticuno
-	ret
+	dw AIDecideBenchPokemonToSwitchTo ; .forced_switch
+	dw AIDecideBenchPokemonToSwitchTo ; .ko_switch
+	dw AIPickPrizeCards               ; .take_prize
 
 .start_duel
 	call InitAIDuelVars
@@ -16,20 +12,7 @@ AIActionTable_LegendaryArticuno:
 	call SetUpBossStartingHandAndDeck
 	call TrySetUpBossStartingPlayArea
 	ret nc
-	call AIPlayInitialBasicCards
-	ret
-
-.forced_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.ko_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.take_prize
-	call AIPickPrizeCards
-	ret
+	jp AIPlayInitialBasicCards
 
 .list_arena
 	db CHANSEY
@@ -77,6 +60,7 @@ AIActionTable_LegendaryArticuno:
 	store_list_pointer wAICardListEnergyBonus, .list_energy
 	ret
 
+
 ; this routine handles how Legendary Articuno
 ; prioritizes playing energy cards to each Pokémon.
 ; first, it makes sure that all Lapras have at least
@@ -106,11 +90,10 @@ ScoreLegendaryArticunoCards:
 	jr c, .lapras
 	jr .articuno
 
-; the following routines check for certain card IDs in bench
+; the following routines check for certain card IDs in the Bench
 ; and call RaiseAIScoreToAllMatchingIDsInBench if these are found.
-; for Lapras, an additional check is made to its
-; attached energy count, which skips calling the routine
-; if this count is >= 3
+; for Lapras, an additional check is made to its attached Energy count,
+; which skips calling the routine if this count is >= 3.
 .lapras
 	ld a, LAPRAS
 	ld b, PLAY_AREA_BENCH_1
@@ -122,8 +105,7 @@ ScoreLegendaryArticunoCards:
 	cp 3
 	jr nc, .articuno
 	ld a, LAPRAS
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
+	jp RaiseAIScoreToAllMatchingIDsInBench
 
 .articuno
 	ld a, ARTICUNO_LV35
@@ -131,8 +113,7 @@ ScoreLegendaryArticunoCards:
 	call LookForCardIDInPlayArea_Bank5
 	jr nc, .dewgong
 	ld a, ARTICUNO_LV35
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
+	jp RaiseAIScoreToAllMatchingIDsInBench
 
 .dewgong
 	ld a, DEWGONG
@@ -140,8 +121,7 @@ ScoreLegendaryArticunoCards:
 	call LookForCardIDInPlayArea_Bank5
 	jr nc, .seel
 	ld a, DEWGONG
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
+	jp RaiseAIScoreToAllMatchingIDsInBench
 
 .seel
 	ld a, SEEL
@@ -149,8 +129,8 @@ ScoreLegendaryArticunoCards:
 	call LookForCardIDInPlayArea_Bank5
 	ret nc
 	ld a, SEEL
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
+	jp RaiseAIScoreToAllMatchingIDsInBench
+
 
 AIDoTurn_LegendaryArticuno:
 ; initialize variables
@@ -174,6 +154,7 @@ AIDoTurn_LegendaryArticuno:
 	call z, AIProcessAndTryToPlayEnergy
 ; play Pokemon from hand again
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 ; process Trainer cards phases 13 and 15
 	ld a, AI_TRAINER_CARD_PHASE_13
 	call AIProcessHandTrainerCards
@@ -196,6 +177,7 @@ AIDoTurn_LegendaryArticuno:
 	or a
 	call z, AIProcessAndTryToPlayEnergy
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 .try_attack
 ; attack if possible, if not,
 ; finish turn without attacking.

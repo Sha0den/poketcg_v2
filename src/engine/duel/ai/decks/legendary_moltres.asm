@@ -1,14 +1,10 @@
 AIActionTable_LegendaryMoltres:
-	dw .do_turn ; unused
-	dw .do_turn
+	dw AIDoTurn_LegendaryMoltres      ; .do_turn (unused)
+	dw AIDoTurn_LegendaryMoltres      ; .do_turn
 	dw .start_duel
-	dw .forced_switch
-	dw .ko_switch
-	dw .take_prize
-
-.do_turn
-	call AIDoTurn_LegendaryMoltres
-	ret
+	dw AIDecideBenchPokemonToSwitchTo ; .forced_switch
+	dw AIDecideBenchPokemonToSwitchTo ; .ko_switch
+	dw AIPickPrizeCards               ; .take_prize
 
 .start_duel
 	call InitAIDuelVars
@@ -16,20 +12,7 @@ AIActionTable_LegendaryMoltres:
 	call SetUpBossStartingHandAndDeck
 	call TrySetUpBossStartingPlayArea
 	ret nc ; Play Area set up was successful
-	call AIPlayInitialBasicCards
-	ret
-
-.forced_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.ko_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.take_prize
-	call AIPickPrizeCards
-	ret
+	jp AIPlayInitialBasicCards
 
 .list_arena
 	db MAGMAR_LV31
@@ -87,6 +70,7 @@ AIActionTable_LegendaryMoltres:
 	store_list_pointer wAICardListEnergyBonus, .list_energy
 	ret
 
+
 AIDoTurn_LegendaryMoltres:
 ; initialize variables
 	call InitAITurnVars
@@ -135,16 +119,15 @@ AIDoTurn_LegendaryMoltres:
 	or a
 	jr nz, .skip_attach_energy
 
-; if MagmarLv31 is the Arena card and has no energy attached,
-; try attaching an energy card to it from the hand.
-; otherwise, run normal AI energy attach routine.
+; if MagmarLv31 is the Active Pokémon and has no attached Energy,
+; try attaching an Energy card to it from the hand.
+; otherwise, run normal AI Energy attach routine.
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, MAGMAR_LV31
-	cp e
+	call _GetCardIDFromDeckIndex
+	cp MAGMAR_LV31
 	jr nz, .attach_normally
-	; MagmarLv31 is the Arena card
+	; MagmarLv31 is the Active Pokémon
 	call CreateEnergyCardListFromHand
 	jr c, .skip_attach_energy
 	ld e, PLAY_AREA_ARENA
@@ -162,6 +145,7 @@ AIDoTurn_LegendaryMoltres:
 .skip_attach_energy
 ; try playing Pokemon cards from hand again
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 	ld a, AI_TRAINER_CARD_PHASE_13
 	call AIProcessHandTrainerCards
 

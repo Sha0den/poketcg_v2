@@ -1,14 +1,10 @@
 AIActionTable_LegendaryZapdos:
-	dw .do_turn ; unused
-	dw .do_turn
+	dw AIDoTurn_LegendaryZapdos       ; .do_turn (unused)
+	dw AIDoTurn_LegendaryZapdos       ; .do_turn
 	dw .start_duel
-	dw .forced_switch
-	dw .ko_switch
-	dw .take_prize
-
-.do_turn
-	call AIDoTurn_LegendaryZapdos
-	ret
+	dw AIDecideBenchPokemonToSwitchTo ; .forced_switch
+	dw AIDecideBenchPokemonToSwitchTo ; .ko_switch
+	dw AIPickPrizeCards               ; .take_prize
 
 .start_duel
 	call InitAIDuelVars
@@ -16,20 +12,7 @@ AIActionTable_LegendaryZapdos:
 	call SetUpBossStartingHandAndDeck
 	call TrySetUpBossStartingPlayArea
 	ret nc
-	call AIPlayInitialBasicCards
-	ret
-
-.forced_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.ko_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.take_prize
-	call AIPickPrizeCards
-	ret
+	jp AIPlayInitialBasicCards
 
 .list_arena
 	db ELECTABUZZ_LV35
@@ -79,6 +62,7 @@ AIActionTable_LegendaryZapdos:
 	store_list_pointer wAICardListEnergyBonus, .list_energy
 	ret
 
+
 AIDoTurn_LegendaryZapdos:
 ; initialize variables
 	call InitAITurnVars
@@ -102,24 +86,21 @@ AIDoTurn_LegendaryZapdos:
 	or a
 	jr nz, .skip_energy_attach
 
-; if Arena card is Voltorb and there's ElectrodeLv35 in hand,
-; or if it's Electabuzz, try attaching Energy card
-; to the Arena card if it doesn't have any energy attached.
-; Otherwise if Energy card is not needed,
-; go through normal AI energy attach routine.
+; if the Active Pokémon is a Voltorb and there's an ElectrodeLv35 in hand,
+; or if it's an Electabuzz, try attaching an Energy card to the Active Pokémon,
+; but only if it doesn't already have any Energy attached to it.
+; Otherwise, go through the normal AI Energy attach routine.
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	call GetCardIDFromDeckIndex
-	ld a, VOLTORB
-	cp e
+	call _GetCardIDFromDeckIndex
+	cp VOLTORB
 	jr nz, .check_electabuzz
 	ld a, ELECTRODE_LV35
 	call LookForCardIDInHandList_Bank5
 	jr nc, .attach_normally
 	jr .voltorb_or_electabuzz
 .check_electabuzz
-	ld a, ELECTABUZZ_LV35
-	cp e
+	cp ELECTABUZZ_LV35
 	jr nz, .attach_normally
 
 .voltorb_or_electabuzz

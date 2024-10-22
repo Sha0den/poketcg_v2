@@ -97,7 +97,12 @@
 
 
 ## Code Optimization
-- **October 21, 2024:** 3 Files Changed
+- **October 22, 2024:** 20 Files Changed
+    - Perform various optimizations and update a few of the comments in the engine/duel/ai/decks files
+
+<br/>
+
+- **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/6a9679cf3680c436faf38fede278d9762787076e):** 3 Files Changed
     - Merge the Cowardice Pokémon Power logic (`HandleAICowardice`) into the `HandleAIPkmnPowers` function
     - Put `HandleAIStepIn` in the proper place (after the other functions that are called by `HandleAIPkmnPowers`)
     - The Energy Trans AI functions were also moved below the HandleAIPkmnPowers functions in the [previous commit](https://github.com/Sha0den/poketcg_v2/commit/e2ca1d888cf7692ab13db66819e742c47bd3ca31)

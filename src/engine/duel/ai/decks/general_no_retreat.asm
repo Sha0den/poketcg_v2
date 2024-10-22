@@ -1,32 +1,16 @@
 ; acts just like a general deck AI except never retreats
 AIActionTable_GeneralNoRetreat:
-	dw .do_turn ; unused
-	dw .do_turn
+	dw AIDoTurn_GeneralNoRetreat      ; .do_turn (unused)
+	dw AIDoTurn_GeneralNoRetreat      ; .do_turn
 	dw .start_duel
-	dw .forced_switch
-	dw .ko_switch
-	dw .take_prize
-
-.do_turn
-	call AIDoTurn_GeneralNoRetreat
-	ret
+	dw AIDecideBenchPokemonToSwitchTo ; .forced_switch
+	dw AIDecideBenchPokemonToSwitchTo ; .ko_switch
+	dw AIPickPrizeCards               ; .take_prize
 
 .start_duel
 	call InitAIDuelVars
-	call AIPlayInitialBasicCards
-	ret
+	jp AIPlayInitialBasicCards
 
-.forced_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.ko_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.take_prize
-	call AIPickPrizeCards
-	ret
 
 AIDoTurn_GeneralNoRetreat:
 ; initialize variables
@@ -73,6 +57,7 @@ AIDoTurn_GeneralNoRetreat:
 	call z, AIProcessAndTryToPlayEnergy
 ; play Pokemon from hand again
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 ; handle Pkmn Powers again
 	farcall HandleAIDamageSwap
 	farcall HandleAIPkmnPowers
@@ -118,10 +103,13 @@ AIDoTurn_GeneralNoRetreat:
 	or a
 	call z, AIProcessAndTryToPlayEnergy
 	call AIDecidePlayPokemonCard
+	ret c ; return if turn ended
 	farcall HandleAIDamageSwap
 	farcall HandleAIPkmnPowers
 	ret c ; return if turn ended
 	farcall HandleAIGoGoRainDanceEnergy
+	ld a, AI_ENERGY_TRANS_ATTACK
+	farcall HandleAIEnergyTrans
 	ld a, AI_TRAINER_CARD_PHASE_13
 	call AIProcessHandTrainerCards
 	; skip AI_TRAINER_CARD_PHASE_15

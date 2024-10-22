@@ -1,14 +1,10 @@
 AIActionTable_LegendaryRonald:
-	dw .do_turn ; unused
-	dw .do_turn
+	dw AIDoTurn_LegendaryRonald       ; .do_turn (unused)
+	dw AIDoTurn_LegendaryRonald       ; .do_turn
 	dw .start_duel
-	dw .forced_switch
-	dw .ko_switch
-	dw .take_prize
-
-.do_turn
-	call AIDoTurn_LegendaryRonald
-	ret
+	dw AIDecideBenchPokemonToSwitchTo ; .forced_switch
+	dw AIDecideBenchPokemonToSwitchTo ; .ko_switch
+	dw AIPickPrizeCards               ; .take_prize
 
 .start_duel
 	call InitAIDuelVars
@@ -16,20 +12,7 @@ AIActionTable_LegendaryRonald:
 	call SetUpBossStartingHandAndDeck
 	call TrySetUpBossStartingPlayArea
 	ret nc
-	call AIPlayInitialBasicCards
-	ret
-
-.forced_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.ko_switch
-	call AIDecideBenchPokemonToSwitchTo
-	ret
-
-.take_prize
-	call AIPickPrizeCards
-	ret
+	jp AIPlayInitialBasicCards
 
 .list_arena
 	db KANGASKHAN
@@ -90,6 +73,7 @@ AIActionTable_LegendaryRonald:
 	store_list_pointer wAICardListEnergyBonus, .list_energy
 	ret
 
+
 AIDoTurn_LegendaryRonald:
 ; initialize variables
 	call InitAITurnVars
@@ -140,9 +124,9 @@ AIDoTurn_LegendaryRonald:
 	call AIDecidePlayPokemonCard
 	ret c ; return if turn ended
 	ld a, AI_TRAINER_CARD_PHASE_15
+	call AIProcessHandTrainerCards
 ; if used Professor Oak, process new hand
 ; if not, then proceed to attack.
-	call AIProcessHandTrainerCards
 	ld a, [wPreviousAIFlags]
 	and AI_FLAG_USED_PROFESSOR_OAK
 	jr z, .try_attack
