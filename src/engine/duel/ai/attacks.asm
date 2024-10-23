@@ -460,30 +460,29 @@ GetAIScoreOfAttack:
 	call CopyAttackDataAndDamage_FromDeckIndex
 	ld a, ATTACK_FLAG2_ADDRESS | DISCARD_ENERGY_F
 	call CheckLoadedAttackFlag
-	jr nc, .asm_16ca6
+	jr nc, .check_encourage_flag
 	ld a, 1
 	call SubFromAIScore
 	ld a, [wLoadedAttackEffectParam]
 	call SubFromAIScore
 
-.asm_16ca6
-	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_6_F
+.check_encourage_flag
+	ld a, ATTACK_FLAG2_ADDRESS | ENCOURAGE_THIS_ATTACK_F
+	call CheckLoadedAttackFlag
+	jr nc, .check_discourage_flag
+	ld a, [wLoadedAttackEffectParam]
+	call AddToAIScore
+
+.check_discourage_flag
+	ld a, ATTACK_FLAG2_ADDRESS | DISCOURAGE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_nullify_flag
 	ld a, [wLoadedAttackEffectParam]
-	call AddToAIScore
+	call SubFromAIScore
 
 ; encourage the attack if it has a nullify or weaken attack effect.
 .check_nullify_flag
 	ld a, ATTACK_FLAG2_ADDRESS | NULLIFY_OR_WEAKEN_ATTACK_F
-	call CheckLoadedAttackFlag
-	jr nc, .check_draw_flag
-	ld a, 1
-	call AddToAIScore
-
-; encourage the attack if it has an effect to draw a card.
-.check_draw_flag
-	ld a, ATTACK_FLAG1_ADDRESS | DRAW_CARD_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_heal_flag
 	ld a, 1
@@ -494,33 +493,33 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jr nc, .check_status_effect
 	ld a, [wLoadedAttackEffectParam]
-	cp 1
-	jr z, .tally_heal_score
-	ld a, [wTempAI]
+	ld b, a
+	cp HEALING_EQUALS_DAMAGE_DEALT
+	jr c, .tally_heal_score
+	; must be a special healing effect
+	ld c, a
+	ld a, [wTempAI] ; damage that would be dealt by this attack
+	or a
+	jr z, .check_status_effect ; skip to next section if attack won't do any damage
 	call ConvertHPToDamageCounters_Bank5
 	ld b, a
-	ld a, [wLoadedAttackEffectParam]
-	cp 3
-	jr z, .asm_16cec
-	srl b
-	jr nc, .asm_16cec
-	inc b
-.asm_16cec
-	ld a, DUELVARS_ARENA_CARD_HP
-	get_turn_duelist_var
-	call ConvertHPToDamageCounters_Bank5
-	cp b
-	jr c, .tally_heal_score
-	ld a, b
+	ld a, c ; wLoadedAttackEffectParam
+	sub HEALING_EQUALS_DAMAGE_DEALT
+	jr z, .tally_heal_score
+	cp 1
+	jr z, .add_heal_score ; add 1 to the AI score if attack parameter is HEAL_10_HP_IF_DAMAGE_IS_DEALT
+	cp 2
+	jr nz, .check_status_effect ; skip to next section if attack parameter isn't HEALING_EQUALS_HALF_DAMAGE_DEALT
+	srl b ; divide damage by 2
+	jr nc, .tally_heal_score
+	inc b ; round up to the nearest 10 damage
 .tally_heal_score
-	push af
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	call ConvertHPToDamageCounters_Bank5
-	pop bc
 	cp b ; healing amount (in damage counters)
-	jr c, .add_heal_score
-	ld a, b ; use number of damage counters on Active Pokémon (because healing can't exceed max HP)
+	jr c, .add_heal_score ; use number of damage counters on Active Pokémon if healing > damage
+	ld a, b ; heal the full amount
 .add_heal_score
 	call AddToAIScore
 
@@ -540,8 +539,8 @@ GetAIScoreOfAttack:
 
 ; encourage an attack that causes the Poisoned condition if the Defending Pokémon
 ; isn't already Poisoned. discourage the attack if the Defending Pokémon is
-; already Double Poisoned and this attack has FLAG_2_BIT_6 set, likely to avoid
-; replacing toxic poison with regular poison or using a weaker second attack.
+; already Double Poisoned and this attack has the ENCOURAGE_THIS_ATTACK flag,
+; likely to avoid replacing toxic poison with regular poison or using a weaker second attack.
 	ld a, ATTACK_FLAG1_ADDRESS | INFLICT_POISON_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_sleep ; skip ahead if the attack doesn't Poison
@@ -550,7 +549,7 @@ GetAIScoreOfAttack:
 	jr z, .add_poison_score ; increase score if Defending Pokémon isn't already Poisoned
 	and $40
 	jr z, .check_sleep ; skip ahead if Defending Pokémon is only Poisoned (not Toxic)
-	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_6_F
+	ld a, ATTACK_FLAG2_ADDRESS | ENCOURAGE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_sleep
 	ld a, 2

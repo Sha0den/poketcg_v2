@@ -97,7 +97,12 @@
 
 
 ## Code Optimization
-- **October 22, 2024:** 20 Files Changed
+- **October 23, 2024:** 6 Files Changed
+    - Update various attack data, AI logic, and constants relating to the attack flags that are stored in card data
+
+<br/>
+
+- **[October 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/505305c696aa4d275830deeef9ac6653351c4f68):** 20 Files Changed
     - Perform various optimizations and update a few of the comments in the engine/duel/ai/decks files
 
 <br/>

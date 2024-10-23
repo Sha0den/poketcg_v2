@@ -961,10 +961,11 @@ ClearAllStatusConditions::
 ; Removes a Pokemon from the hand and places it in the Arena or else
 ; the first available Bench slot. If the Pokemon is placed in the Arena,
 ; then the status conditions affecting the player's Active Pokemon are cleared.
-; preserves bc
+; preserves bc and d
 ; input:
 ;	a = deck index of the Pokemon to put into play
 ; output:
+;	e = the given Pokémon's new play area location offset (PLAY_AREA_* constant)
 ;	carry = set:  if there wasn't space for the Pokemon (i.e. already 6 Pokemon in the play area)
 PutHandPokemonCardInPlayArea::
 	push af
@@ -1941,7 +1942,7 @@ PrintFailedEffectText::
 
 ; finds the Retreat Cost of one of the turn holder's in-play Pokemon,
 ; adjusting for any Retreat Aid Pokemon Power that is active.
-; preserves de
+; preserves de and b
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
 ; output:
@@ -1955,7 +1956,7 @@ GetPlayAreaCardRetreatCost::
 ;	fallthrough
 
 ; finds the Retreat Cost of the card in wLoadedCard1
-; preserves de
+; preserves de and b
 ; input:
 ;	[wLoadedCard1] = all of the card data for the Pokémon being checked (card_data_struct)
 ; output:
@@ -1993,7 +1994,7 @@ GetLoadedCard1RetreatCost::
 
 
 ; calculates the damage and maximum HP of the Pokémon at location e.
-; preserves de and hl
+; preserves all registers except af and c
 ; input:
 ;	e = play area location offset to check (PLAY_AREA_* constant)
 ; output:

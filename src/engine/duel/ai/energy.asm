@@ -414,10 +414,10 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	jr c, .asm_166cd
 	jr .asm_166c5
 
-; decrease the AI score if bit 5 of the 2nd attack flags byte is set.
+; decrease the AI score if the IGNORE_THIS_ATTACK flag is set.
 ; (MoltresLv35's Wildfire, MagnemiteLv15's Magnetic Storm, and Hypno's Prophecy)
 .not_enough_energy
-	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_5_F
+	ld a, ATTACK_FLAG2_ADDRESS | IGNORE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_color_needed
 	ld a, 5
@@ -486,12 +486,12 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	ld [hl], b
 
 ; check for Energy still needed for the evolution to attack.
-; if FLAG_2_BIT_5 is not set, check what type/color is needed.
+; as long as the IGNORE_THIS_ATTACK flag is not set, check what type/color is needed.
 ; if there is an Energy card in the hand that provides the needed type/color,
 ; or if Colorless Energy is needed, then increase the AI score.
 	call CheckEnergyNeededForAttack
 	jr nc, .done
-	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_5_F
+	ld a, ATTACK_FLAG2_ADDRESS | IGNORE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
 	jr c, .done
 	ld a, b

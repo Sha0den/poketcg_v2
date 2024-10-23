@@ -255,7 +255,7 @@ AIPlayInitialBasicCards:
 ;	[wSelectedAttack] = attack index (0 = first attack, 1 = second attack)
 ; output:
 ;	carry = set:  if the Pokémon in the given location can't use the given attack or
-;	              if the attack has FLAG_2_BIT_5 set (Wildfire, Magnetic Storm, and Prophecy)
+;	              if the attack has the IGNORE_THIS_ATTACK flag set (Wildfire, Magnetic Storm, and Prophecy)
 CheckIfSelectedAttackIsUnusable:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or a ; cp PLAY_AREA_ARENA
@@ -281,7 +281,7 @@ CheckIfSelectedAttackIsUnusable:
 .bench
 	call CheckEnergyNeededForAttack
 	ret c ; can't be used
-	ld a, ATTACK_FLAG2_ADDRESS | FLAG_2_BIT_5_F
+	ld a, ATTACK_FLAG2_ADDRESS | IGNORE_THIS_ATTACK_F
 	jp CheckLoadedAttackFlag
 
 
