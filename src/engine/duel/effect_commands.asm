@@ -440,7 +440,7 @@ DamageUnaffectedByColorEffectCommands:
 
 SuperFangEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HalveHPOfDefendingPokemon
-	dbw EFFECTCMDTYPE_AI, HalveHPOfDefendingPokemon_AIEffect
+	dbw EFFECTCMDTYPE_AI, HalveHPOfDefendingPokemon
 	db  $00
 
 KarateChopEffectCommands:
@@ -450,7 +450,7 @@ KarateChopEffectCommands:
 
 FlailEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Flail_HPCheck
-	dbw EFFECTCMDTYPE_AI, Flail_AIEffect
+	dbw EFFECTCMDTYPE_AI, Flail_HPCheck
 	db  $00
 
 RageEffectCommands:
@@ -474,6 +474,7 @@ MeditateEffectCommands:
 
 PsywaveEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DefendingPokemonEnergyTimes10_DamageEffect
+	dbw EFFECTCMDTYPE_AI, DefendingPokemonEnergyTimes10_DamageEffect
 	db  $00
 
 PsychicEffectCommands:

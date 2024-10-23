@@ -97,7 +97,12 @@
 
 
 ## Code Optimization
-- **October 23, 2024:** 6 Files Changed
+- **October 23, 2024:** 2 Files Changed
+    - Reconfigure a few AI effect commands (`SetDefiniteAIDamage` is redundant if `SetDefiniteDamage` was already called)
+
+<br/>
+
+- **[October 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/b26e4b94074c9c47839c1f7b59e8fc13d3344593):** 6 Files Changed
     - Update various attack data, AI logic, and constants relating to the attack flags that are stored in card data
 
 <br/>

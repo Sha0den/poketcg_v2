@@ -3619,12 +3619,6 @@ NullEffect:
 	ret
 
 
-; preserves bc and de
-HalveHPOfDefendingPokemon_AIEffect:
-	call HalveHPOfDefendingPokemon
-	jr SetDefiniteAIDamage
-
-
 ; sets attack damage to half the Defending Pokemon's remaining HP (rounded up)
 ; preserves bc and de
 HalveHPOfDefendingPokemon:
@@ -3659,12 +3653,6 @@ KarateChop_DamageSubtractionEffect:
 ; cap it to 0 damage
 	xor a
 	jp SetDefiniteDamage
-
-
-; preserves hl
-Flail_AIEffect:
-	call Flail_HPCheck
-	jr SetDefiniteAIDamage
 
 
 ; sets attack damage to 10 times the number of damage counters on the user
