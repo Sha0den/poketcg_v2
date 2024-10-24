@@ -9,31 +9,31 @@ EffectCommands::
 
 ; Commands are associated to a time or a scope (EFFECTCMDTYPE_*) that determines when their function is executed during the turn.
 ; - EFFECTCMDTYPE_INITIAL_EFFECT_1: Executed right after an attack or Trainer card is used. Bypasses effects like Smokescreen.
-; - EFFECTCMDTYPE_INITIAL_EFFECT_2: Executed right after an attack, Pokemon Power, or Trainer card is used.
+; - EFFECTCMDTYPE_INITIAL_EFFECT_2: Executed right after an attack, Pokémon Power, or Trainer card is used.
 ; - EFFECTCMDTYPE_DISCARD_ENERGY: For attacks or Trainer cards that require putting one or more attached Energy cards into the discard pile.
-; - EFFECTCMDTYPE_REQUIRE_SELECTION: For attacks, Pokemon Powers, or Trainer cards requiring the user to select a card (e.g. from play area screen or card list).
-; - EFFECTCMDTYPE_BEFORE_DAMAGE: Effect command of an attack executed prior to the damage step. For Trainer cards and Pokemon Powers, this is usually the main effect.
+; - EFFECTCMDTYPE_REQUIRE_SELECTION: For attacks, Pokémon Powers, or Trainer cards requiring the user to select a card (e.g. from play area screen or card list).
+; - EFFECTCMDTYPE_BEFORE_DAMAGE: Effect command of an attack executed prior to the damage step. For Trainer cards and Pokémon Powers, this is usually the main effect.
 ; - EFFECTCMDTYPE_AFTER_DAMAGE: Effect command executed after the damage step.
-; - EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN: For attacks that may result in the Defending Pokemon being switched out. Called only for AI-executed attacks.
-; - EFFECTCMDTYPE_PKMN_POWER_TRIGGER: Pokemon Power effects that trigger the moment the Pokemon card is played.
-; - EFFECTCMDTYPE_AI: Used for AI scoring.
+; - EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN: For attacks that may result in the Defending Pokémon being switched out. Called only for AI-executed attacks.
+; - EFFECTCMDTYPE_PKMN_POWER_TRIGGER: Pokémon Power effects that trigger the moment the Pokémon card is played.
+; - EFFECTCMDTYPE_AI: Used for AI scoring of attacks.
 ; - EFFECTCMDTYPE_AI_SELECTION: When AI is required to select a card
 
 ; Attacks that have an EFFECTCMDTYPE_REQUIRE_SELECTION also must have either an EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN or an
-; EFFECTCMDTYPE_AI_SELECTION (for anything not involving switching the Defending Pokemon), to handle selections involving the AI.
+; EFFECTCMDTYPE_AI_SELECTION (for anything not involving switching the Defending Pokémon), to handle selections involving the AI.
 
 ; Effect Commands for attacks are listed first, sorted by the type of effect. The overall ordering is:
 ; 1) Effects related to taking cards out of the deck or discard pile 
 ; 2) Other effects that benefit the player (excepting substatus effects), this mainly includes switching and healing
 ; 3) Effects that inflict Special Conditions (Asleep, Confusion, Paralysis, Poison)
 ; 4) Substatus effects (double damage, damage/attack prevention, Destiny Bond, no Retreat, Conversion, and Headache)
-; 5) Other non-damage effects that deal with your opponent's Pokemon
+; 5) Other non-damage effects that deal with your opponent's Pokémon
 ; 6) Damage Modifying Effects
-; 7) Effects that harm your own Pokemon (e.g. discarding Energy as a cost, recoil, damage to your Bench, etc.)
+; 7) Effects that harm your own Pokémon (e.g. discarding Energy as a cost, recoil, damage to your Bench, etc.)
 ; 8) Effects that damage the opponent's Bench
 ; 9) Miscellaneous random effects
 ;
-; All 26 Pokemon Power effect commands are listed after that, sorted by Pokemon Type
+; All 26 Pokémon Power effect commands are listed after that, sorted by Pokémon Type
 ; The Trainer effect commands are found next, sorted alphabetically
 ; Last are the Energy effects commands
 
@@ -770,11 +770,16 @@ MirrorMoveEffectCommands:
 	db  $00
 
 
-;---------------------------------------------------------------------------------
-; POKEMON POWER EFFECT COMMANDS START HERE
-; only 14/26 have an actual effect function
-;---------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------------------------------
+; POKEMON POWER EFFECT COMMANDS START HERE.
+; Only 14/26 Pokémon Powers have an actual effect function. (passive powers are handled elsewhere)
+; Pokémon Powers generally only use EFFECTCMDTYPE_INITIAL_EFFECT_2, EFFECTCMDTYPE_PKMN_POWER_TRIGGER,
+; 	EFFECTCMDTYPE_REQUIRE_SELECTION (Player only), EFFECTCMDTYPE_BEFORE_DAMAGE,
+; 	and EFFECTCMDTYPE_AFTER_DAMAGE (AI only)
+; AI decisions are handled in engine/duel/ai/pkmn_powers.asm (rather than an EFFECTCMDTYPE_AI_SELECTION).
+;--------------------------------------------------------------------------------------------------------------
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 VenusaurEnergyTransEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyTransCheck
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyTrans_PrintProcedureText
@@ -782,24 +787,26 @@ VenusaurEnergyTransEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyTrans_AIEffect
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 VenusaurSolarPowerEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SolarPowerCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SolarPower_RemoveStatusEffect
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 VileplumeHealEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, HealCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Heal_RemoveDamageEffect
 	db  $00
 
-; also handled in home/card_color.asm
+; also handled in home/card_color.asm and engine/duel/ai/pkmn_powers.asm
 VenomothShiftEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, OncePerTurnPokePowerCheck
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Shift_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Shift_ChangeColorEffect
 	db  $00
 
-; actual effect handled in home/substatus.asm and in other Pokemon Power effects
+; actual effect handled in home/substatus.asm and in other Pokémon Power effects
 MukToxicGasEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -814,11 +821,12 @@ MoltresFiregiverEffectCommands:
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, Firegiver_AddToHandEffect
 	db  $00
 
-; actual effect handled in engine/duel/core.asm
+; actual effect handled in engine/duel/core.asm and engine/duel/ai/pkmn_powers.asm
 BlastoiseRainDanceEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 TentacoolCowardiceEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, CowardiceCheck
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PossibleSwitch_PlayerSelection
@@ -841,12 +849,13 @@ ZapdosPealOfThunderEffectCommands:
 	dbw EFFECTCMDTYPE_PKMN_POWER_TRIGGER, PealOfThunder_RandomlyDamageEffect
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 MankeyPeekEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, OncePerTurnPokePowerCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Peek_SelectEffect
 	db  $00
 
-; actual effect handled in home/duel.asm & home/substatus.asm
+; actual effect handled in engine/duel/core.asm & home/substatus.asm
 MachampStrikesBackEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -856,17 +865,19 @@ KabutoKabutoArmorEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in engine/duel/core.asm & home/substatus.asm
+; actual effect handled in home/substatus.asm and in any function that deals with evolution
 AerodactylPrehistoricPowerEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 AlakazamDamageSwapEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DamageSwapCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageSwap_SelectAndSwapEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageSwap_SwapEffect
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 SlowbroStrangeBehaviorEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StrangeBehaviorCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StrangeBehavior_SelectAndSwapEffect
@@ -878,6 +889,7 @@ HaunterTransparencyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 GengarCurseEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, CurseCheck
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, Curse_PlayerSelection
@@ -904,6 +916,7 @@ SnorlaxThickSkinnedEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
+; also handled in engine/duel/ai/pkmn_powers.asm
 DragoniteStepInEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StepInCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StepIn_SwitchEffect
@@ -915,9 +928,12 @@ DragoniteHealingWindEffectCommands:
 	db  $00
 
 
-;---------------------------------------------------------------------------------
-; TRAINER CARD EFFECT COMMANDS START HERE
-;---------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------------------------------
+; TRAINER CARD EFFECT COMMANDS START HERE.
+; Trainer cards only use EFFECTCMDTYPE_INITIAL_EFFECT_1, EFFECTCMDTYPE_INITIAL_EFFECT_2 (Player only),
+; EFFECTCMDTYPE_DISCARD_ENERGY, EFFECTCMDTYPE_REQUIRE_SELECTION (Player only), and EFFECTCMDTYPE_BEFORE_DAMAGE.
+; AI decisions are handled in engine/duel/ai/trainer/cards.asm (rather than an EFFECTCMDTYPE_AI_SELECTION).
+;--------------------------------------------------------------------------------------------------------------
 
 TrainerCardAsPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, TrainerCardAsPokemon_BenchCheck
@@ -1115,10 +1131,10 @@ SwitchEffectCommands:
 	db  $00
 
 
-;---------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------------------------------
 ; ENERGY CARD EFFECT COMMANDS START HERE.
-; actual effects are handled in home/duel.asm & engine/duel/core.asm (possibly elsewhere too)
-;---------------------------------------------------------------------------------
+; The actual effects for providing Energy are scattered throughout the duel engine.
+;--------------------------------------------------------------------------------------------------------------
 
 GrassEnergyEffectCommands:
 	db  $00
