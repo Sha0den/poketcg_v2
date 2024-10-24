@@ -445,7 +445,7 @@ SuperFangEffectCommands:
 
 KarateChopEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, KarateChop_DamageSubtractionEffect
-	dbw EFFECTCMDTYPE_AI, KarateChop_AIEffect
+	dbw EFFECTCMDTYPE_AI, KarateChop_DamageSubtractionEffect
 	db  $00
 
 FlailEffectCommands:
@@ -455,12 +455,12 @@ FlailEffectCommands:
 
 RageEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Rage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
+	dbw EFFECTCMDTYPE_AI, Rage_DamageBoostEffect
 	db  $00
 
 RageAndMayConfuseSelfEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RageAndSelfConfusion50PercentEffect
-	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
+	dbw EFFECTCMDTYPE_AI, Rage_DamageBoostEffect
 	db  $00
 
 MayConfuseSelfEffectCommands:
@@ -469,17 +469,17 @@ MayConfuseSelfEffectCommands:
 
 MeditateEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CompoundingDamageCounters_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, CompoundingDamageCounters_AIEffect
+	dbw EFFECTCMDTYPE_AI, CompoundingDamageCounters_DamageBoostEffect
 	db  $00
 
 PsywaveEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DefendingPokemonEnergyTimes10_DamageEffect
-	dbw EFFECTCMDTYPE_AI, DefendingPokemonEnergyTimes10_DamageEffect
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DefendingPokemonEnergy_10xDamageEffect
+	dbw EFFECTCMDTYPE_AI, DefendingPokemonEnergy_10xDamageEffect
 	db  $00
 
 PsychicEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DefendingPokemonEnergy_10MoreDamageEffect
-	dbw EFFECTCMDTYPE_AI, Psychic_AIEffect
+	dbw EFFECTCMDTYPE_AI, DefendingPokemonEnergy_10MoreDamageEffect
 	db  $00
 
 WWaterGunEffectCommands:
@@ -509,6 +509,7 @@ EachBenched10MoreDamageEffectCommands:
 
 EachNidoking20MoreDamageEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EachNidoking20MoreDamageEffect
+	dbw EFFECTCMDTYPE_AI, EachNidoking20MoreDamageEffect
 	db  $00
 
 LeekSlapEffectCommands:
@@ -647,7 +648,7 @@ FlamesOfRageEffectCommands:
 	dbw EFFECTCMDTYPE_AI_SELECTION, Discard2AttachedFireEnergy_AISelection
 	dbw EFFECTCMDTYPE_DISCARD_ENERGY, Discard2AttachedEnergyCards_DiscardEffect
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Rage_DamageBoostEffect
-	dbw EFFECTCMDTYPE_AI, Rage_AIEffect
+	dbw EFFECTCMDTYPE_AI, Rage_DamageBoostEffect
 	db  $00
 
 Discard2AttachedEnergyCardsEffectCommands:

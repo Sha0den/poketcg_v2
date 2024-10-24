@@ -1941,7 +1941,15 @@ UpdateExpectedAIDamage_AccountForPoison:
 	jr z, UpdateExpectedAIDamage.skip_push_af
 	pop af
 	; Defending Pokémon is already Poisoned, so use default damage
-	jp SetDefiniteAIDamage
+;	fallthrough
+
+; overwrites wAIMinDamage and wAIMaxDamage with value in wDamage
+; preserves all registers except af
+SetDefiniteAIDamage:
+	ld a, [wDamage]
+	ld [wAIMinDamage], a
+	ld [wAIMaxDamage], a
+	ret
 
 
 ; Sets some variables for AI use
@@ -3624,65 +3632,75 @@ NullEffect:
 HalveHPOfDefendingPokemon:
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
-	srl a
-	bit 0, a
-	jp z, SetDefiniteDamage ; no need to round
-	add 5 ; round up to the nearest 10
+	call HalfARoundedUp
 	jp SetDefiniteDamage
-
-
-KarateChop_AIEffect:
-	call KarateChop_DamageSubtractionEffect
-	jr SetDefiniteAIDamage
-
 
 ; reduces attack damage by 10 for each damage counter on the user
 KarateChop_DamageSubtractionEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
+;	fallthrough
+
+; preserves all registers except af
+; input:
+;	a = amount to subtract from the base damage
+;	[wDamage] = base damage
+; output:
+;	[wDamage]      = updated damage amount (minimum damage = 0)
+;	[wAIMinDamage] = updated damage amount (minimum damage = 0)
+;	[wAIMaxDamage] = updated damage amount (minimum damage = 0)
+SubtractFromDamage:
+	push de
+	push hl
 	ld e, a
 	ld hl, wDamage
 	ld a, [hl]
 	sub e
-	ld [hli], a
-	ld a, [hl]
-	sbc 0
-	ld [hl], a
-	rla
-	ret nc ; return if the attack damage isn't negative
-; cap it to 0 damage
+	jr nc, .store_damage
+	; difference is a negative number, so set damage to 0
 	xor a
-	jp SetDefiniteDamage
+.store_damage
+	ld [hli], a ; wDamage
+	inc hl
+	ld [hli], a ; wAIMinDamage
+	ld [hl], a  ; wAIMaxDamage
+	pop hl
+	pop de
+	ret
+
+; reduces attack damage by 10 for each damage counter on the user
+;Alt_KarateChop_DamageSubtractionEffect:
+;	ld e, PLAY_AREA_ARENA
+;	call GetCardDamageAndMaxHP
+;	ld e, a
+;	ld hl, wDamage
+;	ld a, [hl]
+;	sub e
+;	ld [hli], a
+;	ld a, [hl]
+;	sbc 0
+;	ld [hl], a
+;	rla
+;	ret nc ; return if the attack damage isn't negative
+;	; cap it to 0 damage
+;	xor a
+;	jp SetDefiniteDamage
 
 
 ; sets attack damage to 10 times the number of damage counters on the user
-; preserves hl
+; preserves b, d, and hl
 Flail_HPCheck:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	jp SetDefiniteDamage
 
 
-; preserves de and hl
-Rage_AIEffect:
-	call Rage_DamageBoostEffect
-;	fallthrough
-
-; overwrites wAIMinDamage and wAIMaxDamage with value in wDamage
-; preserves all registers except af
-SetDefiniteAIDamage:
-	ld a, [wDamage]
-	ld [wAIMinDamage], a
-	ld [wAIMaxDamage], a
-	ret
-
-
 ; increases attack damage by 10 for each damage counter on the user
-; preserves de and hl
+; preserves b, d, and hl
 Rage_DamageBoostEffect:
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
-	jp AddToDamage
+	jr AddToDamage
 
 
 RageAndSelfConfusion50PercentEffect:
@@ -3695,86 +3713,14 @@ RageAndSelfConfusion50PercentEffect:
 	jp SwapTurn
 
 
-; preserves hl
-CompoundingDamageCounters_AIEffect:
-	call CompoundingDamageCounters_DamageBoostEffect
-	jr SetDefiniteAIDamage
-
-
 ; increases attack damage by 10 for each damage counter already on the Defending Pokemon
-; preserves hl
+; preserves b, d, and hl
 CompoundingDamageCounters_DamageBoostEffect:
 	rst SwapTurn
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
 	rst SwapTurn
-	jp AddToDamage
-
-
-Psychic_AIEffect:
-	call DefendingPokemonEnergy_10MoreDamageEffect
-	jr SetDefiniteAIDamage
-
-
-; increases attack damage by 10 for each Energy attached to the Defending Pokemon
-DefendingPokemonEnergy_10MoreDamageEffect:
-	call DefendingPokemonEnergyDamageMultiplier
-	ld hl, wDamage
-	ld a, e
-	add [hl]
-	ld [hli], a
-	ld a, d
-	adc [hl]
-	ld [hl], a
-	ret
-
-
-; output:
-;	de = 10 times the number of Energy cards attached to the Defending Pokemon
-DefendingPokemonEnergyDamageMultiplier:
-	rst SwapTurn
-	xor a
-	ld c, a ; initial Energy card counter = 0
-	; a = DUELVARS_CARD_LOCATIONS
-	get_turn_duelist_var
-	; hl = starting address for turn holder's card location data
-.loop
-	ld a, [hl]
-	cp CARD_LOCATION_ARENA
-	jr nz, .next
-	; is the Active Pokemon
-	ld a, l
-	call GetCardTypeFromDeckIndex_SaveDE
-	and TYPE_ENERGY
-	jr z, .next
-	; is Energy attached to Active Pokemon
-	inc c
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop
-
-	ld b, $00
-	ld h, b
-	ld l, c
-	add hl, hl ; hl =  2 * c
-	add hl, hl ; hl =  4 * c
-	add hl, bc ; hl =  5 * c
-	add hl, hl ; hl = 10 * c
-	ld e, l
-	ld d, h
-	jp SwapTurn
-
-
-; sets attack damage to 10 times the amount of Energy attached to the Defending Pokemon
-DefendingPokemonEnergyTimes10_DamageEffect:
-	call DefendingPokemonEnergyDamageMultiplier
-	ld hl, wDamage
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ret
+	jr AddToDamage
 
 
 WWaterGunEffect:
@@ -3799,6 +3745,7 @@ WWWHydroPumpEffect:
 ; input:
 ;	b = number of Water Energy listed in Attack Cost
 ;	c = number of Colorless Energy listed in Attack Cost
+;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokémon being checked
 ApplyExtraWaterEnergyDamageBonus:
 	ld a, [wMetronomeEnergyCost]
 	or a
@@ -3810,20 +3757,22 @@ ApplyExtraWaterEnergyDamageBonus:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
-
 	ld hl, wAttachedEnergies + WATER
 	ld a, c
 	or a
-	jr z, .check_bonus ; is Energy cost all Water Energy?
+	jr z, .check_bonus ; skip ahead if there's no Colorless Energy in the attack cost
 
-	; it's not, so we need to remove the
-	; Water Energy cards from calculations
-	; if they pay for Colorless instead.
+; we'll need to remove any Water Energy cards from the calculations if they pay for Colorless instead.
 	ld a, [wTotalAttachedEnergies]
-	cp [hl]
-	jr nz, .check_bonus ; skip if at least 1 non-Water Energy is attached
-
-	; Water is the only type of Energy attached
+	sub [hl]
+	jr z, .all_attached_energy_is_water
+	; at least 1 non-Water Energy is attached
+	ld e, a
+	ld a, c
+	sub e
+	jr c, .check_bonus ; skip ahead if there's more than enough non-Water Energy attached
+	ld c, a ; amount of Colorless Energy in attack cost that is being payed with Water Energy
+.all_attached_energy_is_water
 	ld a, c
 	add b
 	ld b, a
@@ -3831,9 +3780,10 @@ ApplyExtraWaterEnergyDamageBonus:
 
 .check_bonus
 	ld a, [hl]
+	inc b ; increase attack cost by 1 so carry will be set if actual difference = 0
 	sub b
-	jp c, SetDefiniteAIDamage ; is Water Energy < b?
-	jp z, SetDefiniteAIDamage ; is Water Energy = b?
+	jp c, SetDefiniteAIDamage ; use default damage if amount of attached Water Energy <= the attack cost
+	inc a ; reverse the result of the earlier "inc b" instruction
 
 ; a holds the number of Water Energy not used to pay for the cost of the attack
 	cp 3
@@ -3841,8 +3791,52 @@ ApplyExtraWaterEnergyDamageBonus:
 	ld a, 2 ; cap this to 2 for bonus effect
 .less_than_3
 	call ATimes10
-	call AddToDamage ; add 10 * a to damage
-	jp SetDefiniteAIDamage
+;	fallthrough
+
+; preserves all registers except af
+; input:
+;	a = amount to add to the base damage
+;	[wDamage] = base damage
+; output:
+;	[wDamage]      = updated damage amount (capped at 250)
+;	[wAIMinDamage] = updated damage amount (capped at 250)
+;	[wAIMaxDamage] = updated damage amount (capped at 250)
+AddToDamage:
+	push hl
+	ld hl, wDamage
+	add [hl]
+	jr nc, .store_damage
+	; total damage exceeded 1 byte (more than 255)
+	ld a, 250 ; damage is capped at 250
+.store_damage
+	ld [hli], a ; wDamage
+	inc hl
+	ld [hli], a ; wAIMinDamage
+	ld [hl], a  ; wAIMaxDamage
+	pop hl
+	ret
+
+
+; increases attack damage by 10 for each Energy card attached to the Defending Pokemon
+DefendingPokemonEnergy_10MoreDamageEffect:
+	rst SwapTurn
+	xor a ; PLAY_AREA_ARENA
+	call CreateArenaOrBenchEnergyCardList
+	rst SwapTurn
+	; a = number of Energy cards attached to the Defending Pokémon
+	call ATimes10
+	jr AddToDamage
+
+
+; sets attack damage to 10 times the number of Energy cards attached to the Defending Pokemon
+DefendingPokemonEnergy_10xDamageEffect:
+	rst SwapTurn
+	xor a ; PLAY_AREA_ARENA
+	call CreateArenaOrBenchEnergyCardList
+	rst SwapTurn
+	; a = number of Energy cards attached to the Defending Pokémon
+	call ATimes10
+	jp SetDefiniteDamage
 
 
 ; increases attack damage by 10 for each Pokemon in the turn holder's play area
@@ -3851,7 +3845,7 @@ EachBenched10MoreDamageEffect:
 	get_turn_duelist_var
 	dec a ; don't count Active Pokemon
 	call ATimes10
-	jp AddToDamage
+	jr AddToDamage
 
 
 ; increases attack damage by 20 for each Nidoking in the turn holder's play area
@@ -3874,7 +3868,7 @@ EachNidoking20MoreDamageEffect:
 	ld a, c
 	add a
 	call ATimes10
-	jp AddToDamage ; adds 2 * 10 * c
+	jr AddToDamage ; adds 2 * 10 * c
 
 
 ; can only use the attack if it was not used previously in the duel
@@ -4011,7 +4005,27 @@ Plus10DamagePerHeads_TossCoins:
 	ld a, e
 	ldtx de, DamageCheckIfHeadsXDamageText
 	call TossCoinATimes
-	jp ATimes10
+;	fallthrough
+
+; preserves all registers except af
+; input:
+;	a = number to multiply by 10
+; output:
+;	a *= 10 (capped at 250)
+ATimes10::
+	cp 25
+	jr nc, .reached_cap
+	push de
+	ld e, a
+	add a
+	add a
+	add e
+	add a
+	pop de
+	ret
+.reached_cap
+	ld a, 250
+	ret
 
 
 ; flips 2 coins and sets attack damage to 10 times the number of heads
@@ -4091,7 +4105,7 @@ Plus20DamagePerHeads_TossCoins:
 	ldtx de, DamageCheckIfHeadsXDamageText
 	call TossCoinATimes
 	add a ; a = 2 * heads
-	jp ATimes10
+	jr ATimes10
 
 
 ; flips 2 coins and sets attack damage to 20 times the number of heads
@@ -4221,47 +4235,11 @@ FlipForPlus10_DamageBoostEffect:
 	ldtx de, DamageCheckIfHeadsPlusDamageText
 	call TossCoin
 	ret nc ; return if tails
-	ld a, 10
-;	fallthrough
-
-; preserves all registers except af
-; input:
-;	a = amount to add to the damage
-; output:
-;	[wDamage] += a
-AddToDamage:
-	push hl
 	ld hl, wDamage
-	add [hl]
-	ld [hli], a
-	ld a, 0
-	adc [hl]
+	ld a, [hl]
+	add 10
 	ld [hl], a
-	pop hl
 	ret
-
-
-; unreferenced counterpart of AddToDamage
-; preserves all registers except af
-; input:
-;	a = amount to subtract from the damage
-; output:
-;	[wDamage] -= a
-;SubtractFromDamage:
-;	push de
-;	push hl
-;	ld e, a
-;	ld hl, wDamage
-;	ld a, [hl]
-;	sub e
-;	ld [hli], a
-;	ld a, [hl]
-;	sbc 0
-;	ld [hl], a
-;	pop hl
-;	pop de
-;	ret
-
 
 ; flips a coin, and if heads, increases the attack damage by 20
 FlipForPlus20_DamageBoostEffect:
@@ -4270,8 +4248,11 @@ FlipForPlus20_DamageBoostEffect:
 	ldtx de, DamageCheckIfHeadsPlusDamageText
 	call TossCoin
 	ret nc ; return if tails
-	ld a, 20
-	jr AddToDamage
+	ld hl, wDamage
+	ld a, [hl]
+	add 20
+	ld [hl], a
+	ret
 
 
 ; preserves bc and hl
@@ -4296,7 +4277,6 @@ Plus10OrRecoil_AIEffect:
 
 
 ; flips a coin, and if heads, increases the attack damage by 10
-; preserves hl
 ; output:
 ;	[hTemp_ffa0] = result of the coin toss (0 = tails, 1 = heads)
 Plus10OrRecoil_ModifierEffect:
@@ -4304,8 +4284,11 @@ Plus10OrRecoil_ModifierEffect:
 	call TossCoin
 	ldh [hTemp_ffa0], a
 	ret nc ; return if tails
-	ld a, 10
-	jr AddToDamage
+	ld hl, wDamage
+	ld a, [hl]
+	add 10
+	ld [hl], a
+	ret
 
 
 ; ; if coin toss result was tails, user does 10 damage to itself
@@ -8939,11 +8922,7 @@ Revive_PlaceInPlayAreaEffect:
 ; set HP to half, rounded up
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
-	srl a
-	bit 0, a
-	jr z, .rounded
-	add 5 ; round up HP to the nearest 10
-.rounded
+	call HalfARoundedUp
 	ld [hl], a
 	call IsPlayerTurn
 	ret c ; return if it's the Player's turn
@@ -9170,6 +9149,46 @@ SwitchEffect:
 ;----------------------------------------
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
+;
+; original AddToDamage function
+; preserves all registers except af
+; input:
+;	a = amount to add to the damage
+; output:
+;	[wDamage] += a
+;AddToDamage:
+;	push hl
+;	ld hl, wDamage
+;	add [hl]
+;	ld [hli], a
+;	ld a, 0
+;	adc [hl]
+;	ld [hl], a
+;	pop hl
+;	ret
+;
+;
+; original SubtractFromDamage function
+; preserves all registers except af
+; input:
+;	a = amount to subtract from the damage
+; output:
+;	[wDamage] -= a
+;SubtractFromDamage:
+;	push de
+;	push hl
+;	ld e, a
+;	ld hl, wDamage
+;	ld a, [hl]
+;	sub e
+;	ld [hli], a
+;	ld a, [hl]
+;	sbc 0
+;	ld [hl], a
+;	pop hl
+;	pop de
+;	ret
+;
 ;
 ; preserves hl
 ;Serial_TossZeroCoins:

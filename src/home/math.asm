@@ -1,41 +1,5 @@
 ; preserves all registers except af
 ; input:
-;	a = number to multiply by 10
-; output:
-;	a *= 10
-ATimes10::
-	push de
-	ld e, a
-	add a
-	add a
-	add e
-	add a
-	pop de
-	ret
-
-
-; currently an unreferenced function
-; preserves all registers except af
-; input:
-;	a = number to divide by 10
-; output:
-;	a /= 10
-;	carry = set:  if a % 10 >= 5
-ADividedBy10::
-	push de
-	ld e, -1
-.asm_c62
-	inc e
-	sub 10
-	jr nc, .asm_c62
-	add 5
-	ld a, e
-	pop de
-	ret
-
-
-; preserves all registers except af
-; input:
 ;	a = number to divide by 2
 ; output:
 ;	a /= 2 (rounded up)
@@ -144,6 +108,25 @@ HtimesL::
 ;	add hl, hl
 ;	add hl, de
 ;	add hl, hl
+;	pop de
+;	ret
+;
+;
+; preserves all registers except af
+; input:
+;	a = number to divide by 10
+; output:
+;	a /= 10
+;	carry = set:  if a % 10 >= 5
+;ADividedBy10::
+;	push de
+;	ld e, -1
+;.loop
+;	inc e
+;	sub 10
+;	jr nc, .loop
+;	add 5
+;	ld a, e
 ;	pop de
 ;	ret
 ;

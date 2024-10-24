@@ -97,7 +97,12 @@
 
 
 ## Code Optimization
-- **October 23, 2024:** 2 Files Changed
+- **October 24, 2024:** 3 Files Changed
+    - Various optimizations in engine/duel/effect_functions.asm that revolve around damage adjustments
+
+<br/>
+
+- **[October 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/259cf40788c4ee2014a0c0c0e2f3cd6a115537e6):** 2 Files Changed
     - Reconfigure a few AI effect commands (`SetDefiniteAIDamage` is redundant if `SetDefiniteDamage` was already called)
 
 <br/>
