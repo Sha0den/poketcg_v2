@@ -255,7 +255,7 @@ AIPlayInitialBasicCards:
 ;	[wSelectedAttack] = attack index (0 = first attack, 1 = second attack)
 ; output:
 ;	carry = set:  if the Pokémon in the given location can't use the given attack or
-;	              if the attack has the IGNORE_THIS_ATTACK flag set (Wildfire, Magnetic Storm, and Prophecy)
+;	              if the attack has the IGNORE_THIS_ATTACK flag set (Magnetic Storm and Prophecy)
 CheckIfSelectedAttackIsUnusable:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or a ; cp PLAY_AREA_ARENA
@@ -940,13 +940,11 @@ ClearMemory_Bank5:
 ;	a = number of damage counters
 ConvertHPToDamageCounters_Bank5:
 	push bc
-	ld c, 0
+	ld c, -1
 .loop
-	sub 10
-	jr c, .done
 	inc c
-	jr .loop
-.done
+	sub 10
+	jr nc, .loop
 	ld a, c
 	pop bc
 	ret
@@ -1550,8 +1548,6 @@ CheckForEvolutionInDeck:
 	jr nz, .not_in_deck
 	call CheckIfCanEvolveInto
 	jr nc, CheckForEvolutionInList.set_carry
-
-; exit when it gets to the Prize cards
 .not_in_deck
 	ld a, d
 	or a
@@ -1803,6 +1799,8 @@ AISelectSpecialAttackParameters:
 	jr z, .Teleport
 	cp ELECTRODE_LV35
 	jr z, .EnergySpike
+	cp MOLTRES_LV35
+	jr z, .Wildfire
 	or a
 	ret
 
@@ -1899,6 +1897,19 @@ AISelectSpecialAttackParameters:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret ; carry set
+
+
+; if the selected attack is Wildfire, always choose to discard all attached Fire Energy cards.
+.Wildfire
+	ld a, [wSelectedAttack]
+	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
+	ret nz ; return no carry if the Active Pokémon isn't using its first attack
+	ld e, a ; PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + FIRE]
+	ldh [hTemp_ffa0], a
+	scf
+	ret
 
 
 ; input:

@@ -325,34 +325,23 @@ FindBasicEnergyToAttach:
 	ret
 
 
-; Broken, AI doesn't select any card
+; finds the first Basic Energy card in the deck and attaches it to the AI's Active Pokemon.
 ; output:
-;	[hTemp_ffa0] = $ff (no card was chosen)
+;	[hTemp_ffa0] = deck index of a Basic Energy card in the AI's deck ($ff if none was chosen)
+;	[hTempPlayAreaLocation_ffa1] = play area location offset of the chosen Pokemon (PLAY_AREA_* constant)
 AIFindBasicEnergyToAttach:
-	ld a, $ff
+	call CreateDeckCardList
+	ld hl, wDuelTempList
+.loop_deck
+	ld a, [hli]
 	ldh [hTemp_ffa0], a
+	cp $ff
+	ret z ; reached the end of the list
+	call CheckDeckIndexForBasicEnergy
+	jr nc, .loop_deck ; card isn't a Basic Energy
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ffa1], a
 	ret
-
-; Maybe this could be used to replace the broken ai function.
-; I'm not entirely sure; more code might be needed.
-; finds the first basic energy in the deck
-; and attaches it to the Active Pokemon
-; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
-;AIFindBasicEnergyToAttach:
-;	call CreateDeckCardList
-;	ld hl, wDuelTempList
-;.loop_deck
-;	ld a, [hli]
-;	ldh [hTemp_ffa0], a
-;	cp $ff
-;	ret z ; reached the end of the list
-;	call CheckDeckIndexForBasicEnergy
-;	jr nc, .loop_deck ; card isn't a Basic Energy
-;	xor a ; PLAY_AREA_ARENA
-;	ldh a, [hTempPlayAreaLocation_ff9d]
-;	ldh [hTempPlayAreaLocation_ffa1], a
-;	ret
 
 
 ; output:
@@ -559,10 +548,30 @@ CheckDeckIndexForStage1OrStage2Pokemon:
 	ret
 
 
-; finds the first Evolution card in the deck
+; searches the deck for an Evolution card that evolves from the Active Pokémon.
+; if that fails, find the first Evolution card in the deck.
 ; output:
 ;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 AIFindEvolution:
+	lb de, DECK_SIZE, PLAY_AREA_ARENA
+.loop_all_cards
+	dec d ; go through deck indices in reverse order
+	ld a, d ; DUELVARS_CARD_LOCATIONS + current deck index
+	get_turn_duelist_var
+	cp CARD_LOCATION_DECK
+	jr nz, .next_card ; skip if not in the deck
+	ld a, d
+	call CheckDeckIndexForStage1OrStage2Pokemon
+	jr nc, .next_card ; skip if not an Evolution card
+	call CheckIfCanEvolveInto
+	jr nc, .found_active_pkmn_evolution
+.next_card
+	ld a, d
+	or a
+	jr nz, .loop_all_cards
+
+; no Evolution card in the deck evolves from the Active Pokémon,
+; so just return with the first evolution Evolution card.
 	call CreateDeckCardList
 	ld hl, wDuelTempList
 .loop_deck
@@ -573,6 +582,11 @@ AIFindEvolution:
 	call CheckDeckIndexForStage1OrStage2Pokemon
 	jr nc, .loop_deck ; card isn't an Evolution card
 	ret ; Evolution card found
+
+.found_active_pkmn_evolution
+	ld a, d
+	ldh [hTemp_ffa0], a
+	ret
 
 
 ; output:

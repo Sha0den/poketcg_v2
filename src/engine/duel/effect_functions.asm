@@ -775,7 +775,10 @@ AttachBasicEnergyFromDeck_PlayerSelection:
 	ret
 
 
-; AI won't select anything (actual logic is in effect_functions2.asm)
+; AI attaches the first Basic Energy card that it finds in the deck
+; to its Active Pokemon. (actual logic is in effect_functions2.asm)
+; this function isn't normally used. the real selection effect is located in
+; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
 ; output:
 ;	[hTemp_ffa0] = $ff (no card was chosen)
 AttachBasicEnergyFromDeck_AISelection:
@@ -846,7 +849,9 @@ EvolutionSearch_PlayerSelection:
 	ret
 
 
-; AI picks the first Evolution card in the deck (actual logic is in effect_functions2.asm)
+; AI tries to pick an Evolution card from the deck that evolves from its Active Pokémon.
+; if that fails, it picks the first Evolution card that it finds in the deck.
+; (actual logic is in effect_functions2.asm)
 ; output:
 ;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
 EvolutionSearch_AISelection:
@@ -1181,74 +1186,77 @@ CreateTrainerCardListFromDiscardPile:
 ; makes a list in wDuelTempList with the deck indices of all
 ; Basic Energy cards that are in the turn holder's discard pile.
 ; output:
+;	a & c = number of Basic Energy cards in the turn holder's discard pile
 ;	carry = set:  if there are no Basic Energy cards in the turn holder's discard pile
-;	wDuelTempList = $ff terminated list with deck indices of all discarded Basic Energy cards
+;	wDuelTempList = $ff-terminated list with deck indices of all discarded Basic Energy cards
 CreateEnergyCardListFromDiscardPile_OnlyBasic:
-	ld c, $01
+	ld a, TYPE_ENERGY + NUM_COLORED_TYPES ; only Basic Energy cards have a lower type index than this
+	ld [wEnergyCardListFilter], a
 	jr CreateEnergyCardListFromDiscardPile
 
 ; makes a list in wDuelTempList with the deck indices of all Energy cards
 ; (even Special Energy cards) that are in the turn holder's discard pile.
 ; output:
+;	a & c = number of Energy cards in the turn holder's discard pile
 ;	carry = set:  if there are no Energy cards in the turn holder's discard pile
-;	wDuelTempList = $ff terminated list with deck indices of all discarded Energy cards
+;	wDuelTempList = $ff-terminated list with deck indices of all discarded Energy cards
 CreateEnergyCardListFromDiscardPile_AllEnergy:
-	ld c, $00
+	ld a, TYPE_TRAINER ; all Energy cards have a lower type index than this
+	ld [wEnergyCardListFilter], a
 ;	fallthrough
 
 ; input:
-;	c = 0:  include all Energy cards in the discard pile
-;	c > 0:  only include Basic Energy cards
+;	[wEnergyCardListFilter] = determines whether only Basic Energy cards are included in the list
+; output:
+;	a & c = number of relevant Energy cards in the turn holder's discard pile
+;	carry = set:  if there are no relevant Energy cards in the turn holder's discard pile
+;	wDuelTempList = $ff-terminated list with deck indices of all relevant Energy cards in the discard pile
 CreateEnergyCardListFromDiscardPile:
-; get number of cards in the discard pile and have hl point to the
-; end of the discard pile list in wPlayerDeckCards/wOpponentDeckCards.
+; check whether there are any cards in the turn holder's discard pile.
+	ld c, 0 ; counter for number of Energy cards in list
+	ld de, wDuelTempList
 	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	get_turn_duelist_var
-	ld b, a
-	add DUELVARS_DECK_CARDS
-	ld l, a
-	ld de, wDuelTempList
-	inc b
-	jr .next_card
+	or a
+	jr z, .terminate_list ; skip to the end if no cards in discard pile
 
-.check_energy
+; store the number of cards in the discard pile and have hl point to the
+; end of the discard pile list in wPlayerDeckCards/wOpponentDeckCards.
+	ld b, a
+	add DUELVARS_DECK_CARDS - 1 ; point to last card in discard pile
+	ld l, a
+
+.check_card
 	ld a, [hl]
 	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wLoadedCard2Type]
 	and TYPE_ENERGY
-	jr z, .next_card
-
-; if (c != $00), then we dismiss any Special Energy cards
-	ld a, c
-	or a
-	jr z, .copy
+	jr z, .next_card ; skip if not an Energy card
+	push bc
+	ld a, [wEnergyCardListFilter]
+	ld b, a
 	ld a, [wLoadedCard2Type]
-	cp TYPE_ENERGY + NUM_COLORED_TYPES
+	cp b
+	pop bc
 	jr nc, .next_card
-
-; write this card's index to wDuelTempList
-.copy
+	; write this card's deck index to wDuelTempList
 	ld a, [hl]
 	ld [de], a
 	inc de
-
-; goes through the discard pile list in descending order
+	inc c
 .next_card
-	dec l
+	dec l ; goes through the discard pile list in descending order
 	dec b
-	jr nz, .check_energy
+	jr nz, .check_card
 
-; add terminating byte to wDuelTempList
-	ld a, $ff
-	ld [de], a
-
-; check if any Energy card was found by checking
-; whether the first byte in wDuelTempList is $ff.
-	ld a, [wDuelTempList]
-	cp $ff
-	scf
-	ret z ; return carry if none were found
+.terminate_list
+	ld a, $ff ; list is $ff-terminated
+	ld [de], a ; add terminating byte to wDuelTempList
+	ld a, c
 	or a
+	ret nz ; return no carry if there's at least one card in the list
+	; list is empty, so return carry
+	scf
 	ret
 
 
@@ -1447,6 +1455,8 @@ EnergyConversion_RecoilAndMoveCardsToHand:
 
 
 ; attaches 1 or more Energy cards in the turn holder's discard pile to the Active Pokemon
+; this function isn't normally used. the real selection effect is located in
+; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
 ; preserves bc and de
 ; input:
 ;	hTempList = $ff-terminated list with deck indices of discarded Energy cards to attach
@@ -1506,7 +1516,9 @@ SwitchAfterAttack_PlayerSelection:
 	ret
 
 
-; AI picks a random Benched Pokemon
+; AI picks a random Benched Pokemon.
+; this function isn't normally used. the real selection effect is located in
+; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
 ; preserves bc and de
 ; output:
 ;	[hTemp_ffa0] = play area location offset of a random Benched Pokemon (PLAY_AREA_* constant)
@@ -3259,6 +3271,8 @@ HandleEvolvedCardSelection:
 
 ; AI picks the first Evolved Pokemon in the Player's play area.
 ; if none were found, it picks the first Evolved Pokemon in its own play area.
+; this function isn't normally used. the real selection effect is located in
+; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
 ; preserves de
 ; output:
 ;	[hTemp_ffa0] = location of the chosen Pokemon ($0 = own play area, $1 = opponent's play area)
@@ -4462,7 +4476,9 @@ DiscardAttachedFireEnergy_AISelection:
 	ret
 
 
-; AI always chooses to discard 0 Fire Energy cards
+; AI always chooses to discard 0 Fire Energy cards.
+; this function isn't normally used. the real selection effect is located in
+; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
 ; output:
 ;	[hTemp_ffa0] = number of Fire Energy cards to discard (always 0)
 DiscardXAttachedFireEnergy_AISelection:

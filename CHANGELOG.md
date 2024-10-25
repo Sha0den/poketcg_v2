@@ -12,6 +12,14 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **October 25, 2024:** 9 Files Changed
+    - Update engine/duel/ai/special_attacks.asm and add entries for MarowakLv32's Wail, GastlyLv8's Destiny Bond, and GastlyLv17's Energy Conversion (all 3 are now usable by AI)
+    - Add AI logic for using Moltres's Wildfire attack and replace IGNORE_THIS_ATTACK flag with SPECIAL_AI_HANDLING. (Courtney can now use Wildfire to deck out the Player)
+    - Add AI logic for using VenusaurLv64's Solar Power Pokémon Power. (although no AI opponents have VenusaurLv64 in their deck)
+    - Also update a few effect functions and reformat the ConvertHPToDamageCounters functions in the AI Logic banks (unrelated to the bug fixing)
+
+<br/>
+
 - **[September 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/cba5b2646b518893a6dc61d6e2991eb13db057e0):** 1 File Changed
     - Prevent the Morph attack from transforming the user into a copy of the exact same card
 
@@ -97,7 +105,7 @@
 
 
 ## Code Optimization
-- **October 24, 2024:** 3 Files Changed
+- **[October 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/be950e54b78f3461aa1d537ba8da06dcff4b6ba5):** 3 Files Changed
     - Various optimizations in engine/duel/effect_functions.asm that revolve around damage adjustments
 
 <br/>

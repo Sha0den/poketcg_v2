@@ -440,13 +440,11 @@ ClearMemory_Bank8:
 ;	a = number of damage counters
 ConvertHPToDamageCounters_Bank8:
 	push bc
-	ld c, 0
+	ld c, -1
 .loop
-	sub 10
-	jr c, .done
 	inc c
-	jr .loop
-.done
+	sub 10
+	jr nc, .loop
 	ld a, c
 	pop bc
 	ret

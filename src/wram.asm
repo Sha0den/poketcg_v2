@@ -1505,6 +1505,9 @@ wPrinterStatus:: ; ce6f
 wSerialDataPtr:: ; ce70
 	ds $2
 
+; determines whether only Basic Energy cards are included in a list of Energy cards
+wEnergyCardListFilter:: ; ce72
+
 ; keeps track of which Benched Pokemon is pointed
 ; by the cursor during Gigashock selection screen
 wCurGigashockItem:: ; ce72

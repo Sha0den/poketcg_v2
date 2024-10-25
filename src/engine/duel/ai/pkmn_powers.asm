@@ -1,5 +1,6 @@
 ; handles AI logic for using some Pokémon Powers that need to be activated.
 ; The Pokémon Powers which are handled here are:
+;	- VenusaurLv64's Solar Power
 ;	- Vileplume's Heal
 ;	- Venomoth's Shift
 ;	- Tentacool's Cowardice
@@ -61,6 +62,11 @@ HandleAIPkmnPowers:
 	call _GetCardIDFromDeckIndex
 	push bc
 
+.check_solar_power
+	cp VENUSAUR_LV64
+	jr nz, .check_heal
+	call HandleAISolarPower
+	jr .next_1
 .check_heal
 	cp VILEPLUME
 	jr nz, .check_shift
@@ -106,6 +112,27 @@ HandleAIPkmnPowers:
 	ld a, c
 	cp b
 	jr nz, .loop_play_area
+	ret
+
+
+; checks whether AI uses VenusaurLv64's Solar Power
+; input:
+;	c = user's play area location offset (PLAY_AREA_* constant)
+HandleAISolarPower:
+	ld a, c
+	ldh [hTemp_ffa0], a
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	get_turn_duelist_var
+	or a ; cp NO_STATUS
+	ret z ; return if the AI's Active Pokémon isn't affected by any Special Conditions
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
 	ret
 
 

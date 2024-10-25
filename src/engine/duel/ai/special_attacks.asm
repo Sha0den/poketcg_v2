@@ -2,6 +2,8 @@
 ; and makes specific checks in each of these attacks
 ; to either return a positive score (value above $80)
 ; or a negative score (value below $80).
+; if an attack has the SPECIAL_AI_HANDLING flag but the Pokémon
+; isn't listed below, then dismiss the attack by returning a score of 0.
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = Attacking Pokémon's play area location offset (PLAY_AREA_* constant)
 HandleSpecialAIAttacks:
@@ -11,48 +13,56 @@ HandleSpecialAIAttacks:
 	call GetCardIDFromDeckIndex
 	ld a, e
 
-	cp NIDORANF
-	jr z, .NidoranFCallForFamily
-	cp ODDISH
-	jr z, .CallForFamily
-	cp BELLSPROUT
-	jr z, .CallForFamily
-	cp EXEGGUTOR
-	jp z, .Teleport
-	cp SCYTHER
-	jp z, .SwordsDanceAndFocusEnergy
-	cp KRABBY
-	jr z, .CallForFamily
-	cp VAPOREON_LV29
-	jp z, .SwordsDanceAndFocusEnergy
-	cp ELECTRODE_LV42
-	jp z, .ChainLightning
-	cp MAROWAK_LV26
-	jr z, .CallForFriend
-	cp MEW_LV23
-	jp z, .DevolutionBeam
-	cp JIGGLYPUFF_LV13
-	jp z, .FriendshipSong
-	cp PORYGON
-	jp z, .Conversion
-	cp MEWTWO_ALT_LV60
-	jp z, .EnergyAbsorption
-	cp MEWTWO_LV60
-	jp z, .EnergyAbsorption
 	cp NINETALES_LV35
 	jp z, .MixUp
-	cp ZAPDOS_LV68
-	jp z, .BigThunder
-	cp KANGASKHAN
-	jp z, .Fetch
-	cp DUGTRIO
-	jp z, .Earthquake
+	cp MOLTRES_LV35
+	jp z, .Wildfire
 	cp ELECTRODE_LV35
 	jp z, .EnergySpike
+	cp ELECTRODE_LV42
+	jp z, .ChainLightning
+	cp ZAPDOS_LV68
+	jp z, .BigThunder
+	cp DUGTRIO
+	jp z, .Earthquake
+	cp GASTLY_LV8
+	jp z, .DestinyBond
+	cp GASTLY_LV17
+	jp z, .EnergyConversion
+	cp MEWTWO_LV60
+	jp z, .EnergyAbsorption
+	cp MEWTWO_ALT_LV60
+	jp z, .EnergyAbsorption
+	cp MEW_LV23
+	jp z, .DevolutionBeam
+	cp KANGASKHAN
+	jp z, .Fetch
+	cp PORYGON
+	jp z, .Conversion
 	cp GOLDUCK
 	jp z, .HyperBeam
 	cp DRAGONAIR
 	jp z, .HyperBeam
+	cp ODDISH
+	jr z, .CallForFamily
+	cp BELLSPROUT
+	jr z, .CallForFamily
+	cp KRABBY
+	jr z, .CallForFamily
+	cp NIDORANF
+	jr z, .NidoranFCallForFamily
+	cp MAROWAK_LV26
+	jr z, .CallForFriend
+	cp MAROWAK_LV32
+	jr z, .Wail
+	cp JIGGLYPUFF_LV13
+	jr z, .FriendshipSong
+	cp EXEGGUTOR
+	jr z, .Teleport
+	cp SCYTHER
+	jr z, .SwordsDanceAndFocusEnergy
+	cp VAPOREON_LV29
+	jr z, .SwordsDanceAndFocusEnergy
 	; return zero score.
 	xor a
 	ret
@@ -60,6 +70,7 @@ HandleSpecialAIAttacks:
 
 ; if another copy of the card ID in e (i.e. the Attacking Pokémon) is found in the deck,
 ; return a score of $80 + slots available on the Bench.
+; otherwise, dismiss the attack.
 .CallForFamily:
 	ld a, CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
@@ -80,6 +91,7 @@ HandleSpecialAIAttacks:
 
 ; if any NidoranM or NidoranF is found in the deck,
 ; return a score of $80 + slots available on the Bench.
+; otherwise, dismiss the attack.
 .NidoranFCallForFamily:
 	ld e, NIDORANM
 	ld a, CARD_LOCATION_DECK
@@ -96,6 +108,7 @@ HandleSpecialAIAttacks:
 ; checks for certain Basic Fighting Pokémon in the deck.
 ; if any of them are found, return a score of
 ; $80 + slots available on the Bench.
+; otherwise, dismiss the attack.
 .CallForFriend:
 	ld e, GEODUDE
 	ld a, CARD_LOCATION_DECK
@@ -120,8 +133,22 @@ HandleSpecialAIAttacks:
 	ret
 
 
+; dismiss the attack if the AI has more Pokémon in play than the Player
+; or if there are no Basic Pokémon in the AI's deck.
+; otherwise, return a score of $80 + slots available on the AI's Bench.
+.Wail:
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	ld b, a
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetNonTurnDuelistVariable
+	cp b
+	jr c, .zero_score
+;	fallthrough
+
 ; if any Basic Pokémon are found in the deck,
 ; return a score of $80 + slots available on the Bench.
+; otherwise, dismiss the attack.
 .FriendshipSong:
 	call CheckIfAnyBasicPokemonInDeck
 	jr c, .bench_space_bonus_score
@@ -130,6 +157,7 @@ HandleSpecialAIAttacks:
 
 
 ; if AI decides to retreat, return a score of $80 + 10.
+; otherwise, dismiss the attack.
 .Teleport:
 	call AIDecideWhetherToRetreat
 	jr nc, .zero_score
@@ -186,6 +214,31 @@ HandleSpecialAIAttacks:
 	ret
 
 
+; dismiss the attack if the Defending Pokémon can't KO the
+; AI's Active Pokémon with its current amount of Energy.
+; otherwise, return a score of $80 + 5.
+.DestinyBond:
+	call CheckIfDefendingPokemonCanKnockOut
+	jr nc, .zero_score
+	ld a, $85
+	ret
+
+
+; dismiss the attack if there are already 1 or more Energy cards in the hand
+; or if there are fewer than 2 Energy cards in the discard pile.
+; otherwise, return a score of $80 + 3.
+.EnergyConversion:
+	call CreateEnergyCardListFromHand
+	jr nc, .zero_score
+	farcall CreateEnergyCardListFromDiscardPile_AllEnergy
+	cp 2
+	jr c, .zero_score
+	ld a, $83
+	ret
+
+
+; dismiss the attack if it can't be used to KO one of the Player's Pokémon.
+; otherwise, return a score of $80 + 5.
 .DevolutionBeam:
 	call LookForCardThatIsKnockedOutOnDevolution
 	jr nc, .zero_score
@@ -230,7 +283,7 @@ HandleSpecialAIAttacks:
 
 
 ; if any Psychic Energy is found in the discard pile,
-; return a score of $80 + 2.
+; return a score of $80 + 2. otherwise, dismiss the attack.
 .EnergyAbsorption:
 	ld e, PSYCHIC_ENERGY
 	ld a, CARD_LOCATION_DISCARD_PILE
@@ -311,6 +364,39 @@ HandleSpecialAIAttacks:
 	ret
 
 
+; dismiss the attack if there are more than 10 cards left in the Player's deck and the
+; Defending Pokémon can't KO the AI's Active Pokémon with its current amount of Energy.
+; also dismiss the attack if there are no cards left in the Player's deck.
+; if the AI's Active Pokémon can be KO'd, then increase the score by 5.
+; also increase the score depending on how many cards are left in the Player's deck.
+; (e.g. +0 if 10 cards left, +1 if 9 cards left, +2 if 8 cards left, ... +9 if 1 card left)
+.Wildfire:
+	call CheckIfDefendingPokemonCanKnockOut
+	ld c, 0 ; initial score modifier if not KO'd next turn
+	jr nc, .no_ko
+	ld c, 5 ; add 5 to the score if the Active Pokémon will be KO'd
+.no_ko
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	call GetNonTurnDuelistVariable
+	ld b, a
+	ld a, DECK_SIZE
+	sub b
+	or a
+	jr z, .zero_score2 ; don't use if there are no cards in the Player's deck to discard
+	ld b, a ; number of cards left in the Player's deck
+	ld a, 10
+	sub b
+	jr c, .return_score ; don't adjust score further if there are more than 10 cards in the deck
+	add c
+	ld c, a
+.return_score
+	ld a, c
+	or a
+	ret z
+	add $80
+	ret
+
+
 ; return score of $80 + 3.
 .BigThunder:
 	ld a, $83
@@ -363,7 +449,7 @@ HandleSpecialAIAttacks:
 
 
 ; if there are any Lightning Energy cards in the deck,
-; return a score of $80 + 3.
+; return a score of $80 + 3. otherwise, dismiss the attack.
 .EnergySpike:
 	ld a, CARD_LOCATION_DECK
 	ld e, LIGHTNING_ENERGY

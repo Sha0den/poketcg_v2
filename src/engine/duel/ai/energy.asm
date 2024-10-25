@@ -414,8 +414,7 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	jr c, .asm_166cd
 	jr .asm_166c5
 
-; decrease the AI score if the IGNORE_THIS_ATTACK flag is set.
-; (MoltresLv35's Wildfire, MagnemiteLv15's Magnetic Storm, and Hypno's Prophecy)
+; decrease the AI score if the IGNORE_THIS_ATTACK flag is set. (Magnetic Storm and Prophecy)
 .not_enough_energy
 	ld a, ATTACK_FLAG2_ADDRESS | IGNORE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
