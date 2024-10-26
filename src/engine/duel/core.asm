@@ -6398,19 +6398,6 @@ ValidateSavedDuelData:
 	jp DisableSRAM
 
 
-; discards the data of a duel that was saved by SaveDuelData, by setting the first byte
-; of sCurrentDuel to $00, and zeroing the checksum (next two bytes)
-; preserves bc and de
-DiscardSavedDuelData:
-	call EnableSRAM
-	ld hl, sCurrentDuel
-	xor a
-	ld [hli], a
-	ld [hli], a
-	ld [hl], a
-	jp DisableSRAM
-
-
 ; loads a player deck (sDeck*Cards) from SRAM to wPlayerDeck.
 ; sCurrentlySelectedDeck determines which sDeck*Cards source (0-3).
 LoadPlayerDeck:

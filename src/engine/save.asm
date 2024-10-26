@@ -12,15 +12,27 @@ InvalidateSaveData:
 	ld a, $08
 	xor $ff
 	ld [sBackupGeneralSaveData + 0], a
-	ld a, $00
-	xor $ff
+	ld a, $ff
 	ld [sBackupGeneralSaveData + 1], a
+	call DiscardSavedDuelData
 	pop af
 
 	call BankswitchSRAM
-	bank1call DiscardSavedDuelData
 	pop hl
 	ret
+
+
+; discards the data of a duel that was saved by SaveDuelData, by setting the first byte
+; of sCurrentDuel to $00, and zeroing the checksum (next two bytes)
+; preserves bc and de
+DiscardSavedDuelData:
+	call EnableSRAM
+	ld hl, sCurrentDuel ; in SRAM2
+	xor a
+	ld [hli], a
+	ld [hli], a
+	ld [hl], a
+	jp DisableSRAM
 
 
 ; preserves all registers except af
@@ -365,9 +377,7 @@ LoadAlbumProgressFromSRAM:
 LoadBackupSaveData:
 	push hl
 	push de
-	call EnableSRAM
-	bank1call DiscardSavedDuelData
-	call DisableSRAM
+	call DiscardSavedDuelData
 	call LoadBackupGeneralSaveData
 	call LoadBackupCardAndDeckSaveData
 	ld de, sGeneralSaveData

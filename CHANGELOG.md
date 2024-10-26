@@ -105,6 +105,12 @@
 
 
 ## Code Optimization
+- **October 26, 2024:** 4 Files Changed
+    - Move `DiscardSavedDuelData` from bank $01 to bank $04 to (4 bank1calls -> 3 calls and 1 farcall)
+    - Remove some redundant code near the calls to said function
+
+<br/>
+
 - **[October 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/be950e54b78f3461aa1d537ba8da06dcff4b6ba5):** 3 Files Changed
     - Various optimizations in engine/duel/effect_functions.asm that revolve around damage adjustments
 
@@ -699,7 +705,7 @@
 
 
 ## Miscellaneous Changes
-- **October 26, 2024:** 7 Files Changed
+- **[October 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/445c35d61ddbcd21d6c1b2baed7326427431ea34):** 7 Files Changed
     - Change Unknown2 byte for Pokémon card data to PokemonFlags and update constants, card data, and AI logic accordingly
 
 <br/>

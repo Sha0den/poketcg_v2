@@ -1,8 +1,6 @@
 LoadMap::
 	call DisableLCD
-	call EnableSRAM
-	bank1call DiscardSavedDuelData
-	call DisableSRAM
+	farcall DiscardSavedDuelData
 	ld a, GAME_EVENT_OVERWORLD
 	ld [wGameEvent], a
 	xor a

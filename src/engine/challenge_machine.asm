@@ -70,8 +70,8 @@ ChallengeMachine_Start::
 	call EnableSRAM
 	xor a
 	ld [sPlayerInChallengeMachine], a
-	bank1call DiscardSavedDuelData
-	call DisableSRAM
+	call DiscardSavedDuelData
+;	call DisableSRAM ; already called during DiscardSavedDuelData 
 	call ChallengeMachine_GetCurrentOpponent
 	call ChallengeMachine_RecordDuelResult
 	call ChallengeMachine_DrawOpponentList
