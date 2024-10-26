@@ -105,7 +105,12 @@
 
 
 ## Code Optimization
-- **October 26, 2024:** 4 Files Changed
+- **October 26, 2024:** 2 Files Changed
+    - Replace 2 farcalls by moving `CheckWhichDecksToDismantleToBuildSavedDeck` from engine/auto_deck_machines.asm (bank $06) to engine/menus/deck_machines.asm (bank $02)
+
+<br/>
+
+- **[October 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/85d01a223e4f9036094448df19b700ab30f015a4):** 4 Files Changed
     - Move `DiscardSavedDuelData` from bank $01 to bank $04 to (4 bank1calls -> 3 calls and 1 farcall)
     - Remove some redundant code near the calls to said function
 

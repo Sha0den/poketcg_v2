@@ -1265,7 +1265,7 @@ TryBuildDeckMachineDeck:
 .DismantleDecksNeededToBuild
 ; shows Decks screen with the names
 ; of the decks to be dismantled
-	farcall CheckWhichDecksToDismantleToBuildSavedDeck
+	call CheckWhichDecksToDismantleToBuildSavedDeck
 	call SafelySwitchToSRAM0
 	call DrawDecksScreen
 	ldtx hl, DismantleTheseDecksText
@@ -1477,6 +1477,78 @@ TryBuildDeckMachineDeck:
 	and CARD_COUNT_MASK
 	ld e, a
 	pop af
+	ret
+
+
+; tries out all combinations of dismantling the player's decks
+; in order to build the deck in wSelectedDeckMachineEntry
+; output:
+;	a = which deck(s) would need to be dismantled
+;	carry = set:  if none of the combinations work
+CheckWhichDecksToDismantleToBuildSavedDeck:
+	xor a
+	ld [wDecksToBeDismantled], a
+
+; first check if it can be built by only dismantling a single deck
+	ld a, DECK_1
+.loop_single_built_decks
+	call .CheckIfCanBuild
+	ret nc
+	sla a ; next deck
+	cp (1 << NUM_DECKS)
+	jr nz, .loop_single_built_decks
+
+; next check all two deck combinations
+	ld a, DECK_1 | DECK_2
+	call .CheckIfCanBuild
+	ret nc
+	ld a, DECK_1 | DECK_3
+	call .CheckIfCanBuild
+	ret nc
+	ld a, DECK_1 | DECK_4
+	call .CheckIfCanBuild
+	ret nc
+	ld a, DECK_2 | DECK_3
+	call .CheckIfCanBuild
+	ret nc
+	ld a, DECK_2 | DECK_4
+	call .CheckIfCanBuild
+	ret nc
+	ld a, DECK_3 | DECK_4
+	call .CheckIfCanBuild
+	ret nc
+
+; next check all three deck combinations
+	ld a, $ff ^ DECK_4
+.loop_three_deck_combinations
+	call .CheckIfCanBuild
+	ret nc
+	sra a
+	cp $ff
+	jr nz, .loop_three_deck_combinations
+
+; finally check if can be built by dismantling all decks
+;	fallthrough
+
+; preserves af
+; input:
+;	a = DECK_* flags
+; output:
+;	carry = set:  if wSelectedDeckMachineEntry cannot be built by
+;	              dismantling the decks from input
+.CheckIfCanBuild
+	push af
+	ld hl, wSelectedDeckMachineEntry
+	ld b, [hl]
+	call CheckIfCanBuildSavedDeck
+	jr c, .cannot_build
+	pop af
+	ld [wDecksToBeDismantled], a
+	or a
+	ret
+.cannot_build
+	pop af
+	scf
 	ret
 
 
