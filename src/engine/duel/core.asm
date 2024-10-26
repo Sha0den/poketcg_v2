@@ -7505,7 +7505,7 @@ ConvertSpecialTrainerCardToPokemon::
 	ld bc, CARD_DATA_HP
 	add hl, bc
 	ld de, .trainer_to_pkmn_data
-	ld c, CARD_DATA_UNKNOWN2 - CARD_DATA_HP
+	ld c, CARD_DATA_PKMN_FLAGS - CARD_DATA_HP
 	call CopyNBytesFromDEToHL
 	pop de
 	ret

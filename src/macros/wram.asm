@@ -21,7 +21,7 @@ MACRO card_data_struct
 \1Length::        ds 2
 \1Weight::        ds 2
 \1Description::   ds 2
-\1Unknown2::      ds 1
+\1PokemonFlags::  ds 1
 ENDM
 
 MACRO atk_data_struct

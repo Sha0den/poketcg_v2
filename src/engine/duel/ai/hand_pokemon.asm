@@ -305,8 +305,8 @@ AIDecideEvolution:
 	call ConvertHPToDamageCounters_Bank5
 	call SubFromAIScore
 
-; increase the AI score if it's Mysterious Fossil
-; or if wLoadedCard1Unknown2 is set to $02 (which is never true).
+; increase the AI score by 5 if it's Mysterious Fossil
+; or by 2 if this Pokémon's AI_ENCOURAGE_EVOLUTION flag is set.
 .check_mysterious_fossil
 	ld a, [wTempAI]
 	add DUELVARS_ARENA_CARD
@@ -314,9 +314,9 @@ AIDecideEvolution:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	cp MYSTERIOUS_FOSSIL
 	jr z, .mysterious_fossil
-	ld a, [wLoadedCard1Unknown2]
-	cp $02
-	jr nz, .pikachu_deck
+	ld a, [wLoadedCard1PokemonFlags]
+	and AI_ENCOURAGE_EVOLUTION
+	jr z, .pikachu_deck
 	ld a, 2
 	call AddToAIScore
 	jr .pikachu_deck

@@ -695,12 +695,12 @@ AIDecideBenchPokemonToSwitchTo:
 	ld a, 5
 	call AddToAIScore
 
-; decrease this Pokémon's score by 2 if wLoadedCard1Unknown2 == $01
-; (if it's an Aerodactyl, Slowbro, Gengar, or Dodrio)
+; decrease this Pokémon's score by 2 if it's probably more useful on the Bench.
+; (e.g. Muk, Aerodactyl, Slowbro, Dodrio, etc.)
 .asm_15cf0
-	ld a, [wLoadedCard1Unknown2]
-	cp $01
-	jr nz, .mysterious_fossil_or_clefairy_doll
+	ld a, [wLoadedCard1PokemonFlags]
+	and AI_TRY_TO_KEEP_ON_BENCH
+	jr z, .mysterious_fossil_or_clefairy_doll
 	ld a, 2
 	call SubFromAIScore
 

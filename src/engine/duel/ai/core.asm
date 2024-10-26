@@ -1659,7 +1659,7 @@ LookForCardThatIsKnockedOutOnDevolution:
 ; output:
 ;	carry = set:  if the following conditions are met:
 ;		- Active Pokémon's HP >= half max HP
-;		- Active Pokémon's Unknown2's 4 bit is not set or
+;		- Active Pokémon's HAS_EVOLUTION flag isn't set or
 ;		  it is set but there's no matching Evolution card in hand/deck
 ;		- Active Pokémon can use its second attack
 CheckIfArenaCardIsAtHalfHPCanEvolveAndUseSecondAttack:
@@ -1675,8 +1675,8 @@ CheckIfArenaCardIsAtHalfHPCanEvolveAndUseSecondAttack:
 	cp e
 	ret nc
 
-	ld a, [wLoadedCard1Unknown2]
-	and %00010000
+	ld a, [wLoadedCard1PokemonFlags]
+	and HAS_EVOLUTION
 	jr z, .check_second_attack
 	ld a, d
 	call CheckCardEvolutionInHandOrDeck
@@ -1694,10 +1694,10 @@ CheckIfArenaCardIsAtHalfHPCanEvolveAndUseSecondAttack:
 
 
 ; counts Pokémon in the turn holder's Bench that meet the following conditions:
-;	- card HP >= half max HP
-;	- card Unknown2's 4 bit is not set or
+;	- that Pokémon's HP >= half max HP
+;	- that Pokémon's HAS_EVOLUTION flag isn't set or
 ;	  it is set but there's no matching Evolution card in hand/deck
-;	- card can use its second attack
+;	- that Pokémon can use its second attack
 ; output:
 ;	a = number of Benched Pokémon that meet all of the above requirements
 ;	carry = set:  if one or more suitable Pokémon were found
@@ -1737,8 +1737,8 @@ CountNumberOfSetUpBenchPokemon:
 	cp e
 	jr nc, .next
 
-	ld a, [wLoadedCard1Unknown2]
-	and $10
+	ld a, [wLoadedCard1PokemonFlags]
+	and HAS_EVOLUTION
 	jr z, .check_second_attack
 
 	ld a, d

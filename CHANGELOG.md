@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **October 25, 2024:** 9 Files Changed
+- **[October 25, 2024](https://github.com/Sha0den/poketcg_v2/commit/36785feaf2623794af2675260ed881c01c9851c7):** 9 Files Changed
     - Update engine/duel/ai/special_attacks.asm and add entries for MarowakLv32's Wail, GastlyLv8's Destiny Bond, and GastlyLv17's Energy Conversion (all 3 are now usable by AI)
     - Add AI logic for using Moltres's Wildfire attack and replace IGNORE_THIS_ATTACK flag with SPECIAL_AI_HANDLING. (Courtney can now use Wildfire to deck out the Player)
     - Add AI logic for using VenusaurLv64's Solar Power Pokémon Power. (although no AI opponents have VenusaurLv64 in their deck)
@@ -112,11 +112,6 @@
 
 - **[October 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/259cf40788c4ee2014a0c0c0e2f3cd6a115537e6):** 2 Files Changed
     - Reconfigure a few AI effect commands (`SetDefiniteAIDamage` is redundant if `SetDefiniteDamage` was already called)
-
-<br/>
-
-- **[October 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/b26e4b94074c9c47839c1f7b59e8fc13d3344593):** 6 Files Changed
-    - Update various attack data, AI logic, and constants relating to the attack flags that are stored in card data
 
 <br/>
 
@@ -704,6 +699,16 @@
 
 
 ## Miscellaneous Changes
+- **October 26, 2024:** 7 Files Changed
+    - Change Unknown2 byte for Pokémon card data to PokemonFlags and update constants, card data, and AI logic accordingly
+
+<br/>
+
+- **[October 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/b26e4b94074c9c47839c1f7b59e8fc13d3344593):** 6 Files Changed
+    - Update various attack data, AI logic, and constants relating to the attack flags that are stored in card data
+
+<br/>
+
 - **[September 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/706cf64f04e7ac7d71bd505bc35c2b6e0a91d9fa):** 2 Files Changed (1 was deleted)
     - Remove remaining rom comparison references in `Makefile` and delete `rom.sha1`
 
