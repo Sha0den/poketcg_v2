@@ -61,7 +61,7 @@ UnusedSaveDataValidation:
 	lb de, $38, $9f
 	call SetupText
 	ldtx hl, YourDataWasDestroyedSomehowText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 	ld a, SRAM_ENABLE
 	ld [MBC3SRamEnable], a
 	xor a

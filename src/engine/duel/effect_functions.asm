@@ -3214,7 +3214,7 @@ GustOfWind_SwitchEffect:
 ;	[hTempPlayAreaLocation_ffa1] = Pokemon's play area location offset (PLAY_AREA_* constant)
 DevolutionBeam_PlayerSelection:
 	ldtx hl, ProcedureForDevolutionBeamText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 
 .start
 	bank1call DrawDuelMainScene
@@ -6093,7 +6093,7 @@ EnergyTransCheck:
 
 EnergyTrans_PrintProcedureText:
 	ldtx hl, ProcedureForEnergyTransferText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 	or a
 	ret
 
@@ -6739,7 +6739,7 @@ DamageSwap_SelectAndSwapEffect:
 
 .player
 	ldtx hl, ProcedureForDamageSwapText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 	xor a
 	ldh [hCurSelectionItem], a
 	call SetupPlayAreaScreen
@@ -6898,7 +6898,7 @@ StrangeBehavior_SelectAndSwapEffect:
 
 .player
 	ldtx hl, ProcedureForStrangeBehaviorText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 
 	xor a
 	ldh [hCurSelectionItem], a
@@ -6984,7 +6984,7 @@ CurseCheck:
 ;	[hPlayAreaEffectTarget] = play area location offset of the Pokemon gaining the damage counter
 Curse_PlayerSelection:
 	ldtx hl, ProcedureForCurseText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 	rst SwapTurn
 	xor a
 	ldh [hCurSelectionItem], a

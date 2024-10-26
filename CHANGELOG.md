@@ -105,7 +105,12 @@
 
 
 ## Code Optimization
-- **October 26, 2024:** 2 Files Changed
+- **October 26, 2024:** 5 Files Changed (although 1 is no longer in the build)
+    - Replace 6 bank1calls by moving `DrawWholeScreenTextBox` from engine/duel/core.asm (bank $01) to home/menus.asm (bank $00)
+
+<br/>
+
+- **[October 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/770f9c68a53dc85414d197f6c7a918ca77e6abc3):** 2 Files Changed
     - Replace 2 farcalls by moving `CheckWhichDecksToDismantleToBuildSavedDeck` from engine/auto_deck_machines.asm (bank $06) to engine/menus/deck_machines.asm (bank $02)
 
 <br/>

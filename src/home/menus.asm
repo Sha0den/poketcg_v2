@@ -872,6 +872,29 @@ WideTextBoxMenuParameters::
 	dw NULL ; function pointer if non-0
 
 
+; draws a text box that covers the whole screen and
+; prints the text with ID in hl, then waits for Player input.
+; input:
+;	hl = text ID
+DrawWholeScreenTextBox::
+	push hl
+	call EmptyScreen
+	lb de, 0, 0
+	lb bc, 20, 18
+	call DrawRegularTextBox
+	ld a, 19
+	lb de, 1, 1
+	call InitTextPrintingInTextbox
+	ld a, SINGLE_SPACED
+	ld [wLineSeparation], a
+	pop hl
+	call ProcessTextFromID
+	call EnableLCD
+	xor a ; DOUBLE_SPACED
+	ld [wLineSeparation], a
+	jr WaitForWideTextBoxInput
+
+
 ; same as function below except the default selection is set to "Yes"
 YesOrNoMenuWithText_SetCursorToYes::
 	ld a, $01

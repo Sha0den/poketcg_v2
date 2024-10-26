@@ -1063,7 +1063,7 @@ HandlePokedexPlayerSelection:
 ;	hTempList + 1 = $ff-terminated list with deck indices of cards to place on top of the deck
 HandleProphecyPlayerSelection:
 	ldtx hl, ProcedureForProphecyText
-	bank1call DrawWholeScreenTextBox
+	call DrawWholeScreenTextBox
 .select_deck
 	bank1call DrawDuelMainScene
 	ldtx hl, PleaseSelectTheDeckText

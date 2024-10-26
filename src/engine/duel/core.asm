@@ -3813,29 +3813,6 @@ OpenCardPage:
 	jr .input_loop
 
 
-; draws a text box that covers the whole screen and
-; prints the text with ID in hl, then waits for Player input.
-; input:
-;	hl = text ID
-DrawWholeScreenTextBox:
-	push hl
-	call EmptyScreen
-	lb de, 0, 0
-	lb bc, 20, 18
-	call DrawRegularTextBox
-	ld a, 19
-	lb de, 1, 1
-	call InitTextPrintingInTextbox
-	ld a, SINGLE_SPACED
-	ld [wLineSeparation], a
-	pop hl
-	call ProcessTextFromID
-	call EnableLCD
-	xor a ; DOUBLE_SPACED
-	ld [wLineSeparation], a
-	jp WaitForWideTextBoxInput
-
-
 ; displays the previous valid card page of the card at wLoadedCard1 if bit D_LEFT_F
 ; of a is set, and the first or next valid card page otherwise.
 ; DisplayFirstOrNextCardPage and DisplayPreviousCardPage only call DisplayCardPage
