@@ -1,3 +1,20 @@
+; returns [([hWhoseTurn] ^ $1) << 8 + a] in a and in [hl],
+; i.e. duelvar a of the player whose turn it is not.
+; preserves bc and de
+; input:
+;	a = wOpponentDuelVariables constant
+GetNonTurnDuelistVariable::
+	ld l, a
+	ldh a, [hWhoseTurn]
+	ld h, OPPONENT_TURN
+	cp PLAYER_TURN
+	jr z, .ok
+	ld h, PLAYER_TURN
+.ok
+	ld a, [hl]
+	ret
+
+
 ; copies the deck pointed to by de to wPlayerDeck or wOpponentDeck (depending on whose turn it is)
 ; input:
 ;	de = deck to copy
@@ -706,6 +723,99 @@ LoadCardDataToBuffer2_FromDeckIndex::
 	jr LoadCardDataToBuffer1_FromDeckIndex.after_load
 
 
+; loads the effect commands of a (Trainer or Energy) card with deck index (0-59)
+; at hTempCardIndex_ff9f into wLoadedAttackEffectCommands.
+; this is only ever used for Trainer cards in the base game.
+; preserves bc
+; input:
+;	[hTempCardIndex_ff9f] = Trainer or Energy card to load
+; output:
+;	[wLoadedCard1] = all of the given card's data (card_data_struct)
+;	[wLoadedAttackEffectCommands] = given card's effect command data (2 bytes)
+LoadNonPokemonCardEffectCommands::
+	ldh a, [hTempCardIndex_ff9f]
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld hl, wLoadedCard1EffectCommands
+	ld de, wLoadedAttackEffectCommands
+	ld a, [hli]
+	ld [de], a
+	inc de
+	ld a, [hl]
+	ld [de], a
+	ret
+
+
+; input:
+;	a = card ID of the Pokémon with the information to copy
+;	e = which attack to copy (0 = first attack, 1 = second attack)
+; output:
+;	[wSelectedAttack] = e
+;	[hTempCardIndex_ff9f] = d
+;	[wLoadedCard1] = all of the given card's data (card_data_struct)
+;	[wLoadedAttack] = given card's attack data (atk_data_struct)
+;	[wDamage] = attack's listed damage
+;	[wNoDamageOrEffect] = 0
+;	[wDealtDamage] = 0
+CopyAttackDataAndDamage_FromCardID::
+	push de
+	push af
+	ld a, e
+	ld [wSelectedAttack], a
+	ld a, d
+	ldh [hTempCardIndex_ff9f], a
+	pop af
+	ld e, a
+	call LoadCardDataToBuffer1_FromCardID
+	pop de
+	jr CopyAttackDataAndDamage
+
+; input:
+;	d = deck index of the Pokémon with the information to copy
+;	e = which attack to copy (0 = first attack, 1 = second attack)
+; output:
+;	[wSelectedAttack] = e
+;	[hTempCardIndex_ff9f] = d
+;	[wLoadedCard1] = all of the given card's data (card_data_struct)
+;	[wLoadedAttack] = given card's attack data (atk_data_struct)
+;	[wDamage] = attack's listed damage
+;	[wNoDamageOrEffect] = 0
+;	[wDealtDamage] = 0
+CopyAttackDataAndDamage_FromDeckIndex::
+	ld a, e
+	ld [wSelectedAttack], a
+	ld a, d
+	ldh [hTempCardIndex_ff9f], a
+	call LoadCardDataToBuffer1_FromDeckIndex
+;	fallthrough
+
+CopyAttackDataAndDamage::
+	ld a, [wLoadedCard1ID]
+	ld [wTempCardID_ccc2], a
+	ld hl, wLoadedCard1Atk1
+	dec e
+	jr nz, .got_atk
+	ld hl, wLoadedCard1Atk2
+.got_atk
+	ld de, wLoadedAttack
+	ld c, CARD_DATA_ATTACK2 - CARD_DATA_ATTACK1
+.copy_loop
+	ld a, [hli]
+	ld [de], a
+	inc de
+	dec c
+	jr nz, .copy_loop
+	ld a, [wLoadedAttackDamage]
+	ld hl, wDamage
+	ld [hli], a
+	xor a
+	ld [hl], a
+	ld [wNoDamageOrEffect], a
+	ld hl, wDealtDamage
+	ld [hli], a
+	ld [hl], a
+	ret
+
+
 ; tries to remove a specific card from wDuelTempList
 ; preserves all registers except af
 ; input:
@@ -1171,6 +1281,30 @@ SwapPlayAreaPokemon::
 	ret
 
 
+; calculates the damage and maximum HP of the Pokémon at location e.
+; preserves all registers except af and c
+; input:
+;	e = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
+; output:
+;	a = damage
+;	c = maximum HP value
+;	[wLoadedCard2] = all of the card data for the Pokémon in the given location (card_data_struct)
+GetCardDamageAndMaxHP::
+	push hl
+	ld a, DUELVARS_ARENA_CARD
+	add e
+	get_turn_duelist_var
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, DUELVARS_ARENA_CARD_HP
+	add e
+	get_turn_duelist_var
+	ld a, [wLoadedCard2HP]
+	ld c, a
+	sub [hl]
+	pop hl
+	ret
+
+
 ; Finds which and how many Energy cards are attached to the turn holder's
 ; Active or Benched Pokemon, depending on the value of register e.
 ; preserves all registers except af
@@ -1236,6 +1370,59 @@ GetPlayAreaCardAttachedEnergies::
 	ret
 
 
+; finds the Retreat Cost of one of the turn holder's in-play Pokémon,
+; adjusting for any Retreat Aid Pokémon Power that is active.
+; preserves de and b
+; input:
+;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
+; output:
+;	a = Retreat Cost of the Pokémon in the given location, after applying any modifiers
+;	[wLoadedCard1] = all of the card data for the Pokémon in the given location (card_data_struct)
+GetPlayAreaCardRetreatCost::
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer1_FromDeckIndex
+;	fallthrough
+
+; finds the Retreat Cost of the card in wLoadedCard1
+; preserves de and b
+; input:
+;	[wLoadedCard1] = all of the card data for the Pokémon being checked (card_data_struct)
+; output:
+;	a = given Pokémon's Retreat Cost, after applying any modifiers
+GetLoadedCard1RetreatCost::
+	ld c, 0 ; Dodrio counter
+	ld a, DUELVARS_BENCH
+	get_turn_duelist_var
+.check_bench_loop
+	ld a, [hli]
+	cp -1
+	jr z, .no_more_bench
+	call _GetCardIDFromDeckIndex
+	cp DODRIO
+	jr nz, .check_bench_loop
+	inc c
+	jr .check_bench_loop
+
+.no_more_bench
+	ld a, c
+	or a
+	jr nz, .dodrio_found
+.use_default_retreat_cost
+	ld a, [wLoadedCard1RetreatCost]
+	ret
+
+.dodrio_found
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	jr c, .use_default_retreat_cost
+	ld a, [wLoadedCard1RetreatCost]
+	sub c ; apply Retreat Aid for each Dodrio on the turn holder's Bench
+	ret nc ; return if the Pokémon's Retreat Cost isn't a negative number
+	xor a ; set the Pokémon's Retreat Cost to 0
+	ret
+
+
 ; preserves bc and de
 ; input:
 ;	e = card ID to search
@@ -1265,94 +1452,6 @@ CountCardIDInLocation::
 	jr c, .loop_all_cards
 	ld a, c
 	pop bc
-	ret
-
-
-; returns [([hWhoseTurn] ^ $1) << 8 + a] in a and in [hl]
-; i.e. duelvar a of the player whose turn it is not
-; preserves bc and de
-; input:
-;	a = wOpponentDuelVariables constant
-GetNonTurnDuelistVariable::
-	ld l, a
-	ldh a, [hWhoseTurn]
-	ld h, OPPONENT_TURN
-	cp PLAYER_TURN
-	jr z, .ok
-	ld h, PLAYER_TURN
-.ok
-	ld a, [hl]
-	ret
-
-
-; input:
-;	a = card ID of the Pokemon with the information to copy
-;	e = which attack to copy (0 = first attack, 1 = second attack)
-; output:
-;	[wSelectedAttack] = e
-;	[hTempCardIndex_ff9f] = d
-;	[wLoadedCard1] = all of the given card's data (card_data_struct)
-;	[wLoadedAttack] = given card's attack data (atk_data_struct)
-;	[wDamage] = attack's listed damage
-;	[wNoDamageOrEffect] = 0
-;	[wDealtDamage] = 0
-CopyAttackDataAndDamage_FromCardID::
-	push de
-	push af
-	ld a, e
-	ld [wSelectedAttack], a
-	ld a, d
-	ldh [hTempCardIndex_ff9f], a
-	pop af
-	ld e, a
-	call LoadCardDataToBuffer1_FromCardID
-	pop de
-	jr CopyAttackDataAndDamage
-
-; input:
-;	d = deck index of the Pokemon with the information to copy
-;	e = which attack to copy (0 = first attack, 1 = second attack)
-; output:
-;	[wSelectedAttack] = e
-;	[hTempCardIndex_ff9f] = d
-;	[wLoadedCard1] = all of the given card's data (card_data_struct)
-;	[wLoadedAttack] = given card's attack data (atk_data_struct)
-;	[wDamage] = attack's listed damage
-;	[wNoDamageOrEffect] = 0
-;	[wDealtDamage] = 0
-CopyAttackDataAndDamage_FromDeckIndex::
-	ld a, e
-	ld [wSelectedAttack], a
-	ld a, d
-	ldh [hTempCardIndex_ff9f], a
-	call LoadCardDataToBuffer1_FromDeckIndex
-;	fallthrough
-
-CopyAttackDataAndDamage::
-	ld a, [wLoadedCard1ID]
-	ld [wTempCardID_ccc2], a
-	ld hl, wLoadedCard1Atk1
-	dec e
-	jr nz, .got_atk
-	ld hl, wLoadedCard1Atk2
-.got_atk
-	ld de, wLoadedAttack
-	ld c, CARD_DATA_ATTACK2 - CARD_DATA_ATTACK1
-.copy_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec c
-	jr nz, .copy_loop
-	ld a, [wLoadedAttackDamage]
-	ld hl, wDamage
-	ld [hli], a
-	xor a
-	ld [hl], a
-	ld [wNoDamageOrEffect], a
-	ld hl, wDealtDamage
-	ld [hli], a
-	ld [hl], a
 	ret
 
 
@@ -1387,19 +1486,6 @@ UpdateArenaCardIDsAndClearTwoTurnDuelVars::
 	ret
 
 
-; if [wLoadedAttackAnimation] != 0, wait until the animation is over
-; preserves all registers except af
-WaitAttackAnimation::
-	ld a, [wLoadedAttackAnimation]
-	or a
-	ret z
-.anim_loop
-	call DoFrame
-	call CheckAnyAnimationPlaying
-	jr c, .anim_loop
-	ret
-
-
 ; called by UseAttackOrPokemonPower (on just an attack) in a link duel.
 ; it's used to send the other game data about the attack being used,
 ; triggering a call to OppAction_BeginUseAttack in the receiver.
@@ -1424,28 +1510,6 @@ SendAttackDataToLinkOpponent::
 	ldh [hTempCardIndex_ff9f], a
 	pop af
 	ldh [hTemp_ffa0], a
-	ret
-
-
-; loads the effect commands of a (Trainer or Energy) card with deck index (0-59)
-; at hTempCardIndex_ff9f into wLoadedAttackEffectCommands.
-; this is only ever used for Trainer cards in the base game.
-; preserves bc
-; input:
-;	[hTempCardIndex_ff9f] = Trainer or Energy card to load
-; output:
-;	[wLoadedCard1] = all of the given card's data (card_data_struct)
-;	[wLoadedAttackEffectCommands] = given card's effect command data (2 bytes)
-LoadNonPokemonCardEffectCommands::
-	ldh a, [hTempCardIndex_ff9f]
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld hl, wLoadedCard1EffectCommands
-	ld de, wLoadedAttackEffectCommands
-	ld a, [hli]
-	ld [de], a
-	inc de
-	ld a, [hl]
-	ld [de], a
 	ret
 
 
@@ -1744,9 +1808,7 @@ DealDamageToPlayAreaPokemon::
 	call HandleDamageReduction
 .in_bench
 	bit 7, d
-	jr z, .no_underflow
-	ld de, 0
-.no_underflow
+	call nz, PreventAllDamage ; set damage in de to 0 if it's a negative number
 	call HandleDamageReductionOrNoDamageFromPkmnPowerEffects
 	ld a, [wTempPlayAreaLocation_cceb]
 	ld b, a
@@ -1780,80 +1842,69 @@ DealDamageToPlayAreaPokemon::
 	ret
 
 
-; finds the Retreat Cost of one of the turn holder's in-play Pokemon,
-; adjusting for any Retreat Aid Pokemon Power that is active.
-; preserves de and b
+; plays an attack animation
+; preserves all registers except af
 ; input:
-;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
-; output:
-;	a = Retreat Cost of the Pokémon in the given location, after applying any modifiers
-;	[wLoadedCard1] = all of the card data for the Pokémon in the given location (card_data_struct)
-GetPlayAreaCardRetreatCost::
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
-;	fallthrough
-
-; finds the Retreat Cost of the card in wLoadedCard1
-; preserves de and b
-; input:
-;	[wLoadedCard1] = all of the card data for the Pokémon being checked (card_data_struct)
-; output:
-;	a = given Pokémon's Retreat Cost, after applying any modifiers
-GetLoadedCard1RetreatCost::
-	ld c, 0 ; Dodrio counter
-	ld a, DUELVARS_BENCH
-	get_turn_duelist_var
-.check_bench_loop
-	ld a, [hli]
-	cp -1
-	jr z, .no_more_bench
-	call _GetCardIDFromDeckIndex
-	cp DODRIO
-	jr nz, .check_bench_loop
-	inc c
-	jr .check_bench_loop
-
-.no_more_bench
-	ld a, c
-	or a
-	jr nz, .dodrio_found
-.use_default_retreat_cost
-	ld a, [wLoadedCard1RetreatCost]
-	ret
-
-.dodrio_found
-	call CheckIfPkmnPowersAreCurrentlyDisabled
-	jr c, .use_default_retreat_cost
-	ld a, [wLoadedCard1RetreatCost]
-	sub c ; apply Retreat Aid for each Dodrio on the turn holder's Bench
-	ret nc ; return if the Pokémon's Retreat Cost isn't a negative number
-	xor a ; set the Pokémon's Retreat Cost to 0
-	ret
-
-
-; calculates the damage and maximum HP of the Pokémon at location e.
-; preserves all registers except af and c
-; input:
-;	e = play area location offset to check (PLAY_AREA_* constant)
-; output:
-;	a = damage
-;	c = maximum HP value
-;	[wLoadedCard2] = all of the card data for the Pokémon in the given location (card_data_struct)
-GetCardDamageAndMaxHP::
+;	b = play area location offset (PLAY_AREA_* constant), if applicable
+;	c = wDamageEffectiveness constant (to print WEAK or RESIST if necessary)
+;	de = damage dealt by the attack (to display the animation with the number)
+;	h = hWhoseTurn constant (for animation screen coordinates)
+;	[wLoadedAttackAnimation] = which animation to play (ATK_ANIM_* constant)
+PlayAttackAnimation::
+	ldh a, [hWhoseTurn]
+	push af
 	push hl
-	ld a, DUELVARS_ARENA_CARD
-	add e
-	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, DUELVARS_ARENA_CARD_HP
-	add e
-	get_turn_duelist_var
-	ld a, [wLoadedCard2HP]
-	ld c, a
-	sub [hl]
+	push de
+	push bc
+	ld a, c
+	ld [wDamageAnimEffectiveness], a
+	ld a, [wWhoseTurn]
+	ldh [hWhoseTurn], a
+	cp h
+	jr z, .got_location
+	set 7, b
+.got_location
+	ld a, b
+	ld [wDamageAnimPlayAreaLocation], a
+	ld a, [wWhoseTurn]
+	ld [wDamageAnimPlayAreaSide], a
+	ld a, [wTempNonTurnDuelistCardID]
+	ld [wDamageAnimCardID], a
+	ld hl, wDamageAnimAmount
+	ld [hl], e
+	inc hl
+	ld [hl], d
+
+; if damage >= 70, ATK_ANIM_HIT becomes ATK_ANIM_BIG_HIT
+	ld a, [wLoadedAttackAnimation]
+	cp ATK_ANIM_HIT
+	jr nz, .got_anim
+	ld a, e
+	cp 70
+	jr c, .got_anim
+	ld a, ATK_ANIM_BIG_HIT
+	ld [wLoadedAttackAnimation], a
+
+.got_anim
+	farcall PlayAttackAnimationCommands
+	pop bc
+	pop de
 	pop hl
+	pop af
+	ldh [hWhoseTurn], a
+	ret
+
+
+; if [wLoadedAttackAnimation] != 0 (ATK_ANIM_NONE), then wait until the animation is over.
+; preserves all registers except af
+WaitAttackAnimation::
+	ld a, [wLoadedAttackAnimation]
+	or a
+	ret z
+.anim_loop
+	call DoFrame
+	call CheckAnyAnimationPlaying
+	jr c, .anim_loop
 	ret
 
 

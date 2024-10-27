@@ -439,7 +439,7 @@ PlayTrainerEffectAnimation:
 	lb bc, PLAY_AREA_ARENA, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	jp WaitAttackAnimation
 
 
@@ -1033,7 +1033,7 @@ PlayAttackAnimationOverAttackingPokemon:
 	ld c, $0 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	jp WaitAttackAnimation
 
 
@@ -1705,7 +1705,7 @@ ApplyAndAnimateHPRecovery:
 	ld a, ATK_ANIM_HEAL
 	ld [wLoadedAttackAnimation], a
 	lb bc, PLAY_AREA_ARENA, $01 ; WEAKNESS
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 
 ; compare HP to be restored with max HP.
 ; if HP to be restored would cause HP to
@@ -3355,7 +3355,7 @@ DevolutionBeam_DevolveEffect:
 	ld c, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	call WaitAttackAnimation
 
 ; load selected card's data
@@ -6263,7 +6263,7 @@ SolarPower_RemoveStatusEffect:
 	ld c, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	call WaitAttackAnimation
 
 	ldh a, [hTemp_ffa0]
@@ -6498,7 +6498,7 @@ Firegiver_AddToHandEffect:
 	lb bc, PLAY_AREA_ARENA, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	call WaitAttackAnimation
 
 ; load correct coordinates to update the number of cards
@@ -6632,7 +6632,7 @@ Quickfreeze_Paralysis50PercentEffect:
 	ld c, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	bank1call PlayStatusConditionQueueAnimations
 	call WaitAttackAnimation
 	bank1call ApplyStatusConditionQueue
@@ -7165,7 +7165,7 @@ HealingWind_PlayAreaHealEffect:
 	ld c, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	call WaitAttackAnimation
 	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
 	ld [wLoadedAttackAnimation], a
@@ -7202,7 +7202,7 @@ HealingWind_PlayAreaHealEffect:
 	ld c, $01 ; WEAKNESS
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	call WaitAttackAnimation
 .next_pkmn
 	pop de
@@ -8813,7 +8813,7 @@ HealPlayAreaCardHP:
 	ld c, $01 ; WEAKNESS
 	ldh a, [hWhoseTurn]
 	ld h, a
-	bank1call PlayAttackAnimation
+	call PlayAttackAnimation
 	call WaitAttackAnimation
 	pop hl
 

@@ -7529,7 +7529,9 @@ ConvertSpecialTrainerCardToPokemon::
 
 
 ; this function applies all Special Conditions in order
-; that have been added to the wStatusConditionQueue
+; that have been added to the wStatusConditionQueue.
+; this and the next function would be ideal candidates for moving to another bank
+; if bank $01 becomes full. (saving over 80 bytes for +2 farcalls).
 ; output:
 ;	carry = set:  if any conditions were applied and the Defending Pokemon
 ;	              didn't have a "No Damage or Effect" status
@@ -8199,7 +8201,9 @@ UpdateArenaCardLastTurnDamage::
 	ret
 
 
-; plays all animations that are queued in wStatusConditionQueue
+; plays all animations that are queued in wStatusConditionQueue.
+; this function could be moved to another bank if bank $01 becomes full.
+; (saving nearly 80 bytes for +2 farcalls, and 1 is already a bank1call)
 PlayStatusConditionQueueAnimations::
 	ld hl, wStatusConditionQueueIndex
 	ld a, [hl]
@@ -8531,59 +8535,6 @@ PlayAttackAnimation_DealAttackDamageSimple::
 	ret
 
 
-; plays an attack animation
-; preserves all registers except af
-; input:
-;	b = play area location offset (PLAY_AREA_* constant), if applicable
-;	c = wDamageEffectiveness constant (to print WEAK or RESIST if necessary)
-;	de = damage dealt by the attack (to display the animation with the number)
-;	h = hWhoseTurn constant (for animation screen coordinates)
-;	[wLoadedAttackAnimation] = which animation to play (ATK_ANIM_* constant)
-PlayAttackAnimation::
-	ldh a, [hWhoseTurn]
-	push af
-	push hl
-	push de
-	push bc
-	ld a, c
-	ld [wDamageAnimEffectiveness], a
-	ld a, [wWhoseTurn]
-	ldh [hWhoseTurn], a
-	cp h
-	jr z, .got_location
-	set 7, b
-.got_location
-	ld a, b
-	ld [wDamageAnimPlayAreaLocation], a
-	ld a, [wWhoseTurn]
-	ld [wDamageAnimPlayAreaSide], a
-	ld a, [wTempNonTurnDuelistCardID]
-	ld [wDamageAnimCardID], a
-	ld hl, wDamageAnimAmount
-	ld [hl], e
-	inc hl
-	ld [hl], d
-
-; if damage >= 70, ATK_ANIM_HIT becomes ATK_ANIM_BIG_HIT
-	ld a, [wLoadedAttackAnimation]
-	cp ATK_ANIM_HIT
-	jr nz, .got_anim
-	ld a, e
-	cp 70
-	jr c, .got_anim
-	ld a, ATK_ANIM_BIG_HIT
-	ld [wLoadedAttackAnimation], a
-
-.got_anim
-	farcall PlayAttackAnimationCommands
-	pop bc
-	pop de
-	pop hl
-	pop af
-	ldh [hWhoseTurn], a
-	ret
-
-
 ; preserves bc
 ; output:
 ;	de = ID for TossCoin notification text
@@ -8680,6 +8631,8 @@ Func_1bb4:
 
 ; prints one of the ThereWasNoEffectFrom*Text if wEffectFailed contains EFFECT_FAILED_NO_EFFECT,
 ; and prints WasUnsuccessfulText if wEffectFailed contains EFFECT_FAILED_UNSUCCESSFUL.
+; this and the next function would be ideal candidates for moving to another bank
+; if bank $01 becomes full. (saving over 100 bytes for +3 farcalls, and 2 are already bank1calls)
 ; input:
 ;	[hTempPlayAreaLocation_ff9d] = Attacking Pokémon's play area location offset (PLAY_AREA_* constant)
 ;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
@@ -8775,10 +8728,7 @@ ApplyDamageModifiers_DamageToTarget::
 	ld hl, wDamage
 	ld a, [hli]
 	or [hl]
-	jr nz, .non_zero_damage
-	ld de, 0
-	ret
-.non_zero_damage
+	jp z, PreventAllDamage ; set de to 0 if wDamage = 0
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld d, [hl]
@@ -8829,7 +8779,7 @@ ApplyDamageModifiers_DamageToTarget::
 	call ApplyAttachedDefender
 	call HandleDamageReduction
 	bit 7, d
-	call nz, PreventAllDamage; sets damage to 0 if negative
+	call nz, PreventAllDamage; set damage in de to 0 if it's a negative number
 	jp SwapTurn
 
 

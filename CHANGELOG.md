@@ -105,7 +105,14 @@
 
 
 ## Code Optimization
-- **October 27, 2024:** 3 Files Changed
+- **October 27, 2024:** 4 Files Changed
+    - Replace 10 bank1calls by moving `PlayAttackAnimation` from engine/duel/core.asm (bank $01) to home/duel.asm (bank $00)
+    - Reorder several functions in home/duel.asm for better organization
+    - Use a conditional call/jp to the `PreventAllDamage` function to remove a few bytes from `ApplyDamageModifiers_DamageToTarget` and `DealDamageToPlayAreaPokemon`
+
+<br/>
+
+- **[October 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/90e932be77bc0df9fc8ee9fd7f83e48db3f45514):** 3 Files Changed
     - Move `GetCardInDuelTempList_OnlyDeckIndex`, `GetCardInDuelTempList`, `ApplyDamageModifiers_DamageToTarget`, and `PrintFailedEffectText` from home/duel.asm (bank $00) to engine/duel/core.asm (bank $01)
     - Make a couple of minor changes to `ApplyDamageModifiers_DamageToTarget`
 

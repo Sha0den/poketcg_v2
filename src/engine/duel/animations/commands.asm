@@ -2,7 +2,7 @@
 ; of attack in wLoadedAttackAnimation and plays them
 ; input:
 ;	[wLoadedAttackAnimation] = which attack animation to play (ATK_ANIM_* constant)
-PlayAttackAnimationCommands:
+PlayAttackAnimationCommands::
 	ld a, [wLoadedAttackAnimation]
 	or a
 	ret z
