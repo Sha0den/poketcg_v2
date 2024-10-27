@@ -2948,7 +2948,8 @@ DuelistSelectForcedSwitch:
 	ld d, a
 	ld a, [wPlayerAttackingCardID]
 	call CopyAttackDataAndDamage_FromCardID
-	jp UpdateArenaCardIDsAndClearTwoTurnDuelVars
+	bank1call UpdateArenaCardIDsAndClearTwoTurnDuelVars
+	ret
 
 .player
 	ldtx hl, SelectNewActivePokemonText
@@ -5816,7 +5817,7 @@ HandlePlayerMetronomeEffect:
 	; successful
 
 ; send data to link opponent
-	call SendAttackDataToLinkOpponent
+	bank1call SendAttackDataToLinkOpponent
 	ld a, OPPACTION_USE_METRONOME_ATTACK
 	call SetOppAction_SerialSendDuelData
 	ld hl, wMetronomeSelectedAttack

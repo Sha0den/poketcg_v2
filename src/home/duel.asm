@@ -1455,64 +1455,6 @@ CountCardIDInLocation::
 	ret
 
 
-; initializes hTempCardIndex_ff9f and wTempTurnDuelistCardID to the turn holder's
-; Active Pokemon, wTempNonTurnDuelistCardID to the non-turn holder's Active Pokemon,
-; and zeroes other temporary variables that only last between each two-player turn.
-; this is called when a Pokemon card is played or when an attack is used.
-; preserves bc and de
-UpdateArenaCardIDsAndClearTwoTurnDuelVars::
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	ldh [hTempCardIndex_ff9f], a
-	call _GetCardIDFromDeckIndex
-	ld [wTempTurnDuelistCardID], a
-	rst SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
-	ld [wTempNonTurnDuelistCardID], a
-	rst SwapTurn
-	xor a
-	ld [wStatusConditionQueueIndex], a
-	ld [wIsDamageToSelf], a
-	ld hl, wccec
-	ld [hli], a ; wccec = $00
-	ld [hli], a ; wEffectFailed = $00
-	inc hl      ; skip wPreEvolutionPokemonCard
-	ld [hli], a ; wDefendingWasForcedToSwitch = $00
-	ld [hli], a ; wMetronomeEnergyCost = $00
-	ld [hl], a  ; wNoEffectFromWhichStatus = $00
-	bank1call ClearNonTurnTemporaryDuelvars_CopyStatus
-	ret
-
-
-; called by UseAttackOrPokemonPower (on just an attack) in a link duel.
-; it's used to send the other game data about the attack being used,
-; triggering a call to OppAction_BeginUseAttack in the receiver.
-SendAttackDataToLinkOpponent::
-	ld a, [wccec]
-	or a
-	ret nz
-	ldh a, [hTemp_ffa0]
-	push af
-	ldh a, [hTempCardIndex_ff9f]
-	push af
-	ld a, $1
-	ld [wccec], a
-	ld a, [wPlayerAttackingCardIndex]
-	ldh [hTempCardIndex_ff9f], a
-	ld a, [wPlayerAttackingAttackIndex]
-	ldh [hTemp_ffa0], a
-	ld a, OPPACTION_BEGIN_ATTACK
-	call SetOppAction_SerialSendDuelData
-	call ExchangeRNG
-	pop af
-	ldh [hTempCardIndex_ff9f], a
-	pop af
-	ldh [hTemp_ffa0], a
-	ret
-
-
 ; the turn holder's Active Pokemon does a given amount of damage to itself
 ; because of an attack effect (e.g. Thrash, Selfdestruct).
 ; also displays the recoil attack animation.

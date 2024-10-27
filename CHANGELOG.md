@@ -105,7 +105,12 @@
 
 
 ## Code Optimization
-- **October 27, 2024:** 4 Files Changed
+- **October 27, 2024:** 3 Files Changed
+    - Move `UpdateArenaCardIDsAndClearTwoTurnDuelVars` and `SendAttackDataToLinkOpponent` from home/duel.asm (bank $00) to engine/duel/core.asm (bank $01)
+
+<br/>
+
+- **[October 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/1453ffe28e9d9eb3b32068fd2c1bfeab1b0b20c7):** 4 Files Changed
     - Replace 10 bank1calls by moving `PlayAttackAnimation` from engine/duel/core.asm (bank $01) to home/duel.asm (bank $00)
     - Reorder several functions in home/duel.asm for better organization
     - Use a conditional call/jp to the `PreventAllDamage` function to remove a few bytes from `ApplyDamageModifiers_DamageToTarget` and `DealDamageToPlayAreaPokemon`
