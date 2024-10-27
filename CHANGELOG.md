@@ -105,7 +105,13 @@
 
 
 ## Code Optimization
-- **October 26, 2024:** 5 Files Changed (although 1 is no longer in the build)
+- **October 27, 2024:** 3 Files Changed
+    - Move `GetCardInDuelTempList_OnlyDeckIndex`, `GetCardInDuelTempList`, `ApplyDamageModifiers_DamageToTarget`, and `PrintFailedEffectText` from home/duel.asm (bank $00) to engine/duel/core.asm (bank $01)
+    - Make a couple of minor changes to `ApplyDamageModifiers_DamageToTarget`
+
+<br/>
+
+- **[October 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/22a5ebe2132879c50ea85a37e551a8538392475c):** 5 Files Changed (although 1 is no longer in the build)
     - Replace 6 bank1calls by moving `DrawWholeScreenTextBox` from engine/duel/core.asm (bank $01) to home/menus.asm (bank $00)
 
 <br/>

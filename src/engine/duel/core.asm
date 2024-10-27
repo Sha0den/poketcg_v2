@@ -3730,6 +3730,47 @@ LoadSelectedCardGfx:
 	jp FlushAllPalettesOrSendPal23Packet
 
 
+; uses a list index to retrieve the deck index and card ID of a card in wDuelTempList.
+; preserves bc and hl
+; input:
+;	a = index for wDuelTempList
+; output:
+;	a & [hTempCardIndex_ff98] = deck index of the correct card from wDuelTempList ([wDuelTempList + a])
+;	de = card ID of the correct card from wDuelTempList
+GetCardInDuelTempList::
+	push hl
+	ld e, a
+	ld d, $0
+	ld hl, wDuelTempList
+	add hl, de
+	ld a, [hl]
+	ldh [hTempCardIndex_ff98], a
+	call GetCardIDFromDeckIndex
+	pop hl
+	ldh a, [hTempCardIndex_ff98]
+	ret
+
+
+; uses a list index to retrieve a deck index from wDuelTempList.
+; preserves all registers except af
+; input:
+;	a = index for wDuelTempList
+; output:
+;	a & [hTempCardIndex_ff98] = deck index of the correct card from wDuelTempList ([wDuelTempList + a])
+GetCardInDuelTempList_OnlyDeckIndex::
+	push hl
+	push de
+	ld e, a
+	ld d, $0
+	ld hl, wDuelTempList
+	add hl, de
+	ld a, [hl]
+	ldh [hTempCardIndex_ff98], a
+	pop de
+	pop hl
+	ret
+
+
 ; draws the card page of the card at wLoadedCard1 and listens for input
 ; in order to switch the page or to exit.
 ; triggered by checking a hand or a discard pile card in the Check menu.
@@ -7945,43 +7986,6 @@ CheckIfTurnDuelistPlayAreaPokemonAreAllKnockedOut:
 	ret
 
 
-; loads one of the "There was no effect from" texts depending on the value
-; at wNoEffectFromWhichStatus (NO_STATUS or a status condition constant)
-; preserves de
-; output:
-;	hl = ID for notification text
-;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
-PrintThereWasNoEffectFromStatusText::
-	ld a, [wNoEffectFromWhichStatus]
-	or a
-	jr nz, .status
-	ld hl, wLoadedAttackName
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	call LoadTxRam2
-	ldtx hl, ThereWasNoEffectFromTxRam2Text
-	ret
-.status
-	ld c, a
-	ldtx hl, ThereWasNoEffectFromPoisonConfusionText
-	cp POISONED | CONFUSED
-	ret z
-	ldtx hl, ThereWasNoEffectFromPoisonText
-	and PSN_DBLPSN
-	ret nz
-	ld a, c
-	and CNF_SLP_PRZ
-	ldtx hl, ThereWasNoEffectFromParalysisText
-	cp PARALYZED
-	ret z
-	ldtx hl, ThereWasNoEffectFromSleepText
-	cp ASLEEP
-	ret z
-	ldtx hl, ThereWasNoEffectFromConfusionText
-	ret
-
-
 ; initializes variables when a duel begins, such as zeroing wDuelFinished or wDuelTurns,
 ; and setting wDuelType based on wPlayerDuelistType and wOpponentDuelistType
 ; preserves all registers except af
@@ -8672,6 +8676,161 @@ Func_1bb4:
 	call PrintFailedEffectText
 	call WaitForWideTextBoxInput
 	jp ExchangeRNG
+
+
+; prints one of the ThereWasNoEffectFrom*Text if wEffectFailed contains EFFECT_FAILED_NO_EFFECT,
+; and prints WasUnsuccessfulText if wEffectFailed contains EFFECT_FAILED_UNSUCCESSFUL.
+; input:
+;	[hTempPlayAreaLocation_ff9d] = Attacking Pokémon's play area location offset (PLAY_AREA_* constant)
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
+; output:
+;	carry = set:  if a text was printed
+PrintFailedEffectText::
+	ld a, [wEffectFailed]
+	or a
+	ret z
+	cp EFFECT_FAILED_NO_EFFECT
+	jr z, .no_effect_from_status
+	; a = EFFECT_FAILED_UNSUCCESSFUL
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld a, 18
+	call CopyCardNameAndLevel
+	xor a ; TX_END
+	ld [hl], a ; terminate the text string at wDefaultText
+	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
+	ld hl, wTxRam2
+	ld [hli], a
+	ld [hl], a
+	ld hl, wLoadedAttackName
+	ld de, wTxRam2_b
+	ld a, [hli]
+	ld [de], a
+	inc de
+	ld a, [hli]
+	ld [de], a
+	ldtx hl, WasUnsuccessfulText
+	call DrawWideTextBox_PrintText
+	scf
+	ret
+.no_effect_from_status
+	call PrintThereWasNoEffectFromStatusText
+	call DrawWideTextBox_PrintText
+	scf
+	ret
+
+
+; loads one of the "There was no effect from" texts depending on the value
+; at wNoEffectFromWhichStatus (NO_STATUS or a status condition constant).
+; preserves de
+; output:
+;	hl = ID for notification text
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
+PrintThereWasNoEffectFromStatusText::
+	ld a, [wNoEffectFromWhichStatus]
+	or a
+	jr nz, .status
+	ld hl, wLoadedAttackName
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ldtx hl, ThereWasNoEffectFromTxRam2Text
+	ret
+.status
+	ld c, a
+	ldtx hl, ThereWasNoEffectFromPoisonConfusionText
+	cp POISONED | CONFUSED
+	ret z
+	ldtx hl, ThereWasNoEffectFromPoisonText
+	and PSN_DBLPSN
+	ret nz
+	ld a, c
+	and CNF_SLP_PRZ
+	ldtx hl, ThereWasNoEffectFromParalysisText
+	cp PARALYZED
+	ret z
+	ldtx hl, ThereWasNoEffectFromSleepText
+	cp ASLEEP
+	ret z
+	ldtx hl, ThereWasNoEffectFromConfusionText
+	ret
+
+
+; doubles wDamage if the non-turn holder's Active Pokemon
+; has Weakness to the type/color of the turn holder's Active Pokemon,
+; reduces wDamage by 30 if the non-turn holder's Active Pokemon
+; has Resistance to the type/color of the turn holder's Active Pokemon,
+; and applies Pluspower, Defender, or any other kinds of damage modifications.
+; sets the damage to 0 if reduction would result in a negative value.
+; input:
+;	[wDamage] = damage value to modify
+; output:
+;	de = updated damage value
+ApplyDamageModifiers_DamageToTarget::
+	xor a
+	ld [wDamageEffectiveness], a
+	ld hl, wDamage
+	ld a, [hli]
+	or [hl]
+	jr nz, .non_zero_damage
+	ld de, 0
+	ret
+.non_zero_damage
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ld d, [hl]
+	dec hl
+	ld e, [hl]
+	bit UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
+	jr z, .safe
+	res UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
+	xor a
+	ld [wDamageEffectiveness], a
+	call HandleDoubleDamageSubstatus
+	jr .check_pluspower_and_defender
+.safe
+	call HandleDoubleDamageSubstatus
+	ld a, e
+	or d
+	ret z
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	call GetPlayAreaCardColor
+	call TranslateColorToWR
+	ld b, a
+	rst SwapTurn
+	call GetArenaCardWeakness
+	rst SwapTurn
+	and b
+	jr z, .not_weak
+	sla e
+	rl d
+	ld hl, wDamageEffectiveness
+	set WEAKNESS, [hl]
+.not_weak
+	rst SwapTurn
+	call GetArenaCardResistance
+	rst SwapTurn
+	and b
+	jr z, .check_pluspower_and_defender ; jump if Pokemon has no Resistance
+	ld hl, -30 ; Resistance is always -30 in this game
+	add hl, de
+	ld e, l
+	ld d, h
+	ld hl, wDamageEffectiveness
+	set RESISTANCE, [hl]
+.check_pluspower_and_defender
+	ld b, CARD_LOCATION_ARENA
+	call ApplyAttachedPluspower
+	rst SwapTurn
+	ld b, CARD_LOCATION_ARENA
+	call ApplyAttachedDefender
+	call HandleDamageReduction
+	bit 7, d
+	call nz, PreventAllDamage; sets damage to 0 if negative
+	jp SwapTurn
 
 
 ; checks for anything else that might prevent the attack's damage.

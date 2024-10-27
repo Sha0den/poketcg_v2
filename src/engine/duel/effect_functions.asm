@@ -5335,7 +5335,7 @@ RandomEnemy30DamageEffect:
 
 
 ; ZeroDamage was used with EFFECTCMDTYPE_BEFORE_DAMAGE
-; in the ArticunoQuickfreezeEffectCommands.
+; in the RandomEnemy40DamageEffectCommands.
 ; The developers most likely intended to put 40 damage for
 ; the Ice Breath attack in cards.asm so that the number
 ; would be displayed when looking at the card.
@@ -6622,7 +6622,7 @@ Quickfreeze_Paralysis50PercentEffect:
 ; tails
 	call SetWasUnsuccessful
 	bank1call DrawDuelMainScene
-	call PrintFailedEffectText
+	bank1call PrintFailedEffectText
 	jp WaitForWideTextBoxInput
 
 .heads
@@ -6637,7 +6637,7 @@ Quickfreeze_Paralysis50PercentEffect:
 	call WaitAttackAnimation
 	bank1call ApplyStatusConditionQueue
 	bank1call DrawDuelHUDs
-	call PrintFailedEffectText
+	bank1call PrintFailedEffectText
 	jp c, WaitForWideTextBoxInput
 	ret
 
