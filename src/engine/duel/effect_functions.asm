@@ -1558,7 +1558,10 @@ RandomlySwitchBothActivePokemon:
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	or a
-	call z, HandleDestinyBondSubstatus ; process Destiny Bond if Defending Pokémon was KO'd
+	jr nz, .skip_destiny_bond
+	; Defending Pokémon is Knocked Out
+	bank1call HandleDestinyBondSubstatus
+.skip_destiny_bond
 	rst SwapTurn
 	call .SwitchWithRandomBenchPokemon
 	rst SwapTurn
@@ -3034,7 +3037,10 @@ OpponentSwitchesActive_SwitchEffect:
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	or a
-	call z, HandleDestinyBondSubstatus ; process Destiny Bond if Defending Pokémon was KO'd
+	jr nz, .switch
+	; Defending Pokémon is Knocked Out
+	bank1call HandleDestinyBondSubstatus
+.switch
 	call HandleNoDamageOrEffect
 	ret c ; return if the attack had no effect
 
@@ -3199,7 +3205,7 @@ GustOfWind_SwitchEffect:
 	ld e, a
 	call SwapArenaWithBenchPokemon
 	rst SwapTurn
-	call ClearDamageReductionSubstatus2
+	bank1call ClearDamageReductionSubstatus2
 	xor a
 	ld [wDuelDisplayedScreen], a
 	ret

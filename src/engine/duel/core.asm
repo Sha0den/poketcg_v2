@@ -7082,6 +7082,73 @@ PrintPokemonsAttackText:
 	jp DrawWideTextBox_PrintText
 
 
+; clears the SUBSTATUS1 and updates the double damage condition
+; of the player whose turn is about to start.
+; preserves bc and de
+UpdateSubstatusConditions_StartOfTurn::
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+	get_turn_duelist_var
+	ld [hl], $0
+	or a
+	ret z ; return if the Active Pokémon isn't affected by any SUBSTATUS1 effects
+	cp SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
+	ret nz
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
+	get_turn_duelist_var
+	set SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
+	ret
+
+
+; makes all Pokemon in the turn holder's play area able to evolve. called from the
+; player's second turn on, in order to allow evolution of all Pokemon already played.
+; preserves de and b
+SetAllPlayAreaPokemonCanEvolve:
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	ld c, a
+	ld l, DUELVARS_ARENA_CARD_FLAGS
+.next_pkmn_loop
+	res USED_PKMN_POWER_THIS_TURN_F, [hl]
+	set CAN_EVOLVE_THIS_TURN_F, [hl]
+	inc l
+	dec c
+	jr nz, .next_pkmn_loop
+	ret
+
+
+; initializes variables that last for a single player's turn
+; preserves all registers except af
+InitVariablesToBeginTurn:
+	xor a
+	ld [wAlreadyPlayedEnergy], a
+	ld [wGotHeadsFromConfusionCheckDuringRetreat], a
+	ld [wGotHeadsFromSmokescreenCheck], a
+	ldh a, [hWhoseTurn]
+	ld [wWhoseTurn], a
+	ret
+
+
+; clears the SUBSTATUS2/Headache, and updates the double damage condition
+; of the player whose turn has ended.
+; preserves bc and de
+UpdateSubstatusConditions_EndOfTurn::
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
+	get_turn_duelist_var
+	res SUBSTATUS3_HEADACHE_F, [hl]
+	push hl
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
+	get_turn_duelist_var
+	xor a
+	ld [hl], a
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+	get_turn_duelist_var
+	pop hl
+	cp SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
+	ret z
+	res SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
+	ret
+
+
 ; applies and/or refreshes status conditions and other events that trigger between turns
 HandleBetweenTurnsEvents:
 	call IsArenaPokemonAsleepOrPoisoned
@@ -7561,6 +7628,41 @@ ApplyStatusConditionToArenaPokemon:
 	ret
 
 
+; if the HP of Defending Pokemon (non-turn holder's Active Pokémon) is 0 and
+; if the HP of the Attacking Pokemon (turn holder's Active Pokémon) HP is not,
+; then the Attacking Pokemon is Knocked Out if it was affected by Destiny Bond.
+HandleDestinyBondSubstatus::
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+	call GetNonTurnDuelistVariable
+	cp SUBSTATUS1_DESTINY_BOND
+	ret nz ; return if Destiny Bond isn't active
+	ld l, DUELVARS_ARENA_CARD
+	ld a, [hl]
+	cp -1
+	ret z ; return if there's no Defending Pokémon
+	ld l, DUELVARS_ARENA_CARD_HP
+	ld a, [hl]
+	or a
+	ret nz ; return if Defending Pokémon's HP > 0
+	ld a, DUELVARS_ARENA_CARD_HP
+	get_turn_duelist_var
+	or a
+	ret z ; return if the Attacking Pokémon is already Knocked Out
+	ld [hl], 0
+	call DrawDuelMainScene
+	call DrawDuelHUDs
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld hl, wLoadedCard2Name
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ldtx hl, KnockedOutDueToDestinyBondText
+	jp DrawWideTextBox_WaitForInput
+
+
 ; output:
 ;	carry = set:  if the duel has ended
 HandleDestinyBondAndBetweenTurnKnockOuts::
@@ -7570,7 +7672,7 @@ HandleDestinyBondAndBetweenTurnKnockOuts::
 ; output:
 ;	carry = set:  if the duel has ended
 HandleBetweenTurnKnockOuts:
-	call .ClearDamageReductionSubstatus2OfKnockedOutPokemon
+	call .ClearDamageReductionSubstatus2_AllKnockedOutPokemon
 	xor a
 	ld [wDuelFinishParam], a
 	rst SwapTurn
@@ -7649,19 +7751,6 @@ HandleBetweenTurnKnockOuts:
 	db TURN_PLAYER_WON,   TURN_PLAYER_TIED, TURN_PLAYER_WON,  TURN_PLAYER_WON
 	db TURN_PLAYER_TIED,  TURN_PLAYER_LOST, TURN_PLAYER_WON,  TURN_PLAYER_TIED
 
-; clears SUBSTATUS2_CANNOT_ATTACK_THIS, SUBSTATUS2_REDUCE_BY_10,
-; and SUBSTATUS2_REDUCE_BY_20 for each Active Pokemon with 0 HP
-.ClearDamageReductionSubstatus2OfKnockedOutPokemon:
-	rst SwapTurn
-	call .clear
-	rst SwapTurn
-.clear
-	ld a, DUELVARS_ARENA_CARD_HP
-	get_turn_duelist_var
-	or a
-	ret nz
-	jp ClearDamageReductionSubstatus2
-
 ; handles the non-turn holder drawing Prizes for each of the turn holder's KO'd Pokémon.
 ; wDuelFinishParam is updated if the non-turn holder drew all of their Prize cards.
 .Func_6ef6:
@@ -7676,6 +7765,40 @@ HandleBetweenTurnKnockOuts:
 	call ReplaceKnockedOutPokemon
 	ld hl, wDuelFinishParam
 	rl [hl]
+	ret
+
+; clears SUBSTATUS2_CANNOT_ATTACK_THIS, SUBSTATUS2_REDUCE_BY_10,
+; and SUBSTATUS2_REDUCE_BY_20 for each Active Pokemon with 0 HP
+.ClearDamageReductionSubstatus2_AllKnockedOutPokemon:
+	rst SwapTurn
+	call .ClearDamageReductionSubstatus2_TurnHolderKnockedOutPokemon
+	rst SwapTurn
+;	fallthrough
+
+.ClearDamageReductionSubstatus2_TurnHolderKnockedOutPokemon
+	ld a, DUELVARS_ARENA_CARD_HP
+	get_turn_duelist_var
+	or a
+	ret nz
+;	fallthrough
+
+; clears some SUBSTATUS2 conditions from the turn holder's Active Pokemon.
+; more specifically, those conditions that reduce the damage from an attack
+; or prevent the opposing Pokemon from attacking the substatus condition inducer.
+; preserves bc and de
+ClearDamageReductionSubstatus2::
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
+	get_turn_duelist_var
+	or a
+	ret z ; return if the Active Pokémon isn't affected by any SUBSTATUS2 effects
+	cp SUBSTATUS2_REDUCE_BY_20
+	jr z, .zero
+	cp SUBSTATUS2_REDUCE_BY_10
+	jr z, .zero
+	cp SUBSTATUS2_CANNOT_ATTACK_THIS
+	ret nz
+.zero
+	ld [hl], 0
 	ret
 
 
@@ -7997,35 +8120,6 @@ InitVariablesToBeginDuel:
 	xor a
 .set_duel_type
 	ld [wDuelType], a
-	ret
-
-
-; initializes variables that last for a single player's turn
-; preserves all registers except af
-InitVariablesToBeginTurn:
-	xor a
-	ld [wAlreadyPlayedEnergy], a
-	ld [wGotHeadsFromConfusionCheckDuringRetreat], a
-	ld [wGotHeadsFromSmokescreenCheck], a
-	ldh a, [hWhoseTurn]
-	ld [wWhoseTurn], a
-	ret
-
-
-; makes all Pokemon in the turn holder's play area able to evolve. called from the
-; player's second turn on, in order to allow evolution of all Pokemon already played.
-; preserves de and b
-SetAllPlayAreaPokemonCanEvolve:
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	ld c, a
-	ld l, DUELVARS_ARENA_CARD_FLAGS
-.next_pkmn_loop
-	res USED_PKMN_POWER_THIS_TURN_F, [hl]
-	set CAN_EVOLVE_THIS_TURN_F, [hl]
-	inc l
-	dec c
-	jr nz, .next_pkmn_loop
 	ret
 
 

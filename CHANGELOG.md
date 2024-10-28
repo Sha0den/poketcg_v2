@@ -16,7 +16,7 @@
     - Update engine/duel/ai/special_attacks.asm and add entries for MarowakLv32's Wail, GastlyLv8's Destiny Bond, and GastlyLv17's Energy Conversion (all 3 are now usable by AI)
     - Add AI logic for using Moltres's Wildfire attack and replace IGNORE_THIS_ATTACK flag with SPECIAL_AI_HANDLING. (Courtney can now use Wildfire to deck out the Player)
     - Add AI logic for using VenusaurLv64's Solar Power Pokémon Power. (although no AI opponents have VenusaurLv64 in their deck)
-    - Also update a few effect functions and reformat the ConvertHPToDamageCounters functions in the AI Logic banks (unrelated to the bug fixing)
+    - Also update a few effect functions and refactor the ConvertHPToDamageCounters functions in the AI Logic banks (unrelated to the bug fixing)
 
 <br/>
 
@@ -105,7 +105,13 @@
 
 
 ## Code Optimization
-- **October 28, 2024:** 5 Files Changed
+- **October 28, 2024:** 3 Files Changed
+    - Move `ClearDamageReductionSubstatus2`, `UpdateSubstatusConditions_StartOfTurn`, `UpdateSubstatusConditions_EndOfTurn`, and `HandleDestinyBondSubstatus` from home/substatus.asm (bank $00) to engine/duel/core.asm (bank $01)
+    - Refactor `HandleDestinyBondSubstatus`
+
+<br/>
+
+- **[October 28, 2024](https://github.com/Sha0den/poketcg_v2/commit/905ad0b3792aaf3025bfff64f34f303592166b25):** 5 Files Changed
     - Add constants for both of the wPlayAreaSelectAction variables
     - Replace the HasAlivePokemonIn* functions in engine/duel/core.asm and with `InitPlayAreaScreenVars` and `InitPlayAreaScreenVars_OnlyBench` (placed in home/duel.asm to reduce bank1calls)
     - The `call HasAlivePokemonInBench` in `CheckAbleToRetreat` was replaced with an inline check that uses DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -183,7 +189,7 @@
 <br/>
 
 - **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/ad68f274e15acb7fff1fd8243e229afbf5621a7a):** 7 Files Changed
-    - Reformat a lot of functions that loop through DUELVARS_CARD_LOCATIONS
+    - Refactor a lot of functions that loop through DUELVARS_CARD_LOCATIONS
 
 <br/>
 
