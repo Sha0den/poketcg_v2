@@ -105,7 +105,16 @@
 
 
 ## Code Optimization
-- **October 27, 2024:** 3 Files Changed
+- **October 28, 2024:** 5 Files Changed
+    - Add constants for both of the wPlayAreaSelectAction variables
+    - Replace the HasAlivePokemonIn* functions in engine/duel/core.asm and with `InitPlayAreaScreenVars` and `InitPlayAreaScreenVars_OnlyBench` (placed in home/duel.asm to reduce bank1calls)
+    - The `call HasAlivePokemonInBench` in `CheckAbleToRetreat` was replaced with an inline check that uses DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+    - The `call HasAlivePokemonInBench` in `ReplaceKnockedOutPokemon`, which was the only call that actually made use of the alive Pokémon check, was replaced by a call to another new function: `CheckForAlivePokemonInBench`
+    - Also remove some redundant code in a few of the play area screen functions
+
+<br/>
+
+- **[October 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/3e3113395e32d8cc13e0657b6d59355987a8e4b5):** 3 Files Changed
     - Move `UpdateArenaCardIDsAndClearTwoTurnDuelVars` and `SendAttackDataToLinkOpponent` from home/duel.asm (bank $00) to engine/duel/core.asm (bank $01)
 
 <br/>
@@ -928,6 +937,7 @@
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49):** 1 File Changed
     - Replace damage counter display with "current HP/max HP"
     - The maximum HP value of a Pokémon is now 250 (was 120)
+    - Reference the engine/duel/core.asm from the current version of poketcg_v2 if attempting to copy this change to another repository (some optimizations were made)
 
 <br/>
 

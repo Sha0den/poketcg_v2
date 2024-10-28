@@ -50,6 +50,10 @@ DEF CHECK_PLAY_AREA     EQU $0a
 DEF PLAY_CHECK   EQU $01
 DEF SELECT_CHECK EQU $02
 
+; wPlayAreaSelectAction constants
+DEF FORCED_SWITCH_CHECK_MENU EQU $01
+DEF CYCLE_PLAY_AREA_SCREENS  EQU $02
+
 ; wInPlayAreaCurPosition constants
 	const_def
 	const INPLAYAREA_PLAYER_BENCH_1      ; $00

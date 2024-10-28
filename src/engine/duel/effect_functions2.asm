@@ -293,7 +293,7 @@ FindBasicEnergyToAttach:
 	call EmptyScreen
 	ldtx hl, ChoosePokemonToAttachEnergyCardText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
 	jr c, .loop_input ; must choose, B button can't be used to exit

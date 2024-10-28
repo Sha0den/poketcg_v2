@@ -534,7 +534,7 @@ DuelMenu_Retreat:
 	jr c, .exit
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	call OpenPlayAreaScreenForSelection
+	call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
 	jr c, .exit ; exit if the B button was pressed
 	ld [wBenchSelectedPokemon], a
 	ldh [hTempPlayAreaLocation_ffa1], a
@@ -562,7 +562,7 @@ DuelMenu_Retreat:
 	call DiscardRetreatCostCards
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	call OpenPlayAreaScreenForSelection
+	call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
 	ld [wBenchSelectedPokemon], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 	push af
@@ -631,9 +631,9 @@ OpenVariousPlayAreaScreens_FromSelectPresses:
 ; output:
 ;	carry = set:  if the Player pressed the B button
 .Func_45a9
-	call HasAlivePokemonInPlayArea
-	ld a, $02
-	ld [wPlayAreaSelectAction], a
+	call InitPlayAreaScreenVars
+	ld a, CYCLE_PLAY_AREA_SCREENS
+	ld [hl], a ; wPlayAreaSelectAction = CYCLE_PLAY_AREA_SCREENS
 	call OpenPlayAreaScreenForViewing
 	ldh a, [hKeysPressed]
 	and B_BUTTON
@@ -651,7 +651,7 @@ OpenNonTurnHolderPlayAreaScreen:
 
 ; draws the screen that lists the turn holder's play area Pokemon
 OpenTurnHolderPlayAreaScreen:
-	call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 	jp OpenPlayAreaScreenForViewing
 
 
@@ -758,8 +758,7 @@ PlayEnergyCard:
 	ld a, [wAlreadyPlayedEnergy]
 	or a
 	jr nz, .already_played_energy
-	call HasAlivePokemonInPlayArea
-	call OpenPlayAreaScreenForSelection ; choose Pokemon to attach Energy card to
+	call InitVarsAndOpenPlayAreaScreenForSelection ; choose Pokemon to attach Energy card to
 	jr c, .exit ; exit if the B button was pressed
 .play_energy_set_played
 	ld a, TRUE
@@ -779,8 +778,7 @@ PlayEnergyCard:
 	jp DuelMainInterface
 
 .rain_dance_active
-	call HasAlivePokemonInPlayArea
-	call OpenPlayAreaScreenForSelection ; choose Pokemon to attach Energy card to
+	call InitVarsAndOpenPlayAreaScreenForSelection ; choose Pokemon to attach Energy card to
 	jr c, .exit ; exit if the B button was pressed
 	call CheckRainDanceScenario
 	jr c, .play_energy
@@ -881,7 +879,7 @@ PlayPokemonCard:
 	pop de
 	call IsPrehistoricPowerActive
 	jr c, .print_text_and_return_carry
-	call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .try_evolve_loop
 	call OpenPlayAreaScreenForSelection
 	jr c, .done ; exit if the B button was pressed
@@ -971,12 +969,14 @@ CheckRainDanceScenario:
 ;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the Active Pokemon is unable to retreat
 CheckAbleToRetreat:
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	dec a
+	jr z, .unable_to_retreat ; can't retreat if there are no Benched Pokémon
 	call CheckUnableToRetreatDueToEffect
 	ret c
 	call CheckIfActiveCardParalyzedOrAsleep
 	ret c
-	call HasAlivePokemonInBench
-	jr c, .unable_to_retreat
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call GetCardTypeFromDeckIndex_SaveDE
@@ -3018,7 +3018,7 @@ PracticeDuel_ReplaceKnockedOutPokemon:
 	cp PLAY_AREA_BENCH_1
 	ret z
 	; if player selected Drowzee instead (which is at PLAY_AREA_BENCH_2)
-	call HasAlivePokemonInBench
+	call InitPlayAreaScreenVars_OnlyBench
 	ldtx hl, SelectStaryuPracticeDuelText
 	scf
 	jr PrintPracticeDuelDrMasonInstructions
@@ -5177,58 +5177,17 @@ PrintPokemonCardLength:
 	ret
 
 
-; preserves de
-; output:
-;	a & b = how many Pokemon with HP > 0 are on the turn holder's Bench
-;	carry = set:  if the turn holder has no Benched Pokemon with more than 0 HP
-HasAlivePokemonInBench:
-	ld a, $01
-	jr _HasAlivePokemonInPlayArea
-
-; preserves de
-; output:
-;	a & b = how many Pokemon with HP > 0 are in the turn holder's play area
-;	carry = set:  if the turn holder has no Pokemon in play with more than 0 HP
-HasAlivePokemonInPlayArea:
-	xor a
-;	fallthrough
-
-; input:
-;	a = number of Pokémon to exclude from the search (starting with the Active Pokémon)
-_HasAlivePokemonInPlayArea:
-	ld [wExcludeArenaPokemon], a
-	ld b, a
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	sub b
-	ld c, a
-	ld a, DUELVARS_ARENA_CARD_HP
-	add b
-	get_turn_duelist_var
-	ld b, 0
-	inc c
-	xor a
-	ld [wPlayAreaScreenLoaded], a
-	ld [wPlayAreaSelectAction], a
-	jr .next_pkmn
-.loop
-	ld a, [hli]
-	or a
-	jr z, .next_pkmn ; jump if this play area Pokemon has 0 HP
-	inc b
-.next_pkmn
-	dec c
-	jr nz, .loop
-	ld a, b
-	or a
-	ret nz
-	scf
-	ret
-
-
 OpenPlayAreaScreenForViewing:
 	ld a, START + A_BUTTON
 	jr DisplayPlayAreaScreen
+
+InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench:
+	call InitPlayAreaScreenVars_OnlyBench
+	jr OpenPlayAreaScreenForSelection
+
+InitVarsAndOpenPlayAreaScreenForSelection:
+	call InitPlayAreaScreenVars
+;	fallthrough
 
 OpenPlayAreaScreenForSelection:
 	ld a, START
@@ -5274,7 +5233,7 @@ DisplayPlayAreaScreen:
 	call DoFrame
 	call SelectingBenchPokemonMenu
 	jr nc, .asm_6061
-	cp $02
+	cp CYCLE_PLAY_AREA_SCREENS
 	jp z, .asm_60ac
 	pop af
 	ldh [hTempCardIndex_ff98], a
@@ -5371,12 +5330,12 @@ PlayAreaScreenMenuFunction:
 SelectingBenchPokemonMenu:
 	ld a, [wPlayAreaSelectAction]
 	or a
-	ret z ; menu not allowed
+	ret z ; return if pressing Select does nothing
 	ldh a, [hKeysPressed]
 	and SELECT
-	ret z ; Select not pressed
+	ret z ; return if the Select button wasn't pressed
 	ld a, [wPlayAreaSelectAction]
-	cp $02
+	cp CYCLE_PLAY_AREA_SCREENS
 	jr z, .return_carry
 	xor a
 	ld [wCurrentDuelMenuItem], a
@@ -5399,9 +5358,9 @@ SelectingBenchPokemonMenu:
 	and SELECT
 	jr z, .duel_main_scene
 .back
-	call HasAlivePokemonInBench
-	ld a, $01
-	ld [wPlayAreaSelectAction], a
+	call InitPlayAreaScreenVars_OnlyBench
+	inc a ; $00 -> $01
+	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
 .return_carry
 	scf
 	ret
@@ -5489,11 +5448,9 @@ PrintPlayAreaCardList:
 	ld b, $00
 .print_cards_info_loop
 	; for each Pokemon in the play area, print its information (and location)
-	push hl
 	push bc
 	ld a, b
 	ld [wCurPlayAreaSlot], a
-	ld a, b
 	add a
 	add b
 	ld [wCurPlayAreaY], a
@@ -5503,7 +5460,6 @@ PrintPlayAreaCardList:
 	call SetNextElementOfList
 	call PrintPlayAreaCardInformationAndLocation
 	pop bc
-	pop hl
 	inc b
 	dec c
 	jr nz, .print_cards_info_loop
@@ -5647,27 +5603,26 @@ PrintPlayAreaCardInformation:
 	ld a, SYM_HP
 	call WriteByteToBGMap0
 	inc b
-	inc b
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
 	or a
 	jr z, .zero_hp
-	ld e, a
-	ld a, [wCurPlayAreaSlot]
-	add DUELVARS_ARENA_CARD_HP
-	get_turn_duelist_var
 	cp 100
-	jr nc, .threedigits
-	dec b
-.threedigits
+	jr c, .twodigits
+	inc b
+.twodigits
 	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 	inc b
 	inc b
 	inc b
 	ld a, [wLoadedCard1HP]
 	cp 100
-	jr c, .twodigits
+	jr nc, .threedigits
+	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
+	ld a, SYM_SLASH
+	jp WriteByteToBGMap0
+.threedigits
 	ld e, a
 	ld a, SYM_SLASH
 	call WriteByteToBGMap0
@@ -5680,10 +5635,6 @@ PrintPlayAreaCardInformation:
 	inc b
 	inc b
 	ld a, SYM_SPACE
-	jp WriteByteToBGMap0
-.twodigits
-	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	ld a, SYM_SLASH
 	jp WriteByteToBGMap0
 .zero_hp
 	; if fainted, print "Knock Out" in place of the HP bar
@@ -6967,9 +6918,9 @@ OppAction_ForceSwitchActive:
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	rst SwapTurn
-	call HasAlivePokemonInBench
-	ld a, $01
-	ld [wPlayAreaSelectAction], a
+	call InitPlayAreaScreenVars_OnlyBench
+	inc a ; $00 -> $01
+	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
 .force_selection
 	call OpenPlayAreaScreenForSelection
 	jr c, .force_selection ; must choose, B button can't be used to exit
@@ -7762,7 +7713,7 @@ ReplaceKnockedOutPokemon:
 	or a
 	ret nz
 	call ClearAllStatusConditions
-	call HasAlivePokemonInBench
+	call CheckForAlivePokemonInBench
 	jr nc, .can_replace_pokemon
 
 ; if we made it here, the duelist can't replace the Knocked Out Pokemon
@@ -7783,8 +7734,9 @@ ReplaceKnockedOutPokemon:
 	call DrawDuelMainScene
 	ldtx hl, ChooseNextActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	ld a, $01
-	ld [wPlayAreaSelectAction], a
+	call InitPlayAreaScreenVars_OnlyBench
+	inc a ; $00 -> $01
+	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
 	ld a, PRACTICEDUEL_PLAY_STARYU_FROM_BENCH
 	call DoPracticeDuelAction
 .select_pokemon
@@ -7827,6 +7779,34 @@ ReplaceKnockedOutPokemon:
 	call SerialRecv8Bytes
 	ldh [hTempPlayAreaLocation_ff9d], a
 	jr .replace_pokemon
+
+
+; preserves de
+; output:
+;	a & b = how many Pokemon with HP > 0 are on the turn holder's Bench
+;	carry = set:  if the turn holder has no Benched Pokemon with more than 0 HP
+CheckForAlivePokemonInBench:
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	dec a ; ignore the Active Pokémon
+	jr z, .set_carry ; return carry if there are no Benched Pokémon
+	ld c, a ; number of Benched Pokémon
+	ld b, 0 ; counter for Pokémon with HP > 0
+	ld l, DUELVARS_BENCH1_CARD_HP
+.loop_bench
+	ld a, [hli]
+	or a
+	jr z, .next_pkmn ; jump if this Pokemon has 0 HP
+	inc b
+.next_pkmn
+	dec c
+	jr nz, .loop_bench
+	ld a, b
+	or a
+	ret nz
+.set_carry
+	scf
+	ret
 
 
 ; handles the non-turn holder drawing Prizes for each of the turn holder's KO'd Pokémon.

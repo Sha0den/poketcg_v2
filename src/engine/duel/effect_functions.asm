@@ -1070,11 +1070,9 @@ RandomlyFillBothBenchesEffect:
 ; display both Play Areas
 	ldtx hl, BasicPokemonWasPlacedOnEachBenchText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInPlayArea
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 	rst SwapTurn
-	bank1call HasAlivePokemonInPlayArea
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 	jp SwapTurn
 
 .FillBench
@@ -1493,8 +1491,7 @@ PossibleSwitch_PlayerSelection:
 
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInBench
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
 ;	ret c ; exit if the B button was pressed
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret
@@ -1506,9 +1503,9 @@ PossibleSwitch_PlayerSelection:
 SwitchAfterAttack_PlayerSelection:
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInBench
-	ld a, $01
-	ld [wPlayAreaSelectAction], a
+	call InitPlayAreaScreenVars_OnlyBench
+	inc a ; $00 -> $01
+	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
 	jr c, .loop_input ; must choose, B button can't be used to exit
@@ -2955,9 +2952,9 @@ DuelistSelectForcedSwitch:
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	rst SwapTurn
-	bank1call HasAlivePokemonInBench
-	ld a, $01
-	ld [wPlayAreaSelectAction], a
+	call InitPlayAreaScreenVars_OnlyBench
+	inc a ; $00 -> $01
+	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
 	jr c, .loop_input ; must choose, B button can't be used to exit
@@ -3090,7 +3087,7 @@ SwitchDefendingPokemon_PlayerSelection:
 MustChooseOpposingBenchedPokemon:
 	call DrawWideTextBox_WaitForInput
 	rst SwapTurn
-	bank1call HasAlivePokemonInBench
+	call InitPlayAreaScreenVars_OnlyBench
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
 	jr c, .loop_input ; must choose, B button can't be used to exit
@@ -3180,11 +3177,11 @@ GustOfWind_PlayerSelection:
 	ldtx hl, SelectNewDefendingPokemonText
 	call DrawWideTextBox_WaitForInput
 	rst SwapTurn
-	bank1call HasAlivePokemonInBench
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
+	rst SwapTurn
 ;	ret c ; exit if the B button was pressed
 	ldh [hTemp_ffa0], a
-	jp SwapTurn
+	ret
 
 
 ; plays the Gust of Wind animation and switches the opponent's Active Pokemon
@@ -3259,7 +3256,7 @@ DevolutionBeam_PlayerSelection:
 ; output:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
 HandleEvolvedCardSelection:
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .loop
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
@@ -6312,7 +6309,7 @@ Heal_RemoveDamageEffect:
 ; player
 	ldtx hl, ChoosePokemonToHealText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .loop_input
 	bank1call OpenPlayAreaScreenForSelection
 	jr c, .loop_input ; must choose, B button can't be used to exit
@@ -7357,8 +7354,7 @@ ComputerSearch_DiscardAddToHandEffect:
 Defender_PlayerSelection:
 	ldtx hl, ChoosePokemonToAttachDefenderToText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInPlayArea
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 ;	ret c ; exit if the B button was pressed
 	ldh [hTemp_ffa0], a
 	ret
@@ -7401,7 +7397,7 @@ DevolutionSpray_PlayerSelection:
 ; have Player select an an Evolved Pokemon in the Play Area screen
 	ld a, 1
 	ldh [hCurSelectionItem], a
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
@@ -7587,8 +7583,7 @@ EnergyRemoval_DiscardEffect:
 ;	[hTempList] = play area location offset of the chosen Pokemon (PLAY_AREA_* constant)
 ;	[hTempList + 1] = deck index of the selected Energy card
 HandlePokemonAndEnergySelectionScreen:
-	bank1call HasAlivePokemonInPlayArea
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
@@ -7632,8 +7627,7 @@ SuperEnergyRemoval_PlayerSelection:
 	ld a, 3
 	ldh [hCurSelectionItem], a
 .select_opp_pkmn
-	bank1call HasAlivePokemonInPlayArea
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 	jp c, SwapTurn ; exit if the B button was pressed
 	ld e, a
 	call GetPlayAreaCardAttachedEnergies
@@ -8311,7 +8305,7 @@ PokemonBreeder_PlayerSelection:
 	call DrawWideTextBox_WaitForInput
 
 ; handle the Player selection's of a Basic Pokemon to evolve
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
@@ -8764,7 +8758,7 @@ CreatePokemonCardListFromHand:
 ;	[hTemp_ffa0] = amount of HP to heal (usually 20, 10 if capped)
 ;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
 Potion_PlayerSelection:
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
@@ -8963,8 +8957,7 @@ ScoopUp_PlayerSelection:
 	call DrawWideTextBox_WaitForInput
 
 ; handle Player selection
-	bank1call HasAlivePokemonInPlayArea
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
 
 	ldh [hTemp_ffa0], a
@@ -8975,8 +8968,7 @@ ScoopUp_PlayerSelection:
 	call EmptyScreen
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInBench
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
 ;	ret c ; exit if the B button was pressed
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret
@@ -9065,7 +9057,7 @@ SuperPotion_PlayerSelection:
 	ldtx hl, ChoosePokemonToHealText
 	call DrawWideTextBox_WaitForInput
 .start
-	bank1call HasAlivePokemonInPlayArea
+	call InitPlayAreaScreenVars
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
@@ -9146,8 +9138,7 @@ Switch_PlayerSelection:
 ;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
 ChooseBenchedPokemon:
 	call DrawWideTextBox_WaitForInput
-	bank1call HasAlivePokemonInBench
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
 ;	ret c ; exit if the B button was pressed
 	ldh [hTemp_ffa0], a
 	ret

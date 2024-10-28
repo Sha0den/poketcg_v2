@@ -838,11 +838,10 @@ RemoveCardFromDuelTempList::
 	cp $ff
 	jr z, .end_of_list
 	cp c
-	jr z, .match
+	jr z, .next ; found the deck index from input
 	ld [de], a
 	inc de
 	inc b
-.match
 	jr .next
 .end_of_list
 	ld [de], a
@@ -1908,6 +1907,27 @@ CheckDeckIndexForBasicPokemon::
 	ret nz ; return if its Stage isn't Basic
 	; is Basic
 	scf
+	ret
+
+
+; preserves bc and de
+InitPlayAreaScreenVars::
+	ld hl, wExcludeArenaPokemon
+	xor a ; FALSE
+	ld [hli], a ; wExcludeArenaPokemon  = FALSE
+	ld [hli], a ; wPlayAreaScreenLoaded = FALSE
+	ld [hl], a  ; wPlayAreaSelectAction = FALSE
+	ret
+
+
+; preserves bc and de
+InitPlayAreaScreenVars_OnlyBench::
+	ld hl, wExcludeArenaPokemon
+	ld a, TRUE
+	ld [hli], a ; wExcludeArenaPokemon  = TRUE
+	xor a ; FALSE
+	ld [hli], a ; wPlayAreaScreenLoaded = FALSE
+	ld [hl], a  ; wPlayAreaSelectAction = FALSE
 	ret
 
 
