@@ -131,13 +131,17 @@ InvertedPowersOf2::
 ; and if so, it turns all Energy (except for Double Colorless Energy)
 ; at wAttachedEnergies into Fire Energy
 ; preserves de
+; input:
+;	e = Pokémon's play area location offset (PLAY_AREA_* constant)
 HandleEnergyBurn::
 	ld a, DUELVARS_ARENA_CARD
+	add e
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
 	cp CHARIZARD
 	ret nz
-	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+	ld a, e
+	call CheckIsIncapableOfUsingPkmnPower
 	ret c
 	ld hl, wAttachedEnergies
 	ld c, NUM_COLORED_TYPES

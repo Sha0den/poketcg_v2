@@ -323,6 +323,7 @@ CheckEnergyNeededForAttack:
 
 ; GetPlayAreaCardAttachedEnergies should be called before this to provide the attached Energy amounts.
 ; input:
+;	e = Pokémon's play area location offset (PLAY_AREA_* constant)
 ;	[wLoadedAttack] = attack data for the Pokémon being checked (atk_data_struct)
 ;	[wAttachedEnergies] = specific Energy amounts that would be used to pay for the given attack (8 bytes)
 ;	[wTotalAttachedEnergies] = total amount of Energy that could be used to pay for the given attack
@@ -882,6 +883,8 @@ CheckEnergyNeededForAttackAfterDiscard:
 	dec [hl]
 	ld hl, wTotalAttachedEnergies
 	dec [hl]
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld e, a
 	jp CalculateEnergyNeededForAttack
 
 ; decrease attached Colorless Energy by 2.
@@ -892,6 +895,8 @@ CheckEnergyNeededForAttackAfterDiscard:
 	ld hl, wTotalAttachedEnergies
 	dec [hl]
 	dec [hl]
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld e, a
 	jp CalculateEnergyNeededForAttack
 
 

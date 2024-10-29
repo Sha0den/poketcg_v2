@@ -12,6 +12,11 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **October 29, 2024:** 2 Files Changed
+    - AI now accounts for Energy Burn when evaluating whether or not a Benched Charizard is able to attack
+
+<br/>
+
 - **[October 25, 2024](https://github.com/Sha0den/poketcg_v2/commit/36785feaf2623794af2675260ed881c01c9851c7):** 9 Files Changed
     - Update engine/duel/ai/special_attacks.asm and add entries for MarowakLv32's Wail, GastlyLv8's Destiny Bond, and GastlyLv17's Energy Conversion (all 3 are now usable by AI)
     - Add AI logic for using Moltres's Wildfire attack and replace IGNORE_THIS_ATTACK flag with SPECIAL_AI_HANDLING. (Courtney can now use Wildfire to deck out the Player)
@@ -105,7 +110,7 @@
 
 
 ## Code Optimization
-- **October 29, 2024:** 7 Files Changed
+- **[October 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/dcb521edfa4736846ca31ce3c3f60a4173f64ec6):** 7 Files Changed
     - Combine the default effect commands for Clefairy Doll and Mysterious Fossil
     - Move `ConvertSpecialTrainerCardToPokemon` from engine/duel/core.asm (bank $01) to engine/duel/effect_functions.asm (bank $09)
     - Move `HandleNShieldAndTransparency` from home/substatus.asm (bank $00) to engine/duel/effect_functions2.asm (bank $0a)
