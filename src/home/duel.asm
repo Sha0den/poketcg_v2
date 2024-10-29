@@ -696,7 +696,7 @@ LoadCardDataToBuffer1_FromDeckIndex::
 	pop af
 	ld hl, wLoadedCard1
 .after_load
-	bank1call ConvertSpecialTrainerCardToPokemon
+	farcall ConvertSpecialTrainerCardToPokemon ; located in engine/duel/effect_functions2.asm
 	ld a, e
 	pop bc
 	pop de
@@ -1781,6 +1781,71 @@ DealDamageToPlayAreaPokemon::
 	pop de
 	pop hl
 	ret
+
+
+; called after an attack effect does damage to an opponent's Pokémon (even Benched).
+; if the damage was greater than 0 and that Pokémon has an active Strikes Back power,
+; then the Attacking Pokémon (turn holder's Active Pokémon) also receives 10 damage.
+; this function could be moved to another bank if the home bank becomes full.
+; doing so would free up over 80 bytes at the cost of a single farcall.
+; preserves de and hl
+; input:
+;	de = amount of damage being dealt
+;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
+;	[wTempNonTurnDuelistCardID] = card ID of the Pokémon being attacked
+;	[wTempPlayAreaLocation_cceb] = play area location offset of the Pokémon being attacked
+; output:
+;	[wTempNonTurnDuelistCardID] = Attacking Pokémon's card ID:  if Strikes Back power was used
+HandleStrikesBack_AgainstDamagingAttack::
+	ld a, e
+	or d
+	ret z ; return nc if no damage is being dealt
+	ld a, [wIsDamageToSelf]
+	or a
+	ret nz ; return if the damage isn't being dealt by an opponent's Pokémon
+	ld a, [wTempNonTurnDuelistCardID]
+	cp MACHAMP
+	ret nz ; return if the Pokémon being attacked isn't a Machamp
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	ret z ; return if the damage is being dealt by a Pokémon Power
+	ld a, [wTempPlayAreaLocation_cceb]
+	call CheckIsIncapableOfUsingPkmnPower
+	ret c ; return if Pokémon Power can't be used because of status or Toxic Gas
+	push hl
+	push de
+	; subtract 10 HP from Attacking Pokémon (turn holder's Active Pokémon)
+	rst SwapTurn
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer2_FromDeckIndex
+	ld a, DUELVARS_ARENA_CARD_HP
+	get_turn_duelist_var
+	push af
+	push hl
+	ld de, 10
+	call SubtractHP
+	ld a, [wLoadedCard2ID]
+	ld [wTempNonTurnDuelistCardID], a
+	ld hl, 10
+	call LoadTxRam3
+	ld hl, wLoadedCard2Name
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ldtx hl, ReceivesDamageDueToStrikesBackText
+	call DrawWideTextBox_WaitForInput
+	pop hl
+	pop af
+	or a
+	jr z, .not_knocked_out
+	xor a ; PLAY_AREA_ARENA
+	call PrintPlayAreaCardKnockedOutIfNoHP
+.not_knocked_out
+	pop de
+	pop hl
+	jp SwapTurn
 
 
 ; plays an attack animation

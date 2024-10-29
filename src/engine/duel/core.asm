@@ -7490,62 +7490,6 @@ HandlePoisonDamage:
 	ret
 
 
-; given the deck index of a turn holder's card in register a,
-; and a pointer in hl to the wLoadedCard* buffer where the card data is loaded,
-; checks if the card is Clefairy Doll or Mysterious Fossil, and, if so, converts it
-; to a Pokemon card in the wLoadedCard* buffer, using .trainer_to_pkmn_data.
-; preserves de
-; input:
-;	a = deck index of the card to check
-;	de = its card ID
-;	hl = contains its card_data_struct (e.g. wLoadedCard1)
-ConvertSpecialTrainerCardToPokemon::
-	ld c, a
-	ld a, [hl]
-	cp TYPE_TRAINER
-	ret nz ; return if the card is not a Trainer
-	push hl
-	ld a, c
-	get_turn_duelist_var
-	and CARD_LOCATION_PLAY_AREA
-	pop hl
-	ret z ; return if the card is not in the play area
-	ld a, e
-	cp MYSTERIOUS_FOSSIL
-;	jr nz, .check_for_clefairy_doll
-;	ld a, d ; card IDs are 8-bit so d is always 0
-;	cp $00 ; MYSTERIOUS_FOSSIL >> 8
-	jr z, .start_ram_data_overwrite
-.check_for_clefairy_doll
-	cp CLEFAIRY_DOLL
-	ret nz
-;	ld a, d ; card IDs are 8-bit so d is always 0
-;	cp $00 ; CLEFAIRY_DOLL >> 8
-;	ret nz
-.start_ram_data_overwrite
-	push de
-	ld [hl], TYPE_PKMN_COLORLESS
-	ld bc, CARD_DATA_HP
-	add hl, bc
-	ld de, .trainer_to_pkmn_data
-	ld c, CARD_DATA_PKMN_FLAGS - CARD_DATA_HP
-	call CopyNBytesFromDEToHL
-	pop de
-	ret
-
-.trainer_to_pkmn_data
-	db 10                 ; CARD_DATA_HP
-	ds $07                ; CARD_DATA_ATTACK1_NAME - (CARD_DATA_HP + 1)
-	tx DiscardName        ; CARD_DATA_ATTACK1_NAME
-	tx DiscardDescription ; CARD_DATA_ATTACK1_DESCRIPTION
-	ds $03                ; CARD_DATA_ATTACK1_CATEGORY - (CARD_DATA_ATTACK1_DESCRIPTION + 2)
-	db POKEMON_POWER      ; CARD_DATA_ATTACK1_CATEGORY
-	dw TrainerCardAsPokemonEffectCommands ; CARD_DATA_ATTACK1_EFFECT_COMMANDS
-	ds $18                ; CARD_DATA_RETREAT_COST - (CARD_DATA_ATTACK1_EFFECT_COMMANDS + 2)
-	db UNABLE_RETREAT     ; CARD_DATA_RETREAT_COST
-	ds $0d                ; PKMN_CARD_DATA_LENGTH - (CARD_DATA_RETREAT_COST + 1)
-
-
 ; this function applies all Special Conditions in order
 ; that have been added to the wStatusConditionQueue.
 ; this and the next function would be ideal candidates for moving to another bank
@@ -8953,9 +8897,9 @@ ApplyTransparencyIfApplicable:
 	ret
 
 
-; used to bounce back an attack of the RESIDUAL category.
-; when MACHAMP is damaged, if its Strikes Back is active, the
-; attacking Pokemon (turn holder's Active Pokemon) takes 10 damage.
+; called after a regular attack is resolved. if the Defending Pokémon
+; has an active Strikes Back power and it received damage, then the
+; Attacking Pokemon (turn holder's Active Pokemon) also receives 10 damage.
 ; input:
 ;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 ;	[wTempTurnDuelistCardID] = Attacking Pokémon's card ID
@@ -8966,10 +8910,10 @@ HandleStrikesBack_AgainstResidualAttack:
 	ret nz ; return if the Defending Pokemon isn't a Machamp
 	ld a, [wLoadedAttackCategory]
 	and RESIDUAL
-	ret nz
+	ret nz ; return if the attack was residual
 	ld a, [wDealtDamage]
 	or a
-	ret z
+	ret z ; return if the attack didn't do any damage to the Defending Pokémon
 	rst SwapTurn
 	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	rst SwapTurn
@@ -8992,10 +8936,10 @@ HandleStrikesBack_AgainstResidualAttack:
 	call SubtractHP
 	ldtx hl, ReceivesDamageDueToStrikesBackText
 	call DrawWideTextBox_PrintText
+	call WaitForWideTextBoxInput
 	pop af
 	or a
-	jp z, WaitForWideTextBoxInput
-	call WaitForWideTextBoxInput
+	ret z ; return if the Attacking Pokémon was already Knocked Out
 	xor a ; PLAY_AREA_ARENA
 	call PrintPlayAreaCardKnockedOutIfNoHP
 	jp DrawDuelHUDs

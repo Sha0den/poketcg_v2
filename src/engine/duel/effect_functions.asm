@@ -7216,6 +7216,53 @@ HealingWind_PlayAreaHealEffect:
 	ret
 
 
+; this is called to potentially negate a non-damaging attack, like Lure.
+; preserves de
+; input:
+;	e = play area location offset of the Pokémon being checked (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the turn holder's Active Pokémon is MEW_LV8 or HAUNTER_LV17
+HandleNShieldAndTransparency:
+	push de
+	ld a, DUELVARS_ARENA_CARD
+	add e
+	get_turn_duelist_var
+	call _GetCardIDFromDeckIndex
+	cp MEW_LV8
+	jr z, .nshield
+	cp HAUNTER_LV17
+	jr z, .transparency
+.done
+	pop de
+	or a
+	ret
+
+.nshield
+	ld a, DUELVARS_ARENA_CARD_STAGE
+	call GetNonTurnDuelistVariable
+	or a
+	jr z, .done
+	ld a, NO_DAMAGE_OR_EFFECT_NSHIELD
+	ld [wNoDamageOrEffect], a
+	ldtx hl, NoDamageOrEffectDueToNShieldText
+.print_text
+	call DrawWideTextBox_WaitForInput
+	pop de
+	scf
+	ret
+
+.transparency
+	xor a
+	ld [wDuelDisplayedScreen], a
+	ldtx de, TransparencyCheckText
+	call TossCoin
+	jr nc, .done
+	ld a, NO_DAMAGE_OR_EFFECT_TRANSPARENCY
+	ld [wNoDamageOrEffect], a
+	ldtx hl, NoDamageOrEffectDueToTransparencyText
+	jr .print_text
+
+
 ;---------------------------------------------------------------------------------
 ; (15) TRAINER CARD EFFECTS ARE NEXT.
 ; (Bill/Energy Search/Gust of Wind/Pokedex/Professor Oak are sorted with attacks effects)

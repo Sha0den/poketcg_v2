@@ -807,12 +807,12 @@ VenomothShiftEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Shift_ChangeColorEffect
 	db  $00
 
-; actual effect handled in home/substatus.asm and in other Pokémon Power effects
+; actual effect handled in home/substatus.asm, engine/duel/core.asm, and in other Pokémon Power effects
 MukToxicGasEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in home/card_color.asm
+; actual effect handled in home/card_color.asm and various functions that check attached Energy
 CharizardEnergyBurnEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -856,7 +856,7 @@ MankeyPeekEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Peek_SelectEffect
 	db  $00
 
-; actual effect handled in engine/duel/core.asm & home/substatus.asm
+; actual effect handled in engine/duel/core.asm & home/duel.asm
 MachampStrikesBackEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -885,7 +885,7 @@ SlowbroStrangeBehaviorEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StrangeBehavior_SwapEffect
 	db  $00
 
-; actual effect handled in home/substatus.asm
+; actual effect handled in home/substatus.asm and engine/duel/effect_functions.asm
 HaunterTransparencyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -902,7 +902,7 @@ MrMimeInvisibleWallEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
 
-; actual effect handled in home/substatus.asm
+; actual effect handled in home/substatus.asm and engine/duel/effect_functions.asm
 MewNeutralizingShieldEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, SetCarryEF ; passive pokemon power
 	db  $00
@@ -936,7 +936,13 @@ DragoniteHealingWindEffectCommands:
 ; AI decisions are handled in engine/duel/ai/trainer/cards.asm (rather than an EFFECTCMDTYPE_AI_SELECTION).
 ;--------------------------------------------------------------------------------------------------------------
 
-TrainerCardAsPokemonEffectCommands:
+PlayThisAsBasicPokemonEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchSpaceCheck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlayThisAsBasicPokemonEffect
+	db  $00
+
+; special card data for Trainer Pokémon is stored in engine/duel/effect_functions2.asm
+DiscardTrainerPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, TrainerCardAsPokemon_BenchCheck
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, PossibleSwitch_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, TrainerCardAsPokemon_DiscardEffect
@@ -944,11 +950,6 @@ TrainerCardAsPokemonEffectCommands:
 
 BillEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Draw2CardsFromDeck
-	db  $00
-
-ClefairyDollEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchSpaceCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlayThisAsBasicPokemonEffect
 	db  $00
 
 ComputerSearchEffectCommands:
@@ -1031,11 +1032,6 @@ MrFujiEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, MrFuji_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, MrFuji_ReturnToDeckEffect
-	db  $00
-
-MysteriousFossilEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchSpaceCheck
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PlayThisAsBasicPokemonEffect
 	db  $00
 
 PlusPowerEffectCommands:

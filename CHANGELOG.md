@@ -105,7 +105,16 @@
 
 
 ## Code Optimization
-- **October 28, 2024:** 3 Files Changed
+- **October 29, 2024:** 7 Files Changed
+    - Combine the default effect commands for Clefairy Doll and Mysterious Fossil
+    - Move `ConvertSpecialTrainerCardToPokemon` from engine/duel/core.asm (bank $01) to engine/duel/effect_functions.asm (bank $09)
+    - Move `HandleNShieldAndTransparency` from home/substatus.asm (bank $00) to engine/duel/effect_functions2.asm (bank $0a)
+    - Move `HandleStrikesBack_AgainstDamagingAttack` from home/substatus.asm to home/duel.asm (to mirror the other Strikes Back function, which is also stored near its call)
+    - Also adjust some comments in both of the Strikes Back functions, as well as a minor optimization for the one in engine/duel/core.asm
+
+<br/>
+
+- **[October 28, 2024](https://github.com/Sha0den/poketcg_v2/commit/30d47a5636d781c8be555ee64a3d364ab2d35e20):** 3 Files Changed
     - Move `ClearDamageReductionSubstatus2`, `UpdateSubstatusConditions_StartOfTurn`, `UpdateSubstatusConditions_EndOfTurn`, and `HandleDestinyBondSubstatus` from home/substatus.asm (bank $00) to engine/duel/core.asm (bank $01)
     - Refactor `HandleDestinyBondSubstatus`
 

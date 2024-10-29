@@ -9757,7 +9757,7 @@ ClefairyDollCard:
 	db STAR ; rarity
 	db EVOLUTION | NONE ; sets
 	db CLEFAIRY_DOLL
-	dw ClefairyDollEffectCommands ; effect commands
+	dw PlayThisAsBasicPokemonEffectCommands ; effect commands
 	tx ClefairyDollDescription ; description
 	tx ClefairyDollDescriptionCont ; description (cont)
 
@@ -9768,7 +9768,7 @@ MysteriousFossilCard:
 	db CIRCLE ; rarity
 	db MYSTERY | FOSSIL ; sets
 	db MYSTERIOUS_FOSSIL
-	dw MysteriousFossilEffectCommands ; effect commands
+	dw PlayThisAsBasicPokemonEffectCommands ; effect commands
 	tx MysteriousFossilDescription ; description
 	tx MysteriousFossilDescriptionCont ; description (cont)
 
