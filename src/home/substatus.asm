@@ -291,24 +291,39 @@ HandleTransparency::
 
 ; preserves bc and de
 ; output:
-;	hl = ID for notification text:  if the Active Pokemon is affected by a Substatus2
-;	carry = set:  if the turn holder's Active Pokemon is affected by
-;	              an attack effect that makes it unable to attack
-HandleCantAttackSubstatus::
+;	hl = text ID explaining why the Active Pokémon is unable to attack
+;	carry = set:  if the turn holder's Active Pokemon is unable to attack
+CheckUnableToAttackDueToEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	get_turn_duelist_var
 	or a
-	ret z ; return nc if the Attacking Pokémon isn't affected by any SUBSTATUS2 effects
+	jr z, CheckIfActiveCardIsParalyzedOrAsleep
 	ldtx hl, UnableToAttackThatPokemonText
 	cp SUBSTATUS2_CANNOT_ATTACK_THIS
-	jr z, .return_with_cant_attack
+	jr z, CheckIfActiveCardIsParalyzedOrAsleep.set_carry
 	ldtx hl, UnableToAttackText
 	cp SUBSTATUS2_CANNOT_ATTACK
-	jr z, .return_with_cant_attack
+	jr z, CheckIfActiveCardIsParalyzedOrAsleep.set_carry
+;	fallthrough
+
+; preserves bc and de
+; output:
+;	hl = text ID for the appropriate Special Condition
+;	carry = set:  if the turn holder's Active Pokemon is Paralyzed or Asleep
+CheckIfActiveCardIsParalyzedOrAsleep::
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	get_turn_duelist_var
+	and CNF_SLP_PRZ
+	ldtx hl, UnableDueToParalysisText
+	cp PARALYZED
+	jr z, .set_carry
+	ldtx hl, UnableDueToSleepText
+	cp ASLEEP
+	jr z, .set_carry
 	or a
 	ret
 
-.return_with_cant_attack
+.set_carry
 	scf
 	ret
 
@@ -346,8 +361,10 @@ HandleAmnesiaSubstatus::
 ; preserves bc and de
 ; output:
 ;	hl = ID for notification text:  if the below condition is true
-;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of a substatus
+;	carry = set:  if the turn holder's Active Pokemon cannot retreat because of an effect
 CheckUnableToRetreatDueToEffect::
+	call CheckIfActiveCardIsParalyzedOrAsleep
+	ret c
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	get_turn_duelist_var
 	or a

@@ -111,6 +111,12 @@
 
 ## Code Optimization
 - **October 30, 2024:** 5 Files Changed
+    - Have `CheckUnableToRetreatDueToEffect` check if the Active Pokémon is Asleep or Paralyzed
+    - Replace `HandleCantAttackSubstatus` with `CheckUnableToAttackDueToEffect`, which also checks if the Active Pokémon is Asleep or Paralyzed
+
+<br/>
+
+- **[October 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/11890aefed1a428d97da4a1ce08a8cf35db6a780):** 5 Files Changed
     - Replace individual Snorlax and Trainer Pokémon checks with calls to the newly created `CheckIfActiveCardCanBeAffectedByStatus` function in home/substatus
 
 <br/>

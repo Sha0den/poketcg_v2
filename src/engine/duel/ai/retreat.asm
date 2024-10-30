@@ -766,34 +766,22 @@ AIDecideBenchPokemonToSwitchTo:
 ; output:
 ;	carry = set:  if the Active Pokémon isn't able to retreat
 AITryToRetreat:
-	push af
-; check if the Active Pokémon is Asleep/Paralyzed or can't retreat due to an effect.
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	cp ASLEEP
-	jr z, .unable_to_retreat
-	cp PARALYZED
-	jr z, .unable_to_retreat
+	ld b, a
 	call CheckUnableToRetreatDueToEffect
-	jr nc, .check_can_play_energy
+	ret c
 
-.unable_to_retreat
-	pop af
-	scf
-	ret
-
-.check_can_play_energy
+; check if the AI is allowed to play an Energy card from its hand
+; in order to help pay for its Active Pokémon's Retreat Cost.
+	push bc
 	ld a, [wAIPlayEnergyCardForRetreat]
 	or a
-	jr z, .check_id
+	jr z, .check_id ; skip ahead if it can't play an Energy card to retreat
 
-; AI is allowed to play an Energy card from its hand
-; to provide the necessary Energy for a Retreat Cost.
-; if an Energy card hasn't been played yet,
-; checks if the Pokémon needs just one more Energy to retreat.
-; if it does, check if there are any Energy cards in hand
-; and if there are, attach one of them to the Active Pokémon.
+; first, check if the AI has yet to play an Energy card this turn.
+; then, check if the Active Pokémon needs just one more Energy to retreat.
+; finally, check if there are any Energy cards in the AI's hand.
+; if all of the checks are successful, then attach an Energy card
+; to the Active Pokémon before moving on to the next section.
 	ld a, [wAlreadyPlayedEnergy]
 	or a
 	jr nz, .check_id

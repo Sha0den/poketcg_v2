@@ -261,9 +261,7 @@ CheckIfSelectedAttackIsUnusable:
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .bench
 
-	call HandleCantAttackSubstatus
-	ret c
-	bank1call CheckIfActiveCardParalyzedOrAsleep
+	call CheckUnableToAttackDueToEffect
 	ret c
 
 	ld a, DUELVARS_ARENA_CARD

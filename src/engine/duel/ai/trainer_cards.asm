@@ -795,13 +795,6 @@ AIPlay_Switch:
 ;	carry = set:  if the AI decided to play Switch
 AIDecide_Switch:
 ; play Switch if the Active Pokémon is unable to retreat due to an effect.
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	cp ASLEEP
-	jr z, .switch
-	cp PARALYZED
-	jr z, .switch
 	call CheckUnableToRetreatDueToEffect
 	jr c, .switch
 
@@ -3353,13 +3346,6 @@ AIDecide_ScoopUp:
 	ret nc
 
 ; Active Pokémon won't be able to KO, so check if it can retreat.
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	cp PARALYZED
-	jr z, .cannot_retreat
-	cp ASLEEP
-	jr z, .cannot_retreat
 	call CheckUnableToRetreatDueToEffect
 	jr c, .cannot_retreat
 

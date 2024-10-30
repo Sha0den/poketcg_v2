@@ -417,11 +417,9 @@ DuelMenuFunctionTable:
 
 ; triggered by selecting the "Attack" item in the duel menu
 DuelMenu_Attack:
-	call HandleCantAttackSubstatus
-	jr c, .alert_cant_attack_and_cancel_menu
-	call CheckIfActiveCardParalyzedOrAsleep
+	call CheckUnableToAttackDueToEffect
 	jr nc, .can_attack
-.alert_cant_attack_and_cancel_menu
+	; unable to attack
 	call DrawWideTextBox_WaitForInput
 	jr PrintDuelMenuAndHandleInput
 
@@ -974,8 +972,6 @@ CheckAbleToRetreat:
 	dec a
 	jr z, .unable_to_retreat ; can't retreat if there are no Benched Pokémon
 	call CheckUnableToRetreatDueToEffect
-	ret c
-	call CheckIfActiveCardParalyzedOrAsleep
 	ret c
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -1562,30 +1558,6 @@ CheckIfEnoughEnergiesOfType:
 	ccf ; reverse carry
 .done
 	inc hl
-	ret
-
-
-; preserves bc and de
-; output:
-;	hl = ID for notification text:  if the below condition is true
-;	carry = set:  if the turn holder's Active Pokemon is Paralyzed or Asleep
-CheckIfActiveCardParalyzedOrAsleep:
-	ld a, DUELVARS_ARENA_CARD_STATUS
-	get_turn_duelist_var
-	and CNF_SLP_PRZ
-	cp PARALYZED
-	jr z, .paralyzed
-	cp ASLEEP
-	jr z, .asleep
-	or a
-	ret
-.paralyzed
-	ldtx hl, UnableDueToParalysisText
-	scf
-	ret
-.asleep
-	ldtx hl, UnableDueToSleepText
-	scf
 	ret
 
 
