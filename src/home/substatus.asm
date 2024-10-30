@@ -338,9 +338,6 @@ CheckIfActiveCardIsParalyzedOrAsleep::
 HandleAmnesiaSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	get_turn_duelist_var
-	or a
-	ret z ; return nc if the Attacking Pokémon isn't affected by any SUBSTATUS2 effects
-; check amnesia
 	cp SUBSTATUS2_AMNESIA
 	jr z, .affected_by_amnesia
 .not_the_disabled_atk

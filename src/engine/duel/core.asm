@@ -459,6 +459,7 @@ DuelMenu_Attack:
 	call CheckIfEnoughEnergiesToAttack
 	jr nc, .enough_energy
 	ldtx hl, NotEnoughEnergyCardsText
+.cannot_use_this_attack
 	call DrawWideTextBox_WaitForInput
 	jr .try_open_attack_menu
 
@@ -474,7 +475,7 @@ DuelMenu_Attack:
 	ld e, [hl] ; attack index (0 or 1)
 	call CopyAttackDataAndDamage_FromDeckIndex
 	call HandleAmnesiaSubstatus
-	jr c, .cannot_use_due_to_amnesia
+	jr c, .cannot_use_this_attack
 	ld a, PRACTICEDUEL_VERIFY_PLAYER_TURN_ACTIONS
 	call DoPracticeDuelAction
 	; if player did something wrong in the practice duel, jump in order to restart turn
@@ -482,10 +483,6 @@ DuelMenu_Attack:
 	call UseAttackOrPokemonPower
 	jp c, DuelMainInterface
 	ret
-
-.cannot_use_due_to_amnesia
-	call DrawWideTextBox_WaitForInput
-	jr .try_open_attack_menu
 
 .display_selected_attack_info
 	call OpenAttackPage

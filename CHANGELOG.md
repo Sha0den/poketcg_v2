@@ -110,7 +110,12 @@
 
 
 ## Code Optimization
-- **October 30, 2024:** 5 Files Changed
+- **October 30, 2024:** 3 Files Changed
+    - Update some code that checks for the Amnesia attack effect (all related to the `HandleAmnesiaSubstatus` function)
+
+<br/>
+
+- **[October 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/ca55af69053bef9b7e5d6af4c438d2ea4e54a298):** 5 Files Changed
     - Have `CheckUnableToRetreatDueToEffect` check if the Active Pokémon is Asleep or Paralyzed
     - Replace `HandleCantAttackSubstatus` with `CheckUnableToAttackDueToEffect`, which also checks if the Active Pokémon is Asleep or Paralyzed
 

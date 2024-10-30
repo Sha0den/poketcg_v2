@@ -263,6 +263,8 @@ CheckIfSelectedAttackIsUnusable:
 
 	call CheckUnableToAttackDueToEffect
 	ret c
+	call HandleAmnesiaSubstatus
+	ret c
 
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -270,8 +272,6 @@ CheckIfSelectedAttackIsUnusable:
 	ld a, [wSelectedAttack]
 	ld e, a
 	call CopyAttackDataAndDamage_FromDeckIndex
-	call HandleAmnesiaSubstatus
-	ret c
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
 	ret c
