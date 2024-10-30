@@ -3450,15 +3450,11 @@ AIDecide_ScoopUp:
 	jr .decide_switch
 
 .articuno_bench
-; skip if the Defending Pokémon is a Snorlax
 	ld e, a
 	rst SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
+	call CheckIfActiveCardCanBeAffectedByStatus
 	rst SwapTurn
-	cp SNORLAX
-	ret z ; return no carry if the Defending Pokémon is a Snorlax
+	ret nc ; return no carry if the Defending Pokémon can't be Paralyzed
 
 ; check attached Energy cards.
 ; if it has any, return no carry.

@@ -524,14 +524,11 @@ GetAIScoreOfAttack:
 	call AddToAIScore
 
 .check_status_effect
+; skip ahead if the Defending Pokémon can't be affected by any Special Conditions
 	rst SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
+	call CheckIfActiveCardCanBeAffectedByStatus
 	rst SwapTurn
-	; skip if the Defending Pokémon is a Snorlax
-	cp SNORLAX
-	jp z, .handle_special_atks
+	jp nc, .subtract_and_handle_special_atks
 
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
@@ -617,6 +614,7 @@ GetAIScoreOfAttack:
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr nz, .handle_special_atks
+.subtract_and_handle_special_atks
 	ld a, 1
 	call SubFromAIScore
 

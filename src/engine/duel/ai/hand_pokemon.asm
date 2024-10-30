@@ -562,27 +562,23 @@ AIDecidePlayLegendaryBirds:
 	rst SwapTurn
 	ld a, [wLoadedAttackCategory]
 	cp POKEMON_POWER
-	jr z, .check_muk_and_snorlax
+	jr z, .check_if_quickfreeze_power_can_be_used
 
-	; return if no space on the Bench
+	; return if Bench space is limited
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	cp MAX_BENCH_POKEMON
-	jr c, .check_muk_and_snorlax
-	ret
+	cp DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA - 1
+	ret nc
 
-.check_muk_and_snorlax
+.check_if_quickfreeze_power_can_be_used
 	; check if Articuno's Quickfreeze power can be used
 	call CheckIfPkmnPowersAreCurrentlyDisabled
 	jr c, .subtract
-	; check if the Defending Pokémon is a Snorlax
+	; check if the Defending Pokémon is able to be Paralyzed
 	rst SwapTurn
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
+	call CheckIfActiveCardCanBeAffectedByStatus
 	rst SwapTurn
-	cp SNORLAX
-	jr z, .subtract
+	jr nc, .subtract
 
 ; add
 	ld a, 70

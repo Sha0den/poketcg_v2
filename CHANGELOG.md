@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **October 29, 2024:** 2 Files Changed
+- **[October 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/3add6c41eed4a983cd971d00060b03134cbfea14):** 2 Files Changed
     - AI now accounts for Energy Burn when evaluating whether or not a Benched Charizard is able to attack
 
 <br/>
@@ -110,6 +110,11 @@
 
 
 ## Code Optimization
+- **October 30, 2024:** 5 Files Changed
+    - Replace individual Snorlax and Trainer Pokémon checks with calls to the newly created `CheckIfActiveCardCanBeAffectedByStatus` function in home/substatus
+
+<br/>
+
 - **[October 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/dcb521edfa4736846ca31ce3c3f60a4173f64ec6):** 7 Files Changed
     - Combine the default effect commands for Clefairy Doll and Mysterious Fossil
     - Move `ConvertSpecialTrainerCardToPokemon` from engine/duel/core.asm (bank $01) to engine/duel/effect_functions.asm (bank $09)

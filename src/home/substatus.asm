@@ -482,6 +482,22 @@ CountPokemonWithActivePkmnPowerInBothPlayAreas::
 	ret
 
 
+; preserves bc and de
+; output:
+;	carry = set:  if the turn holder's Active Pokémon can be given a Special Conditions
+CheckIfActiveCardCanBeAffectedByStatus::
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call _GetCardIDFromDeckIndex
+	cp CLEFAIRY_DOLL ; Trainer Pokémon are unaffected
+	ret z ; return no carry if the Active Pokémon is a Clefairy Doll
+	cp MYSTERIOUS_FOSSIL ; Trainer Pokémon are unaffected
+	ret z ; return no carry if the Active Pokémon is a Mysterious Fossil
+	cp SNORLAX ; Snorlax's Thick Skinned Pokémon Power may make it unaffected
+	scf
+	ret nz ; return carry if the Active Pokémon isn't a Snorlax
+;	fallthrough
+
 ; checks whether the Active Pokémon can use a Pokémon Power, more specifically,
 ; if the Active Pokémon is Asleep, Confused, or Paralyzed or if Toxic Gas is active.
 ; preserves bc and de

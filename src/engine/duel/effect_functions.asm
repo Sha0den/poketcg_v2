@@ -1827,26 +1827,10 @@ QueueStatusCondition:
 	ld hl, wWhoseTurn
 	cp [hl]
 	jr nz, .can_induce_status
-	ld a, [wTempNonTurnDuelistCardID]
-	cp CLEFAIRY_DOLL
-	jr z, .cant_induce_status
-	cp MYSTERIOUS_FOSSIL
-	jr z, .cant_induce_status
-	; Snorlax's Thick Skinned prevents it from being statused...
-	cp SNORLAX
-	jr nz, .can_induce_status
 	rst SwapTurn
-	; ...unless already so, or if affected by Muk's Toxic Gas
-	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+	call CheckIfActiveCardCanBeAffectedByStatus
 	rst SwapTurn
-	jr c, .can_induce_status
-
-.cant_induce_status
-	ld a, c
-	ld [wNoEffectFromWhichStatus], a
-	call SetNoEffectFromStatus
-	or a
-	ret
+	jr nc, .cant_induce_status
 
 .can_induce_status
 	ld hl, wStatusConditionQueueIndex
@@ -1868,6 +1852,16 @@ QueueStatusCondition:
 	inc [hl]
 	inc [hl]
 	scf
+	ret
+
+.cant_induce_status
+	ld a, c
+	ld [wNoEffectFromWhichStatus], a
+;	fallthrough
+
+SetNoEffectFromStatus:
+	ld a, EFFECT_FAILED_NO_EFFECT
+	ld [wEffectFailed], a
 	ret
 
 
@@ -1903,12 +1897,7 @@ SpitPoison_Poison50PercentEffect:
 	; unsuccessful
 	ld a, ATK_ANIM_SPIT_POISON_SUCCESS
 	ld [wLoadedAttackAnimation], a
-;	fallthrough
-
-SetNoEffectFromStatus:
-	ld a, EFFECT_FAILED_NO_EFFECT
-	ld [wEffectFailed], a
-	ret
+	jr SetNoEffectFromStatus
 
 
 ; preserves bc
@@ -8053,31 +8042,9 @@ ItemFinder_DiscardAddToHandEffect:
 
 ; tries to make the turn holder's Active Pokemon Confused
 ImakuniEffect:
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
+	call CheckIfActiveCardCanBeAffectedByStatus
+	jr nc, .failed
 
-; Clefairy Doll and Mysterious Fossil cannot become Confused
-	cp CLEFAIRY_DOLL
-	jr z, .failed
-	cp MYSTERIOUS_FOSSIL
-	jr z, .failed
-
-; Snorlax cannot become Confused if its Pokemon Power is active
-	cp SNORLAX
-	jr nz, .success
-	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
-	jr c, .success
-	; fallthrough if Thick Skinned is active
-
-.failed
-; plays confusion animation and prints failure text
-	ld a, ATK_ANIM_OWN_CONFUSION
-	call PlayTrainerEffectAnimation
-	ldtx hl, ThereWasNoEffectText
-	jp DrawWideTextBox_WaitForInput
-
-.success
 ; plays confusion animation and the turn holder's Active Pokemon becomes Confused
 	ld a, ATK_ANIM_OWN_CONFUSION
 	call PlayTrainerEffectAnimation
@@ -8088,6 +8055,13 @@ ImakuniEffect:
 	ld [hl], a
 	bank1call DrawDuelHUDs
 	ret
+
+.failed
+; plays confusion animation and prints failure text
+	ld a, ATK_ANIM_OWN_CONFUSION
+	call PlayTrainerEffectAnimation
+	ldtx hl, ThereWasNoEffectText
+	jp DrawWideTextBox_WaitForInput
 
 
 ; shuffles the opponent's hand into their deck, and the opponent draws 7 cards
