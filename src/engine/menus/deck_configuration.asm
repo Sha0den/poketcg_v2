@@ -1714,12 +1714,7 @@ InitCardSelectionParams:
 	ldh [hffb3], a
 	ld de, wCardListCursorXPos
 	ld b, $9
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
+	call CopyNBytesFromHLToDE
 	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
 	ret

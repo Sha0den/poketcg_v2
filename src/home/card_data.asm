@@ -37,12 +37,7 @@ LoadCardDataToBuffer1_FromName::
 	call BankpushROM2
 	ld de, wLoadedCard1
 	ld b, PKMN_CARD_DATA_LENGTH
-.copy_card_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .copy_card_loop
+	call CopyNBytesFromHLToDE
 	pop hl
 .done
 	call BankpopROM
@@ -81,12 +76,7 @@ LoadCardDataToHL_FromCardID::
 	ld a, BANK(CardPointers)
 	call BankpushROM2
 	ld b, PKMN_CARD_DATA_LENGTH
-.copy_card_data_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .copy_card_data_loop
+	call CopyNBytesFromHLToDE
 	call BankpopROM
 	or a
 .done

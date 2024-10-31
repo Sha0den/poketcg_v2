@@ -69,12 +69,7 @@ InitializeMenuParameters::
 	ldh [hCurMenuItem], a
 	ld de, wMenuCursorXOffset
 	ld b, wMenuParamsEnd - wMenuParams ; 8 bytes
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
+	call CopyNBytesFromHLToDE
 	xor a
 	ld [wCursorBlinkCounter], a
 	ret

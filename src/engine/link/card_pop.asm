@@ -157,12 +157,7 @@ HandleCardPopCommunications:
 	add hl, de
 	ld de, wNameBuffer
 	ld c, NAME_BUFFER_LENGTH
-.loop_write_name
-	ld a, [de]
-	inc de
-	ld [hli], a
-	dec c
-	jr nz, .loop_write_name
+	call CopyNBytesFromDEToHL
 	or a
 	jp DisableSRAM
 

@@ -110,7 +110,12 @@
 
 
 ## Code Optimization
-- **October 31, 2024:** 15 Files Changed (although 2 are no longer in the build)
+- **October 31, 2024:** 9 Files Changed
+    - Replace various copy code with calls to either `CopyNBytesFromHLToDE` or `CopyNBytesFromDEToHL`
+
+<br/>
+
+- **[October 31, 2024](https://github.com/Sha0den/poketcg_v2/commit/fa8765cf82284b83ef7fab91a9aa8890eeeabee7):** 15 Files Changed (although 2 are no longer in the build)
     - Reorganize default palette data and put actual functions in the home bank (now, nothing is stored in engine/duel/core.asm)
 
 <br/>

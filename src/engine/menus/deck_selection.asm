@@ -9,13 +9,8 @@ INCLUDE "data/glossary_menu_transitions.asm"
 CopyDeckFromSRAM:
 	push bc
 	call EnableSRAM
-	ld b, DECK_SIZE
-.loop
-	ld a, [de]
-	inc de
-	ld [hli], a
-	dec b
-	jr nz, .loop
+	ld c, DECK_SIZE
+	call CopyNBytesFromDEToHL
 	xor a
 	ld [hl], a
 	pop bc
@@ -200,12 +195,7 @@ DeckSelectionSubMenu:
 	ld d, h
 	ld hl, wCurDeckCards
 	ld b, DECK_SIZE
-.asm_8ea9
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .asm_8ea9
+	call CopyNBytesFromHLToDE
 	call GetPointerToDeckName
 	ld d, h
 	ld e, l

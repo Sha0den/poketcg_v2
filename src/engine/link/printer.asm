@@ -482,13 +482,8 @@ SendTilesToPrinter:
 	add hl, hl ; *TILE_SIZE
 	ld bc, sGfxBuffer1
 	add hl, bc
-	ld c, TILE_SIZE
-.loop_copy
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec c
-	jr nz, .loop_copy
+	ld b, TILE_SIZE
+	call CopyNBytesFromHLToDE
 	pop bc
 	pop hl
 	ret

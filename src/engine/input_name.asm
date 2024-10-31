@@ -160,16 +160,11 @@ InitializeInputName:
 	ld hl, wNamingScreenBuffer
 	call ClearMemory_Bank6
 	ld hl, wNamingScreenBuffer
+.copy
 	ld a, [wNamingScreenBufferMaxLength]
-	ld b, a
-	inc b
-.loop
-	; copy b bytes of data from de to hl.
-	ld a, [de]
-	inc de
-	ld [hli], a
-	dec b
-	jr nz, .loop
+	ld c, a
+	inc c
+	call CopyNBytesFromDEToHL
 	ld hl, wNamingScreenBuffer
 	call GetTextLengthInTiles
 	ld a, c
@@ -185,10 +180,7 @@ FinalizeInputName:
 	ld l, e
 	ld h, d
 	ld de, wNamingScreenBuffer
-	ld a, [wNamingScreenBufferMaxLength]
-	ld b, a
-	inc b
-	jr InitializeInputName.loop
+	jr InitializeInputName.copy
 
 
 ; draws the player naming keyboard and prints the question, if it exists.

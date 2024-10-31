@@ -303,12 +303,7 @@ CopyBGDataToVRAMOrSRAM:
 	ld e, l
 	ld d, h
 	pop hl
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
+	call CopyNBytesFromHLToDE
 	pop af
 	call BankswitchSRAM
 	jp DisableSRAM
@@ -742,13 +737,8 @@ LoadPaletteDataFromHL:
 	add a ; 2 * size
 	add a ; 4 * size
 	add a ; 8 * size
-	ld c, a
-.loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec c
-	jr nz, .loop
+	ld b, a
+	call CopyNBytesFromHLToDE
 	call FlushAllPalettes
 .done
 	pop de

@@ -73,12 +73,7 @@ SetupPalettes::
 .copy_pals_loop
 	ld hl, InitialPalette
 	ld b, CGB_PAL_SIZE
-.copy_bytes_loop
-	ld a, [hli]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .copy_bytes_loop
+	call CopyNBytesFromHLToDE
 	dec c
 	jr nz, .copy_pals_loop
 	jp FlushAllCGBPalettes
