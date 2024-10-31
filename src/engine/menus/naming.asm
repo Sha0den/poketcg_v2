@@ -1,9 +1,12 @@
 DisplayPlayerNamingScreen:
 	; clear the name buffer.
 	ld hl, wNameBuffer ; c500: name buffer.
-	ld bc, NAME_BUFFER_LENGTH
-	ld a, TX_END
-	call FillMemoryWithA
+	ld b, NAME_BUFFER_LENGTH
+	xor a ; TX_END
+.clear_loop
+	ld [hli], a
+	dec b
+	jr nz, .clear_loop
 
 	; get player's name from the user into hl
 	ld hl, wNameBuffer
@@ -29,9 +32,9 @@ DisplayPlayerNamingScreen:
 .got_name
 	; set the default name
 	ld de, sPlayerName
-	ld bc, NAME_BUFFER_LENGTH
+	ld b, NAME_BUFFER_LENGTH
 	call EnableSRAM
-	call CopyDataHLtoDE_SaveRegisters
+	call CopyNBytesFromHLToDE
 	; this seems to be for checking integrity
 	call UpdateRNGSources
 	ld [sPlayerName+$e], a

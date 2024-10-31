@@ -91,8 +91,8 @@ BackupPalsAndSetWhite:
 	ld [wTempOBP1], a
 	ld hl, wBackgroundPalettesCGB
 	ld de, wTempBackgroundPalettesCGB
-	ld bc, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
-	call CopyDataHLtoDE_SaveRegisters
+	ld b, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
+	call CopyNBytesFromHLToDE
 ;	fallthrough
 
 ; fills wBackgroundPalettesCGB with pure white palettes
@@ -485,8 +485,8 @@ Func_10d17:
 	ld [wTempOBP1], a
 	ld hl, wBackgroundPalettesCGB
 	ld de, wTempBackgroundPalettesCGB
-	ld bc, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
-	call CopyDataHLtoDE_SaveRegisters
+	ld b, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
+	call CopyNBytesFromHLToDE
 
 	ld a, [wConsolePaletteData]
 	ld [wBGP], a

@@ -203,30 +203,6 @@ CopyBankedDataToDE::
 	jp BankswitchROM
 
 
-; fills bc bytes of data at hl with a
-; preserves all registers except af
-; input:
-;	a = data to copy
-;	bc = how many times to copy the data
-;	hl = where to copy the data
-FillMemoryWithA::
-	push hl
-	push de
-	push bc
-	ld e, a
-.loop
-	ld [hl], e
-	inc hl
-	dec bc
-	ld a, b
-	or c
-	jr nz, .loop
-	pop bc
-	pop de
-	pop hl
-	ret
-
-
 ; fills 2*bc bytes of data at hl with d,e
 ; preserves all registers except af
 ; input:
@@ -248,3 +224,31 @@ FillMemoryWithDE::
 	pop bc
 	pop hl
 	ret
+
+
+;----------------------------------------
+;        UNREFERENCED FUNCTIONS
+;----------------------------------------
+;
+; fills bc bytes of data at hl with a
+; preserves all registers except af
+; input:
+;	a = data to copy
+;	bc = how many times to copy the data
+;	hl = where to copy the data
+;FillMemoryWithA::
+;	push hl
+;	push de
+;	push bc
+;	ld e, a
+;.loop
+;	ld [hl], e
+;	inc hl
+;	dec bc
+;	ld a, b
+;	or c
+;	jr nz, .loop
+;	pop bc
+;	pop de
+;	pop hl
+;	ret

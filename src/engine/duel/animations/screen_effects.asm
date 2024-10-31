@@ -209,8 +209,8 @@ WhiteFlashScreen:
 	; backup the current background palettes
 	ld hl, wBackgroundPalettesCGB
 	ld de, wTempBackgroundPalettesCGB
-	ld bc, 8 palettes
-	call CopyDataHLtoDE_SaveRegisters
+	ld b, 8 palettes
+	call CopyNBytesFromHLToDE
 	ld de, PALRGB_WHITE
 	ld hl, wBackgroundPalettesCGB
 	ld bc, (8 palettes) / 2

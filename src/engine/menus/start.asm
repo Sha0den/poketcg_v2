@@ -109,9 +109,9 @@ CheckIfHasSaveData:
 LoadEventsFromSRAM:
 	ld hl, sEventVars
 	ld de, wEventVars
-	ld bc, EVENT_VAR_BYTES
+	ld b, EVENT_VAR_BYTES
 	call EnableSRAM
-	call CopyDataHLtoDE
+	call CopyNBytesFromHLToDE
 	jp DisableSRAM
 
 

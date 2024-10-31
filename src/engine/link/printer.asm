@@ -617,8 +617,8 @@ PrintDeckConfiguration::
 	ld de, sSavedDeck1
 	add hl, de
 	ld de, wDuelTempList
-	ld bc, DECK_STRUCT_SIZE
-	call CopyDataHLtoDE
+	ld b, DECK_STRUCT_SIZE
+	call CopyNBytesFromHLToDE
 	call DisableSRAM
 
 	call ShowPrinterTransmitting

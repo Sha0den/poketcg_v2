@@ -122,13 +122,11 @@ ClearEvents:
 	push hl
 	push bc
 	ld hl, wEventVars
-	ld bc, EVENT_VAR_BYTES
-.loop
+	ld b, EVENT_VAR_BYTES
 	xor a
+.loop
 	ld [hli], a
-	dec bc
-	ld a, b
-	or c
+	dec b
 	jr nz, .loop
 	pop bc
 	pop hl

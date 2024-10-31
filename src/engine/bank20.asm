@@ -375,8 +375,13 @@ ClearSRAMBGMaps:
 	call BankswitchSRAM
 	ld hl, sGfxBuffer0
 	ld bc, $800 ; sGfxBuffer0 + sGfxBuffer1
+.loop
 	xor a
-	call FillMemoryWithA
+	ld [hli], a
+	dec bc
+	ld a, b
+	or c
+	jr nz, .loop
 	pop af
 	call BankswitchSRAM
 	pop bc

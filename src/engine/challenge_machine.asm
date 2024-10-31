@@ -300,8 +300,8 @@ ChallengeMachine_CheckForNewRecord:
 	ld [hl], a
 	ld hl, sPlayerName
 	ld de, sChallengeMachineRecordHolderName
-	ld bc, NAME_BUFFER_LENGTH
-	call CopyDataHLtoDE_SaveRegisters
+	ld b, NAME_BUFFER_LENGTH
+	call CopyNBytesFromHLToDE
 ; remember to show congrats message later
 	ld a, TRUE
 	ld [sConsecutiveWinRecordIncreased], a
@@ -433,8 +433,8 @@ ChallengeMachine_DrawScoreScreen:
 	call EnableSRAM
 	ld hl, sChallengeMachineRecordHolderName
 	ld de, wDefaultText
-	ld bc, NAME_BUFFER_LENGTH
-	call CopyDataHLtoDE
+	ld b, NAME_BUFFER_LENGTH
+	call CopyNBytesFromHLToDE
 	call DisableSRAM
 	; zero wTxRam2 so that the name just loaded to wDefaultText is printed
 	ld hl, wTxRam2

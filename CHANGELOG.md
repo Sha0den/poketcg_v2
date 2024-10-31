@@ -110,7 +110,13 @@
 
 
 ## Code Optimization
-- **October 31, 2024:** 9 Files Changed
+- **October 31, 2024** 9 Files Changed
+    - Replace several instances of loading an 8-bit constant into a 16-bit register pair before copying memory with alternate code that only uses a single register
+    - Remove `FillMemoryWithA` function from the home bank and replace the 2 calls with (significantly optimized) inlined code that accomplishes the same thing
+
+<br/>
+
+- **[October 31, 2024](https://github.com/Sha0den/poketcg_v2/commit/5158b5994898fdd1801c7df3da6a12e08789cdd7):** 9 Files Changed
     - Replace various copy code with calls to either `CopyNBytesFromHLToDE` or `CopyNBytesFromDEToHL`
 
 <br/>
