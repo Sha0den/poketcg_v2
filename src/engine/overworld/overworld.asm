@@ -87,8 +87,19 @@ Func_c280:
 	call EnableLCD
 	call DoFrameIfLCDEnabled
 	call DisableLCD
-	farcall Func_12871
-	ret
+;	fallthrough
+
+; preserves de
+Func_12871::
+	call ZeroObjectPositionsAndToggleOAMCopy
+	call Set_OBJ_8x8
+	call SetDefaultPalettes
+	xor a
+	ldh [hSCX], a
+	ldh [hSCY], a
+	ldh [hWX], a
+	ldh [hWY], a
+	jp SetWindowOff
 
 
 HandleOverworldMode:
@@ -1291,7 +1302,7 @@ PauseMenu_Deck:
 	ldh [hSCX], a
 	ldh [hSCY], a
 	call Set_OBJ_8x16
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	farcall DeckSelectionMenu
 	jp Set_OBJ_8x8
 
@@ -1301,7 +1312,7 @@ PauseMenu_Card:
 	ldh [hSCX], a
 	ldh [hSCY], a
 	call Set_OBJ_8x16
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	farcall HandlePlayersCardsScreen
 	jp Set_OBJ_8x8
 
@@ -1372,7 +1383,7 @@ PCMenu_CardAlbum:
 	ldh [hSCX], a
 	ldh [hSCY], a
 	call Set_OBJ_8x16
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	farcall CardAlbum
 	jp Set_OBJ_8x8
 
@@ -1392,7 +1403,7 @@ PCMenu_Print:
 	ldh [hSCX], a
 	ldh [hSCY], a
 	call Set_OBJ_8x16
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	farcall HandlePrinterMenu
 	call Set_OBJ_8x8
 	call WhiteOutDMGPals

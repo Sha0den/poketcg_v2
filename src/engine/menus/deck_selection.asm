@@ -87,7 +87,7 @@ EmptyScreenAndLoadFontDuelAndDeckIcons:
 	call LoadDeckIcon
 	call LoadDeckBoxIcon
 	call LoadDuelCardSymbolTiles
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 	lb de, $38, $bf
 	jp SetupText
 

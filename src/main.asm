@@ -59,7 +59,6 @@ SECTION "Menus 3", ROMX
 INCLUDE "engine/menus/main_menu.asm"
 ;INCLUDE "engine/menus/debug.asm"
 INCLUDE "engine/menus/wait_keys.asm"
-INCLUDE "engine/gfx/default_palettes.asm"
 INCLUDE "engine/menus/naming.asm"
 INCLUDE "engine/menus/choose_gender.asm"
 

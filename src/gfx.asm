@@ -1388,6 +1388,7 @@ SECTION "Anims 4", ROMX
 
 SECTION "Palettes", ROMX
 	INCLUDE "data/palettes1.asm"
+	INCLUDE "engine/gfx/default_palettes.asm"
 
 
 SECTION "Card Gfx 1", ROMX

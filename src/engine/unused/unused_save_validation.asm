@@ -48,7 +48,7 @@ UnusedSaveDataValidation:
 	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
 	call LoadSymbolsFont
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 	ld a, [wConsole]
 	cp CONSOLE_SGB
 	jr nz, .not_sgb

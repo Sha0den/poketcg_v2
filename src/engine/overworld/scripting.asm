@@ -2036,7 +2036,7 @@ ScriptCommand_OpenDeckMachine:
 	xor a
 	ldh [hSCX], a
 	ldh [hSCY], a
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	call EnableLCD
 	pop bc
 	ld a, c

@@ -110,7 +110,12 @@
 
 
 ## Code Optimization
-- **October 30, 2024:** 3 Files Changed
+- **October 31, 2024:** 15 Files Changed (although 2 are no longer in the build)
+    - Reorganize default palette data and put actual functions in the home bank (now, nothing is stored in engine/duel/core.asm)
+
+<br/>
+
+- **[October 30, 2024](https://github.com/Sha0den/poketcg_v2/commit/27608aa47ef7aac694cf2260d9acc1510d4c6e20):** 3 Files Changed
     - Update some code that checks for the Amnesia attack effect (all related to the `HandleAmnesiaSubstatus` function)
 
 <br/>

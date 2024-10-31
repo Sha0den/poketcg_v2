@@ -835,7 +835,7 @@ CardAlbum:
 	call LoadCursorTile
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 	lb de, $3c, $ff
 	call SetupText
 	lb de, 1, 1
@@ -939,7 +939,7 @@ CardAlbum:
 	call LoadCursorTile
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 	lb de, $3c, $ff
 	call SetupText
 

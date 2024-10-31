@@ -17,7 +17,7 @@ Func_12661:
 	lb de, $30, $7f
 	call SetupText
 	call EnableAndClearSpriteAnimations
-	call Func_12871
+	farcall Func_12871
 	ld a, SINGLE_SPACED
 	ld [wLineSeparation], a
 	ld a, [wDebugMenuSelection]

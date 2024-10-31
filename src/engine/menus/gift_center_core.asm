@@ -30,7 +30,7 @@ GiftCenter_SendCard:
 	ld a, $1
 	ld [wVBlankOAMCopyToggle], a
 	call LoadSymbolsFont
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 
 	lb de, $38, $bf
 	call SetupText

@@ -104,7 +104,7 @@ CreditsSequenceCmd_LoadScene:
 	ld [wNumLoadedFramesetSubgroups], a
 	ldh [hSCX], a
 	ldh [hSCY], a
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	pop de
 	pop bc
 	ld a, c
@@ -128,7 +128,7 @@ CreditsSequenceCmd_LoadBooster:
 	ld [wNumLoadedFramesetSubgroups], a
 	ldh [hSCX], a
 	ldh [hSCY], a
-	farcall SetDefaultPalettes
+	call SetDefaultPalettes
 	pop de
 	pop bc
 	ld a, c

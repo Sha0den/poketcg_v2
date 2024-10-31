@@ -461,7 +461,7 @@ ClearScreenAndDrawDeckMachineScreen:
 	ld [wVBlankOAMCopyToggle], a
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 	lb de, $38, $ff
 	call SetupText
 	lb de, 0, 0
@@ -1790,7 +1790,7 @@ HandleAutoDeckMenu:
 	ld [wVBlankOAMCopyToggle], a
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
-	bank1call SetDefaultConsolePalettes
+	call SetDefaultConsolePalettes
 	lb de, $38, $ff
 	call SetupText
 	lb de, 0, 0
