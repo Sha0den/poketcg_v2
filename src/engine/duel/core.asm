@@ -368,8 +368,10 @@ PrintDuelMenuAndHandleInput:
 	ld a, [wDuelFinished]
 	or a
 	ret nz
+	ld [wCursorBlinkCounter], a ; 0
 	ld a, [wCurrentDuelMenuItem]
-	call SetMenuItem
+	ld [wCurMenuItem], a
+	ldh [hCurMenuItem], a
 
 .handle_input
 	call DoFrame
@@ -581,6 +583,93 @@ DuelMenu_Done:
 	call SetOppAction_SerialSendDuelData
 	jp ClearNonTurnTemporaryDuelvars
 
+
+; handles input for the 2-row 3-column duel menu.
+; only handles input not involving the B, START, or SELECT buttons, that is,
+; navigating through the menu or selecting an item with the A button.
+; other input is handled by PrintDuelMenuAndHandleInput.handle_input
+HandleDuelMenuInput::
+	ldh a, [hDPadHeld]
+	or a
+	jr z, .blink_cursor
+	ld b, a
+	ld hl, wCurMenuItem
+	and D_UP | D_DOWN
+	jr z, .check_left
+	ld a, [hl]
+	xor 1 ; move to the other menu item in the same column
+	jr .dpad_pressed
+.check_left
+	bit D_LEFT_F, b
+	jr z, .check_right
+	ld a, [hl]
+	sub 2
+	jr nc, .dpad_pressed
+	; wrap to the rightmost item in the same row
+	and 1
+	add 4
+	jr .dpad_pressed
+.check_right
+	bit D_RIGHT_F, b
+	jr z, .dpad_not_pressed
+	ld a, [hl]
+	add 2
+	cp 6
+	jr c, .dpad_pressed
+	; wrap to the leftmost item in the same row
+	and 1
+.dpad_pressed
+	push af
+	ld a, SFX_CURSOR
+	call PlaySFX
+	call .erase_cursor
+	pop af
+	ld [wCurMenuItem], a
+	ldh [hCurMenuItem], a
+	xor a
+	ld [wCursorBlinkCounter], a
+	jr .blink_cursor
+.dpad_not_pressed
+	ldh a, [hDPadHeld]
+	and A_BUTTON
+	jp nz, HandleMenuInput.A_pressed
+.blink_cursor
+	; blink cursor every 16 frames
+	ld hl, wCursorBlinkCounter
+	ld a, [hl]
+	inc [hl]
+	and $f
+	ret nz
+	ld a, SYM_CURSOR_R
+	bit 4, [hl]
+	jr z, .draw_cursor
+.erase_cursor
+	ld a, SYM_SPACE
+.draw_cursor
+	ld e, a
+	ld a, [wCurMenuItem]
+	add a
+	ld c, a
+	ld b, $0
+	ld hl, DuelMenuCursorCoords
+	add hl, bc
+	ld b, [hl]
+	inc hl
+	ld c, [hl]
+	ld a, e
+	call WriteByteToBGMap0
+	ld a, [wCurMenuItem]
+	ld e, a
+	or a
+	ret
+
+DuelMenuCursorCoords::
+	db  2, 14 ; Hand
+	db  2, 16 ; Attack
+	db  8, 14 ; Check
+	db  8, 16 ; Pkmn Power
+	db 14, 14 ; Retreat
+	db 14, 16 ; Done
 
 DuelMenuData:
 	; x, y, text ID

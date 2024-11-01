@@ -110,7 +110,13 @@
 
 
 ## Code Optimization
-- **October 31, 2024** 9 Files Changed
+- **November 1, 2024:** 2 Files Changed
+    - Remove `SetMenuItem` from home/menus.asm and inline the code for the single call in engine/duel/core.asm
+    - Move `HandleDuelMenuInput` from home/menus.asm (bank $00) to engine/duel/core.asm (bank $01)
+
+<br/>
+
+- **[October 31, 2024](https://github.com/Sha0den/poketcg_v2/commit/9dd0b2d316e844cd67190fb855ae312a1f7085d7):** 9 Files Changed
     - Replace several instances of loading an 8-bit constant into a 16-bit register pair before copying memory with alternate code that only uses a single register
     - Remove `FillMemoryWithA` function from the home bank and replace the 2 calls with (significantly optimized) inlined code that accomplishes the same thing
 
