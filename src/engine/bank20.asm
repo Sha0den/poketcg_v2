@@ -288,6 +288,7 @@ CopyBGDataToVRAMOrSRAM:
 	jp z, SafeCopyDataHLtoDE
 
 ; copies b bytes from hl to SRAM1
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 	ld a, BANK("SRAM1")
@@ -317,6 +318,7 @@ SafelyCopyBGMapFromSRAMToVRAM:
 	push hl
 	push bc
 	push de
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 	ld a, BANK("SRAM1")
@@ -369,6 +371,7 @@ SafelyCopyBGMapFromSRAMToVRAM:
 ClearSRAMBGMaps:
 	push hl
 	push bc
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 	ld a, BANK(sGfxBuffer0) ; SRAM 1

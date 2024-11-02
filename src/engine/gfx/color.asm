@@ -407,6 +407,7 @@ FadePalIntoAnother:
 
 ; fades screen to white, then if c = 0, fade back in (otherwise keep white)
 FlashScreenToWhite:
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 	push bc
@@ -427,13 +428,30 @@ FlashScreenToWhite:
 	jp DisableSRAM
 
 
-; copies current BG and OB palettes, wBackgroundPalettesCGB, and wObjectPalettesCGB into sGfxBuffer2
-CopyPalsToSRAMBuffer:
+; saves all pals to SRAM, then fills them with white.
+; after flushing, it loads back the saved pals from SRAM.
+FlashWhiteScreen:
+	call EnableSRAM
 	ldh a, [hBankSRAM]
-
 	push af
 	ld a, BANK("SRAM1")
 	call BankswitchSRAM
+	call CopyPalsToSRAMBuffer
+	call SetWhitePalettes
+	call FlushAllPalettes
+	call EnableLCD
+	call DoFrameIfLCDEnabled
+	call LoadPalsFromSRAMBuffer
+	call FlushAllPalettes
+	pop af
+	call BankswitchSRAM
+	jp DisableSRAM
+
+
+; copies current BG and OB palettes, wBackgroundPalettesCGB, and wObjectPalettesCGB into sGfxBuffer2.
+; assumes that SRAM is already enabled and that SRAM1 is the current SRAM bank.
+; preserves b
+CopyPalsToSRAMBuffer:
 	ld hl, sGfxBuffer2
 	ld a, [wBGP]
 	ld [hli], a
@@ -441,24 +459,15 @@ CopyPalsToSRAMBuffer:
 	ld [hli], a
 	ld a, [wOBP1]
 	ld [hli], a
-	ld e, l
-	ld d, h
-	ld hl, wBackgroundPalettesCGB
-	ld bc, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
-	call CopyDataHLtoDE_SaveRegisters
-	pop af
-
-	call BankswitchSRAM
-	jp DisableSRAM
+	ld de, wBackgroundPalettesCGB
+	ld c, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
+	jp CopyNBytesFromDEToHL
 
 
-; loads BG and OB palettes, wBackgroundPalettesCGB, and wObjectPalettesCGB from sGfxBuffer2
+; loads BG and OB palettes, wBackgroundPalettesCGB, and wObjectPalettesCGB from sGfxBuffer2.
+; assumes that SRAM is already enabled and that SRAM1 is the current SRAM bank.
+; preserves c
 LoadPalsFromSRAMBuffer:
-	ldh a, [hBankSRAM]
-
-	push af
-	ld a, BANK("SRAM1")
-	call BankswitchSRAM
 	ld hl, sGfxBuffer2
 	ld a, [hli]
 	ld [wBGP], a
@@ -467,12 +476,8 @@ LoadPalsFromSRAMBuffer:
 	ld a, [hli]
 	ld [wOBP1], a
 	ld de, wBackgroundPalettesCGB
-	ld bc, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
-	call CopyDataHLtoDE_SaveRegisters
-	pop af
-
-	call BankswitchSRAM
-	jp DisableSRAM
+	ld b, NUM_BACKGROUND_PALETTES palettes + NUM_OBJECT_PALETTES palettes
+	jp CopyNBytesFromHLToDE
 
 
 ; backs up all palettes and overwrites 4 background palettes with a white palette

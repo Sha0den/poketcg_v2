@@ -188,6 +188,7 @@ CopyGeneralSaveDataToSRAM:
 ;	carry = set:  if no error was found in sBackupGeneralSaveData (i.e. save data exists)
 ValidateBackupGeneralSaveData:
 	push de
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 	ld a, BANK(sBackupGeneralSaveData)
@@ -601,6 +602,7 @@ WriteBackupGeneralSaveData:
 ;	bc = number of bytes to copy to backup
 ;	hl = pointer in SRAM of data to backup
 WriteDataToBackup:
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 .loop
@@ -638,6 +640,7 @@ LoadBackupGeneralSaveData:
 ;	bc = number of bytes to load from backup
 ;	hl = pointer to backup data in SRAM
 LoadDataFromBackup:
+	call EnableSRAM
 	ldh a, [hBankSRAM]
 	push af
 

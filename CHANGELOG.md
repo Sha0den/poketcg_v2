@@ -110,7 +110,13 @@
 
 
 ## Code Optimization
-- **November 1, 2024:** 2 Files Changed
+- **[November 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/8ec7f4037239de99d758e5fad16e55a9c64f1a78):** 2 Files Changed
+    - Add a `call EnableSRAM` to the start of various functions that end with `jp DisableSRAM`
+    - Refactor `CopyPalsToSRAMBuffer` and `LoadPalsFromSRAMBuffer` to remove some redundant code and reduce the amount of cycles used
+
+<br/>
+
+- **[November 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/8ec7f4037239de99d758e5fad16e55a9c64f1a78):** 2 Files Changed
     - Remove `SetMenuItem` from home/menus.asm and inline the code for the single call in engine/duel/core.asm
     - Move `HandleDuelMenuInput` from home/menus.asm (bank $00) to engine/duel/core.asm (bank $01)
 
