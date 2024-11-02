@@ -110,7 +110,12 @@
 
 
 ## Code Optimization
-- **[November 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/8ec7f4037239de99d758e5fad16e55a9c64f1a78):** 2 Files Changed
+- **November 2, 2024:** 6 Files Changed
+    - Create a `ClearData` function in the home bank and use it to replace the equivalent code in numerous functions
+
+<br/>
+
+- **[November 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/49b05c1d70863e47495f4ea41e86dee41571c01d):** 4 Files Changed
     - Add a `call EnableSRAM` to the start of various functions that end with `jp DisableSRAM`
     - Refactor `CopyPalsToSRAMBuffer` and `LoadPalsFromSRAMBuffer` to remove some redundant code and reduce the amount of cycles used
 

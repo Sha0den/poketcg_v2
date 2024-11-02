@@ -77,12 +77,6 @@ ClearSRAMBank::
 	call EnableSRAM
 	ld hl, $a000
 	ld bc, $2000
-.loop
-	xor a
-	ld [hli], a
-	dec bc
-	ld a, c
-	or b
-	jr nz, .loop
+	call ClearData
 	pop af
 	ret

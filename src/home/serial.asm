@@ -388,14 +388,7 @@ ResetSerial::
 ClearSerialData::
 	ld hl, wSerialOp
 	ld bc, wSerialEnd - wSerialOp
-.loop
-	xor a
-	ld [hli], a
-	dec bc
-	ld a, c
-	or b
-	jr nz, .loop
-	ret
+	jp ClearData
 
 
 ; stores bc bytes from hl in wSerialSendBuf for sending

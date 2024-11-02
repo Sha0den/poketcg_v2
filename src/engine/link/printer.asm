@@ -279,15 +279,8 @@ PrepareForPrinterCommunications:
 ClearPrinterGfxBuffer:
 	ld hl, sGfxBuffer0
 	ld bc, $400
-.loop
-	xor a
-	ld [hli], a
-	dec bc
-	ld a, c
-	or b
-	jr nz, .loop
-	xor a
-	ld [wce9f], a
+	call ClearData
+	ld [wce9f], a ; 0
 	ret
 
 

@@ -97,13 +97,19 @@ SetupVRAM::
 .vram0
 	ld hl, v0Tiles0
 	ld bc, v0BGMap0 - v0Tiles0
-.loop
+;	fallthrough
+
+; preserves de
+; input:
+;	bc = number of bytes to clear
+;	hl = address from which to start clearing
+ClearData::
 	xor a
 	ld [hli], a
 	dec bc
-	ld a, b
-	or c
-	jr nz, .loop
+	ld a, c
+	or b
+	jr nz, ClearData
 	ret
 
 
@@ -126,13 +132,7 @@ FillTileMap::
 	call BankswitchVRAM1
 	ld hl, v1BGMap0
 	ld bc, v1BGMap1 - v1BGMap0
-.vram1_loop
-	xor a
-	ld [hli], a
-	dec bc
-	ld a, c
-	or b
-	jr nz, .vram1_loop
+	call ClearData
 	jp BankswitchVRAM0
 
 
@@ -141,13 +141,7 @@ FillTileMap::
 ZeroRAM::
 	ld hl, $c000
 	ld bc, $e000 - $c000
-.zero_wram_loop
-	xor a
-	ld [hli], a
-	dec bc
-	ld a, c
-	or b
-	jr nz, .zero_wram_loop
+	call ClearData
 	ld c, LOW($ff80)
 	ld b, $fff0 - $ff80
 	xor a

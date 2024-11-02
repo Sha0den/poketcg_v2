@@ -85,13 +85,7 @@ InitSaveData::
 	ldh [hWhoseTurn], a
 	ld hl, sCardAndDeckSaveData
 	ld bc, sCardAndDeckSaveDataEnd - sCardAndDeckSaveData
-.loop_clear
-	xor a
-	ld [hli], a
-	dec bc
-	ld a, c
-	or b
-	jr nz, .loop_clear
+	call ClearData
 
 ; add the starter decks
 	ld a, CHARMANDER_AND_FRIENDS_DECK
