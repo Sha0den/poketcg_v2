@@ -32,7 +32,7 @@ InitializeCardListParameters::
 	ld [wListFunctionPointer + 1], a
 	xor a
 	ld [wCursorBlinkCounter], a
-	ld a, 1
+	inc a ; 1
 	ld [wMenuYSeparation], a
 	ret
 
@@ -868,7 +868,7 @@ HandleYesOrNoMenu::
 .no
 	xor a
 	ld [wDefaultYesOrNo], a ; 0
-	ld a, 1
+	inc a ; 1
 	ldh [hCurMenuItem], a
 	scf
 	ret

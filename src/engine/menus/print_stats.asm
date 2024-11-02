@@ -54,7 +54,7 @@ LoadCollectedMedalTilemaps:
 	farcall LoadTilesetGfx
 	xor a
 	ld [wd4ca], a
-	ld a, $01
+	inc a ; $01
 	ld [wd4cb], a
 	ld a, $76
 	farcall SetBGPAndLoadedPal

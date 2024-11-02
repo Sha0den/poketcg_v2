@@ -98,7 +98,6 @@ ApplyBackgroundScroll::
 .ly_over_0x60
 	xor a
 	ldh [rSCX], a
-	ld a, $00
 	ldh [rLYC], a
 	call GetNextBackgroundScroll
 	ldh [hSCX], a

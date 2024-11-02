@@ -10,13 +10,11 @@ LoadMap::
 	farcall LoadConsolePaletteData
 	call WhiteOutDMGPals
 	call ZeroObjectPositions
-	xor a
-	ld [wTileMapFill], a
 	call LoadSymbolsFont
 	call Set_OBJ_8x8
-	xor a ; DOUBLE_SPACED
-	ld [wLineSeparation], a
 	xor a
+	ld [wTileMapFill], a ; SYM_SPACE
+	ld [wLineSeparation], a ; DOUBLE_SPACED
 	ld [wd291], a
 .warp
 	farcall FadeScreenToWhite

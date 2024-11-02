@@ -366,9 +366,7 @@ IntroSequenceCmd_LoadTitleScreenScene:
 ;	bc = coordinates for scene
 LoadOpeningScene:
 	push af
-	push bc
 	call DisableLCD
-	pop bc
 	pop af
 
 	farcall _LoadScene ; TODO change func name?

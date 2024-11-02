@@ -1,6 +1,6 @@
 ; empties screen in preparation to draw some menu
 InitMenuScreen:
-	ld a, $0
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call EmptyScreen
 	call LoadSymbolsFont
@@ -18,5 +18,4 @@ InitMenuScreen:
 	ldh [rSCY], a
 .skip_clear_scroll
 	call SetDefaultPalettes
-	call ZeroObjectPositionsAndToggleOAMCopy
-	ret
+	jp ZeroObjectPositionsAndToggleOAMCopy

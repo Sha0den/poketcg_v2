@@ -6,7 +6,7 @@ HandleGiftCenter::
 	jr c, .asm_b18f
 	or a
 	jr nz, .asm_b18f
-	xor a
+	; a = $00
 	ld [wTxRam2 + 0], a
 	ld [wTxRam2 + 1], a
 	ret

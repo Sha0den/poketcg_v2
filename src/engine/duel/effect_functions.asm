@@ -4683,7 +4683,7 @@ Discard2AttachedEnergyCards_PlayerSelection:
 
 	xor a
 	ldh [hCurSelectionItem], a
-	xor a ; PLAY_AREA_ARENA
+	; a = PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
 	call SortCardsInDuelTempListByID
 	xor a ; PLAY_AREA_ARENA

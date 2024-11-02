@@ -89,7 +89,6 @@ FindCardsInSetAndRarity:
 	ld [hli], a
 	dec c
 	jr nz, .delete_type_table_loop
-	xor a
 	ld hl, wBoosterViableCardList
 	ld [hl], a
 	ld de, 1 ; GRASS_ENERGY
@@ -615,9 +614,8 @@ InitBoosterData:
 	ld [hli], a
 	dec c
 	jr nz, .clear_player_deck_loop
-	ld c, $00 ; $100
+	; c = $00, so the following code will loop $100 times
 	ld hl, wTempCardCollection
-	xor a
 .clear_temp_card_collection_loop
 	ld [hli], a
 	dec c

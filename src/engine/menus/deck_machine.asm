@@ -618,7 +618,7 @@ PrintDeckMachineEntry:
 
 ; print the symbol that represents whether the deck can be built,
 ; or if another deck has to be dismantled to build it
-	ld a, $0 ; no decks dismantled
+	xor a ; no decks dismantled
 	call CheckIfCanBuildSavedDeck
 	pop bc
 	ld hl, wDefaultText
@@ -976,9 +976,7 @@ FindFirstEmptyDeckSlot:
 	ld hl, sDeck1Cards
 	ld a, [hl]
 	or a
-	jr nz, .check_deck_2
-	xor a
-	ret
+	ret z ; return with a = 0 if the first deck is empty
 
 .check_deck_2
 	ld hl, sDeck2Cards
@@ -1161,7 +1159,7 @@ TryBuildDeckMachineDeck:
 	ld a, [wSelectedDeckMachineEntry]
 	ld b, a
 	push bc
-	ld a, $0
+	xor a ; no decks dismantled
 	call CheckIfCanBuildSavedDeck
 	pop bc
 	jr nc, .build_deck

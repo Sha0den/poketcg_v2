@@ -197,8 +197,7 @@ DrawBottomCardInfoInSRAMGfxBuffer0:
 	xor a ; CARDPAGETYPE_NOT_PLAY_AREA
 	ld [wCardPageType], a
 	ld hl, sGfxBuffer0
-	ld b, 20
-	ld c, 9
+	lb bc, 20, 9
 .loop_lines
 	xor a ; SYM_SPACE
 	lb de, $36, $37

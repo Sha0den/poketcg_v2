@@ -3608,7 +3608,7 @@ DisplayCardList:
 	ld hl, wSelectedDuelSubMenuItem
 	ld [hli], a
 	ld [hl], a
-	ld a, TRUE
+	inc a ; TRUE
 	ld [wSortCardListByID], a
 	call EraseCursor
 	jr .reload_list
@@ -5182,7 +5182,7 @@ DisplayPlayAreaScreen:
 	jr nz, .skip_ahead
 	xor a
 	ld [wSelectedDuelSubMenuItem], a
-	inc a
+	inc a ; TRUE
 	ld [wPlayAreaScreenLoaded], a
 .asm_6022
 	call ZeroObjectPositionsAndToggleOAMCopy
@@ -6360,7 +6360,7 @@ LoadPlayerDeck:
 ; on a duel against Sam, also loads PRACTICE_PLAYER_DECK to wPlayerDeck.
 ; also, sets wRNG1, wRNG2, and wRNGCounter to $57.
 LoadOpponentDeck:
-	xor a
+	xor a ; FALSE
 	ld [wIsPracticeDuel], a
 	ld a, [wOpponentDeckID]
 	cp SAMS_NORMAL_DECK_ID
@@ -6370,11 +6370,9 @@ LoadOpponentDeck:
 ; only practice duels will display help messages, but
 ; any duel with Sam will force the PRACTICE_PLAYER_DECK
 ;.practice_sam_duel
-	inc a
+	inc a ; TRUE
 	ld [wIsPracticeDuel], a
 .normal_sam_duel
-	xor a
-	ld [wOpponentDeckID], a
 	rst SwapTurn
 	ld a, PRACTICE_PLAYER_DECK
 	call LoadDeck
@@ -6384,7 +6382,8 @@ LoadOpponentDeck:
 	ld [hli], a
 	ld [hli], a
 	ld [hl], a
-	xor a
+	xor a ; SAMS_PRACTICE_DECK
+	ld [wOpponentDeckID], a
 .not_practice_duel
 	inc a
 	inc a ; convert from *_DECK_ID constant read from wOpponentDeckID to *_DECK constant
@@ -6608,9 +6607,8 @@ PrintPokemonEvolvedIntoPokemon:
 ; handles the opponent's turn in a link duel.
 ; loops until either [wOpponentTurnEnded] or [wDuelFinished] is non-0.
 DoLinkOpponentTurn:
-	xor a
+	xor a ; FALSE
 	ld [wOpponentTurnEnded], a
-	xor a
 	ld [wSkipDuelistIsThinkingDelay], a
 .link_opp_turn_loop
 	ld a, [wSkipDuelistIsThinkingDelay]
@@ -6634,8 +6632,7 @@ DoLinkOpponentTurn:
 	ld a, [wSerialFlags]
 	or a
 	jp nz, DuelTransmissionError
-	xor a
-	ld [wSkipDuelistIsThinkingDelay], a
+	ld [wSkipDuelistIsThinkingDelay], a ; FALSE
 	ldh a, [hOppActionTableIndex]
 	cp NUM_OPP_ACTIONS
 	jp nc, DuelTransmissionError
@@ -8034,7 +8031,7 @@ InitVariablesToBeginDuel:
 	jr z, .set_duel_type
 	bit 7, a ; DUELIST_TYPE_AI_OPP
 	jr nz, .set_duel_type
-	xor a
+	xor a ; DUELIST_TYPE_PLAYER
 .set_duel_type
 	ld [wDuelType], a
 	ret

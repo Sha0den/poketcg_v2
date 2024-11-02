@@ -66,7 +66,6 @@ GameEvent_Duel::
 	xor a
 	ld [wSongOverride], a
 	call EnableSRAM
-	xor a
 	ld [sPlayerInChallengeMachine], a
 	call DisableSRAM
 	call SaveGeneralSaveData
@@ -82,7 +81,7 @@ GameEvent_BattleCenter::
 	ld [wActiveGameEvent], a
 	xor a
 	ld [wSongOverride], a
-	ld a, -1
+	dec a ; -1
 	ld [wDuelResult], a
 	ld a, MUSIC_DUEL_THEME_1
 	ld [wDuelTheme], a

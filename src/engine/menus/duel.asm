@@ -1362,7 +1362,6 @@ HandlePeekSelection::
 
 ; prompt player to choose either own Play Area or opponent's
 .draw_menu_1
-	xor a
 	ld hl, .PlayAreaMenuParameters
 	call InitializeMenuParameters
 	call DrawWideTextBox

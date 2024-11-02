@@ -144,7 +144,7 @@ ZeroRAM::
 	call ClearData
 	ld c, LOW($ff80)
 	ld b, $fff0 - $ff80
-	xor a
+	; a = $00
 .zero_hram_loop
 	ld [$ff00+c], a
 	inc c

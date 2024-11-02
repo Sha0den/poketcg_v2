@@ -110,7 +110,12 @@
 
 
 ## Code Optimization
-- **November 2, 2024:** 6 Files Changed
+- **November 2, 2024:** 17 Files Changed
+    - Implement a variety of minor optimizations, most of which are related to the `xor a` instruction setting the a register to 0
+
+<br/>
+
+- **[November 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/23d680517992f61bce8f677dd82adeea52bea52c):** 6 Files Changed
     - Create a `ClearData` function in the home bank and use it to replace the equivalent code in numerous functions
 
 <br/>

@@ -168,8 +168,8 @@ SetupText::
 	ld a, $80
 	ld [wTilePatternSelectorCorrection], a
 	ld hl, wc600
-.clear_loop
 	xor a
+.clear_loop
 	ld [hl], a
 	inc l
 	jr nz, .clear_loop

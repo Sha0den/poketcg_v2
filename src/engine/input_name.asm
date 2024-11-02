@@ -1002,6 +1002,7 @@ InputDeckName:
 	xor a
 	ld [wNamingScreenCursorX], a
 	ld [wNamingScreenCursorY], a
+	ld [wInvisibleCursorTile], a
 
 	ld a, $09
 	ld [wNamingScreenNumColumns], a
@@ -1009,8 +1010,6 @@ InputDeckName:
 	ld [wNamingScreenKeyboardHeight], a
 	ld a, $0f
 	ld [wVisibleCursorTile], a
-	ld a, $00
-	ld [wInvisibleCursorTile], a
 .loop
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a
