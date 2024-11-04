@@ -37,25 +37,6 @@ InitializeCardListParameters::
 	ret
 
 
-; used for card list screens like the Hand or Discard Pile
-; similar to HandleMenuInput, but conveniently returns parameters
-; related to the state of the list in a, d, and e if A or B were pressed.
-; output:
-;	d = [wListScrollOffset]
-;	e = [wCurMenuItem]
-;	a = [hCurMenuItem] ($ff if the B button was pressed)
-;	carry = set:  if either the A or the B button were pressed
-HandleCardListInput::
-	call HandleMenuInput
-	ret nc
-	ld a, [wListScrollOffset]
-	ld d, a
-;	ld a, [wCurMenuItem]
-;	ld e, a ; already set by HandleMenuInput
-	ldh a, [hCurMenuItem]
-	ret
-
-
 ; initializes parameters for a menu, given the 8 bytes starting at hl,
 ; which are loaded to the following addresses:
 ;	wMenuCursorXOffset, wMenuCursorYOffset, wMenuYSeparation, wNumMenuItems,
@@ -77,8 +58,9 @@ InitializeMenuParameters::
 
 ; note: output values still subject to those of the function at [wMenuUpdateFunc], if any
 ; output:
-;	a =  0:  if the A button was pressed
-;	a = -1:  if the B button was pressed
+;	a & [hCurMenuItem] = index for the currently selected item:  if the A button was pressed
+;	                   = $ff:  if the B button was pressed
+;	e & [wCurMenuItem] = index for the currently selected item (on the screen)
 ;	carry = set:  if either the A or the B button were pressed
 HandleMenuInput::
 	xor a
@@ -292,7 +274,7 @@ ReloadCardListItems::
 .next_card
 	ld a, [hl]
 	cp $ff
-	ret z ; done
+	ret z ; return if there are no more cards in the list to print
 	push hl
 	call LoadCardDataToBuffer1_FromDeckIndex
 	call DrawCardSymbol
@@ -485,12 +467,11 @@ CardListMenuFunction::
 	and A_BUTTON | B_BUTTON
 	ret z
 	and B_BUTTON
-	jr nz, .pressed_b
-	scf
-	ret
-.pressed_b
+	jr z, .pressed_a
+	; pressed B
 	ld a, $ff
 	ldh [hCurMenuItem], a
+.pressed_a
 	scf
 	ret
 

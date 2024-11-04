@@ -514,12 +514,11 @@ HandleDeckBuildScreen:
 	; then set the number of cursor positions as the number of visible entries
 	ld [wCardListNumCursorPositions], a
 .ok
-	ld hl, PrintDeckBuildingCardList
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(PrintDeckBuildingCardList)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(PrintDeckBuildingCardList)
+	ld [hl], a
 
 	ld a, $01
 	ld [wced2], a
@@ -2435,12 +2434,11 @@ HandleDeckConfirmationMenu:
 	ld [wNumVisibleCardListEntries], a
 	call ShowConfirmationCardScreen
 
-	ld hl, UpdateConfirmationCardScreen
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(UpdateConfirmationCardScreen)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(UpdateConfirmationCardScreen)
+	ld [hl], a
 
 	xor a
 	ld [wced2], a
@@ -3086,12 +3084,11 @@ HandlePlayersCardsScreen:
 	jr nc, .asm_a300
 	ld [wCardListNumCursorPositions], a
 .asm_a300
-	ld hl, PrintCardSelectionList
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(PrintCardSelectionList)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(PrintCardSelectionList)
+	ld [hl], a
 	xor a
 	ld [wced2], a
 

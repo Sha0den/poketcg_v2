@@ -1312,7 +1312,7 @@ HandleEnergyDiscardMenuInput:
 	call WriteTwoDigitNumberInTxSymbolFormat_TrimLeadingZero
 .wait_input
 	call DoFrame
-	call HandleCardListInput
+	call HandleMenuInput
 	jr nc, .wait_input
 	cp $ff
 	scf
@@ -3533,7 +3533,8 @@ DrawCardListScreenLayout:
 	lb bc, 8, 6
 	call FillRectangle
 	call ApplyBGP6OrSGB3ToCardImage
-	farcall PrintSortNumberInCardList_CallFromPointer
+	ld hl, wPrintSortNumberInCardListPtr
+	call CallIndirect
 	ld a, [wDuelTempList]
 	cp $ff
 	scf
@@ -3571,14 +3572,14 @@ DisplayCardList:
 .wait_button
 	call DoFrame
 	call .UpdateListOnDPadInput
-	call HandleCardListInput
+	call HandleMenuInput
 	jr nc, .wait_button
 	; refresh the position of the last checked card of the list, so that
 	; the cursor points to said card when the list is reloaded
-	ld hl, wSelectedDuelSubMenuItem
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld hl, wSelectedDuelSubMenuScrollOffset
+	ld a, [wListScrollOffset]
+	ld [hld], a
+	ld [hl], e ; hl = wSelectedDuelSubMenuItem, e = wCurMenuItem
 	ldh a, [hKeysPressed]
 	ld b, a
 	bit SELECT_F, b
@@ -3761,17 +3762,15 @@ CardListFunction:
 	jr nz, .action_button
 	ldh a, [hKeysReleased]
 	and D_PAD
-	jr nz, .reload_card_image ; jump if the D_PAD key was released this frame
+	ret z ; return unless the D_PAD key was released this frame
+	call LoadSelectedCardGfx
+	or a
 	ret
 .exit
 	ld a, $ff
 	ldh [hCurMenuItem], a
 .action_button
 	scf
-	ret
-.reload_card_image
-	call LoadSelectedCardGfx
-	or a
 	ret
 
 
@@ -5266,7 +5265,7 @@ DisplayPlayAreaScreen:
 PlayAreaScreenMenuParameters_ActivePokemonIncluded:
 	db 0, 0 ; cursor x, cursor y
 	db 3 ; y displacement between items
-	db 6 ; number of items
+	db MAX_PLAY_AREA_POKEMON ; number of items
 	db SYM_CURSOR_R ; cursor tile number
 	db SYM_SPACE ; tile behind cursor
 	dw PlayAreaScreenMenuFunction ; function pointer if non-0
@@ -5274,7 +5273,7 @@ PlayAreaScreenMenuParameters_ActivePokemonIncluded:
 PlayAreaScreenMenuParameters_ActivePokemonExcluded:
 	db 0, 3 ; cursor x, cursor y
 	db 3 ; y displacement between items
-	db 6 ; number of items
+	db MAX_PLAY_AREA_POKEMON ; number of items
 	db SYM_CURSOR_R ; cursor tile number
 	db SYM_SPACE ; tile behind cursor
 	dw PlayAreaScreenMenuFunction ; function pointer if non-0

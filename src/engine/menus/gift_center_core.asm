@@ -100,12 +100,11 @@ GiftCenter_ReceiveCard:
 	jr nc, .asm_afd4
 	ld [wCardListNumCursorPositions], a
 .asm_afd4
-	ld hl, ShowReceivedCardsList
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(ShowReceivedCardsList)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(ShowReceivedCardsList)
+	ld [hl], a
 
 	xor a
 	ld [wced2], a
@@ -180,7 +179,7 @@ GiftCenter_SendDeck:
 	inc hl
 	ld [hl], d
 	call ClearScreenAndDrawDeckMachineScreen
-	ld a, DECK_SIZE
+	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
 	xor a
 .asm_bc1a
@@ -241,7 +240,7 @@ GiftCenter_ReceiveDeck:
 	inc hl
 	ld [hl], d
 	call ClearScreenAndDrawDeckMachineScreen
-	ld a, DECK_SIZE
+	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
 	xor a
 .asm_bc90

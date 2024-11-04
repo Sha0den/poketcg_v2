@@ -45,12 +45,11 @@ HandleDeckMissingCardsList:
 	call DrawWideTextBox_PrintText
 
 ; set the card update function
-	ld hl, .CardListUpdateFunction
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(.CardListUpdateFunction)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(.CardListUpdateFunction)
+	ld [hl], a
 	xor a
 	ld [wced2], a
 
@@ -280,7 +279,7 @@ HandleDeckSaveMachineMenu:
 
 ; sets the number of cursor positions for the deck machine menu, sets the ID
 ; for the text to print, and sets DrawDeckMachineScreen as the update function
-; preserves bc
+; preserves bc and de
 ; input:
 ;	de = text ID
 InitDeckMachineDrawingParams:
@@ -290,12 +289,11 @@ InitDeckMachineDrawingParams:
 	ld [hl], e
 	inc hl
 	ld [hl], d
-	ld hl, DrawDeckMachineScreen
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(DrawDeckMachineScreen)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(DrawDeckMachineScreen)
+	ld [hl], a
 	xor a
 	ld [wced2], a
 	ret
@@ -1577,12 +1575,11 @@ HandleAutoDeckMenu:
 	call DrawWideTextBox_PrintText
 	ld a, NUM_DECK_MACHINE_SLOTS
 	ld [wCardListNumCursorPositions], a
-	ld hl, UpdateDeckMachineScrollArrowsAndEntries
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(UpdateDeckMachineScrollArrowsAndEntries)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(UpdateDeckMachineScrollArrowsAndEntries)
+	ld [hl], a
 .wait_input
 	call DoFrame
 	call HandleMenuInput

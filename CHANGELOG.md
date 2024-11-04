@@ -110,7 +110,13 @@
 
 
 ## Code Optimization
-- **November 2, 2024:** 17 Files Changed
+- **November 4, 2024:** 9 Files Changed
+    - Implement a variety of minor optimizations, all of which are related to printing card lists
+    - Correct a few constants (NUM_DECK_SAVE_MACHINE_SLOTS instead of DECK_SIZE and MAX_PLAY_AREA_POKEMON instead of 6)
+
+<br/>
+
+- **[November 2, 2024](https://github.com/Sha0den/poketcg_v2/commit/855713117893d55bdae1137d37cc0f0edf3a6c59):** 17 Files Changed
     - Implement a variety of minor optimizations, most of which are related to the `xor a` instruction setting the a register to 0
 
 <br/>

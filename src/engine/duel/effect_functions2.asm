@@ -1184,7 +1184,8 @@ ReorderCardsOnTopOfDeck:
 	ldh [hCurSelectionItem], a
 
 ; refresh screen
-	call PrintSortNumberInCardList_CallFromPointer
+	ld hl, wPrintSortNumberInCardListPtr
+	call CallIndirect
 
 ; check if we're done ordering
 	ldh a, [hCurSelectionItem]
@@ -1249,7 +1250,8 @@ ReorderCardsOnTopOfDeck:
 	; clear this byte
 	dec hl
 	ld [hl], $00 ; overwrite order number with 0
-	call PrintSortNumberInCardList_CallFromPointer
+	ld hl, wPrintSortNumberInCardListPtr
+	call CallIndirect
 	jr .loop_selection
 
 
@@ -1266,11 +1268,6 @@ PrintSortNumberInCardList_SetPointer:
 	ld a, 1
 	ld [wSortCardListByID], a
 	ret
-
-
-PrintSortNumberInCardList_CallFromPointer:
-	ld hl, wPrintSortNumberInCardListPtr
-	jp CallIndirect
 
 
 ; goes through the list at wDuelTempList + 10

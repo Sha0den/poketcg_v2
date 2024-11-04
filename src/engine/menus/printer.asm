@@ -105,12 +105,11 @@ PrinterMenu_PokemonCards:
 	ld [wCardListNumCursorPositions], a
 	ld [wTempCardListNumCursorPositions], a
 .asm_abf6
-	ld hl, PrintCardSelectionList
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(PrintCardSelectionList)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(PrintCardSelectionList)
+	ld [hl], a
 	xor a
 	ld [wced2], a
 
@@ -246,7 +245,7 @@ PrinterMenu_DeckConfiguration:
 	xor a
 	ld [wCardListVisibleOffset], a
 	call ClearScreenAndDrawDeckMachineScreen
-	ld a, DECK_SIZE
+	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
 
 	xor a

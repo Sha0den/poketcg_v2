@@ -724,12 +724,11 @@ CardAlbum:
 	jr nc, .asm_a97e
 	ld [wCardListNumCursorPositions], a
 .asm_a97e
-	ld hl, PrintCardSetListEntries
-	ld d, h
-	ld a, l
 	ld hl, wCardListUpdateFunction
+	ld a, LOW(PrintCardSetListEntries)
 	ld [hli], a
-	ld [hl], d
+	ld a, HIGH(PrintCardSetListEntries)
+	ld [hl], a
 
 	xor a
 	ld [wced2], a
@@ -810,14 +809,12 @@ CardAlbum:
 
 .GetNumCardEntries
 	ld hl, wFilteredCardList
-	ld b, $00
+	ld b, -1
 .loop_card_ids
+	inc b
 	ld a, [hli]
 	or a
-	jr z, .asm_aa1f
-	inc b
-	jr .loop_card_ids
-.asm_aa1f
+	jr nz, .loop_card_ids
 	ld a, b
 	ld [wNumCardListEntries], a
 	ret
