@@ -110,7 +110,12 @@
 
 
 ## Code Optimization
-- **November 4, 2024:** 9 Files Changed
+- **November 4, 2024:** 2 Files Changed
+    - Move several card list display functions from home/menus.asm (bank $00) to engine/duel/core.asm (bank $01)
+
+<br/>
+
+- **[November 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/70b040d55da09d1620751649e8ef31a3595d2a52):** 9 Files Changed
     - Implement a variety of minor optimizations, all of which are related to printing card lists
     - Correct a few constants (NUM_DECK_SAVE_MACHINE_SLOTS instead of DECK_SIZE and MAX_PLAY_AREA_POKEMON instead of 6)
 
