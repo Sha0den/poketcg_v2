@@ -960,7 +960,12 @@ wListFunctionPointer:: ; cd1d
 	ds $2
 
 ; Unused wram bytes?
-	ds $78
+	ds $77
+
+; indicates that an alternate format should be used when displaying a card list.
+; currently only used when opening a booster pack (if = USE_BOOSTER_PACK_DISPLAY).
+wCardListDisplayFormat:: ; cd96
+	ds $1
 
 ; in a card list, the Y position where the <sel_item>/<num_items> indicator is placed
 ; if wCardListIndicatorYPosition == $ff, no indicator is displayed

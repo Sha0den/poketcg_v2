@@ -29,13 +29,42 @@ OpenBoosterPack::
 	ld a, $ff ; terminator byte
 	ld [de], a
 
-	lb de, $38, $9f
+	lb de, $38, $9e
 	call SetupText
+	call LoadNewCardSymbolGraphics
 	bank1call InitAndDrawCardListScreenLayout
 	ldtx hl, ChooseTheCardYouWishToExamineText
 	ldtx de, BoosterPackText
 	call SetCardListHeaderText
+	ld a, USE_BOOSTER_PACK_DISPLAY
+	ld [wCardListDisplayFormat], a
 	ld a, A_BUTTON | START
 	ld [wNoItemSelectionMenuKeys], a
 	bank1call DisplayCardList
-	ret
+	xor a ; DEFAULT_CARD_LIST_DISPLAY
+	ld [wCardListDisplayFormat], a
+;	fallthrough
+
+; adds the final cards drawn from the booster pack to the player's collection (sCardCollection)
+; preserves bc and de
+; input:
+;	wBoosterCardsDrawn = null-terminated list of card IDs
+AddBoosterCardsToCollection:
+	ld hl, wBoosterCardsDrawn
+.add_cards_loop
+	ld a, [hli]
+	or a
+	ret z ; return if there are no more cards to add
+	call AddCardToCollection
+	jr .add_cards_loop
+
+
+; loads the Deck Box icon gfx to v0Tiles2
+LoadNewCardSymbolGraphics:
+	ld hl, NewCardSymbolGfx
+	ld de, v0Tiles1 + $1f tiles
+	ld b, 16 ; 1 tile = 8*8 = 64 pixels, 64 pixels / 4 (2 bits per pixel) = 16 bytes
+	jp CopyNBytesFromHLToDE
+
+NewCardSymbolGfx:
+	INCBIN "gfx/new_card_symbol.2bpp"

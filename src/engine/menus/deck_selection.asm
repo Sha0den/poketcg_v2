@@ -59,9 +59,9 @@ LoadDeckIcon:
 ; loads the Deck Box icon gfx to v0Tiles2
 LoadDeckBoxIcon:
 	ld hl, DeckBoxGfx
-	ld bc, 64
 	ld de, v0Tiles1 + $4c tiles
-	jp CopyDataHLtoDE
+	ld b, 64 ; 16 pixels * 16 pixels = 256 pixels, 256 pixels / 4 (2 bits per pixel) = 64 bytes
+	jp CopyNBytesFromHLToDE
 
 DeckBoxGfx:
 	INCBIN "gfx/deck_box.2bpp"

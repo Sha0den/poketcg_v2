@@ -1009,8 +1009,8 @@ EmptyLineText:
 	textfw "                  "
 	done
 
-BoosterPackText:
-	text "Booster Pack"
+PokemonTCGSetsText:
+	textfw "Pokémon TCG Sets"
 	done
 
 Item1ColosseumText:

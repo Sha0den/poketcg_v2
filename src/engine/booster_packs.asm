@@ -14,7 +14,6 @@ GenerateBoosterPack:
 	call GenerateBoosterNonEnergies
 	jr c, .no_cards_found_loop
 	call PutEnergiesAndNonEnergiesTogether
-	call AddBoosterCardsToCollection
 	pop de
 	pop bc
 	pop hl
@@ -541,24 +540,6 @@ PutEnergiesAndNonEnergiesTogether:
 	pop hl
 	jr .loop_through_extra_cards
 .end_of_cards
-	pop hl
-	ret
-
-
-; adds the final cards drawn from the booster pack to the player's collection (sCardCollection)
-; preserves all registers except af
-; input:
-;	wBoosterCardsDrawn = $00 terminated list with card IDs
-AddBoosterCardsToCollection:
-	push hl
-	ld hl, wBoosterCardsDrawn
-.add_cards_loop
-	ld a, [hli]
-	or a
-	jr z, .no_cards_left
-	call AddCardToCollection
-	jr .add_cards_loop
-.no_cards_left
 	pop hl
 	ret
 

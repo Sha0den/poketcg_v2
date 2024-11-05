@@ -110,7 +110,7 @@
 
 
 ## Code Optimization
-- **November 4, 2024:** 2 Files Changed
+- **[November 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/3cf5d16b2d16ed007741a24f0fb16bae620408ce):** 2 Files Changed
     - Move several card list display functions from home/menus.asm (bank $00) to engine/duel/core.asm (bank $01)
 
 <br/>
@@ -986,6 +986,13 @@
 
 
 ## New Features
+- **November 5, 2024:** 12 Files Changed
+    - Implement new booster pack card list display that informs the player which cards from the booster pack are newly obtained (using a red ! symbol)
+        - *Most of the edited functions from engine/duel/core.asm were originally located in home/menus.asm*
+    - Separate BoosterPackText into 2 texts: 1 for the card album's table of contents and another for the booster pack card list header
+
+<br/>
+
 - **[August 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/f621d292bce067b1f346896554dde4f944a1949d):** 22 Files Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Add-female-player-character) to add the option to play as Mint, the female protagonist from the sequel
 

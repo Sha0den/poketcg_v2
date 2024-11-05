@@ -1106,7 +1106,8 @@ FireClubMasterText:
 	text "Fire Club Master"
 	done
 
-EmptyText:
+BoosterPackText:
+	textfw "Booster Pack"
 	done
 
 ColosseumBoosterText:

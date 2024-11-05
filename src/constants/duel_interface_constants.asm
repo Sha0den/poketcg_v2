@@ -46,9 +46,13 @@ DEF SHUFFLE_DECK        EQU $09
 DEF CHECK_PLAY_AREA     EQU $0a
 
 ; wCardListItemSelectionMenuType constants
-;NONE        EQU $00
+;   NONE         EQU $00
 DEF PLAY_CHECK   EQU $01
 DEF SELECT_CHECK EQU $02
+
+; wCardListDisplayFormat constants
+DEF DEFAULT_CARD_LIST_DISPLAY EQU $00
+DEF USE_BOOSTER_PACK_DISPLAY  EQU $01
 
 ; wPlayAreaSelectAction constants
 DEF FORCED_SWITCH_CHECK_MENU EQU $01

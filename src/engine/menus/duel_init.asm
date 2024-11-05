@@ -70,28 +70,28 @@ OpponentTitlesAndDeckNames:
 	tx TechNPCName
 	tx SamsPracticeDeckName
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
 	tx TechNPCName
 	tx SamsPracticeDeckName
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
-	tx EmptyText
+	tx NullText
 	dw NULL
 
 	tx TechNPCName
@@ -139,16 +139,16 @@ OpponentTitlesAndDeckNames:
 	tx FireClubMasterText
 	tx FireChargeDeckName
 
-	tx EmptyText
+	tx NullText
 	tx ImRonaldDeckName
 
-	tx EmptyText
+	tx NullText
 	tx PowerfulRonaldDeckName
 
-	tx EmptyText
+	tx NullText
 	tx InvincibleRonaldDeckName
 
-	tx EmptyText
+	tx NullText
 	tx LegendaryRonaldDeckName
 
 	tx FightingClubMemberText

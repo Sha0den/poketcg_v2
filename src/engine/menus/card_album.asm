@@ -985,7 +985,7 @@ CardAlbum:
 	jp EnableLCD
 
 .BoosterPacksMenuData
-	textitem 7,  1, BoosterPackText
+	textitem 2,  1, PokemonTCGSetsText
 	textitem 5,  3, Item1ColosseumText
 	textitem 5,  5, Item2EvolutionText
 	textitem 5,  7, Item3MysteryText

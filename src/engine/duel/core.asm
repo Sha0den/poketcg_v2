@@ -3718,8 +3718,12 @@ ReloadCardListItems:
 	ld e, SYM_CURSOR_U
 .cant_go_up
 	ld a, [wMenuCursorYOffset]
-	dec a
 	ld c, a
+	ld a, [wCardListDisplayFormat]
+	cp USE_BOOSTER_PACK_DISPLAY
+	jr z, .use_default_offset
+	dec c
+.use_default_offset
 	ld b, 18
 	ld a, e
 	call WriteByteToBGMap0
@@ -3737,6 +3741,11 @@ ReloadCardListItems:
 	add c
 	dec a
 	ld c, a
+	ld a, [wCardListDisplayFormat]
+	cp USE_BOOSTER_PACK_DISPLAY
+	jr nz, .adjust_offset
+	dec c
+.adjust_offset
 	ld a, e
 	call WriteByteToBGMap0
 	ld a, [wListScrollOffset]
@@ -3751,6 +3760,9 @@ ReloadCardListItems:
 	ld a, [wMenuCursorYOffset]
 	ld e, a
 	ld c, $00
+	ld a, [wCardListDisplayFormat]
+	cp USE_BOOSTER_PACK_DISPLAY
+	jr z, .booster_pack
 .next_card
 	ld a, [hl]
 	cp $ff
@@ -3773,6 +3785,58 @@ ReloadCardListItems:
 	inc e
 	dec b
 	jr nz, .next_card
+	ret
+.booster_pack
+	push bc
+	push de
+	push hl
+	ld b, SCREEN_WIDTH
+	lb de, 0, 2
+	call DrawTextBoxSeparator
+	pop hl
+	pop de
+	pop bc
+.next_booster_pack_card
+	ld a, [hli]
+	cp $ff
+	ret z ; return if there are no more cards in the list to print
+	push hl
+	push bc
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld d, 2
+	ld a, [wLoadedCard1Rarity]
+	call PrintCardPageRarityIcon
+	ld d, 4
+	ld a, 14 ; wListItemNameMaxLength
+	call CopyCardNameAndLevel
+	ld hl, wDefaultText
+	call InitTextPrinting_ProcessText
+	call EnableSRAM
+	ld h, HIGH(sCardCollection)
+	ld a, [wLoadedCard1ID]
+	ld l, a
+	ld a, [hl]
+	call DisableSRAM
+	bit CARD_NOT_OWNED_F, a
+	jr z, .next_line ; current line is finished if this card was already owned
+	ld b, 17
+	ld c, e
+	ld a, $9f ; new card symbol
+	call WriteByteToBGMap0
+	ld a, [wConsole]
+	cp CONSOLE_CGB
+	jr nz, .next_line
+	call BankswitchVRAM1
+	ld a, $04 ; CGB BG Palette 4 (used for borders)
+	call WriteByteToBGMap0
+	call BankswitchVRAM0
+.next_line
+	pop bc
+	pop hl
+	inc e
+	inc e
+	dec b
+	jr nz, .next_booster_pack_card
 	ret
 
 
@@ -3948,6 +4012,11 @@ CardListMenuFunction:
 	; adjusts printing to account for single digit numbers
 	ld c, a
 	ld b, 16
+	ld a, [wCardListDisplayFormat]
+	cp USE_BOOSTER_PACK_DISPLAY
+	jr nz, .not_booster
+	inc b
+.not_booster
 	ld a, [wNumListItems]
 	call TwoDigitNumberToTxSymbol
 	ld a, [hl]
@@ -5025,7 +5094,6 @@ DrawCardPageSet2AndRarityIcons:
 	call FillRectangle
 .icon_done
 	lb de, 18, 9
-	ld hl, CardRarityTextIDs
 	ld a, [wLoadedCard1Rarity]
 	cp NO_RARITY
 	ret z
@@ -5033,11 +5101,12 @@ DrawCardPageSet2AndRarityIcons:
 
 ; given a card rarity constant in a, and CardRarityTextIDs in hl,
 ; prints the text character associated to it at d,e
+; preserves de
 ; input:
 ;	a = CARD_DATA_RARITY constant
 ;	de = screen coordinates for printing the rarity icon
-;	hl = CardRarityTextIDs
 PrintCardPageRarityIcon:
+	ld hl, CardRarityTextIDs
 	inc a
 	add a
 	ld c, a

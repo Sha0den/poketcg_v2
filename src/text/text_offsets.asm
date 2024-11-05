@@ -599,7 +599,7 @@ TextOffsets::
 	textpointer IntersectingLines2Text                             ; 0x0253
 	textpointer UnusedText0254                                     ; 0x0254
 	textpointer EmptyLineText                                      ; 0x0255
-	textpointer BoosterPackText                                    ; 0x0256
+	textpointer PokemonTCGSetsText                                 ; 0x0256
 	textpointer Item1ColosseumText                                 ; 0x0257
 	textpointer Item2EvolutionText                                 ; 0x0258
 	textpointer Item3MysteryText                                   ; 0x0259
@@ -936,7 +936,7 @@ TextOffsets::
 	textpointer PsychicClubMasterText                              ; 0x03a4
 	textpointer ScienceClubMasterText                              ; 0x03a5
 	textpointer FireClubMasterText                                 ; 0x03a6
-	textpointer EmptyText                                          ; 0x03a7
+	textpointer BoosterPackText                                    ; 0x03a7
 	textpointer ColosseumBoosterText                               ; 0x03a8
 	textpointer EvolutionBoosterText                               ; 0x03a9
 	textpointer MysteryBoosterText                                 ; 0x03aa
