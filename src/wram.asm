@@ -1705,21 +1705,9 @@ wDecimalDigitsSymbols:: ; ceb6
 wCardFilterCounts:: ; cebb
 	ds NUM_FILTERS ; ds $9
 
-UNION
-
 ; buffer used to show which card IDs are visible in a given list
 wVisibleListCardIDs:: ; cec4
 	ds NUM_DECK_CONFIRMATION_VISIBLE_CARDS ; ds $7
-
-NEXTU
-
-; whether a given Card Set is unavailable in the Card Album screen
-; used only for CARD_SET_PROMOTIONAL, in which case
-; if it's unavailable, will print "----------" as the Card Set name
-wUnavailableAlbumCardSets:: ; cec4
-	ds NUM_CARD_SETS ; ds $5
-
-ENDU
 
 ; number of visible entries when showing a list of cards
 wNumVisibleCardListEntries:: ; cecb

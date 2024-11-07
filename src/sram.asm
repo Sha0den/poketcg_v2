@@ -123,20 +123,9 @@ sCurrentlySelectedDeck:: ; b700
 ; max number is MAX_UNNAMED_DECK_NUM
 sUnnamedDeckCounter:: ; b701
 	ds $2
-
-; whether player has had Promotional cards
-; to decide whether to show the option
-; in the Card Album PC menu
-sHasPromotionalCards:: ; b703
-	ds $1
-
-; these are initialized to 1 when
-; creating a new game but are never used
-sb704:: ; b704
-	ds $3
 sCardAndDeckSaveDataEnd::
 
-	ds $f9
+	ds $fd
 
 sGeneralSaveData::
 sb800:: ; b800

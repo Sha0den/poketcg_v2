@@ -33,21 +33,6 @@ WriteCardListsTerminatorBytes:
 	ret
 
 
-; initializes some SRAM addresses
-; preserves bc and de
-InitPromotionalCardAndDeckCounterSaveData:
-	call EnableSRAM
-	xor a
-	ld hl, sHasPromotionalCards
-	ld [hli], a
-	inc a ; $1
-	ld [hli], a ; sb704
-	ld [hli], a
-	ld [hl], a
-	ld [sUnnamedDeckCounter], a
-	jp DisableSRAM
-
-
 ; loads the Deck icon to v0Tiles2
 LoadDeckIcon:
 	ld hl, DuelOtherGraphics + $29 tiles

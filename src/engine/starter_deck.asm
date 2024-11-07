@@ -141,7 +141,8 @@ InitSaveData::
 	inc hl      ; skip s0a008
 	ld [hli], a ; sSkipDelayAllowed = $00
 	ld [hl], a  ; sReceivedLegendaryCards = $00
-	farcall InitPromotionalCardAndDeckCounterSaveData
+	inc a ; $01
+	ld [sUnnamedDeckCounter], a
 	jp DisableSRAM
 
 

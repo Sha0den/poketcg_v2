@@ -827,6 +827,12 @@
 
 
 ## Miscellaneous Changes
+- **November 7, 2024:** 12 Files Changed
+    - Update numerous aspects of the Card Album display (includes some changes to texts and ram, as well as editing the Fullwidth0 question mark)
+    - Also optimize various code and update some of the comments and labels in engine/menus/card_album.asm
+
+<br/>
+
 - **[October 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/445c35d61ddbcd21d6c1b2baed7326427431ea34):** 7 Files Changed
     - Change Unknown2 byte for Pokémon card data to PokemonFlags and update constants, card data, and AI logic accordingly
 
@@ -986,7 +992,7 @@
 
 
 ## New Features
-- **November 5, 2024:** 12 Files Changed
+- **[November 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/750a585911a4652d4f8a7b85557da7995ee89bc8):** 12 Files Changed
     - Implement new booster pack card list display that informs the player which cards from the booster pack are newly obtained (using a red ! symbol)
         - *Most of the edited functions from engine/duel/core.asm were originally located in home/menus.asm*
     - Separate BoosterPackText into 2 texts: 1 for the card album's table of contents and another for the booster pack card list header

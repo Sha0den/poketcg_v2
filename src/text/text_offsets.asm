@@ -577,36 +577,36 @@ TextOffsets::
 	textpointer DismantleThisDeckText                              ; 0x023d
 	textpointer NoCardsChosenText                                  ; 0x023e
 	textpointer YourPokemonText                                    ; 0x023f
-	textpointer UnusedText0240                                     ; 0x0240
-	textpointer YourHandText                                       ; 0x0241
-	textpointer UnusedText0242                                     ; 0x0242
-	textpointer OpponentsPokemonText                               ; 0x0243
-	textpointer UnusedText0244                                     ; 0x0244
-	textpointer OpponentsHandText                                  ; 0x0245
-	textpointer UnusedText0246                                     ; 0x0246
-	textpointer DuelistsPlayAreaText                               ; 0x0247
-	textpointer YourPlayAreaText                                   ; 0x0248
-	textpointer OppPlayAreaText                                    ; 0x0249
-	textpointer InPlayAreaText                                     ; 0x024a
-	textpointer GlossaryText                                       ; 0x024b
-	textpointer WhichCardWouldYouLikeToSeeText                     ; 0x024c
-	textpointer PleaseChooseAPrizeText                             ; 0x024d
-	textpointer DuelistDiscardPileText                             ; 0x024e
-	textpointer HorizontalLineSeparatorText                        ; 0x024f
-	textpointer VerticalLinesX5Text                                ; 0x0250
-	textpointer VerticalLinesX4Text                                ; 0x0251
-	textpointer IntersectingLines1Text                             ; 0x0252
-	textpointer IntersectingLines2Text                             ; 0x0253
-	textpointer UnusedText0254                                     ; 0x0254
-	textpointer EmptyLineText                                      ; 0x0255
-	textpointer PokemonTCGSetsText                                 ; 0x0256
-	textpointer Item1ColosseumText                                 ; 0x0257
-	textpointer Item2EvolutionText                                 ; 0x0258
-	textpointer Item3MysteryText                                   ; 0x0259
-	textpointer Item4LaboratoryText                                ; 0x025a
-	textpointer Item5PromotionalCardText                           ; 0x025b
-	textpointer ViewWhichCardFileText                              ; 0x025c
-	textpointer EmptyPromotionalCardText                           ; 0x025d
+	textpointer YourHandText                                       ; 0x0240
+	textpointer OpponentsPokemonText                               ; 0x0241
+	textpointer OpponentsHandText                                  ; 0x0242
+	textpointer DuelistsPlayAreaText                               ; 0x0243
+	textpointer YourPlayAreaText                                   ; 0x0244
+	textpointer OppPlayAreaText                                    ; 0x0245
+	textpointer InPlayAreaText                                     ; 0x0246
+	textpointer GlossaryText                                       ; 0x0247
+	textpointer WhichCardWouldYouLikeToSeeText                     ; 0x0248
+	textpointer PleaseChooseAPrizeText                             ; 0x0249
+	textpointer DuelistDiscardPileText                             ; 0x024a
+	textpointer HorizontalLineSeparatorText                        ; 0x024b
+	textpointer VerticalLinesX5Text                                ; 0x024c
+	textpointer VerticalLinesX4Text                                ; 0x024d
+	textpointer IntersectingLines1Text                             ; 0x024e
+	textpointer IntersectingLines2Text                             ; 0x024f
+	textpointer EmptyLineText                                      ; 0x0250
+	textpointer PokemonTCGSetsText                                 ; 0x0251
+	textpointer Item1ColosseumText                                 ; 0x0252
+	textpointer Item2EvolutionText                                 ; 0x0253
+	textpointer Item3MysteryText                                   ; 0x0254
+	textpointer Item4LaboratoryText                                ; 0x0255
+	textpointer Item5PromotionalCardText                           ; 0x0256
+	textpointer ViewWhichCardFileText                              ; 0x0257
+	textpointer NoCardsCollectedInThatSetText                      ; 0x0258
+	textpointer ColosseumText                                      ; 0x0259
+	textpointer EvolutionText                                      ; 0x025a
+	textpointer MysteryText                                        ; 0x025b
+	textpointer LaboratoryText                                     ; 0x025c
+	textpointer PromotionalText                                    ; 0x025d
 	textpointer SCardsText                                         ; 0x025e
 	textpointer EmptyDeckNameText                                  ; 0x025f
 	textpointer DeckSaveMachineText                                ; 0x0260
@@ -937,10 +937,10 @@ TextOffsets::
 	textpointer ScienceClubMasterText                              ; 0x03a5
 	textpointer FireClubMasterText                                 ; 0x03a6
 	textpointer BoosterPackText                                    ; 0x03a7
-	textpointer ColosseumBoosterText                               ; 0x03a8
-	textpointer EvolutionBoosterText                               ; 0x03a9
-	textpointer MysteryBoosterText                                 ; 0x03aa
-	textpointer LaboratoryBoosterText                              ; 0x03ab
+	textpointer ColosseumName                                      ; 0x03a8
+	textpointer MysteryName                                        ; 0x03a9
+	textpointer LaboratoryName                                     ; 0x03aa
+	textpointer PromotionalName                                    ; 0x03ab
 	textpointer DrMasonNPCName                                     ; 0x03ac
 	textpointer RonaldNPCName                                      ; 0x03ad
 	textpointer IshiharaNPCName                                    ; 0x03ae

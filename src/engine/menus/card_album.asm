@@ -15,10 +15,11 @@ CreateCardSetList:
 	call ClearMemory_Bank2
 	xor a
 	ld [wOwnedPhantomCardFlags], a
+	ld h, a
+	ld l, a
+	ld d, a
+	ld e, a
 	pop af
-
-	ld hl, 0
-	lb de, 0, 0
 	ld b, a
 .loop_all_cards
 	inc e
@@ -29,20 +30,17 @@ CreateCardSetList:
 	swap a
 	cp b
 	jr nz, .loop_all_cards
-
-; it's the same set as the input, i.e. PROMOTIONAL
+	; this card has the same set as input
 	ld a, e
 	cp VENUSAUR_LV64
 	jp z, .SetVenusaurLv64OwnedFlag
 	cp MEW_LV15
 	jp z, .SetMewLv15OwnedFlag
-
 	push bc
 	push hl
 	ld bc, wFilteredCardList
 	add hl, bc
 	ld [hl], e ; card ID
-
 	ld hl, wTempCardCollection
 	add hl, de
 	ld a, [hl]
@@ -52,7 +50,6 @@ CreateCardSetList:
 	add hl, bc
 	ld [hl], a ; card count in collection
 	pop hl
-
 	inc l
 	pop bc
 	jr .loop_all_cards
@@ -63,7 +60,7 @@ CreateCardSetList:
 	ld a, b
 	cp CARD_SET_MYSTERY
 	jr z, .mystery
-	or a
+	or a ; cp CARD_SET_COLOSSEUM
 	jr nz, .skip_energy_cards
 
 ; Colosseum
@@ -124,12 +121,10 @@ CreateCardSetList:
 .skip_energy_cards
 	ld a, [wOwnedPhantomCardFlags]
 	bit VENUSAUR_OWNED_PHANTOM_F, a
-	jr z, .check_mew
-	call .PlaceVenusaurLv64InList
+	call nz, .PlaceVenusaurLv64InList
 .check_mew
 	bit MEW_OWNED_PHANTOM_F, a
-	jr z, .find_first_owned
-	call .PlaceMewLv15InList
+	call nz, .PlaceMewLv15InList
 
 .find_first_owned
 	dec l
@@ -148,7 +143,7 @@ CreateCardSetList:
 	inc c
 	ld a, c
 	ld [wNumEntriesInCurFilter], a
-	xor a
+	xor a ; terminator byte
 	ld hl, wFilteredCardList
 	add hl, bc
 	ld [hl], a
@@ -233,11 +228,10 @@ CreateCardSetListAndInitListCoords:
 	call CreateCardSetList
 	ld a, NUM_CARD_ALBUM_VISIBLE_CARDS
 	ld [wNumVisibleCardListEntries], a
-	lb de, 2, 4
 	ld hl, wCardListCoords
-	ld [hl], e
+	ld [hl], 4 ; y-coordinate
 	inc hl
-	ld [hl], d
+	ld [hl], 2 ; x-coordinate
 	pop af
 	ret
 
@@ -249,25 +243,25 @@ CreateCardSetListAndInitListCoords:
 	push af
 	cp CARD_SET_PROMOTIONAL
 	jr nz, .laboratory
-	lb de, 3, "FW3_P"
+	lb de, TX_FULLWIDTH3, "FW3_P"
 	jr .got_prefix
 .laboratory
 	cp CARD_SET_LABORATORY
 	jr nz, .mystery
-	lb de, 3, "FW3_D"
+	lb de, TX_FULLWIDTH3, "FW3_L"
 	jr .got_prefix
 .mystery
 	cp CARD_SET_MYSTERY
 	jr nz, .evolution
-	lb de, 3, "FW3_C"
+	lb de, TX_FULLWIDTH3, "FW3_M"
 	jr .got_prefix
 .evolution
 	cp CARD_SET_EVOLUTION
 	jr nz, .colosseum
-	lb de, 3, "FW3_B"
+	lb de, TX_FULLWIDTH3, "FW3_E"
 	jr .got_prefix
 .colosseum
-	lb de, 3, "FW3_A"
+	lb de, TX_FULLWIDTH3, "FW3_C"
 	; fallthrough
 
 .got_prefix
@@ -279,12 +273,12 @@ CreateCardSetListAndInitListCoords:
 	ret
 
 
-BoosterNamesTextIDTable::
-	tx Item1ColosseumText        ; CARD_SET_COLOSSEUM
-	tx Item2EvolutionText        ; CARD_SET_EVOLUTION
-	tx Item3MysteryText          ; CARD_SET_MYSTERY
-	tx Item4LaboratoryText       ; CARD_SET_LABORATORY
-	tx Item5PromotionalCardText  ; CARD_SET_PROMOTIONAL
+BoosterNamesTextIDTable:
+	tx ColosseumText        ; CARD_SET_COLOSSEUM
+	tx EvolutionText        ; CARD_SET_EVOLUTION
+	tx MysteryText          ; CARD_SET_MYSTERY
+	tx LaboratoryText       ; CARD_SET_LABORATORY
+	tx PromotionalText      ; CARD_SET_PROMOTIONAL
 
 ; prints the cards being shown in the Card Album screen
 ; for the corresponding Card Set
@@ -303,7 +297,7 @@ PrintCardSetListEntries:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
-	lb de, 1, 1
+	lb de, 2, 1
 	call InitTextPrinting_ProcessTextFromID
 	ld hl, wCardListCoords
 	ld e, [hl]
@@ -367,15 +361,6 @@ PrintCardSetListEntries:
 	call .AppendCardListIndex
 	call InitTextPrinting_ProcessText
 	ld hl, wDefaultText
-;	jr .asm_a76d
-;
-;	; this code is never reached
-;	pop de
-;	push hl
-;	call InitTextPrinting
-;	ld hl, Text_9a36
-;
-;.asm_a76d
 	call ProcessText
 	pop hl
 	ld a, b
@@ -412,6 +397,9 @@ PrintCardSetListEntries:
 
 ; gets the index in the card list and adds it to wCurDeckName
 ; preserves bc and de
+; input:
+;	b  = [wNumVisibleCardListEntries] - number of entries that have already been printed
+;	hl = [wCardListVisibleOffset] + 1
 .AppendCardListIndex
 	push bc
 	push de
@@ -419,8 +407,6 @@ PrintCardSetListEntries:
 	add hl, de
 	dec hl
 	ld a, [hl]
-	cp DOUBLE_COLORLESS_ENERGY + 1
-	jr c, .energy_card
 	cp VENUSAUR_LV64
 	jr z, .phantom_card
 	cp MEW_LV15
@@ -452,37 +438,8 @@ PrintCardSetListEntries:
 	inc hl
 	xor a ; SYM_SPACE
 	ld [hli], a
-	ld [hl], a
+	ld [hl], a ; TX_END
 	ld hl, wCurDeckName
-	pop de
-	pop bc
-	ret
-
-.energy_card
-	call CalculateOnesAndTensDigits
-	ld hl, wDecimalDigitsSymbols
-	ld a, [hli]
-	ld b, a
-	ld hl, wCurDeckName + 2
-	lb de, 3, "FW3_E"
-	ld [hl], d
-	inc hl
-	ld [hl], e
-	inc hl
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld a, SYM_0
-	ld [hli], a
-	ld [hl], TX_SYMBOL
-	inc hl
-	ld a, b
-	ld [hli], a
-	ld [hl], TX_SYMBOL
-	inc hl
-	xor a ; SYM_SPACE
-	ld [hli], a
-	ld [hl], a
-	ld hl, wCurDeckName + 2
 	pop de
 	pop bc
 	ret
@@ -490,15 +447,15 @@ PrintCardSetListEntries:
 .phantom_card
 ; phantom cards get only "××" in their index number
 	ld hl, wCurDeckName + 2
-	ld [hl], "FW0_×"
+	ld [hl], "FW0_?"
 	inc hl
-	ld [hl], "FW0_×"
+	ld [hl], "FW0_?"
 	inc hl
 	ld [hl], TX_SYMBOL
 	inc hl
 	xor a ; SYM_SPACE
 	ld [hli], a
-	ld [hl], a
+	ld [hl], a ; TX_END
 	ld hl, wCurDeckName
 	pop de
 	pop bc
@@ -543,7 +500,7 @@ HandleCardAlbumCardPage:
 	ldh a, [hDPadHeld]
 	ld b, a
 	and BUTTONS
-	jp nz, .exit
+	jr nz, .exit
 	xor a ; FALSE
 	ld [wMenuInputSFX], a
 	ld a, [wCardListNumCursorPositions]
@@ -576,7 +533,7 @@ HandleCardAlbumCardPage:
 
 .check_d_down
 	bit D_DOWN_F, b
-	jr z, .asm_a8d6
+	jr z, .open_card_page
 
 	push af
 	ld a, SFX_CURSOR
@@ -615,19 +572,6 @@ HandleCardAlbumCardPage:
 	or a
 	call nz, PlaySFX
 	jp HandleCardAlbumCardPage
-
-.asm_a8d6
-	ld a, [wced2]
-	or a
-	jr z, .open_card_page
-	bit D_LEFT_F, b
-	jr z, .check_d_right
-	call RemoveCardFromDeck
-	jr .open_card_page
-.check_d_right
-	bit D_RIGHT_F, b
-	jr z, .open_card_page
-	call TryAddCardToDeck
 
 .open_card_page_pop_af
 	pop af
@@ -671,29 +615,16 @@ CardAlbum:
 	ldh [hffb4], a
 	xor a
 .booster_pack_menu
-	ld hl, .BoosterPackMenuParams
+	ld hl, .SetSelectionMenuParams
 	call InitializeMenuParameters
-	call .ShowBoosterPackMenu
+	call .ShowSetSelectionMenu
 .loop_input_1
 	call DoFrame
-	call HandleMenuInput
+	call HandleMenuInput ; CreateCardSetListAndInitListCoords is called by wMenuUpdateFunc
 	jr nc, .loop_input_1
-	ldh a, [hCurMenuItem]
-	cp $ff
+	cp -1
 	ret z ; exit if the B button was pressed
 
-	; ignore input if this Card Set is unavailable
-	ld c, a
-	ld b, $0
-	ld hl, wUnavailableAlbumCardSets
-	add hl, bc
-	ld a, [hl]
-	or a
-	jr nz, .loop_input_1
-
-	ld a, c
-	ld [wSelectedCardSet], a
-	call CreateCardSetListAndInitListCoords
 	call .PrintCardCount
 	xor a
 	ld [wCardListVisibleOffset], a
@@ -716,7 +647,7 @@ CardAlbum:
 .asm_a968
 	call .GetNumCardEntries
 	xor a
-	ld hl, .BoosterPackCardsMenuParams
+	ld hl, .CardListMenuParams
 	call InitCardSelectionParams
 	ld a, [wNumEntriesInCurFilter]
 	ld hl, wNumVisibleCardListEntries
@@ -771,7 +702,7 @@ CardAlbum:
 	call .PrintCardCount
 	call PrintCardSetListEntries
 	call EnableLCD
-	ld hl, .BoosterPackCardsMenuParams
+	ld hl, .CardListMenuParams
 	call InitCardSelectionParams
 	ld a, [wTempCardListNumCursorPositions]
 	ld [wCardListNumCursorPositions], a
@@ -784,20 +715,20 @@ CardAlbum:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 	ldh a, [hffb3]
-	cp $ff
+	inc a ; cp $ff
 	jr nz, .open_card_page
 	ldh a, [hCurMenuItem]
 	jp .booster_pack_menu
 
-.BoosterPackMenuParams:
-	db 3, 3 ; cursor x, cursor y
+.SetSelectionMenuParams:
+	db 3, 6 ; cursor x, cursor y
 	db 2 ; y displacement between items
 	db 5 ; number of items
 	db SYM_CURSOR_R ; cursor tile number
 	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
+	dw .OnlySelectSetIfListIsNotEmpty ; function pointer if non-0
 
-.BoosterPackCardsMenuParams:
+.CardListMenuParams:
 	db 1 ; x position
 	db 4 ; y position
 	db 2 ; y spacing
@@ -823,7 +754,7 @@ CardAlbum:
 ; and Y is the total card count of the Card Set
 .PrintCardCount
 	call Set_OBJ_8x8
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call ZeroObjectPositions
 	call EmptyScreen
@@ -835,55 +766,32 @@ CardAlbum:
 	call SetDefaultConsolePalettes
 	lb de, $3c, $ff
 	call SetupText
-	lb de, 1, 1
-	call InitTextPrinting
-
-; prints the total number of cards that are in the Card Set
+	lb de, 0, 0
+	lb bc, 20, 18
+	call DrawRegularTextBox
+	ld b, SCREEN_WIDTH
+	lb de, 0, 2
+	call DrawTextBoxSeparator
+	call .CountOwnedCardsInSet
 	ld a, [wSelectedCardSet]
+
+	ld c, a
+	ld b, $00
+	ld hl, .CardSetTotals
+	add hl, bc
+	ld e, [hl]
+
 	cp CARD_SET_PROMOTIONAL
-	jr nz, .check_laboratory
-; promotional
-	ldtx hl, Item5PromotionalCardText
-	ld e, NUM_CARDS_PROMOTIONAL - 2 ; minus the phantom cards
+	jr nz, .has_card_set_count
 	ld a, [wOwnedPhantomCardFlags]
 	bit VENUSAUR_OWNED_PHANTOM_F, a
-	jr z, .check_owns_mew
-	inc e
+	jr nz, .check_owns_mew
+	dec e
 .check_owns_mew
 	bit MEW_OWNED_PHANTOM_F, a
-	jr z, .has_card_set_count
-	inc e
-	jr .has_card_set_count
-.check_laboratory
-	cp CARD_SET_LABORATORY
-	jr nz, .check_mystery
-	ldtx hl, Item4LaboratoryText
-	ld e, NUM_CARDS_LABORATORY
-	jr .has_card_set_count
-.check_mystery
-	cp CARD_SET_MYSTERY
-	jr nz, .check_evolution
-	ldtx hl, Item3MysteryText
-	ld e, NUM_CARDS_MYSTERY
-	jr .has_card_set_count
-.check_evolution
-	cp CARD_SET_EVOLUTION
-	jr nz, .colosseum
-	ldtx hl, Item2EvolutionText
-	ld e, NUM_CARDS_EVOLUTION
-	jr .has_card_set_count
-.colosseum
-	ldtx hl, Item1ColosseumText
-	ld e, NUM_CARDS_COLOSSEUM
-	; fallthrough
-
+	jr nz, .has_card_set_count
+	dec e
 .has_card_set_count
-	push de
-	call ProcessTextFromID
-	call .CountOwnedCardsInSet
-	lb de, 14, 1
-	call InitTextPrinting
-
 	ld a, [wNumOwnedCardsInSet]
 	ld hl, wDefaultText
 	call ConvertToNumericalDigits
@@ -892,20 +800,21 @@ CardAlbum:
 	inc hl
 	ld [hl], SYM_SLASH
 	inc hl
-	pop de
-
 	ld a, e
 	call ConvertToNumericalDigits
 	ld [hl], TX_END
 	ld hl, wDefaultText
-	call ProcessText
-	lb de, 0, 2
-	lb bc, 20, 16
-	call DrawRegularTextBox
+	lb de, 14, 1
+	call InitTextPrinting_ProcessText
 	jp EnableLCD
 
 ; counts number of cards in wOwnedCardsCountList
 ; that are not set as CARD_NOT_OWNED
+; preserves de and c
+; input:
+;	wOwnedCardsCountList = $ff-terminated list with card counts of every card in the given set
+; output:
+;	a & b & [wNumOwnedCardsInSet] = number of cards in the given list
 .CountOwnedCardsInSet
 	ld hl, wOwnedCardsCountList
 	ld b, 0
@@ -922,8 +831,64 @@ CardAlbum:
 	ld [wNumOwnedCardsInSet], a
 	ret
 
-.ShowBoosterPackMenu:
-	xor a
+.CardSetTotals
+	db 56 ; CARD_SET_COLOSSEUM
+	db 50 ; CARD_SET_EVOLUTION
+	db 51 ; CARD_SET_MYSTERY
+	db 51 ; CARD_SET_LABORATORY
+	db 20 ; CARD_SET_PROMOTIONAL
+
+.OnlySelectSetIfListIsNotEmpty
+	ldh a, [hKeysPressed]
+	and A_BUTTON | B_BUTTON
+	ret z
+	and A_BUTTON
+	jr nz, .a_pressed
+	; B button pressed
+	ld a, -1
+	ldh [hCurMenuItem], a
+.set_carry
+	scf
+	ret
+
+.a_pressed
+	ldh a, [hCurMenuItem]
+	ld [wSelectedCardSet], a
+	call CreateCardSetListAndInitListCoords
+	ld a, [wFilteredCardList]
+	or a
+	jr nz, .set_carry
+
+; there are no cards in the set list, so play a sound effect
+; and display a message explaining why this set can't be selected.
+; then, reload the selection screen after a short period of time.
+	call PlaySFX_InvalidChoice
+	ld a, [wSelectedCardSet]
+	add a
+	ld c, a
+	ld b, $00
+	ld hl, .SetNames
+	add hl, bc
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ldtx hl, NoCardsCollectedInThatSetText
+	call DrawWideTextBox_PrintText
+	; wait about 60 frames before closing the text box
+	ld a, 60
+	call DoAFrames
+	jr .draw_box
+
+.SetNames
+	tx ColosseumName   ; CARD_SET_COLOSSEUM
+	tx EvolutionName   ; CARD_SET_EVOLUTION
+	tx MysteryName     ; CARD_SET_MYSTERY
+	tx LaboratoryName  ; CARD_SET_LABORATORY
+	tx PromotionalName ; CARD_SET_PROMOTIONAL
+
+.ShowSetSelectionMenu:
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call EmptyScreen
 	ldh a, [hffb4]
@@ -942,53 +907,21 @@ CardAlbum:
 
 .draw_box
 	lb de, 0, 0
-	lb bc, 20, 13
+	lb bc, 20, 18
 	call DrawRegularTextBox
+	ld b, SCREEN_WIDTH
+	lb de, 0, 2
+	call DrawTextBoxSeparator
 	ld hl, .BoosterPacksMenuData
 	call PlaceTextItems
-
-	; set all Card Sets as available
-	ld a, NUM_CARD_SETS ; number of bytes that will be cleared
-	ld hl, wUnavailableAlbumCardSets
-	call ClearMemory_Bank2
-
-	; check if the player has received any promotional cards
-	call EnableSRAM
-	ld a, [sHasPromotionalCards]
-	call DisableSRAM
-	or a
-	jr nz, .has_promotional
-
-	; doesn't have any promotional cards,
-	; double check by looking at the collection
-	ld a, CARD_SET_PROMOTIONAL
-	call CreateCardSetListAndInitListCoords
-	ld a, [wFilteredCardList]
-	or a
-	jr nz, .set_has_promotional
-	; still didn't find any promotional cards, so print empty Card Set name
-	ld a, TRUE
-	ld [wUnavailableAlbumCardSets + CARD_SET_PROMOTIONAL], a
-	lb de, 5, 11
-	ldtx hl, EmptyPromotionalCardText
-	call InitTextPrinting_ProcessTextFromID
-	jr .has_promotional
-
-.set_has_promotional
-	call EnableSRAM
-	ld a, TRUE
-	ld [sHasPromotionalCards], a
-	call DisableSRAM
-.has_promotional
-	ldtx hl, ViewWhichCardFileText
-	call DrawWideTextBox_PrintText
 	jp EnableLCD
 
 .BoosterPacksMenuData
 	textitem 2,  1, PokemonTCGSetsText
-	textitem 5,  3, Item1ColosseumText
-	textitem 5,  5, Item2EvolutionText
-	textitem 5,  7, Item3MysteryText
-	textitem 5,  9, Item4LaboratoryText
-	textitem 5, 11, Item5PromotionalCardText
+	textitem 2,  4, ViewWhichCardFileText
+	textitem 4,  6, Item1ColosseumText
+	textitem 4,  8, Item2EvolutionText
+	textitem 4, 10, Item3MysteryText
+	textitem 4, 12, Item4LaboratoryText
+	textitem 4, 14, Item5PromotionalCardText
 	db $ff

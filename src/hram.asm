@@ -171,15 +171,18 @@ hCurSelectionItem:: ; ffb2
 hffb3:: ; ffb3
 	ds $1
 
+; only used in CardAlbum, to avoid reloading some memory when moving between screens
 hffb4:: ; ffb4
 	ds $1
 
+; used in DrawDecksScreen and CreateCardCollectionListWithDeckCards
 hffb5:: ; ffb5
 	ds $1
 
-; used in DivideBCbyDE
+; used in DivideBCbyDE and FadePalIntoAnother
 hffb6:: ; ffb6
 	ds $1
 
+; only used in FadePalIntoAnother
 hffb7:: ; ffb7
 	ds $1

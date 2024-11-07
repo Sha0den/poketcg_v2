@@ -1110,20 +1110,20 @@ BoosterPackText:
 	textfw "Booster Pack"
 	done
 
-ColosseumBoosterText:
+ColosseumName:
 	text "Colosseum"
 	done
 
-EvolutionBoosterText:
-	text "Evolution"
-	done
-
-MysteryBoosterText:
+MysteryName:
 	text "Mystery"
 	done
 
-LaboratoryBoosterText:
+LaboratoryName:
 	text "Laboratory"
+	done
+
+PromotionalName:
+	text "Promotional"
 	done
 
 DrMasonNPCName:

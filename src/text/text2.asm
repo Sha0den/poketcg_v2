@@ -914,32 +914,16 @@ YourPokemonText:
 	text "Your Pokémon"
 	done
 
-UnusedText0240: ; Unused
-	text "????"
-	done
-
 YourHandText:
 	text "Your Hand"
-	done
-
-UnusedText0242: ; Unused
-	text "To Your Play Area"
 	done
 
 OpponentsPokemonText:
 	text "Opponent's Pokémon"
 	done
 
-UnusedText0244: ; Unused
-	text "????"
-	done
-
 OpponentsHandText:
 	text "Opponent Hand"
-	done
-
-UnusedText0246: ; Unused
-	text "To Opponent's Play Area"
 	done
 
 DuelistsPlayAreaText:
@@ -1001,10 +985,6 @@ IntersectingLines2Text:
 	textfw "╚"
 	done
 
-UnusedText0254: ; Unused
-	line "????"
-	done
-
 EmptyLineText:
 	textfw "                  "
 	done
@@ -1014,31 +994,52 @@ PokemonTCGSetsText:
 	done
 
 Item1ColosseumText:
-	text "1. Colosseum"
+	text " 1. Colosseum Expansion"
 	done
 
 Item2EvolutionText:
-	text "2. Evolution"
+	text " 2. Evolution Expansion"
 	done
 
 Item3MysteryText:
-	text "3. Mystery"
+	text " 3. Mystery Expansion"
 	done
 
 Item4LaboratoryText:
-	text "4. Laboratory"
+	text " 4. Laboratory Expansion"
 	done
 
 Item5PromotionalCardText:
-	text "5. Promotional Cards"
+	text " 5. Promotional Cards"
 	done
 
 ViewWhichCardFileText:
-	text "View which Card File?"
+	text " Which set do you wish to view?"
 	done
 
-EmptyPromotionalCardText:
-	textfw "----------"
+NoCardsCollectedInThatSetText:
+	text " You have not yet collected any"
+	line " <RAMTEXT> cards."
+	done
+
+ColosseumText:
+	textfw "Colosseum"
+	done
+
+EvolutionText:
+	textfw "Evolution"
+	done
+
+MysteryText:
+	textfw "Mystery"
+	done
+
+LaboratoryText:
+	textfw "Laboratory"
+	done
+
+PromotionalText:
+	textfw "Promotional"
 	done
 
 SCardsText:

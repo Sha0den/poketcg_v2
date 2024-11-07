@@ -97,13 +97,13 @@ BoosterTypes:
 
 BoosterScenesAndNameTexts:
 	db SCENE_COLOSSEUM_BOOSTER, SCENE_COLOSSEUM_BOOSTER
-	tx ColosseumBoosterText
+	tx ColosseumName
 
 	db SCENE_EVOLUTION_BOOSTER, SCENE_EVOLUTION_BOOSTER
-	tx EvolutionBoosterText
+	tx EvolutionName
 
 	db SCENE_MYSTERY_BOOSTER, SCENE_MYSTERY_BOOSTER
-	tx MysteryBoosterText
+	tx MysteryName
 
 	db SCENE_LABORATORY_BOOSTER, SCENE_LABORATORY_BOOSTER
-	tx LaboratoryBoosterText
+	tx LaboratoryName
