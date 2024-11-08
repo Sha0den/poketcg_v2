@@ -24,7 +24,7 @@ CreateCardSetList:
 .loop_all_cards
 	inc e
 	call LoadCardDataToBuffer1_FromCardID
-	jr c, .done_pkmn_cards
+	jr c, .check_energy_cards
 	ld a, [wLoadedCard1Type]
 	and TYPE_ENERGY
 	jr nz, .loop_all_cards
@@ -57,23 +57,46 @@ CreateCardSetList:
 	pop bc
 	jr .loop_all_cards
 
-.done_pkmn_cards
-; for the Energy cards, put all Basic Energy cards in the Colosseum set
-; and Double Colorless Energy is put in the Mystery set
+.check_energy_cards
+; put any Special Energy cards at the end of their respective set lists.
+	ld de, GRASS_ENERGY + NUM_COLORED_TYPES - 1
+.loop_special_energy_cards
+	inc e
+	call LoadCardDataToBuffer1_FromCardID
+	ld a, [wLoadedCard1Type]
+	and TYPE_ENERGY
+	jr z, .check_basic_energy
+	ld a, [wLoadedCard1Set]
+	and $f0 ; set 1
+	swap a
+	cp b
+	jr nz, .loop_special_energy_cards
+	push bc
+	push hl
+	ld bc, wFilteredCardList
+	add hl, bc
+	ld [hl], e
+	ld hl, wTempCardCollection
+	add hl, de
+	ld a, [hl]
+	pop hl
+	push hl
+	ld bc, wOwnedCardsCountList
+	add hl, bc
+	ld [hl], a
+	pop hl
+	inc l
+	pop bc
+	jr .loop_special_energy_cards
+
+.check_basic_energy
+; put all Basic Energy cards at the end of the Colosseum set.
 	ld a, b
-	cp CARD_SET_MYSTERY
-	jr z, .mystery
 	or a ; cp CARD_SET_COLOSSEUM
-	jr nz, .skip_energy_cards
-
-; Colosseum
-; places all Basic Energy cards in wFilteredCardList
-	lb de, 0, 0
+	jr nz, .check_phantom_cards
+	ld de, GRASS_ENERGY
+	ld c, NUM_COLORED_TYPES
 .loop_basic_energy_cards
-	inc e
-	ld a, e
-	cp DOUBLE_COLORLESS_ENERGY
-	jr z, .skip_energy_cards ; no more Basic Energy cards to sort
 	push bc
 	push hl
 	ld bc, wFilteredCardList
@@ -88,40 +111,13 @@ CreateCardSetList:
 	add hl, bc
 	ld [hl], a
 	pop hl
-	inc l
 	pop bc
-	jr .loop_basic_energy_cards
-
-.mystery
-; places Double Colorless Energy card in wFilteredCardList
-	lb de, 0, 0
-.loop_find_double_colorless
+	inc l
 	inc e
-	ld a, e
-	cp BULBASAUR
-	jr z, .skip_energy_cards
-	cp DOUBLE_COLORLESS_ENERGY
-	jr nz, .loop_find_double_colorless
-	; Double Colorless Energy
-	push bc
-	push hl
-	ld bc, wFilteredCardList
-	add hl, bc
-	ld [hl], e
-	ld hl, wTempCardCollection
-	add hl, de
-	ld a, [hl]
-	pop hl
-	push hl
-	ld bc, wOwnedCardsCountList
-	add hl, bc
-	ld [hl], a
-	pop hl
-	inc l
-	pop bc
-	jr .loop_find_double_colorless
+	dec c
+	jr nz, .loop_basic_energy_cards
 
-.skip_energy_cards
+.check_phantom_cards
 	ld a, [wOwnedPhantomCardFlags]
 	bit VENUSAUR_OWNED_PHANTOM_F, a
 	call nz, .PlaceVenusaurLv64InList
