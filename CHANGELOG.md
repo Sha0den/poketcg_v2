@@ -827,7 +827,15 @@
 
 
 ## Miscellaneous Changes
-- **November 7, 2024:** 12 Files Changed
+- **November 8, 2024:** 5 Files Changed
+    - Increase minimum probability for a type when generating a booster pack card to 5% (1/160 -> 8/160), to encourage more variety
+    - Officially add Double Colorless Energy to the Mystery set and remove the code that allows any Energy card to be included in a booster, regardless of set
+        - *Energy cards are still treated differently in the card album to ensure they appear at the end of the set list*
+    - Optimize many of the functions in engine/booster_packs.asm
+
+<br/>
+
+- **[November 7, 2024](https://github.com/Sha0den/poketcg_v2/commit/c86d7d74d4cd475c0a48a4a91c5301f293557fa2):** 12 Files Changed
     - Update numerous aspects of the Card Album display (includes some changes to texts and ram, as well as editing the Fullwidth0 question mark)
     - Also optimize various code and update some of the comments and labels in engine/menus/card_album.asm
 

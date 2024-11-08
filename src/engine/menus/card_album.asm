@@ -25,6 +25,9 @@ CreateCardSetList:
 	inc e
 	call LoadCardDataToBuffer1_FromCardID
 	jr c, .done_pkmn_cards
+	ld a, [wLoadedCard1Type]
+	and TYPE_ENERGY
+	jr nz, .loop_all_cards
 	ld a, [wLoadedCard1Set]
 	and $f0 ; set 1
 	swap a

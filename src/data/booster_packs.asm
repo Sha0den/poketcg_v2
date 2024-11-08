@@ -16,9 +16,9 @@ ENDM
 ; - A single energy of a specific type
 ; - NULL if no card in the pack is an energy
 
-; As for Card Type Chances, note that whenever one card of the 10 is drawn, the chances of
-; the type of that card are reduced by the original average of all 8 types (capping the result at 1).
-; This average always outputs 17 (except for the energy-only packs).
+; As for Card Type Chances, note that whenever a Common, Uncommon, or Rare card is added to the booster pack (Basic Energy cards don't count),
+; the chance for another card of that type being generated is reduced by the original average of all 9 types (capping the result at 8/160, or 5%).
+; In the base game, this average is always 17 (160/9, or the sum of all chances divided by the number of booster card types).
 
 BoosterPack_ColosseumNeutral::
 	booster_set COLOSSEUM ; booster pack set

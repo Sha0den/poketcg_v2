@@ -135,32 +135,23 @@ CheckCardInSetAndRarity:
 	ld a, e
 	call GetCardTypeRarityAndSet
 	ld [wBoosterCurrentCardType], a
-	ld a, b
-	ld [wBoosterCurrentCardRarity], a
-	ld a, c
-	ld [wBoosterCurrentCardSet], a
-	ld a, [wBoosterCurrentCardRarity]
-	ld c, a
 	ld a, [wBoosterCurrentRarity]
-	cp c
-	jr nz, .invalid_card
-	ld a, [wBoosterCurrentCardType]
-	call GetBoosterCardType
-	cp BOOSTER_CARD_TYPE_ENERGY
-	jr z, .return_valid_card
-	ld a, [wBoosterCurrentCardSet]
+	cp b ; current card's rarity
+	jr nz, .invalid_card ; return carry if this card's rarity doesn't match the currently selected rarity
+;	ld a, [wBoosterCurrentCardType]
+;	call GetBoosterCardType
+;	cp BOOSTER_CARD_TYPE_ENERGY
+;	jr z, .done ; ignore the booster set and return no carry if an Energy is needed and this card is the correct rarity and type
+	ld a, c ; current card's set
 	swap a
 	and $0f
 	ld c, a
 	ld a, [wBoosterData_Set]
 	cp c
-	jr nz, .invalid_card
-.return_valid_card
-	or a
-	pop bc
-	ret
+	jr z, .done ; return no carry if this card's set also matches the booster's set
 .invalid_card
 	scf
+.done
 	pop bc
 	ret
 
@@ -217,6 +208,7 @@ CardTypeTable:
 ; output:
 ;	a & [wd4ca] = sum of all chances
 ;	wBoosterTempTypeChancesTable = list with adjusted probabilities for each booster card type
+;	                               (if no type X cards in set have current rarity, type X's probability = 0)
 CalculateTypeChances:
 	ld c, NUM_BOOSTER_CARD_TYPES
 	xor a
@@ -228,7 +220,6 @@ CalculateTypeChances:
 	ld [wd4ca], a
 	ld bc, $00
 .check_if_type_is_valid
-	push bc
 	ld hl, wBoosterAmountOfCardTypeTable
 	add hl, bc
 	ld a, [hl]
@@ -246,7 +237,6 @@ CalculateTypeChances:
 	add [hl]
 	ld [wd4ca], a
 .amount_of_type_or_chance_zero
-	pop bc
 	inc c
 	ld a, c
 	cp NUM_BOOSTER_CARD_TYPES
@@ -255,31 +245,21 @@ CalculateTypeChances:
 	ret
 
 
-; preserves de
+; preserves de and b
 ; input:
-;	a = random number (between 0 and the sum of all chances)
-;	wBoosterTempTypeChancesTable = list with adjusted probabilities for each booster card type
+;	a = random number between 0 and the sum of all chances (exclusive)
+;	wBoosterTempTypeChancesTable = list with probabilities for each booster card type
 ; output:
-;	[wBoosterJustDrawnCardType] & a = the randomly generated type to use (BOOSTER_CARD_TYPE_* constant)
+;	a & c & [wBoosterJustDrawnCardType] = chosen type (BOOSTER_CARD_TYPE_* constant)
 DetermineBoosterCardType:
-	ld [wd4ca], a
-	ld c, $00
+	ld c, BOOSTER_CARD_TYPE_GRASS
 	ld hl, wBoosterTempTypeChancesTable
 .loop_through_card_types
-	ld a, [hl]
-	or a
-	jr z, .skip_no_chance_type
-	ld a, [wd4ca]
 	sub [hl]
-	ld [wd4ca], a
 	jr c, .found_card_type
-.skip_no_chance_type
 	inc hl
 	inc c
-	ld a, c
-	cp NUM_BOOSTER_CARD_TYPES
-	jr c, .loop_through_card_types
-	ld a, BOOSTER_CARD_TYPE_ENERGY
+	jr .loop_through_card_types
 .found_card_type
 	ld a, c
 	ld [wBoosterJustDrawnCardType], a
@@ -290,17 +270,15 @@ DetermineBoosterCardType:
 ; and uses that number to determine the card to draw from the booster pack.
 ; preserves de
 ; input:
-;	[wBoosterJustDrawnCardType] = BOOSTER_CARD_TYPE_* constant
+;	c & [wBoosterJustDrawnCardType] = BOOSTER_CARD_TYPE_* constant
 ;	wBoosterAmountOfCardTypeTable = list with number of available cards that match the
 ;	                                current set and rarity for each booster card type
 
 ;	wBoosterViableCardList = list of available cards that match the current set and rarity
 ; output:
-;	a = ID of card that should be used
 ;	carry = set:  if there were no valid cards
+;	[wBoosterCurrentCard] = card ID that was chosen
 DetermineBoosterCard:
-;	ld a, [wBoosterJustDrawnCardType] ; already loaded in a from DetermineBoosterCardType
-	ld c, a
 	ld b, $00
 	ld hl, wBoosterAmountOfCardTypeTable
 	add hl, bc
@@ -318,15 +296,12 @@ DetermineBoosterCard:
 	jr nz, .card_incorrect_type
 	ld a, [wd4ca]
 	or a
-	jr z, .got_valid_card
+	ret z ; return no carry if this is the randomly chosen card
 	dec a
 	ld [wd4ca], a
 .card_incorrect_type
 	inc hl
 	jr .find_matching_card_loop
-.got_valid_card
-	or a
-	ret
 .no_valid_card_found
 	scf
 	ret
@@ -334,7 +309,7 @@ DetermineBoosterCard:
 
 ; lowers the chance of getting the same type of card multiple times.
 ; more specifically, when a card of type T is drawn, T's new chances become
-; max (1, [wBoosterData_TypeChances[T]] - [wBoosterAveragedTypeChances]).
+; max (8, [wBoosterData_TypeChances[T]] - [wBoosterAveragedTypeChances]).
 ; preserves all registers except af
 ; input:
 ;	[wBoosterJustDrawnCardType] = BOOSTER_CARD_TYPE_* constant
@@ -352,13 +327,13 @@ UpdateBoosterCardTypesChanceByte:
 	ld c, a
 	ld a, [hl]
 	sub c
+	jr c, .use_minimum ; set chance to minimum amount if difference was negative
+	cp 8
+	jr nc, .more_than_minimum ; use difference if >= 8
+.use_minimum
+	ld a, 8 ; minimum chance is 5% (assuming the sum of all type chances = 160)
+.more_than_minimum
 	ld [hl], a
-	jr z, .chance_less_than_one
-	jr nc, .still_some_chance_left
-.chance_less_than_one
-	ld a, 1
-	ld [hl], a
-.still_some_chance_left
 	pop bc
 	pop hl
 	ret
@@ -425,12 +400,8 @@ GenerateTwoTypesEnergyBooster:
 .add_two_energies_to_booster_loop
 	ld c, NUM_CARDS_IN_BOOSTER / 2
 .add_energy_to_booster_loop
-	push hl
-	push bc
 	ld a, [hl]
 	call AddBoosterEnergyToDrawnEnergies
-	pop bc
-	pop hl
 	dec c
 	jr nz, .add_energy_to_booster_loop
 	inc hl
@@ -465,7 +436,7 @@ GenerateRandomEnergyBooster:
 GenerateRandomEnergy:
 	ld a, NUM_COLORED_TYPES
 	call Random
-	add $01
+	add GRASS_ENERGY
 ;	fallthrough
 
 ; adds the (Energy) card at a to wBoosterTempEnergiesDrawn and wTempCardCollection
@@ -607,18 +578,15 @@ InitBoosterData:
 	call CopyDataHLtoDE ; load booster pack data to wram
 	call LoadRarityAmountsToWram
 	ld bc, $0
-	lb de, NUM_BOOSTER_CARD_TYPES, $0
+	lb de, NUM_BOOSTER_CARD_TYPES, NUM_BOOSTER_CARD_TYPES
 	ld hl, wBoosterData_TypeChances
 .add_chance_bytes_loop
 	ld a, [hli]
-	or a
-	jr z, .skip_chance_byte
 	add c
 	ld c, a
-	inc e
-.skip_chance_byte
 	dec d
 	jr nz, .add_chance_bytes_loop
+	; divide the sum of all type probabilities by the total number of booster card types (e.g. 160/9)
 	call DivideBCbyDE
 	ld a, c
 	ld [wBoosterAveragedTypeChances], a

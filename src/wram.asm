@@ -2873,10 +2873,9 @@ wBoosterTempTypeChancesTable:: ; d67a
 ; properties of the card currently being processed by the booster pack engine functions
 wBoosterCurrentCardType:: ; d683
 	ds $1
-wBoosterCurrentCardRarity:: ; d684
-	ds $1
-wBoosterCurrentCardSet:: ; d685
-	ds $1
+
+; Unused wram bytes
+	ds $2
 
 ; data of the booster pack copied from the corresponding BoosterPack_* structure.
 ; wBoosterData_TypeChances is updated after each card is drawn, to re-balance the type chances.

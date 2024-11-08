@@ -9656,7 +9656,7 @@ DoubleColorlessEnergyCard:
 	gfx DoubleColorlessEnergyCardGfx ; gfx
 	tx DoubleColorlessEnergyName ; name
 	db DIAMOND ; rarity
-	db ENERGY | NONE ; sets
+	db MYSTERY | NONE ; sets
 	db DOUBLE_COLORLESS_ENERGY
 	dw DoubleColorlessEnergyEffectCommands ; effect commands
 	tx DoubleColorlessEnergyDescription ; description
