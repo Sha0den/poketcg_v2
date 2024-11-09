@@ -110,6 +110,14 @@
 
 
 ## Code Optimization
+- **November 9, 2024:** 26 Files Changed
+    - Change various instances of $ff to -1 to better comply with the original disassembly's style guide (-1 = empty/false, $ff = list/data terminator)
+    - Change some instances of `cp -1` with inc a (so long as the flag differences seemed irrelevant)
+    - Remove some redundant loads following menu input functions (when the necessary variable was already loaded to the a register)
+    - Edit a lot of input/output comments in the effect function and ai logic files (mostly related to deck indices)
+
+<br/>
+
 - **[November 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/3cf5d16b2d16ed007741a24f0fb16bae620408ce):** 2 Files Changed
     - Move several card list display functions from home/menus.asm (bank $00) to engine/duel/core.asm (bank $01)
 
@@ -832,7 +840,7 @@
     - Officially add Double Colorless Energy to the Mystery set and remove the code that allows any Energy card to be included in a booster, regardless of set
         - *Energy cards are still treated differently in the card album to ensure they appear at the end of the set list*
     - Optimize many of the functions in engine/booster_packs.asm
-    - Further changes were made to the card album Energy code in the following commit, to more easily adapt to possible changes to the card pool
+    - Further changes were made to the card album Energy code in the [following commit](https://github.com/Sha0den/poketcg_v2/commit/973dac5db8b51079e527d73bd80d9a7960146a44), to more easily adapt to possible changes to the card pool
 
 <br/>
 

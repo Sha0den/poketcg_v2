@@ -168,7 +168,7 @@ OpenInPlayAreaScreen::
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp -1
-	ret z
+	ret z ; return if that play area slot is empty
 
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
@@ -179,7 +179,7 @@ OpenInPlayAreaScreen::
 	add DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	cp -1
-	ret z
+	ret z ; return if that play area slot is empty
 
 	rst SwapTurn
 	call GetCardIDFromDeckIndex
@@ -237,7 +237,7 @@ OpenInPlayAreaScreen_TurnHolderPlayArea:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp -1
-	ret z
+	ret z ; return if that play area slot is empty
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
 	xor a
@@ -258,7 +258,7 @@ OpenInPlayAreaScreen_NonTurnHolderPlayArea:
 	add DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	cp -1
-	ret z
+	ret z ; return if that play area slot is empty
 	rst SwapTurn
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID

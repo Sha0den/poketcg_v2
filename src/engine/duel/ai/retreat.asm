@@ -112,7 +112,7 @@ AIDecideWhetherToRetreat:
 	get_turn_duelist_var
 .loop_resistance_1
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .exit_loop_resistance_1
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
@@ -144,7 +144,7 @@ AIDecideWhetherToRetreat:
 	get_turn_duelist_var
 .loop_weakness_1
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .exit_loop_weakness_1
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Weakness]
@@ -178,7 +178,7 @@ AIDecideWhetherToRetreat:
 .loop_weakness_2
 	inc e
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .check_resistance_3
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
@@ -227,7 +227,7 @@ AIDecideWhetherToRetreat:
 	get_turn_duelist_var
 .loop_resistance_2
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .check_ko_2
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Resistance]
@@ -245,7 +245,7 @@ AIDecideWhetherToRetreat:
 .loop_ko_1
 	inc c
 	ld a, [hli]
-	cp $ff
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .check_defending_id
 	ld a, c
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -309,7 +309,7 @@ AIDecideWhetherToRetreat:
 .loop_damage
 	inc c
 	ld a, [hli]
-	cp $ff
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .check_retreat_cost
 	ld a, c
 	push hl
@@ -365,7 +365,7 @@ AIDecideWhetherToRetreat:
 .loop_ko_2
 	inc e
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .exit_loop_ko
 	call _GetCardIDFromDeckIndex
 	cp MYSTERIOUS_FOSSIL
@@ -411,7 +411,7 @@ AIDecideWhetherToRetreat:
 	ld a, e
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp $ff
+	cp -1 ; empty play area slot?
 	ret z ; return no carry if there are no more Benched Pokémon to check
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -853,7 +853,7 @@ AITryToRetreat:
 	ld a, [de]
 	inc de
 	ld [hli], a
-	cp $ff
+	inc a ; cp $ff (empty play area slot?)
 	jr nz, .loop_1
 	jr .retreat
 

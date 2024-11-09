@@ -11,7 +11,7 @@ HandleGiftCenter::
 	ld [wTxRam2 + 1], a
 	ret
 .asm_b18f
-	ld a, $ff
+	ld a, -1
 	ld [wGiftCenterChoice], a
 	ret
 
@@ -151,7 +151,7 @@ GiftCenter_ReceiveCard:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 	ldh a, [hffb3]
-	cp $ff
+	cp -1
 	jr nz, .asm_aff5
 	ld hl, wNameBuffer
 	ld de, wDefaultText
@@ -194,7 +194,7 @@ GiftCenter_SendDeck:
 .asm_bc32
 	call HandleDeckMachineSelection
 	jr c, .asm_bc1a
-	cp $ff
+	cp -1
 	jr nz, .asm_bc3f
 	ld a, $01
 	or a
@@ -254,7 +254,7 @@ GiftCenter_ReceiveDeck:
 	call InitDeckMachineDrawingParams
 	call HandleDeckMachineSelection
 	jr c, .asm_bc90
-	cp $ff
+	cp -1
 	jr nz, .asm_bcb5
 	ld a, $01
 	or a
@@ -538,7 +538,7 @@ Func_b088:
 	ld hl, wFilteredCardList
 	add hl, bc
 	ld [hl], a
-	ld a, $ff
+	ld a, $ff ; terminating byte
 	ld hl, wOwnedCardsCountList
 	add hl, bc
 	ld [hl], a

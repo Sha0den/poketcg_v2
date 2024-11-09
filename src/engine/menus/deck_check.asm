@@ -1,8 +1,8 @@
 ; handles player input in the check menu
 ; works out which cursor coordinate to go to
 ; output:
-;	a = $1:       if the A button was pressed
-;	a = $ff:      if the B button was pressed
+;	a =  1:      if the A button was pressed
+;	a = -1:      if the B button was pressed
 ;	carry = set:  if either the A or the B button were pressed
 HandleCheckMenuInput:
 	xor a

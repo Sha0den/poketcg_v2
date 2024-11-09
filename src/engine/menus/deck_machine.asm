@@ -183,8 +183,8 @@ HandleDeckSaveMachineMenu:
 	call InitDeckMachineDrawingParams
 	call HandleDeckMachineSelection
 	jr c, .wait_input
-	cp $ff
-	ret z ; operation cancelled
+	cp -1
+	ret z ; exit if the B button was pressed
 	; get the index of the selected deck
 	ld b, a
 	ld a, [wCardListVisibleOffset]
@@ -199,7 +199,7 @@ HandleDeckSaveMachineMenu:
 	call DoFrame
 	call HandleCheckMenuInput
 	jr nc, .wait_input_submenu
-	cp $ff
+	cp -1
 	jr nz, .submenu_option_selected
 	; return from submenu
 	ld a, [wTempDeckMachineCursorPos]
@@ -781,9 +781,8 @@ SaveDeckInDeckSaveMachine:
 	jr c, .wait_input
 	call HandleMenuInput
 	jr nc, .wait_submenu_input
-	ldh a, [hCurMenuItem]
-	cp $ff
-	ret z ; operation cancelled
+	cp -1
+	ret z ; exit if the B button was pressed
 	ld [wCurDeck], a
 	call CheckIfCurDeckIsValid
 	jr nc, .SaveDeckInSelectedEntry
@@ -1094,8 +1093,7 @@ HandleDismantleDeckToMakeSpace:
 	jr c, .init_menu_params
 	call HandleMenuInput
 	jr nc, .loop_input
-	ldh a, [hCurMenuItem]
-	cp $ff
+	cp -1
 	jr nz, .selected_deck
 	; operation was cancelled
 	call SafelySwitchToTempSRAMBank
@@ -1644,7 +1642,7 @@ HandleAutoDeckMenu:
 	ld a, [wCurMenuItem]
 	ld [wTempDeckMachineCursorPos], a
 	ldh a, [hCurMenuItem]
-	cp $ff
+	cp -1
 	jr z, .exit ; operation cancelled
 	ld [wSelectedDeckMachineEntry], a
 	call ResetCheckMenuCursorPositionAndBlink
@@ -1656,7 +1654,7 @@ HandleAutoDeckMenu:
 	call DoFrame
 	call HandleCheckMenuInput_YourOrOppPlayArea
 	jr nc, .wait_submenu_input
-	cp $ff
+	cp -1
 	jr nz, .submenu_option_selected
 	ld a, [wTempDeckMachineCursorPos]
 	jp .please_select_deck

@@ -492,9 +492,8 @@ HandleDeckBuildScreen:
 .no_down_btn
 	call HandleCardSelectionInput
 	jr nc, .wait_input
-	ldh a, [hffb3]
-	cp $ff ; operation cancelled?
-	jp z, OpenDeckConfigurationMenu
+	cp -1
+	jp z, OpenDeckConfigurationMenu ; display the deck building submenu if the B button was pressed
 
 ; input was made to jump to the card list
 .jump_to_list
@@ -581,9 +580,9 @@ HandleDeckBuildScreen:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 	ldh a, [hffb3]
-	cp $ff
+	cp -1
 	jr nz, .open_card_page
-	; cancelled
+	; B button was pressed
 	ld hl, FiltersCardSelectionParams
 	call InitCardSelectionParams
 	ld a, [wCurCardTypeFilter]
@@ -1719,6 +1718,10 @@ InitCardSelectionParams:
 	ret
 
 
+; output:
+;	a & [hffb3] = list index for the currently selected card:  if the A button was pressed
+;	            = -1:  if the B button was pressed
+;	carry = set:  if either the A or the B button were pressed
 HandleCardSelectionInput:
 	xor a ; FALSE
 	ld [wMenuInputSFX], a
@@ -1836,7 +1839,7 @@ DrawHorizontalListCursor_Visible:
 
 ; handles user input when selecting cards to add to a deck configuration
 ; output:
-;	a = list index of selection ($ff if operation was cancelled)
+;	a & [hffb3] = list index of selection (-1 if operation was cancelled)
 ;	carry = set:  if a selection was made (either selected card or cancelled)
 HandleDeckCardSelectionList:
 	xor a ; FALSE
@@ -2469,9 +2472,8 @@ HandleDeckConfirmationMenu:
 	jr .init_params
 
 .selection_made
-	ldh a, [hffb3]
-	cp $ff
-	ret z ; operation cancelled
+	cp -1
+	ret z ; exit if the B button was pressed
 	jr .selected_card
 
 .CardSelectionParams
@@ -3065,9 +3067,8 @@ HandlePlayersCardsScreen:
 .no_d_down
 	call HandleCardSelectionInput
 	jr nc, .wait_input
-	ldh a, [hffb3]
-	cp $ff ; operation cancelled
-	ret z
+	cp -1
+	ret z ; exit if the B button was pressed
 
 .jump_to_list
 	ld a, [wNumEntriesInCurFilter]
@@ -3141,8 +3142,9 @@ HandlePlayersCardsScreen:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 	ldh a, [hffb3]
-	cp $ff
+	cp -1
 	jr nz, .open_card_page
+	; B button was pressed
 	ld hl, FiltersCardSelectionParams
 	call InitCardSelectionParams
 	ld a, [wCurCardTypeFilter]

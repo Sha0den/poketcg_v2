@@ -12,8 +12,8 @@ _OpenDuelCheckMenu::
 	call DoFrame
 	call HandleCheckMenuInput
 	jr nc, .loop
-	cp $ff
-	ret z ; B button was pressed
+	cp -1
+	ret z ; exit if the B button was pressed
 	; A button was pressed
 	ld a, [wCheckMenuCursorYPosition]
 	sla a
@@ -82,8 +82,8 @@ DuelCheckMenu_YourPlayArea:
 	jr nc, .loop
 
 	call DrawYourOrOppPlayArea_EraseArrows
-	cp $ff
-	ret z
+	cp -1
+	ret z ; exit if the B button was pressed
 
 	ld a, [wCheckMenuCursorYPosition]
 	sla a
@@ -222,8 +222,8 @@ DuelCheckMenu_OppPlayArea:
 	call HandleCheckMenuInput_YourOrOppPlayArea
 	jr nc, .loop
 	call DrawYourOrOppPlayArea_EraseArrows
-	cp $ff
-	ret z ; B button was pressed
+	cp -1
+	ret z ; exit if the B button was pressed
 
 ; A button was pressed
 ; jump to function corresponding to cursor position
@@ -561,7 +561,7 @@ DrawInPlayArea_ActiveCardGfx:
 
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp -1 ; no Pokemon
+	cp -1 ; empty play area slot?
 	jr z, .opponent1
 
 	push af
@@ -584,7 +584,7 @@ DrawInPlayArea_ActiveCardGfx:
 .opponent1
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
-	cp -1 ; no Pokemon
+	cp -1 ; empty play area slot?
 	jr z, .draw
 
 	push af
@@ -646,12 +646,11 @@ DrawInPlayArea_ActiveCardGfx:
 ;	de = screen coordinates for drawing the card image
 DrawYourOrOppPlayArea_ActiveCardGfx:
 	push de
-	ld a, DUELVARS_ARENA_CARD
-	ld l, a
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
 	ld h, a
+	ld l, DUELVARS_ARENA_CARD
 	ld a, [hl]
-	cp -1
+	cp -1 ; empty play area slot?
 	jr z, .no_pokemon
 
 	ld d, a
@@ -1175,8 +1174,8 @@ DrawInPlayArea_Icons:
 ; handles the player's menu input in the Your or Opp. Play Area screens
 ; and works out which cursor coordinate to go to
 ; output:
-;	a = $01:  if the A button was pressed
-;	a = $ff:  if the B button was pressed
+;	a =  1:  if the A button was pressed
+;	a = -1:  if the B button was pressed
 ;	carry = set:  if either the A or the B button were pressed
 HandleCheckMenuInput_YourOrOppPlayArea:
 	xor a
@@ -1413,11 +1412,10 @@ HandlePeekSelection::
 	ld [wVBlankOAMCopyToggle], a
 	call DoFrame
 	call YourOrOppPlayAreaScreen_HandleInput
-	jr c, .selection_cancelled
-	jr .loop_input_2
-.selection_cancelled
+	jr nc, .loop_input_2
 	cp -1
 	jr nz, .selection_made
+	; B button was pressed
 	call ZeroObjectPositionsAndToggleOAMCopy
 	jr .check_swap
 .selection_made
@@ -1490,7 +1488,7 @@ ENDR
 	; fallthrough
 
 ; input:
-;	a = deck index of the card to load
+;	a = deck index of the card to load (0-59)
 ; output:
 ;	a = wce5c, with upper bit set if turn was swapped
 .ShowSelectedCard
@@ -1905,7 +1903,7 @@ _SelectPrizeCards::
 	call DoFrame
 	call YourOrOppPlayAreaScreen_HandleInput
 	jr nc, .loop_handle_input
-	cp $ff
+	cp -1
 	jr z, .loop_handle_input
 
 	call ZeroObjectPositionsAndToggleOAMCopy

@@ -17,7 +17,7 @@ _AIProcessHandTrainerCards:
 .loop_hand
 	ld a, [hli]
 	ld [wAITrainerCardToPlay], a
-	cp $ff
+	inc a ; cp $ff
 	ret z
 
 	push hl
@@ -259,8 +259,8 @@ AIDecide_Potion2:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	cp $ff
-	ret z ; return no carry if all of the Pokémon in play have been checked
+	cp -1 ; empty play area slot?
+	ret z ; return no carry if there are no more Pokémon to check
 	push de
 	call .check_boost_if_taken_damage
 	pop de
@@ -450,8 +450,8 @@ AIDecide_SuperPotion2:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	cp $ff
-	ret z ; return no carry if all of the Pokémon in the play area have been checked
+	cp -1 ; empty play area slot?
+	ret z ; return no carry if there are no more Pokémon to check
 	ld d, a
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies] ; already loaded
@@ -1014,7 +1014,7 @@ FindBenchCardWithWeakness:
 .loop_bench
 	inc e
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	ret z ; return no carry if there are no more Benched Pokémon to check
 	rst SwapTurn
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -1042,7 +1042,7 @@ FindBenchCardToKnockOut:
 
 .loop_bench
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	ret z ; return no carry if there are no more Benched Pokémon to check
 	inc e
 	push de
@@ -1278,7 +1278,7 @@ AIDecide_EnergyRemoval:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .default
 
 ;	ld d, a ; store deck index
@@ -1426,7 +1426,7 @@ AIDecide_SuperEnergyRemoval:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .done
 
 ;	ld d, a ; store deck index
@@ -1478,7 +1478,7 @@ AIDecide_SuperEnergyRemoval:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	cp $ff
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .found_damage
 	farcall CountNumberOfEnergyCardsAttached
 	cp 2
@@ -1532,7 +1532,7 @@ AIDecide_SuperEnergyRemoval:
 
 
 ; output:
-;	a = deck index of the Stage 2 Evolution card in the AI's hand
+;	a = deck index of the Stage 2 Evolution card in the AI's hand (0-59)
 ;	[wce1a] = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
 ;	carry = set:  if the AI decided to play Pokémon Breeder
 AIDecide_PokemonBreeder:
@@ -1685,7 +1685,7 @@ AIDecide_PokemonBreeder:
 	ld hl, wce06
 	xor a
 	ld [hli], a ; [wce06] = $00
-	ld a, $ff
+	dec a ; $ff
 	ld [hl], a  ; [wce07] = $ff
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -1737,13 +1737,13 @@ AIDecide_PokemonBreeder:
 
 ; preserves de
 ; input:
-;	d = deck index of the Stage 2 Evolution card being considered
+;	d = deck index of the Stage 2 Evolution card being considered (0-59)
 ;	e = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
 ; output:
 ;	[wce06] += 1
 ;	[wce08 + e] = some information about the Pokémon in the location from e input (lower 4 bits store
 ;	              its attached Energy amount and upper 4 bits store its remaining HP divided by 10)
-;	[wce0f + e] = deck index from d input
+;	[wce0f + e] = deck index from d input (0-59)
 .StoreEvolutionInformation
 	ld a, DUELVARS_ARENA_CARD_HP
 	add e
@@ -1784,7 +1784,7 @@ AIDecide_PokemonBreeder:
 
 ; preserves all registers except af
 ; input:
-;	d = deck index of the Stage 2 Evolution card being considered
+;	d = deck index of the Stage 2 Evolution card being considered (0-59)
 ;	e = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
 ; output:
 ;	carry = set:  if a Benched Pokémon is being evolved into DragoniteLv41 and
@@ -2190,9 +2190,9 @@ AIPlay_EnergyRetrieval:
 ; AI will only play Energy Retrieval if there are no Energy cards in its hand and
 ; only if there are multiple copies of the same card in the hand for the discard.
 ; output:
-;	a       = deck index of the card that will be discarded from the AI's hand
-;	[wce1a] = deck index of a Basic Energy card in the AI's discard pile
-;	[wce1b] = deck index of another Basic Energy card in the AI's discard pile, if any
+;	a       = deck index of the card that will be discarded from the AI's hand (0-59)
+;	[wce1a] = deck index of a Basic Energy card in the AI's discard pile (0-59)
+;	[wce1b] = deck index of another Basic Energy card in the AI's discard pile, if any (0-59)
 ;	carry = set:  if the AI decided to play Energy Retrieval
 AIDecide_EnergyRetrieval:
 ; don't play Energy Retrieval if there are any Energy cards in the AI's hand.
@@ -2325,16 +2325,16 @@ AIPlay_SuperEnergyRetrieval:
 	ldh [hTempList + 2], a
 	ld a, [hli] ; wce1c
 	ldh [hTempList + 3], a
-	cp $ff
+	inc a ; cp $ff
 	jr z, .play_card
 	ld a, [hli] ; wce1d
 	ldh [hTempList + 4], a
-	cp $ff
+	inc a ; cp $ff
 	jr z, .play_card
 	ld a, [hl]  ; wce1e
 	ldh [hTempList + 5], a
-	ld a, $ff
-	ldh [hTempList + 6], a
+	ld a, $ff ; list is $ff-terminated
+	ldh [hTempList + 6], a ; add terminating byte to hTempList
 .play_card
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
@@ -2344,12 +2344,12 @@ AIPlay_SuperEnergyRetrieval:
 ; AI will only play Super Energy Retrieval if there are no Energy cards in its hand
 ; and only if there are at least 2 duplicate cards in the hand to discard.
 ; output:
-;	a       = deck index of the 1st card that will be discarded from the AI's hand
-;	[wce1a] = deck index of the 2nd card that will be discarded from the AI's hand
-;	[wce1b] = deck index of a Basic Energy card in the AI's discard pile
-;	[wce1c] = deck index of a 2nd Basic Energy card in the AI's discard pile, if any
-;	[wce1d] = deck index of a 3rd Basic Energy card in the AI's discard pile, if any
-;	[wce1e] = deck index of a 4th Basic Energy card in the AI's discard pile, if any
+;	a       = deck index of the 1st card that will be discarded from the AI's hand (0-59)
+;	[wce1a] = deck index of the 2nd card that will be discarded from the AI's hand (0-59)
+;	[wce1b] = deck index of a Basic Energy card in the AI's discard pile (0-59)
+;	[wce1c] = deck index of a 2nd Basic Energy card in the AI's discard pile, if any (0-59)
+;	[wce1d] = deck index of a 3rd Basic Energy card in the AI's discard pile, if any (0-59)
+;	[wce1e] = deck index of a 4th Basic Energy card in the AI's discard pile, if any (0-59)
 ;	carry = set:  if the AI decided to play Super Energy Retrieval
 AIDecide_SuperEnergyRetrieval:
 ; don't play Super Energy Retrieval if there are any Energy cards in the AI's hand.
@@ -2680,8 +2680,8 @@ AIDecide_EnergySearch:
 ; input:
 ;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
 ; output:
-;	a & b = deck index of an Energy card in wDuelTempList that can be
-;	        used by a Fire or Lightning Pokémon in the AI's play area, if any
+;	a & b = deck index of an Energy card in wDuelTempList that can be used
+;	        by a Fire or Lightning Pokémon in the AI's play area, if any (0-59)
 ;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList_OnlyCheckFireAndLightningPokemon:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -2732,8 +2732,8 @@ LookForUsefulEnergyCardInList_OnlyCheckFireAndLightningPokemon:
 ; input:
 ;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
 ; output:
-;	a & b = deck index of an Energy card in wDuelTempList that can be
-;	        used by a Grass Pokémon in the AI's play area, if any
+;	a & b = deck index of an Energy card in wDuelTempList that can be used
+;	        by a Grass Pokémon in the AI's play area, if any (0-59)
 ;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList_OnlyCheckGrassPokemon:
 	ld c, TYPE_PKMN_GRASS
@@ -2743,8 +2743,8 @@ LookForUsefulEnergyCardInList_OnlyCheckGrassPokemon:
 ;	c = TYPE_PKMN_* constant
 ;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
 ; output:
-;	a & b = deck index of an Energy card in wDuelTempList that can be
-;	        used by a Pokémon of the given type in the AI's play area, if any
+;	a & b = deck index of an Energy card in wDuelTempList that can be used
+;	        by a Pokémon of the given type in the AI's play area, if any (0-59)
 ;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList_OnlyCheckPokemonOfGivenType:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -2793,8 +2793,8 @@ LookForUsefulEnergyCardInList_OnlyCheckPokemonOfGivenType:
 ; input:
 ;	wDuelTempList = $ff-terminated list with deck indices of Energy cards
 ; output:
-;	a & b = deck index of an Energy card in wDuelTempList that can be
-;	        used by one of the Pokémon in the AI's play area, if any
+;	a & b = deck index of an Energy card in wDuelTempList that can be used
+;	        by one of the Pokémon in the AI's play area, if any (0-59)
 ;	carry = set:  if a useful Energy card was found in wDuelTempList
 LookForUsefulEnergyCardInList:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -2865,11 +2865,11 @@ AIPlay_Pokedex:
 ; most decks will prioritize Energy, then Pokémon, then Trainers,
 ; but Rick's Wonders of Science deck will pick Pokémon, Trainers, and then Energy.
 ; input:
-;	[wce1a] = deck index of the card that should be placed on top of the deck
-;	[wce1b] = deck index of the card that should be placed below the previous card
-;	[wce1c] = deck index of the card that should be placed below the previous card
-;	[wce1d] = deck index of the card that should be placed below the previous card
-;	[wce1e] = deck index of the card that should be placed below the previous card
+;	[wce1a] = deck index of the card that should be placed on top of the deck (0-59)
+;	[wce1b] = deck index of the card that should be placed below the previous card (0-59)
+;	[wce1c] = deck index of the card that should be placed below the previous card (0-59)
+;	[wce1d] = deck index of the card that should be placed below the previous card (0-59)
+;	[wce1e] = deck index of the card that should be placed below the previous card (0-59)
 ;	carry = set:  if the AI decided to play Pokédex
 AIDecide_Pokedex:
 ; don't play Pokédex if it hasn't been at least 5 turns since the last Pokédex was played.
@@ -3457,9 +3457,9 @@ AIDecide_ScoopUp:
 	ret nc
 
 ; has decided to Scoop Up a Benched Pokémon,
-; store $ff as the Pokémon card to switch to
+; store -1 as the Pokémon card to switch to
 ; because there's no need to switch.
-	ld a, $ff
+	ld a, -1
 	ld [wce1a], a
 	ld a, e
 	ret
@@ -3513,8 +3513,8 @@ AIPlay_Maintenance:
 ; if there are duplicate card in the hand to shuffle back into the deck.
 ; Imakuni? will randomly decide to play Maintenance 20% of the time.
 ; output:
-;	[wce1a] = deck index of the first card that was selected from the AI's hand
-;	[wce1b] = deck index of the second card that was selected from the AI's hand
+;	[wce1a] = deck index of the first card that was selected from the AI's hand (0-59)
+;	[wce1b] = deck index of the second card that was selected from the AI's hand (0-59)
 ;	carry = set:  if the AI decided to play Maintenance
 AIDecide_Maintenance:
 ; switch to a custom subroutine if the NPC opponent is Imakuni?.
@@ -3607,7 +3607,7 @@ AIPlay_Recycle:
 	ldh [hTemp_ffa0], a
 	jr .play_card
 .tails
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 .play_card
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
@@ -3618,7 +3618,7 @@ AIPlay_Recycle:
 ; AI uses Recycle on a discarded Trainer when not using a deck with a given
 ; priority list, which includes Ken's Fire Charge deck and Robert's Ghost Deck.
 ; output:
-;	a = deck index of the card that was chosen from the discard pile
+;	a = deck index of the card that was chosen from the discard pile (0-59)
 ;	carry = set:  if the AI decided to play Recycle
 AIDecide_Recycle:
 ; can't play Recycle if there are no cards in the AI's discard pile.
@@ -3825,9 +3825,9 @@ AIPlay_ItemFinder:
 ; Stephanie's Strange Power deck will only use Item Finder on a discarded Energy Removal
 ; and also refuses to discard a duplicate Mr. Mime or Pokémon Trader card from her hand.
 ; output:
-;	a = deck index of a Trainer card in the AI's discard pile (to add to the hand)
-;	[wce1a] = deck index of a duplicate card in the AI's hand (to discard)
-;	[wce1b] = deck index of another duplicate card in the AI's hand (to discard)
+;	a = deck index of a Trainer card in the AI's discard pile (to add to the hand) (0-59)
+;	[wce1a] = deck index of a duplicate card in the AI's hand (to discard) (0-59)
+;	[wce1b] = deck index of another duplicate card in the AI's hand (to discard) (0-59)
 ;	carry = set:  if the AI decided to play Item Finder
 AIDecide_ItemFinder:
 ; can't play Item Finder if there are no Trainer cards in the AI's discard pile.
@@ -4019,7 +4019,7 @@ AIDecide_Gambler:
 ; at least 50 HP and only if there are fewer than 3 Benched Pokémon.
 ; Chris's Muscles for Brains deck will try to target specific Pokémon in the discard pile.
 ; output:
-;	a = deck index of the Basic Pokémon card that was chosen
+;	a = deck index of the Basic Pokémon card that was chosen (0-59)
 ;	carry = set:  if the AI decided to play Revive
 AIDecide_Revive:
 ; can't play Revive if there are no cards in the AI's discard pile.
@@ -4042,7 +4042,7 @@ AIDecide_Revive:
 ; reset wram variables
 	xor a
 	ld [wce06], a
-	ld a, $ff
+	dec a ; $ff
 	ld [wce08], a
 
 ; find the Basic Pokémon with the highest HP in the discard pile.
@@ -4109,7 +4109,7 @@ AIDecide_Revive:
 ; Imakuni? will randomly decide to play Pokémon Flute 20% of the time,
 ; and he'll target the first Basic Pokémon in the Player's discard pile.
 ; output:
-;	a = deck index of the Basic Pokémon card that was chosen
+;	a = deck index of the Basic Pokémon card that was chosen (0-59)
 ;	carry = set:  if the AI decided to play Pokémon Flute
 AIDecide_PokemonFlute:
 ; can't play Pokémon Flute if the Player has no cards in their discard pile.
@@ -4233,7 +4233,7 @@ AIPlay_Pokeball:
 	ldh [hTemp_ffa0], a
 	jr .play_card
 .tails
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 .play_card
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
@@ -4246,7 +4246,7 @@ AIPlay_Pokeball:
 ; look for a Basic Pokémon if it has fewer than 3 Pokémon in play,
 ; then a card that evolves from a play area Pokémon, then any Pokémon.
 ; output:
-;	a = deck index of the Pokémon card that was chosen from the deck
+;	a = deck index of the Pokémon card that was chosen from the deck (0-59)
 ;	carry = set:  if the AI decided to play Poké Ball
 AIDecide_Pokeball:
 ; use the opponent's Deck ID to switch to the correct subroutine.
@@ -4534,9 +4534,9 @@ AIPlay_ComputerSearch:
 
 ; every deck that contains Computer Search has its own subroutine.
 ; output:
-;	a = deck index of the card to move from the deck to the hand
-;	[wce1a] = deck index of the first card to discard from the hand
-;	[wce1b] = deck index of the second card to discard from the hand
+;	a = deck index of the card to move from the deck to the hand (0-59)
+;	[wce1a] = deck index of the first card to discard from the hand (0-59)
+;	[wce1b] = deck index of the second card to discard from the hand (0-59)
 ;	carry = set:  if the AI decided to play Computer Search
 AIDecide_ComputerSearch:
 ; can't play Computer Serach if there aren't at least 2 other cards in the AI's hand.
@@ -4809,8 +4809,8 @@ AIDecide_ComputerSearch_FireCharge:
 ; preserves a (only if carry is set)
 ; output:
 ;	carry = set:  if at least 2 Trainer cards were found in the AI's hand
-;	[wce1a] = deck index of a Trainer card in the AI's hand, if any
-;	[wce1b] = deck index of another Trainer card in the AI's hand, if any
+;	[wce1a] = deck index of a Trainer card in the AI's hand, if any (0-59)
+;	[wce1b] = deck index of another Trainer card in the AI's hand, if any (0-59)
 CheckHandForTwoTrainerCards:
 	ld [wce06], a
 	call CreateHandCardList
@@ -4873,8 +4873,8 @@ AIDecide_ComputerSearch_Anger:
 
 ; every deck that contains Pokémon Trader has its own subroutine.
 ; output:
-;	a = deck index of the card to move from the hand to the deck
-;	[wce1a] = deck index of the card to move from the deck to the hand
+;	a = deck index of the card to move from the hand to the deck (0-59)
+;	[wce1a] = deck index of the card to move from the deck to the hand (0-59)
 ;	carry = set:  if the AI decided to play Pokémon Trader
 AIDecide_PokemonTrader:
 ; use the opponent's Deck ID to switch to the correct subroutine.

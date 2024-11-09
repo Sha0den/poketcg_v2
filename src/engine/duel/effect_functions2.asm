@@ -199,8 +199,9 @@ LookForCardsInDeck:
 	ret ; return no carry if a Nidoran M was found
 
 
+; prompts the Player to choose a Basic Energy card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Basic Energy card in the turn holder's deck (0-59, -1 if none)
 FindBasicEnergy:
 	call CreateDeckCardList
 	ldtx hl, Choose1BasicEnergyCardFromDeckText
@@ -246,7 +247,7 @@ FindBasicEnergy:
 
 ; no Basic Energy in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
@@ -267,9 +268,11 @@ CheckDeckIndexForBasicEnergy:
 	ret ; c if Basic Energy, nc if Trainer/Special Energy
 
 
+; prompts the Player to choose a Basic Energy card from their deck,
+; then prompts the Player to choose a Pokémon from their play area to attach it to.
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen Basic Energy ($ff if none was chosen)
-;	[hTempPlayAreaLocation_ffa1] = play area location offset of the chosen Pokemon (PLAY_AREA_* constant)
+;	[hTemp_ffa0] = deck index of a Basic Energy card in the turn holder's deck (0-59, -1 if none)
+;	[hTempPlayAreaLocation_ffa1] = target Pokémon's play area location offset (PLAY_AREA_* constant)
 FindBasicEnergyToAttach:
 	call CreateDeckCardList
 	ldtx hl, Choose1BasicEnergyCardFromDeckText
@@ -324,7 +327,7 @@ FindBasicEnergyToAttach:
 
 ; no Basic Energy in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
@@ -332,8 +335,8 @@ FindBasicEnergyToAttach:
 
 ; finds the first Basic Energy card in the deck and attaches it to the AI's Active Pokemon.
 ; output:
-;	[hTemp_ffa0] = deck index of a Basic Energy card in the AI's deck ($ff if none was chosen)
-;	[hTempPlayAreaLocation_ffa1] = play area location offset of the chosen Pokemon (PLAY_AREA_* constant)
+;	[hTemp_ffa0] = deck index of a Basic Energy card in the AI's deck (0-59, -1 if none)
+;	[hTempPlayAreaLocation_ffa1] = target Pokémon's play area location offset (PLAY_AREA_* constant)
 AIFindBasicEnergyToAttach:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -349,8 +352,9 @@ AIFindBasicEnergyToAttach:
 	ret
 
 
+; prompts the Player to choose a Trainer card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Trainer card in the turn holder's deck (0-59, -1 if none)
 FindTrainer:
 	call CreateDeckCardList
 	ldtx hl, ChooseTrainerCardFromDeckText
@@ -400,7 +404,7 @@ FindTrainer:
 
 ; no Trainer cards in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
@@ -408,7 +412,7 @@ FindTrainer:
 
 ; finds the first Trainer card in the deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Trainer card in the turn holder's deck (0-59, -1 if none)
 AIFindTrainer:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -424,8 +428,9 @@ AIFindTrainer:
 	ret ; Trainer card found
 
 
+; prompts the Player to choose a Pokémon card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Pokémon in the turn holder's deck (0-59, -1 if none)
 FindAnyPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChoosePokemonFromDeckText
@@ -475,14 +480,15 @@ FindAnyPokemon:
 
 ; no Pokemon in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
+; prompts the Player to choose an Evolution card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of an Evolution card in the turn holder's deck (0-59, -1 if none)
 FindEvolution:
 	call CreateDeckCardList
 	ldtx hl, ChooseEvolutionCardFromDeckText
@@ -528,7 +534,7 @@ FindEvolution:
 
 ; no Evolution cards in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
@@ -556,7 +562,7 @@ CheckDeckIndexForStage1OrStage2Pokemon:
 ; searches the deck for an Evolution card that evolves from the Active Pokémon.
 ; if that fails, find the first Evolution card in the deck.
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of an Evolution card in the turn holder's deck (0-59, -1 if none)
 AIFindEvolution:
 	lb de, DECK_SIZE, PLAY_AREA_ARENA
 .loop_all_cards
@@ -594,8 +600,9 @@ AIFindEvolution:
 	ret
 
 
+; prompts the Player to choose a Basic Pokémon card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Basic Pokémon in the turn holder's deck (0-59, -1 if none)
 FindBasicPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicPokemonFromDeckText
@@ -641,15 +648,15 @@ FindBasicPokemon:
 
 ; no Basic Pokemon in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
-; finds the first Basic Pokemon in the deck
+; finds the first Basic Pokémon card in the turn holder's deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Basic Pokémon in the turn holder's deck (0-59, -1 if none)
 AIFindBasicPokemon:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -663,8 +670,9 @@ AIFindBasicPokemon:
 	ret ; Basic Pokemon found
 
 
+; prompts the Player to choose a Basic Fighting Pokémon card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Basic Fighting Pokémon in the turn holder's deck (0-59, -1 if none)
 FindBasicFightingPokemon:
 	call CreateDeckCardList
 	ldtx hl, ChooseBasicFightingPokemonFromDeckText
@@ -720,15 +728,15 @@ FindBasicFightingPokemon:
 
 ; no Basic Fighting Pokemon in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
-; finds the first Basic Fighting Pokemon in the deck
+; finds the first Basic Fighting Pokémon card in the turn holder's deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Basic Fighting Pokémon in the turn holder's deck (0-59, -1 if none)
 AIFindBasicFighting:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -747,8 +755,9 @@ AIFindBasicFighting:
 	ret ; Fighting Pokemon found
 
 
+; prompts the Player to choose a Nidoran F or a Nidoran M card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Nidoran in the turn holder's deck (0-59, -1 if none)
 FindNidoran:
 	call CreateDeckCardList
 	ldtx hl, ChooseNidoranFromDeckText
@@ -803,15 +812,15 @@ FindNidoran:
 
 ; no Nidoran in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
-; finds the first Nidoran in the deck
+; finds the first Nidoran F/M card in the turn holder's deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Nidoran in the turn holder's deck (0-59, -1 if none)
 AIFindNidoran:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -828,8 +837,9 @@ AIFindNidoran:
 	ret ; Nidoran found
 
 
+; prompts the Player to choose an Oddish card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of an Oddish in the turn holder's deck (0-59, -1 if none)
 FindOddish:
 	call CreateDeckCardList
 	ldtx hl, ChooseAnOddishFromDeckText
@@ -879,15 +889,15 @@ FindOddish:
 
 ; no Oddish in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
-; finds the first Oddish in the deck
+; finds the first Oddish card in the turn holder's deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of an Oddish in the turn holder's deck (0-59, -1 if none)
 AIFindOddish:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -902,8 +912,9 @@ AIFindOddish:
 	ret ; Oddish found
 
 
+; prompts the Player to choose a Bellsprout card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Bellsprout in the turn holder's deck (0-59, -1 if none)
 FindBellsprout:
 	call CreateDeckCardList
 	ldtx hl, ChooseABellsproutFromDeckText
@@ -953,15 +964,15 @@ FindBellsprout:
 
 ; no Bellsprout in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
-; finds the first Bellsprout in the deck
+; finds the first Bellsprout card in the turn holder's deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Bellsprout in the turn holder's deck (0-59, -1 if none)
 AIFindBellsprout:
 	call CreateDeckCardList
 	ld hl, wDuelTempList
@@ -976,8 +987,9 @@ AIFindBellsprout:
 	ret ; Bellsprout found
 
 
+; prompts the Player to choose a Krabby card from their deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Krabby in the turn holder's deck (0-59, -1 if none)
 FindKrabby:
 	call CreateDeckCardList
 	ldtx hl, ChooseAKrabbyFromDeckText
@@ -1027,15 +1039,15 @@ FindKrabby:
 
 ; no Krabby in the deck, can safely exit screen
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	or a
 	ret
 
 
-; finds the first Krabby in the deck
+; finds the first Krabby card in the turn holder's deck
 ; output:
-;	[hTemp_ffa0] = deck index of the chosen card ($ff if no card was chosen)
+;	[hTemp_ffa0] = deck index of a Krabby in the turn holder's deck (0-59, -1 if none)
 AIFindKrabby:
 	call CreateDeckCardList
 	ld hl, wDuelTempList

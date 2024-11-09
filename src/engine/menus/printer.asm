@@ -19,9 +19,8 @@ HandlePrinterMenu:
 	call DoFrame
 	call HandleMenuInput
 	jr nc, .loop_input
-	ldh a, [hCurMenuItem]
-	cp $ff
-	call z, PrinterMenu_QuitPrint
+	cp -1
+	call z, PrinterMenu_QuitPrint ; exit if the B button was pressed
 	ld [wSelectedPrinterMenuItem], a
 	ld hl, PrinterMenuFunctionTable
 	call JumpToFunctionInTable
@@ -84,9 +83,8 @@ PrinterMenu_PokemonCards:
 .asm_abca
 	call HandleCardSelectionInput
 	jr nc, .loop_frame_1
-	ldh a, [hffb3]
-	cp $ff
-	ret z
+	cp -1
+	ret z ; exit if the B button was pressed
 ;	fallthrough
 
 .asm_abd7
@@ -190,7 +188,6 @@ PrinterMenu_PokemonCards:
 	call DoFrame
 	call HandleCardSelectionInput
 	jr nc, .loop_frame
-	ldh a, [hffb3]
 	or a
 	jr nz, .asm_acd5
 	ld hl, wFilteredCardList
@@ -318,7 +315,6 @@ PrinterMenu_CardList:
 	call DoFrame
 	call HandleCardSelectionInput
 	jr nc, .loop_frame
-	ldh a, [hffb3]
 	or a
 	ret nz
 	farcall PrintCardList
@@ -337,13 +333,12 @@ PrinterMenu_PrintQuality:
 	call DoFrame
 	call HandleCardSelectionInput
 	jr nc, .loop_frame
-	ldh a, [hffb3]
-	cp $ff
-	jr z, .asm_ade2
+	cp -1
+	jr z, .skip_contrast ; don't adjust the contrast if the B button was pressed
 	call EnableSRAM
 	ld [sPrinterContrastLevel], a
 	call DisableSRAM
-.asm_ade2
+.skip_contrast
 	add sp, $2 ; exit menu
 	ld a, [wSelectedPrinterMenuItem]
 	ld hl, PrinterMenuParameters

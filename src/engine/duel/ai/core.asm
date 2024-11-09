@@ -527,7 +527,7 @@ ConvertColorToEnergyCardID:
 ;	- if it's an Evolution card, return carry if if it doesn't evolve from a Pokémon in the AI's play area
 ;	- if it's a Trainer card, return carry if it can't be used
 ; input:
-;	a = deck index to check
+;	a = deck index to check (0-59)
 ; output:
 ;	carry = set:  if the given card can't be played
 ;	[wLoadedCard1] = all of the given card's data (card_data_struct)
@@ -635,7 +635,7 @@ CreateEnergyCardListFromHand:
 ;	a = CARD_LOCATION_* constant
 ;	e = card ID to look for
 ; output:
-;	a & l = deck index of a matching card, if any
+;	a & l = deck index of a matching card, if any (0-59)
 ;	carry = set:  if the given card was found in the given location
 LookForCardIDInLocation_Bank5:
 	ld d, a
@@ -667,7 +667,7 @@ LookForCardIDInLocation_Bank5:
 ; input:
 ;	a = card ID
 ; output:
-;	a = deck index for a copy of the given card in the turn holder's hand ($ff if none)
+;	a = deck index for a copy of the given card in the turn holder's hand, if any (0-59)
 ;	carry = set:  if the given card was NOT found in the hand
 LookForCardIDInHand:
 	push hl
@@ -710,7 +710,7 @@ LookForCardIDInHand:
 ; input:
 ;	a = card ID
 ; output:
-;	a = deck index for a copy of the given card in the turn holder's hand ($ff if none)
+;	a & [hTempCardIndex_ff98] = deck index for a copy of the given card in the turn holder's hand (0-59, -1 if none)
 ;	carry = set:  if the given card ID was found in the turn holder's hand
 LookForCardIDInHandList_Bank5:
 	ld [wTempCardIDToLook], a
@@ -738,8 +738,7 @@ LookForCardIDInHandList_Bank5:
 ;	a = card ID
 ;	b = play area location offset to start with (PLAY_AREA_* constant)
 ; output:
-;	a = play area location offset of the found card (first copy, more might exist)
-;	  = $ff:  if none of the Pokémon in the turn holder's play area have the given card ID
+;	a = play area location offset of the first card found with the given ID (PLAY_AREA_* constant, -1 if none)
 ;	carry = set:  if the given card ID was found in the turn holder's play area
 LookForCardIDInPlayArea_Bank5:
 	ld c, a
@@ -747,7 +746,7 @@ LookForCardIDInPlayArea_Bank5:
 	ld a, DUELVARS_ARENA_CARD
 	add b
 	get_turn_duelist_var
-	cp $ff
+	cp -1 ; empty play area slot?
 	ret z ; return no carry if there are more Pokémon in the play area to check
 	call _GetCardIDFromDeckIndex
 	cp c
@@ -1041,7 +1040,7 @@ CountOppEnergyCardsInHandAndAttached:
 ;	c  = card ID to look for
 ;	hl = $ff-terminated list of deck indices to search
 ; output:
-;	a & [hTempCardIndex_ff98] = deck index that was removed from the list, if any
+;	a & [hTempCardIndex_ff98] = deck index that was removed from the list (0-59, -1 if none)
 ;	carry = set:  if a card with the given ID was found in the given list
 RemoveCardIDInList:
 	push hl
@@ -1069,7 +1068,7 @@ RemoveCardIDInList:
 	ld a, [de]
 	inc de
 	ld [hli], a
-	cp $ff
+	inc a ; cp $ff
 	jr nz, .loop_2
 
 	ldh a, [hTempCardIndex_ff98]
@@ -1361,7 +1360,7 @@ CheckEnergyFlagsNeededInList:
 .next_card
 	ld a, [hli]
 	cp $ff
-	ret z ; nc
+	ret z ; return no carry if there are no more cards in the list to check
 	call _GetCardIDFromDeckIndex
 
 ; fire
@@ -1414,7 +1413,7 @@ CheckEnergyFlagsNeededInList:
 ; if any Colorless Energy is required, all bits are set.
 ; preserves de
 ; input:
-;	a = Pokémon card's deck index
+;	a = Pokémon card's deck index (0-59)
 ; output:
 ;	a = bits of each Energy requirement
 ;	[wLoadedCard2] = all of the given card's data (card_data_struct)
@@ -1497,7 +1496,7 @@ GetEnergyCostBits:
 
 ; preserves bc
 ; input:
-;	a = deck index to check for evolution
+;	a = deck index to check for evolution (0-59)
 ;	wDuelTempList = $ff-terminated list of card deck indices
 ; output:
 ;	a = deck index of a card in wDuelTempList that evolves from the given card, if any
@@ -1532,7 +1531,7 @@ CheckForEvolutionInList:
 
 ; preserves bc
 ; input:
-;	a = deck index to check for evolution
+;	a = deck index to check for evolution (0-59)
 ; output:
 ;	a = deck index of a card in the AI's deck that evolves from the given card, if any
 ;	carry = set:  if any card in the AI's deck can evolve from the given card
@@ -1567,7 +1566,7 @@ CheckForEvolutionInDeck:
 
 ; preserves bc
 ; input:
-;	a = deck index to check for evolution
+;	a = deck index to check for evolution (0-59)
 ; output:
 ;	a = deck index of a card in the AI's hand or deck that evolves from the given card, if any
 ;	carry = set:  if any card in the AI's hand or deck can evolve from the given card
@@ -1720,7 +1719,7 @@ CountNumberOfSetUpBenchPokemon:
 	pop hl
 	ld a, [hli]
 	push hl
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .done
 
 	ld d, a
@@ -2186,7 +2185,7 @@ CheckForBenchIDAtHalfHPAndCanUseSecondAttack:
 	pop hl
 	ld a, [hli]
 	push hl
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .done
 	ld d, a
 	call LoadCardDataToBuffer1_FromDeckIndex
@@ -2239,8 +2238,8 @@ RaiseAIScoreToAllMatchingIDsInBench:
 .loop
 	inc e
 	ld a, [hli]
-	cp $ff
-	ret z
+	cp -1 ; empty play area slot?
+	ret z ; return if there are no more Benched Pokémon to check
 	call _GetCardIDFromDeckIndex
 	cp d
 	jr nz, .loop
@@ -2277,8 +2276,8 @@ Func_174f2:
 	pop hl
 	inc e
 	ld a, [hli]
-	cp $ff
-	ret z
+	cp -1 ; empty play area slot?
+	ret z ; return if there are no more Benched Pokémon to check
 
 	ld [wcdf9], a
 	push de
@@ -2309,7 +2308,7 @@ Func_174f2:
 .loop_1
 	inc e
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .check_if_repeated_id
 	push de
 	call GetCardIDFromDeckIndex

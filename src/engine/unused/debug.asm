@@ -23,8 +23,7 @@ DebugCreateBoosterPack:
 	call DoFrameIfLCDEnabled
 	call HandleMenuInput
 	jr nc, .input_loop_1
-	ldh a, [hCurMenuItem]
-	cp e
+	cp e ; compare hCurMenuItem with wCurMenuItem
 	jr nz, .cancel
 	ld [wDebugBoosterSelection], a
 	add a
@@ -41,8 +40,7 @@ DebugCreateBoosterPack:
 	call DoFrameIfLCDEnabled
 	call HandleMenuInput
 	jr nc, .input_loop_2
-	ldh a, [hCurMenuItem]
-	cp e
+	cp e ; compare hCurMenuItem with wCurMenuItem
 	jr nz, .go_back
 	ld a, [wDebugBoosterSelection]
 	ld c, a
@@ -192,8 +190,7 @@ DebugDuelMode:
 	call DoFrameIfLCDEnabled
 	call HandleMenuInput
 	jr nc, .input_loop
-	ldh a, [hCurMenuItem]
-	cp e
+	cp e ; compare hCurMenuItem with wCurMenuItem
 	jr nz, .input_loop
 	and $01
 	ld [sDebugDuelMode], a

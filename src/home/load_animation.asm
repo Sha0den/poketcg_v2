@@ -158,10 +158,9 @@ GetAnimationFramePointer::
 	push hl
 	push hl
 	ld a, [wd4ca]
-	cp $ff
+	inc a
 	jr nz, .useLoadedOffset
 	ld de, SpriteNullAnimationPointer
-	xor a
 	jr .loadPointer
 .useLoadedOffset
 	ld a, [wTempPointer]

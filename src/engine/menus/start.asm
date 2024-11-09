@@ -152,8 +152,7 @@ HandleStartMenu:
 	call PrintStartMenuDescriptionText
 	pop af
 	jr nc, .wait_input
-	ldh a, [hCurMenuItem]
-	cp e
+	cp e ; compare hCurMenuItem with wCurMenuItem
 	jr nz, .wait_input
 
 	ld [wLastSelectedStartMenuItem], a

@@ -120,9 +120,8 @@ DeckSelectionMenu:
 	jr c, .init_menu_params
 	call HandleMenuInput
 	jr nc, .loop_input
-	ldh a, [hCurMenuItem]
-	cp $ff
-	ret z ; B button was pressed
+	cp -1
+	ret z ; exit if the B button was pressed
 	; A button was pressed on a deck
 	ld [wCurDeck], a
 ;	fallthrough
@@ -138,7 +137,7 @@ DeckSelectionSubMenu:
 	call DoFrame
 	call HandleCheckMenuInput
 	jr nc, .loop_input
-	cp $ff
+	cp -1
 	jr nz, .option_selected
 	; the B button was pressed, so erase the cursor
 	; and go back to the deck selection handling

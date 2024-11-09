@@ -20,7 +20,7 @@ InitializeMenuParameters::
 ; note: output values still subject to those of the function at [wMenuUpdateFunc], if any
 ; output:
 ;	a & [hCurMenuItem] = index for the currently selected item:  if the A button was pressed
-;	                   = $ff:  if the B button was pressed
+;	                   = -1:  if the B button was pressed
 ;	e & [wCurMenuItem] = index for the currently selected item (on the screen)
 ;	carry = set:  if either the A or the B button were pressed
 HandleMenuInput::
@@ -88,15 +88,15 @@ HandleMenuInput::
 	; B button pressed
 	ld a, [wCurMenuItem]
 	ld e, a
-	ld a, $ff
+	ld a, -1
 	ldh [hCurMenuItem], a
 	call PlayOpenOrExitScreenSFX
 	scf
 	ret
 
 
-; plays an "open screen" sound (SFX_CONFIRM) if [hCurMenuItem] != 0xff
-; plays an "exit screen" sound (SFX_CANCEL) if [hCurMenuItem] == 0xff
+; plays an "open screen" sound (SFX_CONFIRM) if [hCurMenuItem] != -1
+; plays an "exit screen" sound (SFX_CANCEL)  if [hCurMenuItem] == -1
 ; preserves all registers
 PlayOpenOrExitScreenSFX::
 	push af

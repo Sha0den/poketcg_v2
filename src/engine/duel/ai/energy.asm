@@ -70,7 +70,7 @@ AIProcessEnergyCards:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld a, $80
 	ld [wAIScore], a
-	ld a, $ff
+	ld a, -1
 	ld [wTempAI], a
 	ld a, [wAIEnergyAttachLogicFlags]
 	and AI_ENERGY_FLAG_SKIP_EVOLUTION
@@ -328,7 +328,7 @@ AIProcessEnergyCards:
 ; input:
 ;	a = which attack to check (0 = first attack, 1 = second attack)
 ;	[hTempPlayAreaLocation_ff9d] = this Pokémon's play area location offset (PLAY_AREA_* constant)
-;	[wTempAI] = deck index of a card that evolves from this Pokémon in the AI's hand, if any
+;	[wTempAI] = deck index of a card that evolves from this Pokémon in the AI's hand (0-59, -1 if none)
 DetermineAIScoreOfAttackEnergyRequirement:
 	ld [wSelectedAttack], a
 	call CheckEnergyNeededForAttack
@@ -473,7 +473,7 @@ DetermineAIScoreOfAttackEnergyRequirement:
 
 .check_evolution
 	ld a, [wTempAI] ; deck index of evolution in hand
-	cp $ff
+	cp -1
 	ret z
 
 ; temporarily replace this card with the Evolution card from the hand.

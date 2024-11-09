@@ -194,8 +194,7 @@ CheckIfEnergyIsUseful:
 ; input:
 ;	a = play area location offset to check (PLAY_AREA_* constant)
 ; output:
-;	a = deck index of an Energy card attached to the Pokémon in the given location
-;	  = $ff:  if there are no Energy cards attached to the Pokémon in the given location
+;	a = deck index of an Energy card attached to the Pokémon in the given location (0-59, -1 if none)
 AIPickEnergyCardToDiscard:
 ; construct Energy list and check if there are any Energy cards attached.
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -234,8 +233,7 @@ AIPickEnergyCardToDiscard:
 ; input:
 ;	a = play area location offset to check (PLAY_AREA_* constant)
 ; output:
-;	a = deck index of an Energy card attached to the Pokémon in the given location
-;	  = $ff:  if there are no Energy cards attached to the Pokémon in the given location
+;	a = deck index of an Energy card attached to the Pokémon in the given location (0-59, -1 if none)
 PickAttachedEnergyCardToRemove:
 ; construct Energy list and check if there are any Energy cards attached.
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -287,9 +285,9 @@ PickAttachedEnergyCardToRemove:
 	ld a, [hl]
 	ret
 
-; return with $ff if no Energy cards are attached to that Pokémon.
+; return with -1 if no Energy cards are attached to that Pokémon.
 .no_energy
-	ld a, $ff
+	ld a, -1
 	ret
 
 
@@ -300,9 +298,9 @@ PickAttachedEnergyCardToRemove:
 ;	a = play area location offset to check (PLAY_AREA_* constant)
 ; output:
 ;	a & [wTempAI] = deck index of an Energy card attached to the Pokémon
-;	                in the given location ($ff if no attached Energy cards)
-;	b & [wCurCardCanAttack] = deck index of another Energy card that is attached to the Pokémon
-;	                          in the given location ($ff if only 1 attached Energy card)
+;	                in the given location (0-59, -1 if none)
+;	b & [wCurCardCanAttack] = deck index of another Energy card attached to the Pokémon
+;	                          in the given location (0-59, -1 if none)
 PickTwoAttachedEnergyCards:
 ; construct Energy list and check if there are at least 2 Energy cards attached.
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -500,7 +498,7 @@ CalculateBDividedByA_Bank8:
 ;	a = CARD_LOCATION_* constant
 ;	e = card ID to look for
 ; output:
-;	a & l = deck index of a matching card, if any
+;	a & l = deck index of a matching card, if any (0-59)
 ;	carry = set:  if the given card was found in the given location
 LookForCardIDInLocation_Bank8:
 	ld d, a
@@ -529,8 +527,7 @@ LookForCardIDInLocation_Bank8:
 ; input:
 ;	a = card ID
 ; output:
-;	a & [hTempCardIndex_ff98] = deck index for a copy of the given card in the turn holder's hand
-;	                          = $ff:  if no copies of the given card were found in the hand
+;	a & [hTempCardIndex_ff98] = deck index for a copy of the given card in the turn holder's hand (0-59, -1 if none)
 ;	carry = set:  if the given card ID was found in the turn holder's hand
 LookForCardIDInHandList_Bank8:
 	ld [wTempCardIDToLook], a
@@ -575,8 +572,7 @@ LookForCardIDInHandAndPlayArea:
 ;	a = card ID
 ;	b = play area location offset to start with (PLAY_AREA_* constant)
 ; output:
-;	a = play area location offset of the found card (first copy, more might exist)
-;	  = $ff:  if none of the Pokémon in the turn holder's play area have the given card ID
+;	a = play area location offset of the first card found with the given ID (PLAY_AREA_* constant, -1 if none)
 ;	carry = set:  if the given card ID was found in the turn holder's play area
 LookForCardIDInPlayArea_Bank8:
 	ld c, a
@@ -584,8 +580,8 @@ LookForCardIDInPlayArea_Bank8:
 	ld a, DUELVARS_ARENA_CARD
 	add b
 	get_turn_duelist_var
-	cp $ff
-	ret z
+	cp -1 ; empty play area slot?
+	ret z ; return no carry if there are no more Pokémon to check
 	call _GetCardIDFromDeckIndex
 	cp c
 	jr z, .found
@@ -646,7 +642,7 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 ;	a = card ID #1
 ;	b = card ID #2
 ; output:
-;	a & [wTempAIPokemonCard ]= deck index of a card in the deck with ID #1:  if the below conditions are true
+;	a & [wTempAIPokemonCard ]= deck index of the found card in the deck (0-59, -1 if none)
 ;	carry = set:  if AI has a card with ID #1 is in their deck but not in their hand or play area
 ;	              and also a card with ID #2 in their hand
 LookForCardIDInDeck_GivenCardIDInHand:
@@ -683,10 +679,10 @@ LookForCardIDInDeck_GivenCardIDInHand:
 ; preserves all registers except af
 ; input:
 ;	d = type of card allowed to be removed ($00 = Trainer, $01 = Pokémon, $02 = Energy)
-;	e = deck index to avoid removing from the list
+;	e = deck index to avoid removing from the list (0-59)
 ;	hl = wDuelTempList
 ; output:
-;	a & [hTempCardIndex_ff98] = deck index of the card that was removed from the list, if any
+;	a & [hTempCardIndex_ff98] = deck index of the card that was removed from the list (0-59, -1 if none)
 ;	carry = set:  if a card was removed from the list
 RemoveFromListDifferentCardOfGivenType:
 	push hl
@@ -737,7 +733,7 @@ RemoveFromListDifferentCardOfGivenType:
 	ld a, [de]
 	inc de
 	ld [hli], a
-	cp $ff
+	inc a ; cp $ff
 	jr nz, .loop_remove
 
 ; success
@@ -760,8 +756,8 @@ RemoveFromListDifferentCardOfGivenType:
 ;	a = card ID #1
 ;	e = card ID #2
 ; output:
-;	a = deck index of a card in the deck with ID #1:  if carry = set
-;	e = deck index of a Pokémon in the hand that doesn't have card ID #2:  if carry = set
+;	a = deck index of a card in the deck with ID #1 (0-59, -1 if none)
+;	e = deck index of a Pokémon in the hand that doesn't have card ID #2 (0-59, -1 if none)
 ;	carry = set:  if AI has a card with ID #1 is in their deck but not their hand
 ;	              and also a Pokémon in their hand that doesn't have card ID #2
 LookForCardIDToTradeWithDifferentHandCard:
@@ -794,7 +790,7 @@ LookForCardIDToTradeWithDifferentHandCard:
 .loop_hand
 	ld a, [hli]
 	cp $ff
-	ret z ; nc
+	ret z ; return no carry if there are no more cards in the hand to check
 	ld e, a
 	call LoadCardDataToBuffer1_FromDeckIndex
 	cp c
@@ -813,7 +809,7 @@ LookForCardIDToTradeWithDifferentHandCard:
 ;	a = card ID to look for
 ; output:
 ;	a & [hTempCardIndex_ff98] = deck index of an extra copy of the given card
-;	                            in the turn holder's hand, if any
+;	                            in the turn holder's hand (0-59, -1 if none)
 ;	carry = set:  if there are at least 2 copies of the given card in the hand
 CheckIfHasDuplicateCardIDInHand:
 	ld [wTempCardIDToLook], a
@@ -824,7 +820,7 @@ CheckIfHasDuplicateCardIDInHand:
 .loop_hand
 	ld a, [hli]
 	cp $ff
-	ret z
+	ret z ; return no carry if there are no more cards in the hand to check
 	ldh [hTempCardIndex_ff98], a
 	call GetCardIDFromDeckIndex
 	ld a, [wTempCardIDToLook]
@@ -869,8 +865,7 @@ CountPokemonCardsInHandAndInPlayArea:
 
 ; compares card IDs in the AI's hand, searching for 2 identical Pokémon
 ; output:
-;	a = deck index of a duplicate Pokémon card in the turn holder's hand
-;	  = $ff:  if there are no duplicate Pokémon cards in the hand
+;	a = deck index of a duplicate Pokémon card in the turn holder's hand (0-59, -1 if none)
 ;	carry = set:  if a duplicate Pokémon card was found in the hand
 FindDuplicatePokemonCards:
 	call CreateHandCardList
@@ -881,7 +876,7 @@ FindDuplicatePokemonCards:
 	pop hl
 	ld a, [hli]
 	cp $ff
-	ret z ; nc
+	ret z ; return no carry if there are no more cards in the hand to check
 	call _GetCardIDFromDeckIndex
 	ld b, a
 	push hl
@@ -910,11 +905,11 @@ FindDuplicatePokemonCards:
 ; input:
 ;	hl = $ff-terminated list with deck indices of cards
 ; output:
-;	a = deck index of a duplicate card in the list
+;	a = deck index of a duplicate card in the list (0-59, -1 if none)
 ;	carry = set:  if duplicate cards were found in the given list
 FindDuplicateCards:
 	push hl
-	ld a, $ff
+	ld a, -1
 	ld [wce0f], a
 
 .loop_outer
@@ -959,7 +954,7 @@ FindDuplicateCards:
 
 .check_found
 	ld a, [wce0f]
-	cp $ff
+	cp -1
 	ret z ; return no carry if no duplicate cards were found
 	; two non-Pokémon cards with the same ID were found
 	scf
@@ -1045,7 +1040,7 @@ FindEnergizedPokemonWithHighestDamagingAttack:
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	cp $ff
+	cp -1 ; empty play area slot?
 	ret z ; return when there are no more Pokémon to check in the turn holder's play area
 	call GetPlayAreaCardAttachedEnergies
 	or a

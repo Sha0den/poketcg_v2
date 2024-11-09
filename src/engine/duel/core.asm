@@ -890,7 +890,7 @@ ReloadCardListScreen:
 ; Stage 1/2 Evolution card on top of a Pokemon that's already in play to evolve it.
 ; input:
 ;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
-;	[hTempCardIndex_ff98] = deck index of the Pokemon being played
+;	[hTempCardIndex_ff98] = deck index of the Pokemon being played (0-59)
 ; output:
 ;	carry = set:  if the Pokemon card wasn't put into play
 PlayPokemonCard:
@@ -983,10 +983,10 @@ PlayPokemonCard:
 	ret
 
 
-; plays the Trainer card with deck index (0-59) at hTempCardIndex_ff98.
+; plays the Trainer card with deck index at hTempCardIndex_ff98.
 ; a Trainer card is like an attack effect, with its own effect commands.
 ; input:
-;	[hTempCardIndex_ff98] = deck index of the Trainer card being played
+;	[hTempCardIndex_ff98] = deck index of the Trainer card being played (0-59)
 ; output:
 ;	carry = set:  if the Trainer card wasn't played
 PlayTrainerCard:
@@ -1028,7 +1028,7 @@ PlayTrainerCard:
 
 ; preserves all registers except af
 ; input:
-;	[hTempCardIndex_ff98] = deck index of the Energy card to check
+;	[hTempCardIndex_ff98] = deck index of the Energy card to check (0-59)
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokemon to check
 ; output:
 ;	carry = set:  if both cards from input are Water type
@@ -1211,6 +1211,8 @@ DiscardRetreatCostCards:
 ; this exists because they will be discarded again during the call to AttemptRetreat, so
 ; it prevents the Energy cards from being discarded twice.
 ; preserves bc and d
+; input:
+;	hTempRetreatCostCards = $ff-terminated list with deck indices of cards to discard
 ReturnRetreatCostCardsToArena:
 	ld hl, hTempRetreatCostCards
 .loop
@@ -1314,7 +1316,7 @@ HandleEnergyDiscardMenuInput:
 	call DoFrame
 	call HandleMenuInput
 	jr nc, .wait_input
-	cp $ff
+	cp -1
 	scf
 	ret z ; return carry if the B button was pressed
 	call GetCardInDuelTempList_OnlyDeckIndex
@@ -2698,7 +2700,7 @@ DrawDuelMainScene::
 ;.place_player_arena_pkmn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp -1
+	inc a ; cp -1
 	jr z, .place_opponent_arena_pkmn
 	ld a, $d0 ; v0Tiles1 + $50 tiles
 	lb hl, 6, 1
@@ -2710,7 +2712,7 @@ DrawDuelMainScene::
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp -1
+	inc a ; cp -1
 	jr z, .place_other_elements
 	ld a, $a0 ; v0Tiles1 + $20 tiles
 	lb hl, 6, 1
@@ -4057,7 +4059,7 @@ CardListMenuFunction:
 	and B_BUTTON
 	jr z, .pressed_a
 	; pressed B
-	ld a, $ff
+	ld a, -1
 	ldh [hCurMenuItem], a
 .pressed_a
 	scf
@@ -4129,7 +4131,7 @@ CardListParameters:
 ; loads the graphics of the card pointed to by the cursor whenever a d-pad key is released
 ; output:
 ;	carry = set:  if any of the other buttons were pressed (A/B/SELECT/START)
-;	[hCurMenuItem] = $ff:  if the B button was pressed
+;	[hCurMenuItem] = -1:  if the B button was pressed
 CardListFunction:
 	ldh a, [hKeysPressed]
 	bit B_BUTTON_F, a
@@ -4143,7 +4145,7 @@ CardListFunction:
 	or a
 	ret
 .exit
-	ld a, $ff
+	ld a, -1
 	ldh [hCurMenuItem], a
 .action_button
 	scf
@@ -5615,7 +5617,7 @@ DisplayPlayAreaScreen:
 	add c
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ldh a, [hCurMenuItem]
-	cp $ff
+	inc a ; cp -1
 	jr z, .asm_60b5
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_HP
@@ -5658,14 +5660,14 @@ PlayAreaScreenMenuParameters_ActivePokemonExcluded:
 ; preserves all registers except af
 ; output:
 ;	carry = set:  if either A, B, or Start were pressed
-;	[hCurMenuItem] = $ff:  if the B button was pressed
+;	[hCurMenuItem] = -1:  if the B button was pressed
 PlayAreaScreenMenuFunction:
 	ldh a, [hKeysPressed]
 	and A_BUTTON | B_BUTTON | START
 	ret z
 	bit B_BUTTON_F, a
 	jr z, .start_or_a
-	ld a, $ff
+	ld a, -1
 	ldh [hCurMenuItem], a
 .start_or_a
 	scf
@@ -5876,7 +5878,7 @@ PrintPlayAreaCardInformationAndLocation:
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp -1
+	inc a ; cp -1
 	ret z
 	call PrintPlayAreaCardInformation
 ;	fallthrough
@@ -6233,7 +6235,7 @@ PrintPlayAreaCardAttachedEnergies:
 
 ; output:
 ;	carry = set:  if the Player used the B button to exit the screen
-;	[hTemp_ffa0] = deck index of the Pokémon with the Pokémon Power being used, if one was selected
+;	[hTemp_ffa0] = deck index of the Pokémon with the Pokémon Power being used, if one was selected (0-59)
 DisplayPlayAreaScreenToUsePkmnPower:
 	xor a
 	ld [wSelectedDuelSubMenuItem], a
@@ -6251,7 +6253,7 @@ DisplayPlayAreaScreenToUsePkmnPower:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld [wHUDEnergyAndHPBarsX], a
 	jr nc, .loop_input
-	cp $ff
+	cp -1
 	scf
 	ret z ; return carry if the B button was pressed
 	; A button was pressed
@@ -7274,7 +7276,7 @@ OppAction_ForceSwitchActive:
 
 
 ; input:
-;	[hTempCardIndex_ff9f] = deck index of the Pokemon using the Pokemon Power
+;	[hTempCardIndex_ff9f] = deck index of the Pokemon using the Pokemon Power (0-59)
 ;	[hTemp_ffa0] = Pokemon's play area location offset (PLAY_AREA_* constant)
 OppAction_UsePokemonPower:
 	ldh a, [hTempCardIndex_ff9f]
@@ -8256,7 +8258,7 @@ CountKnockedOutPokemon:
 	lb bc, 0, MAX_PLAY_AREA_POKEMON
 .loop
 	ld a, [de]
-	cp -1
+	inc a ; cp -1
 	jr z, .next ; jump if no Pokemon in this location
 	ld a, [hli]
 	or a
@@ -8268,7 +8270,7 @@ CountKnockedOutPokemon:
 	jr z, .next ; jump if this is a Trainer card (Clefairy Doll or Mysterious Fossil)
 	inc b
 .next
-	inc de
+	inc e
 	dec c
 	jr nz, .loop
 	ld a, b
@@ -8388,7 +8390,7 @@ InitVariablesToBeginDuel:
 	ld [wDuelFinished], a
 	ld [wDuelTurns], a
 	ld [wcce7], a
-	ld a, $ff
+	dec a ; $ff
 	ld [wcc0f], a
 	ld [wPlayerAttackingCardIndex], a
 	ld [wPlayerAttackingAttackIndex], a
@@ -8650,7 +8652,7 @@ PlayStatusConditionQueueAnimations::
 ; card being played and checks if the card has Pokemon Power, to show it to
 ; the player, and possibly to use it if it triggers when the card is played.
 ; input:
-;	[hTempCardIndex_ff98] = deck index of the Pokemon being played
+;	[hTempCardIndex_ff98] = deck index of the Pokemon being played (0-59)
 ProcessPlayedPokemonCard::
 	ldh a, [hTempCardIndex_ff98]
 	call ClearChangedTypesIfMuk
@@ -8793,7 +8795,7 @@ ClearNonTurnTemporaryDuelvars_ResetCarry:
 ; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
 ; input:
 ;	[wSelectedAttack] = attack index (0 = first attack, 1 = second attack)
-;	[hTempCardIndex_ff9f] = Pokémon's deck index
+;	[hTempCardIndex_ff9f] = Pokémon's deck index (0-59)
 ;	[wTempCardID_ccc2] = Pokémon's card ID
 ;	[wLoadedAttack] = Pokémon's attack data (atk_data_struct)
 ; output:

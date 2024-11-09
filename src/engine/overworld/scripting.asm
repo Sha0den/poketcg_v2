@@ -1951,8 +1951,7 @@ ShowMultichoiceTextbox:
 	call DoFrameIfLCDEnabled
 	call HandleMenuInput
 	jr nc, .wait_input
-	ldh a, [hCurMenuItem]
-	cp e
+	cp e ; compare hCurMenuItem with wCurMenuItem
 	jr z, .got_result
 	ld a, [wd417]
 	or a

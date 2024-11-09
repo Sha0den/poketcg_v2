@@ -294,8 +294,8 @@ HandleAIShift:
 	ld c, PLAY_AREA_ARENA
 .loop_play_area
 	ld a, [hli]
-	cp $ff
-	ret z ; nc
+	cp -1 ; empty play area slot?
+	ret z ; return no carry if there are no more Pokémon to check
 	ld a, c
 	call GetPlayAreaCardColor
 	call TranslateColorToWR
@@ -326,7 +326,7 @@ HandleAICowardice:
 	call GetPlayAreaCardAttachedEnergies
 	or a
 	ret nz ; return if this Pokémon has any attached Energy
-	ld a, $ff
+	ld a, -1 ; no need to switch so no Benched Pokémon was selected
 .use_cowardice
 	push af
 	ld a, [wce08]

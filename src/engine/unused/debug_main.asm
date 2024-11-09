@@ -28,7 +28,6 @@ Func_12661:
 	call DoFrameIfLCDEnabled
 	call HandleMenuInput
 	jr nc, .asm_12698
-	ldh a, [hCurMenuItem]
 	bit 7, a
 	jr nz, .asm_12698
 	ld [wDebugMenuSelection], a

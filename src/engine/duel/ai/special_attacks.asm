@@ -200,7 +200,7 @@ HandleSpecialAIAttacks:
 	get_turn_duelist_var
 .loop_chain_lightning_bench
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .chain_lightning_success
 	call GetCardIDFromDeckIndex
 	call GetCardType
@@ -345,7 +345,7 @@ HandleSpecialAIAttacks:
 	get_turn_duelist_var
 .loop_mix_up_play_area
 	ld a, [hli]
-	cp $ff
+	cp -1 ; empty play area slot?
 	jr z, .zero_score_after_swap_turn
 	push hl
 	call CheckForEvolutionInList
@@ -425,7 +425,7 @@ HandleSpecialAIAttacks:
 .loop_earthquake
 	inc e
 	ld a, [hli]
-	cp $ff
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .count_prizes
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP

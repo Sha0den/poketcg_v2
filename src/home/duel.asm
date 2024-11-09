@@ -869,7 +869,7 @@ CountCardsInDuelTempList::
 .loop
 	inc b
 	ld a, [hli]
-	cp $ff
+	inc a ; cp $ff
 	jr nz, .loop
 	ld a, b
 	pop bc
@@ -1396,7 +1396,7 @@ GetLoadedCard1RetreatCost::
 	get_turn_duelist_var
 .check_bench_loop
 	ld a, [hli]
-	cp -1
+	cp -1 ; empty play area slot?
 	jr z, .no_more_bench
 	call _GetCardIDFromDeckIndex
 	cp DODRIO

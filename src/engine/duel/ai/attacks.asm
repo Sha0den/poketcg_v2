@@ -657,7 +657,7 @@ GetAIScoreOfAttack:
 .loop_bench
 	inc e
 	ld a, [hli]
-	cp $ff
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .count_prizes
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
