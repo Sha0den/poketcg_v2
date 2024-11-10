@@ -228,11 +228,6 @@ FindBasicEnergy:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Energy cards.
 .attempt_to_cancel
@@ -243,7 +238,10 @@ FindBasicEnergy:
 	jr z, .exit
 	call CheckDeckIndexForBasicEnergy
 	jr nc, .next_card
-	jr .play_sfx ; found a Basic Energy card, return to selection process
+	; found a Basic Energy card, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Basic Energy in the deck, can safely exit screen
 .exit
@@ -308,11 +306,6 @@ FindBasicEnergyToAttach:
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Energy cards.
 .attempt_to_cancel
@@ -323,7 +316,10 @@ FindBasicEnergyToAttach:
 	jr z, .exit
 	call CheckDeckIndexForBasicEnergy
 	jr nc, .next_card
-	jr .play_sfx ; found a Basic Energy card, return to selection process
+	; found a Basic Energy card, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Basic Energy in the deck, can safely exit screen
 .exit
@@ -383,11 +379,6 @@ FindTrainer:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Trainer cards.
 .attempt_to_cancel
@@ -400,7 +391,10 @@ FindTrainer:
 	call GetCardType
 	cp TYPE_TRAINER
 	jr nz, .next_card
-	jr .play_sfx ; found a Trainer card, return to selection process
+	; found a Trainer card, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Trainer cards in the deck, can safely exit screen
 .exit
@@ -459,11 +453,6 @@ FindAnyPokemon:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Pokemon.
 .attempt_to_cancel
@@ -476,7 +465,10 @@ FindAnyPokemon:
 	call GetCardType
 	cp TYPE_ENERGY
 	jr nc, .next_card
-	jr .play_sfx ; found a Pokemon, return to selection process
+	; found a Pokemon, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Pokemon in the deck, can safely exit screen
 .exit
@@ -515,11 +507,6 @@ FindEvolution:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Evolution cards.
 .attempt_to_cancel
@@ -530,7 +517,10 @@ FindEvolution:
 	jr z, .exit
 	call CheckDeckIndexForStage1OrStage2Pokemon
 	jr nc, .next_card
-	jr .play_sfx ; found an Evolution card, return to selection process
+	; found an Evolution card, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Evolution cards in the deck, can safely exit screen
 .exit
@@ -629,11 +619,6 @@ FindBasicPokemon:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Pokemon.
 .attempt_to_cancel
@@ -644,7 +629,10 @@ FindBasicPokemon:
 	jr z, .exit
 	call CheckDeckIndexForBasicPokemon
 	jr nc, .next_card
-	jr .play_sfx ; found a Basic Pokemon, return to selection process
+	; found a Basic Pokemon, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Basic Pokemon in the deck, can safely exit screen
 .exit
@@ -704,11 +692,6 @@ FindBasicFightingPokemon:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Basic Fighting Pokemon.
 .attempt_to_cancel
@@ -724,7 +707,10 @@ FindBasicFightingPokemon:
 	ld a, [wLoadedCard2Stage]
 	or a
 	jr nz, .next_card
-	jr .play_sfx ; found a Basic Fighting Pokemon, return to selection process
+	; found a Basic Fighting Pokemon, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Basic Fighting Pokemon in the deck, can safely exit screen
 .exit
@@ -789,11 +775,6 @@ FindNidoran:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no NidoranF or NidoranM cards.
 .attempt_to_cancel
@@ -808,7 +789,10 @@ FindNidoran:
 	jr z, .play_sfx ; found a Nidoran, return to selection process
 	ld bc, NIDORANM
 	jr nz, .next_card
-	jr .play_sfx ; found a Nidoran, return to selection process
+	; found a Nidoran, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Nidoran in the deck, can safely exit screen
 .exit
@@ -868,11 +852,6 @@ FindOddish:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Oddish cards.
 .attempt_to_cancel
@@ -885,7 +864,11 @@ FindOddish:
 	ld bc, ODDISH
 	call CompareDEtoBC
 	jr nz, .next_card
-	jr .play_sfx ; found a Oddish, return to selection process
+	; found an Oddish, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
+
 
 ; no Oddish in the deck, can safely exit screen
 .exit
@@ -943,11 +926,6 @@ FindBellsprout:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains no Bellsprout cards.
 .attempt_to_cancel
@@ -960,7 +938,10 @@ FindBellsprout:
 	ld bc, BELLSPROUT
 	call CompareDEtoBC
 	jr nz, .next_card
-	jr .play_sfx ; found a Bellsprout, return to selection process
+	; found a Bellsprout, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Bellsprout in the deck, can safely exit screen
 .exit
@@ -1018,11 +999,6 @@ FindKrabby:
 	or a
 	ret
 
-; play SFX and loop back
-.play_sfx
-	call PlaySFX_InvalidChoice
-	jr .read_input
-
 ; see if the Player can exit the screen without selecting a card,
 ; that is, if the deck contains Krabby cards.
 .attempt_to_cancel
@@ -1035,7 +1011,10 @@ FindKrabby:
 	ld bc, KRABBY
 	call CompareDEtoBC
 	jr nz, .next_card
-	jr .play_sfx ; found a Krabby, return to selection process
+	; found a Krabby, so play SFX and return to selection process
+.play_sfx
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 ; no Krabby in the deck, can safely exit screen
 .exit

@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **November 10, 2024:** 2 Files Changed
+- **[November 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/3d689aaaf7e151143acd201cb1e9d07a7b983095):** 2 Files Changed
     - Mysterious Fossil and Clefairy Doll are now only considered Basic Pokémon while in the play area
         - *engine/duel/core.asm changes reference `CheckDeckIndexForBasicPokemon` from home/duel.asm, which isn't present in the base disassembly*
 
@@ -116,6 +116,11 @@
 
 
 ## Code Optimization
+- **November 10, 2024:** 1 File Changed
+    - Use a fallthrough for `.play_sfx` subroutine in each of the deck search (Find*) functions in engine/duel/effect_functions2.asm
+
+<br/>
+
 - **[November 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/51e9c896ca1acc3a66e5d637654bb3c6da68e7a8):** 26 Files Changed
     - Change various instances of $ff to -1 to better comply with the original disassembly's style guide (-1 = empty/false, $ff = list/data terminator)
     - Change some instances of `cp -1` with inc a (so long as the flag differences seemed irrelevant)
