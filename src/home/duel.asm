@@ -690,13 +690,20 @@ LoadCardDataToBuffer1_FromDeckIndex::
 	push hl
 	push de
 	push bc
-	push af
+	ld l, a
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
-	pop af
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld a, [hl] ; given card's location
+	bit CARD_LOCATION_PLAY_AREA_F, a
+	jr z, .done
+	; this card is in the play area, so check if it has alternate card data
+	ld a, l
 	ld hl, wLoadedCard1
 .after_load
 	farcall ConvertSpecialTrainerCardToPokemon ; located in engine/duel/effect_functions2.asm
+.done
 	ld a, e
 	pop bc
 	pop de
@@ -715,10 +722,16 @@ LoadCardDataToBuffer2_FromDeckIndex::
 	push hl
 	push de
 	push bc
-	push af
+	ld l, a
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer2_FromCardID
-	pop af
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld a, [hl] ; given card's location
+	bit CARD_LOCATION_PLAY_AREA_F, a
+	jr z, LoadCardDataToBuffer1_FromDeckIndex.done
+	; this card is in the play area, so check if it has alternate card data
+	ld a, l
 	ld hl, wLoadedCard2
 	jr LoadCardDataToBuffer1_FromDeckIndex.after_load
 

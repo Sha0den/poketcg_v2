@@ -2278,8 +2278,6 @@ ChooseInitialArenaAndBenchPokemon:
 	ldtx hl, PleaseChooseAnActivePokemonText
 	call DisplayPlaceInitialPokemonCardsScreen
 	jr c, .choose_arena_loop
-	ldh a, [hTempCardIndex_ff98]
-	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, PRACTICEDUEL_PLAY_GOLDEEN
 	call DoPracticeDuelAction
 	jr c, .choose_arena_loop
@@ -2330,6 +2328,7 @@ ChooseInitialArenaAndBenchPokemon:
 
 
 ; the turn holder shuffles the deck unless it's a practice duel, then draws 7 cards
+; preserves de
 ; output:
 ;	a = $01:  if 1 or more Basic Pokemon were drawn
 ;	a = $00:  if no Basic Pokemon were drawn
@@ -2350,62 +2349,21 @@ ShuffleDeckAndDrawSevenCards:
 	jr nz, .draw_loop
 	ld a, DUELVARS_HAND
 	get_turn_duelist_var
-	lb bc, $00, 7
+	ld b, 7
 .cards_loop
 	ld a, [hli]
-	call LoadCardDataToBuffer1_FromDeckIndex
-	call IsLoadedCard1BasicPokemon.skip_mysterious_fossil_clefairy_doll
-	or b
-	ld b, a
-	dec c
+	call CheckDeckIndexForBasicPokemon
+	jr c, .found_basic_pkmn
+	dec b
 	jr nz, .cards_loop
-	ld a, b
-	or a
-	ret nz
+; no Basic Pokémon
+	xor a
 	scf
 	ret
-
-
-; returns no carry with $01 in the a register if the loaded card is a Basic Pokémon.
-; z flag is only set if the Basic Pokémon isn't a Mysterious Fossil and Clefairy Doll.
-; preserves all registers except af
-; input:
-;	[wLoadedCard1] = all of the card's data (card_data_struct)
-; output:
-;	a = TRUE:   if the loaded card is a Basic Pokemon (or a Clefairy Doll/Mysterious Fossil)
-;	a = FALSE:  if the loaded card is not a Basic Pokemon
-;	carry = set:  if the card with data at wLoadedCard1 is not a Basic Pokemon
-;	              (MYSTERIOUS_FOSSIL and CLEFAIRY_DOLL count as Basic Pokemon)
-IsLoadedCard1BasicPokemon:
-	ld a, [wLoadedCard1ID]
-	cp MYSTERIOUS_FOSSIL
-	jr z, .basic
-	cp CLEFAIRY_DOLL
-	jr z, .basic
-	; fallthrough
-
-; MYSTERIOUS_FOSSIL and CLEFAIRY_DOLL do NOT count unless already checked
-.skip_mysterious_fossil_clefairy_doll
-	ld a, [wLoadedCard1Type]
-	cp TYPE_ENERGY
-	jr nc, .energy_trainer_nonbasic
-	ld a, [wLoadedCard1Stage]
+.found_basic_pkmn
+	ld a, $01
 	or a
-	jr nz, .energy_trainer_nonbasic
-
-; basic
-	ld a, TRUE
-	ret ; z
-
-.energy_trainer_nonbasic
-	xor a ; FALSE
-	scf
 	ret
-
-.basic ; MYSTERIOUS_FOSSIL or CLEFAIRY_DOLL
-	ld a, TRUE
-	or a
-	ret ; nz
 
 
 DisplayNoBasicPokemonInHandScreenAndText:
@@ -2957,11 +2915,11 @@ PracticeDuel_DrawSevenCards:
 
 
 ; input:
-;	[wLoadedCard1] = all of the data of the Pokémon being played (card_data_struct)
+;	[wLoadedCard2] = all of the data of the Pokémon being played (card_data_struct)
 ; output:
 ;	carry = set:  if the Player didn't choose Goldeen as their starting Pokemon
 PracticeDuel_PlayGoldeen:
-	ld a, [wLoadedCard1ID]
+	ld a, [wLoadedCard2ID]
 	cp GOLDEEN
 	ret z
 	ldtx hl, ChooseGoldeenPracticeDuelText
@@ -3403,7 +3361,8 @@ DisplayDuelistTurnScreen:
 ;	  = 1:  if the player is being prompted to place their initial Benched Pokémon
 ;	hl = text ID for the instructions
 ; output:
-;	carry = set:  if no Pokemon was placed on the Bench
+;	carry = set:  if the B button was pressed to exit the selection process
+;	[wLoadedCard2] = all of the card's data (65 bytes):  if a Basic Pokémon was selected
 DisplayPlaceInitialPokemonCardsScreen:
 	ld [wPlacingInitialBenchPokemon], a
 	push hl
@@ -3433,8 +3392,8 @@ DisplayPlaceInitialPokemonCardsScreen:
 	pop af
 	ret
 .card_selected
-	call LoadCardDataToBuffer1_FromDeckIndex
-	call IsLoadedCard1BasicPokemon
+	call CheckDeckIndexForBasicPokemon
+	ccf
 	jr nc, .done
 	; invalid card selected, tell the player and go back
 	ldtx hl, YouCannotSelectThisCardText
