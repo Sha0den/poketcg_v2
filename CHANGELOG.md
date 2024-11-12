@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **November 10, 2024:** 1 File Changed
+- **November 12, 2024:** 1 File Changed
+    - Update various comments in engine/menus/mail.asm and implement several minor optimizations
+
+<br/>
+
+- **[November 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/6ba45d6b804745203b419cb58d09445ad30d99d9):** 1 File Changed
     - Use a fallthrough for `.play_sfx` subroutine in each of the deck search (Find*) functions in engine/duel/effect_functions2.asm
 
 <br/>

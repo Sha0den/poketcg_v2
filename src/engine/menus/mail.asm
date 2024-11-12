@@ -12,7 +12,7 @@ InitPCPacks:
 	ld [hli], a
 	dec c
 	jr nz, .loop_packs
-	ld a, $1
+	inc a ; mail 1 booster pack (from PCMailBoosterPacks)
 	call TryGivePCPack
 	pop bc
 	pop hl
@@ -147,7 +147,7 @@ PCMailHandleAInput:
 	add hl, bc
 	ld a, [hl]
 	ld [wSelectedPCPack], a
-	and $7f
+	and $7f ; mask out PACK_UNOPENED_F
 	ld [hl], a
 	or a
 	ret z
@@ -261,12 +261,12 @@ PCMailTextPages:
 
 
 TryOpenPCMailBoosterPack:
-	xor a
+	xor a ; FALSE
 	ld [wAnotherBoosterPack], a
 	ld a, [wSelectedPCPack]
 	bit PACK_UNOPENED_F, a
 	jr z, .booster_already_open
-	and $7f
+	and $7f ; mask out PACK_UNOPENED_F
 	add a
 	ld c, a
 	ld b, $00
@@ -275,7 +275,7 @@ TryOpenPCMailBoosterPack:
 	ld a, [hli]
 	push hl
 	call GiveBoosterPack
-	ld a, $01
+	ld a, TRUE
 	ld [wAnotherBoosterPack], a
 	pop hl
 	ld a, [hl]
@@ -326,7 +326,7 @@ UpdateMailMenuCursor:
 
 ; preserves de and hl
 HideMailMenuCursor:
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 ;	fallthrough
 
 ; preserves de and hl
@@ -339,19 +339,18 @@ DrawMailMenuCursor:
 	jp WriteByteToBGMap0
 
 
+; prints all of the PC packs that the player has already obtained.
 ; preserves bc
-; prints all of the PC packs that the player has already obtained
 PrintObtainedPCPacks:
 	ld e, $0
 	ld hl, wPCPacks
 .loop_packs
-	ld a, [hl]
+	ld a, [hli]
 	or a
 	jr z, .next_pack
 	ld a, e
 	call PrintPCPackName
 .next_pack
-	inc hl
 	inc e
 	ld a, e
 	cp NUM_PC_PACKS
@@ -361,7 +360,7 @@ PrintObtainedPCPacks:
 
 ; preserves bc and hl
 ; input:
-;	a = booster type (e.g. BOOSTER_COLOSSEUM_NEUTRAL)
+;	a = e-mail index (1-15)
 ; output:
 ;	de = text ID corresponding to the name of the mail from input
 GetPCPackNameTextID:
@@ -400,7 +399,7 @@ GetPCPackNameTextID:
 ; prints on screen the name of the PC pack from input in a
 ; preserves all registers except af
 ; input:
-;	a = booster type (e.g. BOOSTER_COLOSSEUM_NEUTRAL)
+;	a = e-mail index (1-15)
 PrintPCPackName:
 	push hl
 	push bc
@@ -421,10 +420,10 @@ PrintPCPackName:
 
 
 ; prints empty characters on screen corresponding to the PC pack in a,
-; in order to create the blinking effect of unopened PC packs
+; in order to create the blinking effect of unopened PC packs.
 ; preserves all registers except af
 ; input:
-;	a = booster type (e.g. BOOSTER_COLOSSEUM_NEUTRAL)
+;	a = e-mail index (1-15)
 PrintEmptyPCPackName:
 	push hl
 	push bc
@@ -473,7 +472,7 @@ BlinkUnopenedPCPacks:
 
 ; preserves de and hl
 ; input:
-;	a = booster type (e.g. BOOSTER_COLOSSEUM_NEUTRAL)
+;	a = e-mail index (1-15)
 ; output:
 ;	bc = coordinates corresponding to the PC pack from input
 GetPCPackCoordinates:
@@ -491,7 +490,7 @@ GetPCPackCoordinates:
 
 ; preserves de and hl
 ; input:
-;	[wPCPackSelection] = booster type (e.g. BOOSTER_COLOSSEUM_NEUTRAL)
+;	[wPCPackSelection] = e-mail index (1-15)
 ; output:
 ;	bc = coordinates corresponding to the PC pack from input
 GetPCPackSelectionCoordinates:
@@ -528,29 +527,28 @@ PCMailCoordinates:
 	assert_table_length NUM_MAILS
 
 
-; gives the pc pack described in a
+; assigns a booster pack entry to a mail slot in wPCPacks.
 ; preserves all registers except af
 ; input:
-;	a = booster type (e.g. BOOSTER_COLOSSEUM_NEUTRAL)
+;	a = e-mail index (1-15)
 TryGivePCPack:
 	push hl
 	push bc
-	push de
 	ld b, a
 	ld c, NUM_PC_PACKS
 	ld hl, wPCPacks
 .searchLoop1
 	ld a, [hli]
-	and $7f
+	and $7f ; mask out PACK_UNOPENED_F
 	cp b
-	jr z, .quit
+	jr z, .quit ; exit if this booster pack was already assigned
 	dec c
 	jr nz, .searchLoop1
 	ld c, NUM_PC_PACKS
 	ld hl, wPCPacks
 .findFreeSlotLoop
 	ld a, [hl]
-	and $7f
+	and $7f ; mask out PACK_UNOPENED_F
 	jr z, .foundFreeSlot
 	inc hl
 	dec c
@@ -562,7 +560,6 @@ TryGivePCPack:
 	or PACK_UNOPENED ; mark pack as unopened
 	ld [hl], a
 .quit
-	pop de
 	pop bc
 	pop hl
 	ret
