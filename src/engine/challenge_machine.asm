@@ -470,7 +470,7 @@ ChallengeMachine_PrintScores:
 	inc de
 	ld a, [de]
 	ld h, a
-	call ConvertWordToNumericalDigits
+	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 	pop bc
 	call BCCoordToBGMap0Address
 	ld hl, wDecimalChars

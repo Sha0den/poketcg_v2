@@ -94,7 +94,7 @@ FlashReceivedMedal:
 	bit 4, a
 	jr z, .show
 ; hide
-	xor a
+	xor a ; SYM_SPACE
 	ld e, c ; y coordinate
 	ld d, b ; x coordinate
 	lb bc, 3, 3 ; width and height of a medal icon
@@ -122,11 +122,11 @@ PrintPlayTime:
 ;	bc = screen coordinates for printing text
 PrintPlayTime_SkipUpdateTime:
 	push bc
-	ld a, [wPlayTimeHourMinutes + 1]
+	ld hl, wPlayTimeHourMinutes + 1
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wPlayTimeHourMinutes + 2]
-	ld h, a
-	call ConvertWordToNumericalDigits
+	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 	pop bc
 	push bc
 	call BCCoordToBGMap0Address
@@ -139,7 +139,7 @@ PrintPlayTime_SkipUpdateTime:
 	ld a, 0
 	adc 0
 	ld h, a
-	call ConvertWordToNumericalDigits
+	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 	pop bc
 	ld a, b
 	add 4
@@ -150,9 +150,12 @@ PrintPlayTime_SkipUpdateTime:
 	jp SafeCopyDataHLtoDE
 
 
+; converts the three-digit number at hl to TX_SYMBOL text format and
+; writes it to wDecimalChars, replacing any leading zeros with SYM_SPACE.
 ; input:
 ;	hl = number to convert to symbol font
-ConvertWordToNumericalDigits:
+;	[wDecimalChars] = number in text symbol format (3 bytes)
+ThreeDigitNumberToTxSymbol_TrimLeadingZeros:
 	ld de, wDecimalChars
 	ld bc, -100 ; hundreds
 	call GetTxSymbolDigit
@@ -187,13 +190,15 @@ PrintAlbumProgress:
 
 ; input:
 ;	bc = screen coordinates for printing text
+;	d = number of different cards that the player has collected
+;	e = total number of cards in the game
 PrintAlbumProgress_SkipGetProgress:
 	push bc
 	push de
 	push bc
 	ld l, d ; number of different cards collected
 	ld h, $00
-	call ConvertWordToNumericalDigits
+	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 	pop bc
 	call BCCoordToBGMap0Address
 	ld hl, wDecimalChars
@@ -202,7 +207,7 @@ PrintAlbumProgress_SkipGetProgress:
 	pop de
 	ld l, e ; total number of cards
 	ld h, $00
-	call ConvertWordToNumericalDigits
+	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 	pop bc
 	ld a, b
 	add 4
@@ -223,7 +228,7 @@ PrintMedalCount:
 	farcall GetEventValue
 	ld l, a
 	ld h, $00
-	call ConvertWordToNumericalDigits
+	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 	pop bc
 	call BCCoordToBGMap0Address
 	ld hl, wDecimalChars + 2

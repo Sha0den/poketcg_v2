@@ -116,7 +116,13 @@
 
 
 ## Code Optimization
-- **November 12, 2024:** 1 File Changed
+- **November 12, 2024:** 2 Files Changed
+    - Rename `ConvertWordToNumericalDigits` engine/menus/print_stats.asm to `ThreeDigitNumberToTxSymbol_TrimLeadingZeros`
+    - Plus a few additional comments and a minor refactor of another function in the same file
+
+<br/>
+
+- **[November 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/9366afb18896ae4f8c026516fa89e92381fe37e8):** 1 File Changed
     - Update various comments in engine/menus/mail.asm and implement several minor optimizations
 
 <br/>
