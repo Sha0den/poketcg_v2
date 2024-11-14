@@ -116,7 +116,13 @@
 
 
 ## Code Optimization
-- **November 12, 2024:** 2 Files Changed
+- **November 14, 2024:** 3 Files Changed
+    - Refactor some code in engine/menus/duel.asm and engine/menus/play_area.asm
+    - Replace a couple of values in engine/menus/duel_init.asm with constants
+
+<br/>
+
+- **[November 12, 2024](https://github.com/Sha0den/poketcg_v2/commit/67af4d1cf7c222b48f497be2ea0457ee7da40980):** 2 Files Changed
     - Rename `ConvertWordToNumericalDigits` engine/menus/print_stats.asm to `ThreeDigitNumberToTxSymbol_TrimLeadingZeros`
     - Plus a few additional comments and a minor refactor of another function in the same file
 

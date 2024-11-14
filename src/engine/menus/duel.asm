@@ -2,10 +2,6 @@ _OpenDuelCheckMenu::
 	call ResetCheckMenuCursorPositionAndBlink
 	ld [wce5e], a ; 0
 	call DrawWideTextBox
-
-; reset cursor blink
-	xor a
-	ld [wCheckMenuCursorBlinkCounter], a
 	ld hl, CheckMenuData
 	call PlaceTextItems
 .loop
@@ -57,23 +53,28 @@ DuelCheckMenu_YourPlayArea:
 	ld l, a
 	call DrawYourOrOppPlayAreaScreen
 
+; convert cursor position and store it in wYourOrOppPlayAreaLastCursorPosition
 	ld a, [wCheckMenuCursorYPosition]
 	sla a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
 	ld [wYourOrOppPlayAreaLastCursorPosition], a
+
+; draw black arrows associated with the currently selected option (hand, discard pile, or Pokémon)
 	ld b, $f8 ; black arrow tile
 	call DrawYourOrOppPlayArea_DrawArrows
-
-	call DrawWideTextBox
 
 ; reset cursor blink
 	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
+
+; draw text box and print text options
+	call DrawWideTextBox
 	ld hl, YourPlayAreaMenuData
 	call PlaceTextItems
 
+; handle input
 .loop
 	call DoFrame
 	xor a
@@ -85,6 +86,8 @@ DuelCheckMenu_YourPlayArea:
 	cp -1
 	ret z ; exit if the B button was pressed
 
+; A button was pressed
+; jump to function corresponding to cursor position
 	ld a, [wCheckMenuCursorYPosition]
 	sla a
 	ld b, a
@@ -160,29 +163,21 @@ OpenYourOrOppPlayAreaScreen_NonTurnHolderDiscardPile:
 DuelCheckMenu_OppPlayArea:
 	call ResetCheckMenuCursorPositionAndBlink
 	call IsClairvoyanceActive
-	jr c, .clairvoyance1
-
 	ld a, %10000000
-	ld [wce5e], a
-	jr .begin
-.clairvoyance1
+	jr nc, .begin
+	; able to view the opponent's hand
 	xor a
-	ld [wce5e], a
-
 .begin
+	ld [wce5e], a
 	ldh a, [hWhoseTurn]
-.turns
+.draw
 	ld l, a
 	cp PLAYER_TURN
-	jr nz, .opponent
-	ld a, OPPONENT_TURN
+	ld a, OPPONENT_TURN ; if player is turn holder, wCheckMenuPlayAreaWhichDuelist = OPPONENT_TURN
+	jr z, .got_variable
+	ld a, PLAYER_TURN ; if opponent is turn holder, wCheckMenuPlayAreaWhichDuelist = PLAYER_TURN
+.got_variable
 	ld h, a
-	jr .cursor
-.opponent
-	ld a, PLAYER_TURN
-	ld h, a
-
-.cursor
 	call DrawYourOrOppPlayAreaScreen
 
 ; convert cursor position and store it in wYourOrOppPlayAreaLastCursorPosition
@@ -194,10 +189,9 @@ DuelCheckMenu_OppPlayArea:
 	add 3
 	ld [wYourOrOppPlayAreaLastCursorPosition], a
 
-; draw black arrows in the Play Area
+; draw black arrows associated with the currently selected option (hand, discard pile, or Pokémon)
 	ld b, $f8 ; black arrow tile
 	call DrawYourOrOppPlayArea_DrawArrows
-	call DrawWideTextBox
 
 ; reset cursor blink
 	xor a
@@ -205,13 +199,13 @@ DuelCheckMenu_OppPlayArea:
 
 ; place text items depending on the Clairvoyance Power.
 ; when active, it allows you to look at the opponent's hand.
+	call DrawWideTextBox
 	call IsClairvoyanceActive
-	jr c, .clairvoyance2
 	ld hl, OppPlayAreaMenuData
-	call PlaceTextItems
-	jr .loop
-.clairvoyance2
+	jr nc, .place_text
+	; able to view the opponent's hand
 	ld hl, OppPlayAreaMenuData_WithClairvoyance
+.place_text
 	call PlaceTextItems
 
 ; handle input
@@ -221,6 +215,7 @@ DuelCheckMenu_OppPlayArea:
 	call DrawYourOrOppPlayArea_RefreshArrows
 	call HandleCheckMenuInput_YourOrOppPlayArea
 	jr nc, .loop
+
 	call DrawYourOrOppPlayArea_EraseArrows
 	cp -1
 	ret z ; exit if the B button was pressed
@@ -234,7 +229,7 @@ DuelCheckMenu_OppPlayArea:
 	add b
 	ld hl, .jump_table
 	call JumpToFunctionInTable
-	jr .turns
+	jr .draw
 
 .jump_table
 	dw OpenYourOrOppPlayAreaScreen_NonTurnHolderPlayArea
@@ -271,7 +266,7 @@ OppPlayAreaMenuData_WithClairvoyance:
 
 
 ; checks if arrows need to be erased in Your Play Area or Opp. Play Area
-; and draws new arrows upon cursor position change
+; and draws new arrows upon cursor position change.
 ; preserves af
 ; input:
 ;	a = an initial offset applied to the cursor position (used to adjust for
@@ -307,7 +302,7 @@ DrawYourOrOppPlayArea_RefreshArrows:
 
 
 ; writes SYM_SPACE to positions tabulated in YourOrOppPlayAreaArrowPositions,
-; with offset calculated from the cursor x/y positions in [wYourOrOppPlayAreaLastCursorPosition]
+; with offset calculated from the cursor x/y positions in [wYourOrOppPlayAreaLastCursorPosition].
 ; preserves af
 ; input:
 ;	[wYourOrOppPlayAreaLastCursorPosition] = cursor position (2*y + x)
@@ -321,7 +316,7 @@ DrawYourOrOppPlayArea_EraseArrows:
 
 
 ; writes tile in b to positions tabulated in YourOrOppPlayAreaArrowPositions,
-; with offset calculated from the cursor x and y positions in a
+; with offset calculated from the cursor x and y positions in a.
 ; input:
 ;	a = cursor position (2*y + x)
 ;	b = byte to draw
@@ -398,7 +393,7 @@ YourOrOppPlayAreaArrowPositions_OpponentDiscardPile:
 
 
 ; loads tiles and icons to display Your Play Area / Opp. Play Area screen,
-; and draws the screen according to the turn player
+; and draws the screen according to the turn player.
 ; input:
 ;	h -> [wCheckMenuPlayAreaWhichDuelist] 
 ;	l -> [wCheckMenuPlayAreaWhichLayout]
@@ -411,7 +406,7 @@ DrawYourOrOppPlayAreaScreen:
 ;	fallthrough
 
 ; loads tiles and icons to display Your Play Area / Opp. Play Area screen,
-; and draws the screen according to the turn player
+; and draws the screen according to the turn player.
 ; input:
 ;	[wCheckMenuPlayAreaWhichDuelist] = PLAYER_TURN or OPPONENT_TURN
 ;	[wCheckMenuPlayAreaWhichLayout] = PLAYER_TURN or OPPONENT_TURN
@@ -428,22 +423,20 @@ _DrawYourOrOppPlayAreaScreen::
 	lb de, $38, $9f
 	call SetupText
 
+; print <RAMNAME>'s Play Area
+	ld de, wDefaultText
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
 	cp PLAYER_TURN
 	jr nz, .opp_turn1
-
-; print <RAMNAME>'s Play Area
-	ld de, wDefaultText
 	call CopyPlayerName
 	jr .get_text_length
 .opp_turn1
-	ld de, wDefaultText
 	call CopyOpponentName
 .get_text_length
 	ld hl, wDefaultText
 
 	call GetTextLengthInTiles
-	ld a, 6 ; max name size in tiles
+	ld a, MAX_PLAYER_NAME_LENGTH ; 6 tiles
 	sub b
 	srl a
 	add 4
@@ -553,8 +546,8 @@ DrawInPlayAreaScreen:
 	rst SwapTurn
 ;	fallthrough
 
-; draws the card graphics for both player's Active Pokemon
-; in the "In Play Area" screen
+; draws the card graphics for both player's
+; Active Pokemon in the "In Play Area" screen.
 DrawInPlayArea_ActiveCardGfx:
 	xor a
 	ld [wArenaCardsInPlayArea], a
@@ -641,7 +634,7 @@ DrawInPlayArea_ActiveCardGfx:
 
 
 ; draws the player's or opponent's Active Pokemon gfx at coordinates de,
-; depending on wCheckMenuPlayAreaWhichDuelist
+; depending on wCheckMenuPlayAreaWhichDuelist.
 ; input:
 ;	de = screen coordinates for drawing the card image
 DrawYourOrOppPlayArea_ActiveCardGfx:
@@ -658,13 +651,12 @@ DrawYourOrOppPlayArea_ActiveCardGfx:
 	ld b, a
 	ldh a, [hWhoseTurn]
 	cp b
-	jr nz, .swap
 	ld a, d
+	jr nz, .swap
 	call LoadCardDataToBuffer1_FromDeckIndex
 	jr .draw
 .swap
 	rst SwapTurn
-	ld a, d
 	call LoadCardDataToBuffer1_FromDeckIndex
 	rst SwapTurn
 
@@ -698,16 +690,12 @@ Func_82b6:
 	ld b, a
 	ld a, [wCheckMenuPlayAreaWhichLayout]
 	cp b
-	jr nz, .not_equal
-
 	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.player
-	jr DrawPlayArea_PrizeCards
-
-.not_equal
+	jr z, DrawPlayArea_PrizeCards
 	ld hl, PrizeCardsCoordinateData_YourOrOppPlayArea.opponent
 ;	fallthrough
 
-; draws Prize cards depending on the data stored in wCheckMenuPlayAreaWhichDuelist
+; draws Prize cards depending on the data stored in wCheckMenuPlayAreaWhichDuelist.
 ; input:
 ;	hl = pointer to coordinate data
 DrawPlayArea_PrizeCards:
@@ -732,11 +720,9 @@ DrawPlayArea_PrizeCards:
 	pop af
 	srl a ; right shift prize cards left
 	push af
-	jr c, .not_taken
-	ld a, $e0 ; tile byte for empty slot
-	jr .draw
-.not_taken
 	ld a, $dc ; tile byte for card
+	jr c, .draw
+	ld a, $e0 ; tile byte for empty slot
 .draw
 	ld e, [hl]
 	inc hl
@@ -752,7 +738,7 @@ DrawPlayArea_PrizeCards:
 	ld a, [wConsole]
 	cp CONSOLE_CGB
 	jr nz, .not_cgb
-	ld a, $02 ; blue colour
+	ld a, $02 ; CGB Background Palette 2 (blue/green)
 	lb bc, 2, 2
 	lb hl, 0, 0
 	call BankswitchVRAM1
@@ -833,14 +819,7 @@ PrizeCardsCoordinateData_InPlayArea:
 ; preserves de and hl
 GetDuelInitialPrizesUpperBitsSet:
 	ld a, [wDuelInitialPrizes]
-	ld b, $01
-.loop
-	or a
-	jr z, .done
-	sla b
-	dec a
-	jr .loop
-.done
+	call MakeBitmask
 	dec b
 	ld a, b
 	or %11000000
@@ -941,10 +920,10 @@ DrawPlayArea_BenchCards:
 	cp $f0 ; tile offset for the Stage 2 without Stage 1 icon (v0Tiles1 + $70 tiles)
 	jr z, .two_stage
 
-	ld a, $02 ; blue colour
+	ld a, $02 ; CGB Background Palette 2 (blue/green)
 	jr .palette
 .two_stage
-	ld a, $01 ; red colour
+	ld a, $01 ; CGB Background Palette 1 (red/yellow)
 .palette
 	lb bc, 2, 2
 	lb hl, 0, 0
@@ -971,11 +950,7 @@ DrawPlayArea_BenchCards:
 	ret z ; return if already full
 
 	ld b, a
-	inc b
 .loop_2
-	dec b
-	ret z
-
 	push bc
 	ld a, $f4 ; empty bench slot tile
 	lb hl, 1, 2
@@ -998,7 +973,9 @@ DrawPlayArea_BenchCards:
 	ld a, d
 	add c
 	ld d, a
-	jr .loop_2
+	dec b
+	jr nz, .loop_2
+	ret
 
 
 PlayAreaIconCoordinates:
@@ -1031,16 +1008,24 @@ PlayAreaIconCoordinates:
 ;	a = $01:  draws opponent icons
 DrawYourOrOppPlayArea_Icons:
 	or a
-	jr nz, .opponent
 	ld hl, PlayAreaIconCoordinates.player1
-	jr .draw
-.opponent
+	jr z, .draw
 	ld hl, PlayAreaIconCoordinates.opponent1
-
 .draw
-; hand icon and value
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
 	ld d, a
+	jr DrawInPlayArea_Icons.draw
+
+; draws In Play Area icons depending on value in a.
+; the icons correspond to Deck, Discard Pile, and Hand.
+; the corresponding number of cards is printed alongside each icon.
+; input:
+;	hl = starting address for coordinate data (either player's or opponent's)
+DrawInPlayArea_Icons:
+	ldh a, [hWhoseTurn]
+	ld d, a
+.draw
+; hand icon and value
 	ld e, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	ld a, [de]
 	ld b, a
@@ -1048,8 +1033,6 @@ DrawYourOrOppPlayArea_Icons:
 	call DrawPlayArea_IconWithValue
 
 ; deck icon and value
-	ld a, [wCheckMenuPlayAreaWhichDuelist]
-	ld d, a
 	ld e, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	ld a, [de]
 	ld b, a
@@ -1060,22 +1043,24 @@ DrawYourOrOppPlayArea_Icons:
 	call DrawPlayArea_IconWithValue
 
 ; discard pile icon and value
-	ld a, [wCheckMenuPlayAreaWhichDuelist]
-	ld d, a
 	ld e, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	ld a, [de]
 	ld b, a
 	ld a, $d8 ; tile offset for discard pile icon (v0Tiles1 + $58 tiles)
 ;	fallthrough
 
-; draws the interface icon corresponding to the gfx tile in a
-; also prints the number in symbol font corresponding to the value in b
-; the screen coordinates for printing are given by [hl]
+; draws the interface icon corresponding to the gfx tile in a.
+; also prints the number in symbol font corresponding to the value in b.
+; the screen coordinates for printing are given by [hl].
+; preserves de
 ; input:
 ;	a  = tile for the icon
 ;	b  = number to print alongside the icon
 ;	hl = pointer to screen coordinates
+; output:
+;	hl = pointer for next icon's coordinates (input hl + 2)
 DrawPlayArea_IconWithValue:
+	push de
 ; drawing the icon
 	ld d, [hl]
 	inc hl
@@ -1091,7 +1076,7 @@ DrawPlayArea_IconWithValue:
 	cp CONSOLE_CGB
 	jr nz, .skip
 
-	ld a, $02
+	ld a, $02 ; CGB Background Palette 2 (blue/green)
 	lb bc, 2, 2
 	lb hl, 0, 0
 	call BankswitchVRAM1
@@ -1132,47 +1117,12 @@ DrawPlayArea_IconWithValue:
 	ld hl, wDefaultText
 	call ProcessText
 	pop hl
+	pop de
 	ret
-
-; draws In Play Area icons depending on value in a.
-; the icons correspond to Deck, Discard Pile, and Hand.
-; the corresponding number of cards is printed alongside each icon.
-; input:
-;	a = $00: draws player icons
-;	a = $01: draws opponent icons
-DrawInPlayArea_Icons:
-	ldh a, [hWhoseTurn]
-	ld d, a
-	ld e, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	ld a, [de]
-	ld b, a
-	ld a, $d0 ; tile offset for hand icon (v0Tiles1 + $50 tiles)
-	call DrawPlayArea_IconWithValue
-
-; deck
-	ldh a, [hWhoseTurn]
-	ld d, a
-	ld e, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
-	ld a, [de]
-	ld b, a
-	ld a, DECK_SIZE
-	sub b
-	ld b, a
-	ld a, $d4 ; tile offset for deck icon (v0Tiles1 + $54 tiles)
-	call DrawPlayArea_IconWithValue
-
-; discard pile
-	ldh a, [hWhoseTurn]
-	ld d, a
-	ld e, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
-	ld a, [de]
-	ld b, a
-	ld a, $d8 ; tile offset for discard pile icon (v0Tiles1 + $58 tiles)
-	jr DrawPlayArea_IconWithValue
 
 
 ; handles the player's menu input in the Your or Opp. Play Area screens
-; and works out which cursor coordinate to go to
+; and works out which cursor coordinate to go to.
 ; output:
 ;	a =  1:  if the A button was pressed
 ;	a = -1:  if the B button was pressed
@@ -1248,9 +1198,7 @@ HandleCheckMenuInput_YourOrOppPlayArea:
 .erase
 	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
-	push de
-	call EraseCheckMenuCursor_YourOrOppPlayArea
-	pop de
+	call EraseCheckMenuCursor
 
 ; update x and y cursor positions
 	ld a, d
@@ -1275,7 +1223,7 @@ HandleCheckMenuInput_YourOrOppPlayArea:
 	ret
 
 .a_pressed
-	call DisplayCheckMenuCursor_YourOrOppPlayArea
+	call DisplayCheckMenuCursor
 	ld a, $1
 	call PlaySFXConfirmOrCancel_Bank2
 	scf
@@ -1292,47 +1240,9 @@ HandleCheckMenuInput_YourOrOppPlayArea:
 	and %00001111
 	ret nz ; only update cursor if blink's lower nibble is 0
 
-	ld a, SYM_CURSOR_R ; cursor byte
 	bit 4, [hl] ; only draw cursor if blink counter's fourth bit is not set
-	jr z, DrawCheckMenuCursor_YourOrOppPlayArea
-;	fallthrough
-
-; transforms cursor position into coordinates
-; in order to draw a blank tile on the menu cursor
-EraseCheckMenuCursor_YourOrOppPlayArea:
-	ld a, SYM_SPACE ; blank tile
-;	fallthrough
-
-; draws in the cursor position
-; input:
-;	a = tile byte to draw
-DrawCheckMenuCursor_YourOrOppPlayArea:
-	ld e, a
-	ld a, 10
-	ld l, a
-	ld a, [wCheckMenuCursorXPosition]
-	ld h, a
-	call HtimesL
-	; h = 10 * cursor x position
-
-	ld a, l
-	add 1
-	ld b, a
-	ld a, [wCheckMenuCursorYPosition]
-	sla a
-	add 14
-	ld c, a
-	; c = 11 + 2 * cursor y position + 14
-
-; draw tile loaded in e
-	ld a, e
-	call WriteByteToBGMap0
-	or a
-	ret
-
-DisplayCheckMenuCursor_YourOrOppPlayArea:
-	ld a, SYM_CURSOR_R ; load cursor byte
-	jr DrawCheckMenuCursor_YourOrOppPlayArea
+	jp z, DisplayCheckMenuCursor
+	jp EraseCheckMenuCursor
 
 
 ; handles the selection menus for the Peek Pokemon Power
@@ -1377,7 +1287,7 @@ HandlePeekSelection::
 	call EraseCursor
 	ldh a, [hCurMenuItem]
 	or a
-	jp nz, .PrepareYourPlayAreaSelection ; jump if not Opp Play Area
+	jp nz, .PrepareYourPlayAreaSelection ; jump if Opp Play Area
 
 ; own Play Area was chosen
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
@@ -1401,11 +1311,10 @@ HandlePeekSelection::
 
 	xor a
 	ld [wYourOrOppPlayAreaCurPosition], a
-	ld de, PeekYourPlayAreaTransitionTable
 	ld hl, wTransitionTablePtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(PeekYourPlayAreaTransitionTable)
+	ld [hli], a
+	ld [hl], HIGH(PeekYourPlayAreaTransitionTable)
 
 .loop_input_2
 	ld a, $01
@@ -1446,18 +1355,7 @@ ENDR
 .SelectedPrize
 	ld a, [wYourOrOppPlayAreaCurPosition]
 	ld c, a
-	ld b, $1
-
-; left-shift b a number of times
-; corresponding to this prize card
-.loop_prize_bitmask
-	or a
-	jr z, .got_prize_bitmask
-	sla b
-	dec a
-	jr .loop_prize_bitmask
-
-.got_prize_bitmask
+	call MakeBitmask
 	ld a, DUELVARS_PRIZES
 	get_turn_duelist_var
 	and b
@@ -1519,7 +1417,7 @@ ENDR
 	ld a, [wce5c]
 	ret
 
-; prepares menu parameters to handle selection of own Play Area
+; prepares menu parameters to handle selection of the opponent's play area
 .PrepareYourPlayAreaSelection
 	ld a, [wCheckMenuPlayAreaWhichDuelist]
 	ld b, a
@@ -1529,11 +1427,9 @@ ENDR
 
 	ld l, a
 	cp PLAYER_TURN
-	jr nz, .opponent
-	ld a, OPPONENT_TURN
-	jr .draw_menu_2
-.opponent
-	ld a, PLAYER_TURN
+	ld a, OPPONENT_TURN ; if player is turn holder, wCheckMenuPlayAreaWhichDuelist = OPPONENT_TURN
+	jr z, .draw_menu_2
+	ld a, PLAYER_TURN ; if opponent is turn holder, wCheckMenuPlayAreaWhichDuelist = PLAYER_TURN
 
 .draw_menu_2
 	ld h, a
@@ -1547,11 +1443,10 @@ ENDR
 
 	xor a
 	ld [wYourOrOppPlayAreaCurPosition], a
-	ld de, PeekOppPlayAreaTransitionTable
 	ld hl, wTransitionTablePtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(PeekOppPlayAreaTransitionTable)
+	ld [hli], a
+	ld [hl], HIGH(PeekOppPlayAreaTransitionTable)
 
 	rst SwapTurn
 	ld a, TRUE
@@ -1600,7 +1495,7 @@ DrawAIPeekScreen::
 	bit AI_PEEK_TARGET_HAND_F, b
 	jr z, .draw_play_area
 
-; AI chose the hand
+; AI chose the hand (or the deck)
 	rst SwapTurn
 	ld a, TRUE
 	ld [wIsSwapTurnPending], a ; mark pending to swap turn
@@ -1651,7 +1546,7 @@ DrawAIPeekScreen::
 LoadCursorTile:
 	ld de, v0Tiles0
 	ld hl, .tile_data
-	ld b, 16
+	ld b, 16 ; 8 pixels * 8 pixels = 64 pixels, 64 pixels / 4 (2 bits per pixel) = 16 bytes
 	jp SafeCopyDataHLtoDE
 
 .tile_data:
@@ -1682,61 +1577,33 @@ YourOrOppPlayAreaScreen_HandleInput:
 ; get the transition index related to the directional input
 	ldh a, [hDPadHeld]
 	or a
-	jp z, .check_button
+	jr z, .check_button
 	inc hl
 	inc hl
 	inc hl
 
 	bit D_UP_F, a
-	jr z, .else_if_down
-
-	; up
-	ld a, [hl]
-	jr .process_dpad
-
-.else_if_down
+	jr nz, .process_dpad ; use location in hl if Up button was pressed
 	inc hl
 	bit D_DOWN_F, a
-	jr z, .else_if_right
-
-	; down
-	ld a, [hl]
-	jr .process_dpad
-
-.else_if_right
+	jr nz, .process_dpad ; use location in hl if Down button was pressed
 	inc hl
 	bit D_RIGHT_F, a
-	jr z, .else_if_left
-
-	; right
-	ld a, [hl]
-	jr .process_dpad
-
-.else_if_left
+	jr nz, .process_dpad ; use location in hl if Right button was pressed
 	inc hl
 	bit D_LEFT_F, a
-	jr z, .check_button
-
-	; left
-	ld a, [hl]
+	jr z, .check_button ; move on to A/B button if last D-pad direction wasn't pressed
+	; use location in hl if Left button was pressed
 .process_dpad
+	ld a, [hl] ; location from the transition table
 	ld [wYourOrOppPlayAreaCurPosition], a
 	cp $8 ; if a >= 8
 	jr nc, .next
-	ld b, $1
 
-; this loop is equal to
-; b = (1 << a)
-.make_bitmask_loop
-	or a
-	jr z, .make_bitmask_done
-	sla b
-	dec a
-	jr .make_bitmask_loop
-
-.make_bitmask_done
 ; check if the moved cursor refers to an existing item.
 ; it's always true when this function was called from the glossary procedure.
+.make_bitmask
+	call MakeBitmask
 	ld a, [wDuelInitialPrizesUpperBitsSet]
 	and b
 	jr nz, .next
@@ -1761,20 +1628,15 @@ YourOrOppPlayAreaScreen_HandleInput:
 	ld a, [wDuelInitialPrizes]
 	cp PRIZES_5
 	jr nc, .next
-	; else if it's last card,
+	; else if it's last card, place it at position 3
 	ld a, [wYourOrOppPlayAreaCurPosition]
 	cp 5
-	jr nz, .not_last_card
-	; place it at position 3
 	ld a, 3
-	ld [wYourOrOppPlayAreaCurPosition], a
-	jr .ok
-.not_last_card
+	jr z, .ok
 	; otherwise, place at position 2
-	ld a, 2
-	ld [wYourOrOppPlayAreaCurPosition], a
-
+	dec a ; 2
 .ok
+	ld [wYourOrOppPlayAreaCurPosition], a
 	ld a, [wDuelInitialPrizes]
 	cp PRIZES_3
 	jr nc, .handled_cursor_pos
@@ -1786,8 +1648,7 @@ YourOrOppPlayAreaScreen_HandleInput:
 .handled_cursor_pos
 	ld a, [wYourOrOppPlayAreaCurPosition]
 	ld [wPrizeCardCursorTemporaryPosition], a
-	ld b, $1
-	jr .make_bitmask_loop
+	jr .make_bitmask
 
 .next
 	ld a, SFX_CURSOR
@@ -1811,9 +1672,8 @@ YourOrOppPlayAreaScreen_HandleInput:
 
 .a_button
 	call .draw_cursor
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
 	ld a, [wYourOrOppPlayAreaCurPosition]
+	call PlaySFXConfirmOrCancel_Bank2
 	scf
 	ret
 
@@ -1857,11 +1717,10 @@ _SelectPrizeCards::
 	xor a
 	call GetFirstSetPrizeCard
 	ld [wYourOrOppPlayAreaCurPosition], a
-	ld de, hTempPlayAreaLocation_ffa1
 	ld hl, wSelectedPrizeCardListPtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(hTempPlayAreaLocation_ffa1)
+	ld [hli], a
+	ld [hl], HIGH(hTempPlayAreaLocation_ffa1)
 
 .check_prize_cards_to_select
 	ld a, [wNumberOfPrizeCardsToSelect]
@@ -1876,10 +1735,10 @@ _SelectPrizeCards::
 	ld a, DUELVARS_PRIZES
 	get_turn_duelist_var
 	ldh [hTemp_ffa0], a
-	ld a, [wSelectedPrizeCardListPtr + 0]
+	ld hl, wSelectedPrizeCardListPtr
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wSelectedPrizeCardListPtr + 1]
-	ld h, a
 	ld [hl], $ff
 	ret
 
@@ -1892,11 +1751,10 @@ _SelectPrizeCards::
 	lb de, 1, 14
 	ldtx hl, PleaseChooseAPrizeText
 	call InitTextPrinting_ProcessTextFromID
-	ld de, .cursor_transition_table
 	ld hl, wMenuInputTablePointer
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(.cursor_transition_table)
+	ld [hli], a
+	ld [hl], HIGH(.cursor_transition_table)
 .loop_handle_input
 	ld a, $1
 	ld [wVBlankOAMCopyToggle], a
@@ -1904,29 +1762,18 @@ _SelectPrizeCards::
 	call YourOrOppPlayAreaScreen_HandleInput
 	jr nc, .loop_handle_input
 	cp -1
-	jr z, .loop_handle_input
+	jr z, .loop_handle_input ; must choose, B button can't be used to exit
 
 	call ZeroObjectPositionsAndToggleOAMCopy
 
-; get prize bit mask that corresponds
-; to the one pointed at by the cursor
+; get prize bit mask that corresponds to the one pointed at by the cursor
 	ld a, [wYourOrOppPlayAreaCurPosition]
 	ld c, a
-	ld b, $1
-.loop
-	or a
-	jr z, .got_prize_mask
-	sla b
-	dec a
-	jr .loop
-
-.got_prize_mask
-	; if cursor prize is not set,
-	; then return to input loop
+	call MakeBitmask
 	ld a, DUELVARS_PRIZES
 	get_turn_duelist_var
 	and b
-	jr z, .loop_handle_input
+	jr z, .loop_handle_input ; return to input loop if cursor prize is not set
 
 	; remove prize
 	ld a, DUELVARS_PRIZES
@@ -1996,8 +1843,6 @@ _DrawPlayAreaToPlacePrizeCards::
 	call FillRectangle
 
 	rst SwapTurn
-	ld a, TRUE
-	ld [wIsSwapTurnPending], a ; mark pending to swap turn
 	ldh a, [hWhoseTurn]
 	ld [wCheckMenuPlayAreaWhichDuelist], a
 	lb de, 6, 0
@@ -2025,7 +1870,7 @@ _DrawPlayAreaToPlacePrizeCards::
 
 
 ; gets the first prize card index that is set,
-; starting with the index in register a
+; starting with the index in register a.
 ; preserves all registers except af
 ; input:
 ;	a = prize card index
@@ -2040,7 +1885,11 @@ GetFirstSetPrizeCard:
 	ld l, DUELVARS_PRIZES
 	ld d, [hl]
 .loop_prizes
-	call .GetPrizeMask
+	push bc
+	ld a, c
+	call MakeBitmask
+	ld a, b
+	pop bc
 	and d
 	jr nz, .done ; prize is set
 	dec e
@@ -2061,21 +1910,21 @@ GetFirstSetPrizeCard:
 	ld c, 0
 	jr .loop_prizes
 
-; returns 1 shifted left by c bits
-.GetPrizeMask
-	push bc
-	ld a, c
+
+; left-shift b a number of times corresponding to input in a.
+; preserves all registers except af and b
+; input:
+;	a = number of times to loop
+; output:
+;	b = (1 << a)
+MakeBitmask:
 	ld b, $1
 .loop
 	or a
-	jr z, .got_mask
+	ret z
 	sla b
 	dec a
 	jr .loop
-.got_mask
-	ld a, b
-	pop bc
-	ret
 
 
 ;----------------------------------------
@@ -2094,10 +1943,8 @@ GetFirstSetPrizeCard:
 ;
 ;	; text
 ;	push hl
-;	push bc
 ;	ldtx hl, HandText
 ;	call InitTextPrinting_ProcessTextFromID
-;	pop bc
 ;
 ;	; decimal value
 ;	ld a, b

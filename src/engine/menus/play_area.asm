@@ -67,6 +67,7 @@ OpenInPlayAreaScreen::
 	ldh a, [hWhoseTurn]
 	push af
 	bank1call OpenTurnHolderPlayAreaScreen
+.return_to_in_play_area
 	pop af
 	ldh [hWhoseTurn], a
 	ld a, [wInPlayAreaPreservedPosition]
@@ -79,11 +80,7 @@ OpenInPlayAreaScreen::
 	ldh a, [hWhoseTurn]
 	push af
 	bank1call OpenNonTurnHolderPlayAreaScreen
-	pop af
-	ldh [hWhoseTurn], a
-	ld a, [wInPlayAreaPreservedPosition]
-	ld [wInPlayAreaCurPosition], a
-	jp .start
+	jr .return_to_in_play_area
 
 .pressed
 	cp -1
@@ -120,9 +117,8 @@ OpenInPlayAreaScreen::
 ; which is printed at the bottom of the screen
 	push af
 	lb de, 1, 17
-	call InitTextPrinting
 	ldtx hl, EmptyLineText
-	call ProcessTextFromID
+	call InitTextPrinting_ProcessTextFromID
 
 	ld hl, hffb0
 	ld [hl], $01
@@ -312,10 +308,10 @@ OpenInPlayAreaScreen_TextTable:
 	tx AttackText             ; INPLAYAREA_PLAYER_BENCH_3
 	tx PKMNPowerText          ; INPLAYAREA_PLAYER_BENCH_4
 	tx DoneText               ; INPLAYAREA_PLAYER_BENCH_5
-	dw NULL                   ; INPLAYAREA_PLAYER_ACTIVE
+	tx NullText               ; INPLAYAREA_PLAYER_ACTIVE
 	tx DuelistHandText        ; INPLAYAREA_PLAYER_HAND
 	tx DuelistDiscardPileText ; INPLAYAREA_PLAYER_DISCARD_PILE
-	dw NULL                   ; INPLAYAREA_OPP_ACTIVE
+	tx NullText               ; INPLAYAREA_OPP_ACTIVE
 	tx DuelistHandText        ; INPLAYAREA_OPP_HAND
 	tx DuelistDiscardPileText ; INPLAYAREA_OPP_DISCARD_PILE
 	tx HandText               ; INPLAYAREA_OPP_BENCH_1
@@ -397,43 +393,21 @@ OpenInPlayAreaScreen_HandleInput:
 
 	; check d-pad
 	bit D_UP_F, a
-	jr z, .else_if_down
-
-	; up
-	ld a, [hl]
-	jr .process_dpad
-
-.else_if_down
+	jr nz, .process_dpad ; use location in hl if Up button was pressed
 	inc hl
 	bit D_DOWN_F, a
-	jr z, .else_if_right
-
-	; down
-	ld a, [hl]
-	jr .process_dpad
-
-.else_if_right
+	jr nz, .process_dpad ; use location in hl if Down button was pressed
 	inc hl
 	bit D_RIGHT_F, a
-	jr z, .else_if_left
-
-	; right
-	ld a, [hl]
-	jr .process_dpad
-
-.else_if_left
+	jr nz, .process_dpad ; use location in hl if Right button was pressed
 	inc hl
 	bit D_LEFT_F, a
-	jr z, .check_button
-
-	; left
-	ld a, [hl]
+	jr z, .check_button ; move on to A/B button if last D-pad direction wasn't pressed
+	; use location in hl if Left button was pressed
 .process_dpad
-	push af
 	ld a, [wInPlayAreaCurPosition]
 	ld [wInPlayAreaPreservedPosition], a
-	pop af
-
+	ld a, [hl] ; wInPlayAreaCurPosition constant from the transition table
 	ld [wInPlayAreaCurPosition], a
 	cp INPLAYAREA_PLAYER_ACTIVE
 	jr c, .player_area
@@ -527,9 +501,8 @@ OpenInPlayAreaScreen_HandleInput:
 
 .a_button
 	call .draw_cursor
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank6
 	ld a, [wInPlayAreaCurPosition]
+	call PlaySFXConfirmOrCancel_Bank6
 	scf
 	ret
 
