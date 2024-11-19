@@ -44,9 +44,16 @@ SetUpBossStartingHandAndDeck:
 	ld b, 6
 .check_card_ids
 	ld a, [hli]
-	push bc
-	call .CheckIfIDIsInList
-	pop bc
+	ld d, a
+	push hl
+	ld hl, wAICardListAvoidPrize
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	ld a, d
+	call nz, .CheckIfIDIsInList ; only check if pointer isn't null
+	pop hl
 	jr c, .shuffle_deck
 	dec b
 	jr nz, .check_card_ids
@@ -78,39 +85,21 @@ SetUpBossStartingHandAndDeck:
 	ret
 
 
-; preserves hl
+; preserves bc
 ; input:
 ;	a = deck index of the card that should be checked
-;	wAICardListAvoidPrize = $00-terminated list of card IDs
+;	hl = $00-terminated list of card IDs
 ; output:
-;	carry = set:  if the card ID corresponding to the input deck index
-;	              was listed in wAICardListAvoidPrize
+;	carry = set:  if the card ID corresponding to the given deck index was in the given list
 .CheckIfIDIsInList
-	ld b, a
-	ld a, [wAICardListAvoidPrize + 1]
-	or a
-	ret z ; null
-	push hl
-	ld h, a
-	ld a, [wAICardListAvoidPrize]
-	ld l, a
-
-	ld a, b
 	call GetCardIDFromDeckIndex
 .loop_id_list
 	ld a, [hli]
 	or a
-	jr z, .false
+	ret z ; return no carry if there are no more card IDs to check
 	cp e
 	jr nz, .loop_id_list
-
-; true
-	pop hl
 	scf
-	ret
-.false
-	pop hl
-	or a
 	ret
 
 

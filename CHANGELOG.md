@@ -116,7 +116,13 @@
 
 
 ## Code Optimization
-- **November 14, 2024:** 3 Files Changed
+- **November 19, 2024:** 4 Files Changed
+    - Refactor a lot of code pertaining to the loading of list pointers when the AI is using a boss deck
+    - Change a couple of `cp 1` instructions in those files with `dec a`
+
+<br/>
+
+- **[November 14, 2024](https://github.com/Sha0den/poketcg_v2/commit/5bdad3517e026f2de7021ffaa8f91583ff4bcab7):** 3 Files Changed
     - Refactor some code in engine/menus/duel.asm and engine/menus/play_area.asm
     - Replace a couple of values in engine/menus/duel_init.asm with constants
 

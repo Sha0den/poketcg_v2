@@ -193,12 +193,12 @@ AIProcessEnergyCards:
 
 ; check list in wAICardListEnergyBonus
 .ai_score_bonus
-	ld a, [wAICardListEnergyBonus + 1]
-	or a
-	jr z, .check_boss_deck ; is null
-	ld h, a
-	ld a, [wAICardListEnergyBonus]
+	ld hl, wAICardListEnergyBonus
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
+	or h
+	jr z, .check_boss_deck ; skip if pointer is null
 
 	push hl
 	ldh a, [hTempPlayAreaLocation_ff9d]

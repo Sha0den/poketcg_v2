@@ -633,7 +633,7 @@ AIDecideBenchPokemonToSwitchTo:
 	jr nc, .check_hp
 	ld e, 3
 	ld a, [wAIPlayerPrizeCount]
-	cp 1
+	dec a ; cp 1
 	jr nz, .lower_score_1
 	ld e, 10
 .lower_score_1
@@ -718,12 +718,12 @@ AIDecideBenchPokemonToSwitchTo:
 
 ; apply any assigned score bonuses that are specific to this deck.
 .ai_score_bonus
-	ld a, [wAICardListRetreatBonus + 1]
-	or a
-	jr z, .store_score
-	ld h, a
-	ld a, [wAICardListRetreatBonus]
+	ld hl, wAICardListRetreatBonus
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
+	or h
+	jr z, .store_score ; skip if pointer is null
 
 .loop_ids
 	ld a, [hli]

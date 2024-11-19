@@ -1088,24 +1088,37 @@ RemoveCardIDInList:
 ; output:
 ;	carry = set:  if the play area could not be set up
 TrySetUpBossStartingPlayArea:
-	ld de, wAICardListArenaPriority
-	ld a, d
-	or a
+	ld hl, wAICardListArenaPriority
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
 	scf
 	ret z ; return carry if pointer is null
 
 ; pick the Active Pokémon
+	push hl
 	call CreateHandCardList
+	pop de ; Arena priority list
 	ld hl, wDuelTempList
-	ld de, wAICardListArenaPriority
 	call .PlayPokemonCardInOrder
 	ret c ; return carry if there are no cards in the hand that match a card ID from the priority list
 
-; put Basic Pokémon cards onto the Bench until there are
-; a maximum of 3 cards in the play area.
+	ld bc, wAICardListBenchPriority
+	ld a, [bc]
+	ld e, a
+	inc bc
+	ld a, [bc]
+	ld d, a
+	or e
+	ret z ; return no carry if pointer is null
+
+; use priority list to put Basic Pokémon cards onto the Bench
+; until there are a maximum of 3 cards in the play area.
 .loop
-	ld de, wAICardListBenchPriority
+	push de
 	call .PlayPokemonCardInOrder
+	pop de
 	ccf
 	ret nc ; return no carry if no more cards in the hand match a card ID from the priority list
 	cp 3
@@ -1113,27 +1126,18 @@ TrySetUpBossStartingPlayArea:
 	; there are now 3 Pokémon in play, so return no carry.
 	ret
 
-; uses the pointer at de to find a priority list and then uses that list to
-; decide which Basic Pokémon to put into play from the list of hand cards at hl.
+; uses the priority list at de to decide which Basic Pokémon
+; to put into play from the list of hand cards at hl.
 ; preserves hl and b
 ; input:
-;	de = pointer for a null-terminated list with card IDs (of Basic Pokémon to play)
+;	de = null-terminated list with card IDs (of Basic Pokémon to play)
 ;	hl = $ff-terminated list with deck indices (of hand cards)
 ; output:
 ;	a = number of Pokémon in the AI's play area
 ;	carry = set:  if none of the cards in the list from de were found in the list at hl
 ;	           OR if there wasn't room on the Bench for the Pokémon that was found
 .PlayPokemonCardInOrder
-	ld a, [de]
-	ld c, a
-	inc de
-	ld a, [de]
-	ld d, a
-	ld e, c
-
-; read the list at de and play the first card from the list at hl with a matching card ID.
-; returns carry if hand doesn't have any card in list.
-.loop_id_list
+; play the first card from the list at hl that is also found in the list at de.
 	ld a, [de]
 	inc de
 	or a
@@ -1141,8 +1145,7 @@ TrySetUpBossStartingPlayArea:
 	ret z ; return carry if there are no more card IDs to check
 	ld c, a
 	call RemoveCardIDInList
-	jr nc, .loop_id_list
-
+	jr nc, .PlayPokemonCardInOrder
 	; put this card into play and return
 	push hl
 	call PutHandPokemonCardInPlayArea
@@ -1260,10 +1263,11 @@ LookForEnergyNeededForAttackInHand:
 	call CheckEnergyNeededForAttack
 	ld a, b
 	add c
-	cp 1
+	dec a ; cp 1
 	jr z, .one_energy
-	cp 2
+	dec a
 	jr nz, .no_carry
+	; need exactly 2 Energy
 	ld a, c
 	cp 2
 	jr z, .two_colorless
@@ -1295,26 +1299,23 @@ LookForEnergyNeededForAttackInHand:
 ;	[wAICardListPlayFromHandPriority] = pointer for a null-terminated list of card IDs
 ;	[wDuelTempList] = $ff-terminated list with deck indices (of hand cards)
 SortTempHandByIDList:
-	ld a, [wAICardListPlayFromHandPriority+1]
-	or a
-	ret z ; return if list is empty
-
-; start going down the ID list
-	ld d, a
-	ld a, [wAICardListPlayFromHandPriority]
+	ld hl, wAICardListPlayFromHandPriority
+	ld a, [hli]
+	ld d, [hl]
 	ld e, a
+	or d
+	ret z ; return if pointer is null
+
 	ld c, 0
 .loop_list_id
-; get this item's ID
-; if $00, list has ended
 	ld a, [de]
 	or a
 	ret z ; return if there are no more card IDs to check
 	inc de
 	ld hl, wDuelTempList
-	ld b, 0
+	ld b, $00
 	add hl, bc
-	ld b, a
+	ld b, a ; current card ID from priority list
 
 ; search in the hand card list
 .next_hand_card
@@ -1331,7 +1332,7 @@ SortTempHandByIDList:
 ; in hand corresponding to c
 	push bc
 	push hl
-	ld b, 0
+	ld b, $00
 	ld hl, wDuelTempList
 	add hl, bc
 	ld b, [hl]
