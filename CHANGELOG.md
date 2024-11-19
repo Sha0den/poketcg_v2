@@ -1101,6 +1101,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **November 19, 2024:** 1 File Changed
+    - Revert a small change to engine/duel/ai/energy.asm (because Rain Dance was causing the game to freeze)
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37)*
+
+<br/>
+
 - **[October 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/bacaa181c7e2fc484b038c37ee17a5f345540796):** 1 File Changed
     - Fix an oversight (merging 2 jumps when one of them was conditional) with the new `_AIProcessHandTrainerCards` code
     - Ended up making another oversight (missing `pop hl`) that was addressed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f5567f7a3860ed5dc502bcf75458002735427448)

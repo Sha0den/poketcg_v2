@@ -6,8 +6,13 @@
 AIProcessAndTryToPlayEnergy:
 	xor a
 	ld [wAIEnergyAttachLogicFlags], a
+.has_logic_flags
 	call CreateEnergyCardListFromHand
 	jr nc, AIProcessEnergyCards
+	; no Energy cards to play
+	ld a, [wAIEnergyAttachLogicFlags]
+	or a
+	jp nz, RetrievePlayAreaAIScoreFromBackup
 	ret
 
 
@@ -968,10 +973,4 @@ CheckSpecificDecksToAttachDoubleColorless:
 ;	call CopyNBytesFromHLToDE
 ;	ld a, [wAIScore]
 ;	ld [de], a
-;	call CreateEnergyCardListFromHand
-;	jr nc, AIProcessEnergyCards
-;	; no energy
-;	ld a, [wAIEnergyAttachLogicFlags]
-;	or a
-;	jp nz, RetrievePlayAreaAIScoreFromBackup
-;	ret
+;	jp AIProcessAndTryToPlayEnergy.has_logic_flags
