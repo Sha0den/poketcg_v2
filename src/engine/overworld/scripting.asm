@@ -45,11 +45,11 @@ Func_c943:
 	or a
 	jr z, .quit
 	push hl
-	ld a, [wLoadNPCFunction]
+	ld hl, wLoadNPCFunction
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wLoadNPCFunction + 1]
-	ld h, a
-	or l
+	or h
 	jr z, .no_script
 	call CallHL
 	jr nc, .next_npc
@@ -2054,10 +2054,10 @@ ScriptCommand_OpenDeckMachine:
 ; arguments: unused, room, new player x, new player y, new player direction
 ; preserves de
 ScriptCommand_EnterMap:
-	ld a, [wScriptPointer]
+	ld hl, wScriptPointer
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wScriptPointer + 1]
-	ld h, a
 	inc hl
 	ld a, [hli]
 	ld a, [hli]

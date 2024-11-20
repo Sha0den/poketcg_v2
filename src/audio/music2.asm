@@ -403,9 +403,9 @@ Music2_UpdateChannel1:
 	dec a
 	ld [wddbb], a
 	jr nz, .asm_f42f4
-	ld a, [wMusicChannelPointers + 1]
-	ld h, a
-	ld a, [wMusicChannelPointers]
+	ld hl, wMusicChannelPointers
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
 	ld bc, $0000
 	call Music2_PlayNextNote
@@ -454,9 +454,9 @@ Music2_UpdateChannel2:
 	dec a
 	ld [wddbb + 1], a
 	jr nz, .asm_f4359
-	ld a, [wMusicChannelPointers + 3]
-	ld h, a
-	ld a, [wMusicChannelPointers + 2]
+	ld hl, wMusicChannelPointers + 2
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
 	ld bc, $0001
 	call Music2_PlayNextNote
@@ -501,9 +501,9 @@ Music2_UpdateChannel3:
 	dec a
 	ld [wddbb + 2], a
 	jr nz, .asm_f43b8
-	ld a, [wMusicChannelPointers + 5]
-	ld h, a
-	ld a, [wMusicChannelPointers + 4]
+	ld hl, wMusicChannelPointers + 4
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
 	ld bc, $0002
 	call Music2_PlayNextNote
@@ -532,9 +532,9 @@ Music2_UpdateChannel4:
 	dec a
 	ld [wddbb + 3], a
 	jr nz, .asm_f43f6
-	ld a, [wMusicChannelPointers + 7]
-	ld h, a
-	ld a, [wMusicChannelPointers + 6]
+	ld hl, wMusicChannelPointers + 6
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
 	ld bc, $0003
 	call Music2_PlayNextNote

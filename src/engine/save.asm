@@ -154,10 +154,10 @@ CopyGeneralSaveDataToSRAM:
 ; preserves hl
 .CopyBytesToSRAM
 	push hl
-	ld a, [wTempPointer + 0]
+	ld hl, wTempPointer
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wTempPointer + 1]
-	ld h, a
 .loop_bytes
 	push bc
 	ld a, [hli]
@@ -427,10 +427,10 @@ LoadGeneralSaveDataFromDE:
 
 ; copy bc bytes from wTempPointer to de
 	push hl
-	ld a, [wTempPointer + 0]
+	ld hl, wTempPointer
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wTempPointer + 1]
-	ld h, a
 .loop_copy
 	ld a, [hli]
 	ld [de], a

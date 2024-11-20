@@ -3,10 +3,10 @@ _ResetAnimationQueue::
 	push hl
 	push bc
 	call Set_OBJ_8x8
+	ld hl, wDoFrameFunction
 	ld a, LOW(UpdateQueuedAnimations)
-	ld [wDoFrameFunction], a
-	ld a, HIGH(UpdateQueuedAnimations)
-	ld [wDoFrameFunction + 1], a
+	ld [hli], a
+	ld [hl], HIGH(UpdateQueuedAnimations)
 	ld a, $ff
 	ld hl, wAnimationQueue
 	ld c, ANIMATION_QUEUE_LENGTH
@@ -516,10 +516,10 @@ Func_1ce03:
 	jp Func_3bb5
 
 .asm_1ce17
-	ld a, [wDuelAnimDamage]
+	ld hl, wDuelAnimDamage
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wDuelAnimDamage + 1]
-	ld h, a
 	jp Func_3bb5
 
 .pointer_table
@@ -642,10 +642,10 @@ CreateDamageCharSprite:
 ; input:
 ;	[wDuelAnimDamage] = number to convert to graphic tiles
 GetDamageNumberChars:
-	ld a, [wDuelAnimDamage]
+	ld hl, wDuelAnimDamage
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wDuelAnimDamage + 1]
-	ld h, a
 
 	ld de, wDecimalChars
 	ld bc, -100

@@ -21,10 +21,10 @@ ExecuteCreditsSequenceCmd:
 	ret
 
 .call_func
-	ld a, [wSequenceCmdPtr + 0]
+	ld hl, wSequenceCmdPtr
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wSequenceCmdPtr + 1]
-	ld h, a
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]

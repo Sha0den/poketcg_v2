@@ -5,15 +5,14 @@ OpenGlossaryScreen:
 
 	xor a
 	ld [wInPlayAreaCurPosition], a
-	ld de, OpenGlossaryScreen_TransitionTable ; this data is stored in bank $02.
-	ld hl, wMenuInputTablePointer
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ld a, $ff
-	ld [wDuelInitialPrizesUpperBitsSet], a
-	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
+	dec a ; $ff
+	ld [wDuelInitialPrizesUpperBitsSet], a
+	ld hl, wMenuInputTablePointer
+	; transition table is located in bank $02 with YourOrOppPlayAreaScreen_HandleInput
+	ld a, LOW(OpenGlossaryScreen_TransitionTable)
+	ld [hli], a
+	ld [hl], HIGH(OpenGlossaryScreen_TransitionTable)
 .next
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a

@@ -142,19 +142,17 @@ InitializeInputName:
 	ld [hl], b
 	inc hl
 	ld [hl], c
-	pop hl
-	ld b, h
-	ld c, l
-	; set the question string.
-	ld hl, wNamingScreenQuestionPointer
-	ld [hl], c
-	inc hl
-	ld [hl], b
 	; set the destination buffer.
 	ld hl, wNamingScreenDestPointer
 	ld [hl], e
 	inc hl
 	ld [hl], d
+	; set the question string.
+	inc hl ; wNamingScreenQuestionPointer
+	pop bc ; initial input in hl
+	ld [hl], c
+	inc hl
+	ld [hl], b
 	; clear the name buffer.
 	ld a, NAMING_SCREEN_BUFFER_LENGTH
 	ld hl, wNamingScreenBuffer
@@ -174,11 +172,9 @@ InitializeInputName:
 
 FinalizeInputName:
 	ld hl, wNamingScreenDestPointer
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	ld l, e
-	ld h, d
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
 	ld de, wNamingScreenBuffer
 	jr InitializeInputName.copy
 
@@ -192,18 +188,14 @@ DrawPlayerNamingScreenBG:
 	lb bc, 20, 15 ; w, h
 	call DrawRegularTextBox
 	call PrintPlayerNameFromInput
-	ld hl, wNamingScreenQuestionPointer
-	ld c, [hl]
-	inc hl
-	ld a, [hl]
-	ld h, a
-	or c
-	jr z, .put_text_end
 	; print the question string.
 	; ex) "What is your name?"
-	ld l, c
-	call PlaceTextItems
-.put_text_end
+	ld hl, wNamingScreenQuestionPointer
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	call nz, PlaceTextItems ; only print text item(s) if pointer isn't null
 	; print "End".
 	ld hl, .data
 	call PlaceTextItems
@@ -213,7 +205,7 @@ DrawPlayerNamingScreenBG:
 	call InitTextPrinting_ProcessTextFromID
 	jp EnableLCD
 .data
-	textitem $0f, $10, EndText ; "End"
+	textitem 15, 16, EndText ; "End"
 	db $ff
 
 
@@ -1158,15 +1150,11 @@ DrawDeckNamingScreenBG:
 	call DrawRegularTextBox
 	call PrintDeckNameFromInput
 	ld hl, wNamingScreenQuestionPointer
-	ld c, [hl]
-	inc hl
-	ld a, [hl]
-	ld h, a
-	or c
-	jr z, .print
-	; print the question string.
-	ld l, c
-	call PlaceTextItems
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	call nz, PlaceTextItems ; only print text item(s) if pointer isn't null
 .print
 	; print "End".
 	ld hl, DrawPlayerNamingScreenBG.data

@@ -3661,11 +3661,10 @@ PrintCardListItems:
 	ld hl, wMenuUpdateFunc
 	ld a, LOW(CardListMenuFunction)
 	ld [hli], a
-	ld a, HIGH(CardListMenuFunction)
-	ld [hli], a
+	ld [hl], HIGH(CardListMenuFunction)
 	ld a, 2
 	ld [wMenuYSeparation], a
-	ld a, 1
+	dec a ; 1
 	ld [wCardListIndicatorYPosition], a
 ;	fallthrough
 
@@ -4004,11 +4003,10 @@ CardListMenuFunction:
 .skip_printing_indicator
 	ld hl, wListFunctionPointer
 	ld a, [hli]
-	or [hl]
+	ld h, [hl]
+	ld l, a
+	or h
 	jr z, .no_list_function
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
 	ldh a, [hCurMenuItem]
 	jp hl ; execute the function at wListFunctionPointer
 .no_list_function
@@ -6902,11 +6900,10 @@ SetLinkDuelTransmissionFrameFunction:
 	ld [wLinkOpponentTurnReturnAddress], a
 	ld a, h
 	ld [wLinkOpponentTurnReturnAddress + 1], a
-	ld de, LinkOpponentTurnFrameFunction
 	ld hl, wDoFrameFunction
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(LinkOpponentTurnFrameFunction)
+	ld [hli], a
+	ld [hl], HIGH(LinkOpponentTurnFrameFunction)
 	ret
 
 

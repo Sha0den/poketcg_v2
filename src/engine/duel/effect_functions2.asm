@@ -1246,17 +1246,16 @@ ReorderCardsOnTopOfDeck:
 	jr .loop_selection
 
 
-; preserves bc
+; preserves bc and de
 ; output:
 ;	[wPrintSortNumberInCardListPtr] = pointer for PrintSortNumberInCardList function
 ;	[wSortCardListByID] = 1
 PrintSortNumberInCardList_SetPointer:
 	ld hl, wPrintSortNumberInCardListPtr
-	ld de, PrintSortNumberInCardList
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ld a, 1
+	ld a, LOW(PrintSortNumberInCardList)
+	ld [hli], a
+	ld [hl], HIGH(PrintSortNumberInCardList)
+	ld a, TRUE
 	ld [wSortCardListByID], a
 	ret
 

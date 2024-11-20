@@ -450,13 +450,10 @@ ReturnToOverworld:
 	res HIDE_ALL_NPC_SPRITES, [hl]
 	ld hl, wReloadOverworldCallbackPtr
 	ld a, [hli]
-	or [hl]
-	jr z, .no_callback
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
-	call CallHL
-.no_callback
+	ld h, [hl]
+	ld l, a
+	or h
+	call nz, CallHL
 	farcall FadeScreenFromWhite
 	pop de
 	pop bc

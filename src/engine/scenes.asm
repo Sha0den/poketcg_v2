@@ -179,13 +179,12 @@ LoadScene_LoadSGBPacket:
 	ld a, [hli]
 	or [hl]
 	jr z, .done
-	ld hl, wSceneSGBRoutinePtr + 1
-	ld a, [hld]
-	or [hl]
-	jr z, .use_default
+	ld hl, wSceneSGBRoutinePtr
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+	or h
+	jr z, .use_default
 	call CallHL
 	jr .done
 .use_default

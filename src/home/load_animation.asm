@@ -163,10 +163,10 @@ GetAnimationFramePointer::
 	ld de, SpriteNullAnimationPointer
 	jr .loadPointer
 .useLoadedOffset
-	ld a, [wTempPointer]
+	ld hl, wTempPointer
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wTempPointer + 1]
-	ld h, a
 	ld a, [wTempPointerBank]
 	rst BankswitchROM
 	ld a, [hli]

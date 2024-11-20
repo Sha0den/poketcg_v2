@@ -18,14 +18,13 @@ JumpToFunctionInTable::
 CallIndirect::
 	push af
 	ld a, [hli]
-	or [hl]
+	ld h, [hl]
+	ld l, a
+	or h
 	jr nz, .call_hl
 	pop af
 	ret
 .call_hl
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
 	pop af
 ;	fallthrough
 

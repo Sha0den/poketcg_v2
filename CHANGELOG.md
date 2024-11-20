@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **November 19, 2024:** 4 Files Changed
+- **November 20, 2024:** 19 Files Changed
+    - Simplify a lot of code relating to storing and loading pointers in wram
+
+<br/>
+
+- **[November 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/759f08842339c25764c08ecc9e0a0b36272987e6):** 4 Files Changed
     - Refactor a lot of code pertaining to the loading of list pointers when the AI is using a boss deck
     - Change a couple of `cp 1` instructions in those files with `dec a`
 
@@ -341,6 +346,7 @@
     - Countless optimizations and refactoring in engine/duel/ai files
     - Several functions in said files were relocated and a few others were completely removed
     - Numerous corrections were also made and some of the functions were even expanded
+    - Small AI Energy reversion to fix Rain Dance in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/e489039247565544d26dc6339812820cb3708bf6)
 
 <br/>
 
@@ -1101,7 +1107,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **November 19, 2024:** 1 File Changed
+- **[November 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/e489039247565544d26dc6339812820cb3708bf6):** 1 File Changed
     - Revert a small change to engine/duel/ai/energy.asm (because Rain Dance was causing the game to freeze)
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37)*
 

@@ -335,10 +335,10 @@ OverworldMap_UpdatePlayerWalkingAnimation:
 	jr nz, OverworldMap_ContinuePlayerWalkingAnimation
 
 ; get next x,y on the path
-	ld a, [wOverworldMapPlayerMovementPtr]
+	ld hl, wOverworldMapPlayerMovementPtr
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wOverworldMapPlayerMovementPtr + 1]
-	ld h, a
 	ld a, [hli]
 	ld b, a
 	ld a, [hli]

@@ -7,10 +7,10 @@ PlayIntroSequence:
 	call SetDoFrameFunction
 	call LoadTitleScreenSprites
 
+	ld hl, wSequenceCmdPtr
 	ld a, LOW(IntroSequence)
-	ld [wSequenceCmdPtr + 0], a
-	ld a, HIGH(IntroSequence)
-	ld [wSequenceCmdPtr + 1], a
+	ld [hli], a
+	ld [hl], HIGH(IntroSequence)
 
 	xor a
 	ld [wd317], a

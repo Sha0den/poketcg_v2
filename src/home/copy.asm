@@ -193,10 +193,10 @@ CopyBankedDataToDE::
 	push hl
 	ld a, [wTempPointerBank]
 	rst BankswitchROM
-	ld a, [wTempPointer]
+	ld hl, wTempPointer
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wTempPointer + 1]
-	ld h, a
 	call CopyDataHLtoDE_SaveRegisters
 	pop hl
 	pop af

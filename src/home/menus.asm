@@ -62,11 +62,10 @@ HandleMenuInput::
 	ldh [hCurMenuItem], a
 	ld hl, wMenuUpdateFunc ; call the function if non-0 (periodically)
 	ld a, [hli]
-	or [hl]
+	ld h, [hl]
+	ld l, a
+	or h
 	jr z, .check_A_or_B
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
 	ldh a, [hCurMenuItem]
 	call CallHL
 	jr nc, RefreshMenuCursor_CheckPlaySFX
