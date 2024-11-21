@@ -72,14 +72,13 @@ InputPlayerName:
 	xor a
 	ld [wNamingScreenCursorX], a
 	ld [wNamingScreenCursorY], a
+	ld [wInvisibleCursorTile], a ; SYM_SPACE
 	ld a, $09
 	ld [wNamingScreenNumColumns], a
 	ld a, $06
 	ld [wNamingScreenKeyboardHeight], a
-	ld a, $0f
+	ld a, SYM_CURSOR_R
 	ld [wVisibleCursorTile], a
-	ld a, $00
-	ld [wInvisibleCursorTile], a
 .loop
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a
@@ -89,8 +88,8 @@ InputPlayerName:
 	and START
 	jr z, .else
 	; the Start button was pressed.
-	ld a, $01
-	call PlaySFXConfirmOrCancel_Bank6
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	call PlayerNamingScreen_DrawInvisibleCursor
 	ld a, 6
 	ld [wNamingScreenCursorX], a
@@ -116,12 +115,12 @@ InputPlayerName:
 	jr z, .loop ; empty string?
 	; erase one character.
 	ld e, a
-	ld d, 0
+	ld d, $00
 	ld hl, wNamingScreenBuffer
 	add hl, de
 	dec hl
 	dec hl
-	ld [hl], TX_END
+	ld [hl], d ; add null terminator (TX_END)
 	ld hl, wNamingScreenBufferLength ; note that its unit is byte, not word.
 	dec [hl]
 	dec [hl]
@@ -196,15 +195,12 @@ DrawPlayerNamingScreenBG:
 	ld l, a
 	or h
 	call nz, PlaceTextItems ; only print text item(s) if pointer isn't null
-	; print "End".
+	; print the keyboard characters and "End".
 	ld hl, .data
 	call PlaceTextItems
-	; print the keyboard characters.
-	ldtx hl, PlayerNameKeyboardText
-	lb de, 2, 4
-	call InitTextPrinting_ProcessTextFromID
 	jp EnableLCD
 .data
+	textitem  2,  4, PlayerNameKeyboardText
 	textitem 15, 16, EndText ; "End"
 	db $ff
 
@@ -221,30 +217,37 @@ PrintPlayerNameFromInput:
 	ld d, [hl]
 	inc hl
 	ld e, [hl]
-	push de
 	call InitTextPrinting
-	ld a, [wNamingScreenBufferMaxLength]
-	ld e, a
-	ld a, $14
-	sub e
-	inc a
-	ld e, a
-	ld d, 0
-	; print the underbars before the input information.
-	ld hl, .char_underbar
-	add hl, de
-	call ProcessText
-	pop de
-	; print the input from the user.
-	ld hl, wNamingScreenBuffer
-	jp InitTextPrinting_ProcessText
+	ld hl, .underbar_data
+	ld de, wDefaultText
+.loop
+; copy the underbar string to wDefaultText
+	ld a, [hli]
+	ld [de], a
+	inc de
+	or a
+	jr nz, .loop
 
-.char_underbar
-	db $56
-REPT 10
-	textfw "_"
+	ld hl, wNamingScreenBuffer
+	ld de, wDefaultText
+.loop2
+; copy the input from the user to wDefaultText
+	ld a, [hli]
+	or a
+	jr z, .print_name
+	ld [de], a
+	inc de
+	jr .loop2
+
+.print_name
+	ld hl, wDefaultText
+	jp ProcessText
+
+.underbar_data
+REPT MAX_PLAYER_NAME_LENGTH / 2
+	db TX_FULLWIDTH3, "FW3__"
 ENDR
-	done
+	db TX_END
 
 
 ; checks if any buttons were pressed and handles the input.
@@ -256,7 +259,7 @@ PlayerNamingScreen_CheckButtonState:
 	ld [wMenuInputSFX], a
 	ldh a, [hDPadHeld]
 	or a
-	jp z, .no_press
+	jp z, .check_A_or_B
 	; detected any button press.
 	ld b, a
 	ld a, [wNamingScreenKeyboardHeight]
@@ -266,35 +269,38 @@ PlayerNamingScreen_CheckButtonState:
 	ld a, [wNamingScreenCursorY]
 	ld l, a
 	bit D_UP_F, b
-	jr z, .asm_692c
+	jr z, .check_d_down
 	; up
 	dec a
-	bit D_DOWN_F, a
-	jr z, .asm_69a7
+	bit 7, a ; check underflow
+	jr z, .adjust_y_position
 	ld a, c
 	dec a
-	jr .asm_69a7
-.asm_692c
+	jr .adjust_y_position
+.check_d_down
 	bit D_DOWN_F, b
-	jr z, .asm_6937
+	jr z, .check_d_left
 	; down
 	inc a
 	cp c
-	jr c, .asm_69a7
+	jr c, .adjust_y_position
 	xor a
-	jr .asm_69a7
-.asm_6937
+.adjust_y_position
+	ld l, a
+	jr .update_keyboard_cursor
+.check_d_left
 	ld a, [wNamingScreenNumColumns]
 	ld c, a
 	ld a, h
 	bit D_LEFT_F, b
-	jr z, .asm_6974
+	jr z, .check_d_right
 	; left
 	ld d, a
-	ld a, $06
+	ld a, $06 ; cursor y = final keyboard row
 	cp l
 	ld a, d
-	jr nz, .asm_696b
+	jr nz, .check_if_can_move_left
+	; cursor's in the bottom row
 	push hl
 	push af
 	call PlayerNamingScreen_GetCharInfoFromPos
@@ -308,33 +314,36 @@ PlayerNamingScreen_CheckButtonState:
 	ld d, a
 	pop af
 	pop hl
-	sub d
-	cp $ff
+	sub d ; cursor x position - (selected key's character code - 1)
+	cp -1
 	jr nz, .asm_6962
 	ld a, c
-	sub $02
-	jr .asm_69aa
+	sub $02 ; number of columns in keyboard - 2
+	; a = 7
+	jr .adjust_x_position
 .asm_6962
-	cp $fe
-	jr nz, .asm_696b
+	cp -2
+	jr nz, .check_if_can_move_left
 	ld a, c
-	sub $03
-	jr .asm_69aa
-.asm_696b
+	sub $03 ; number of columns in keyboard - 3
+	; a = 6
+	jr .adjust_x_position
+.check_if_can_move_left
 	dec a
-	bit D_DOWN_F, a
-	jr z, .asm_69aa
+	bit 7, a ; check underflow
+	jr z, .adjust_x_position
 	ld a, c
 	dec a
-	jr .asm_69aa
-.asm_6974
+	jr .adjust_x_position
+.check_d_right
 	bit D_RIGHT_F, b
-	jr z, .no_press
+	jr z, .check_A_or_B
 	ld d, a
-	ld a, $06
+	ld a, $06 ; cursor y = final keyboard row
 	cp l
 	ld a, d
-	jr nz, .asm_6990
+	jr nz, .check_if_can_move_right
+	; cursor's in the bottom row
 	push hl
 	push af
 	call PlayerNamingScreen_GetCharInfoFromPos
@@ -347,31 +356,25 @@ PlayerNamingScreen_CheckButtonState:
 	ld d, a
 	pop af
 	pop hl
-	add d
-.asm_6990
+	add d ; cursor x position + (selected key's font type code - 1)
+.check_if_can_move_right
 	inc a
 	cp c
-	jr c, .asm_69aa
+	jr c, .adjust_x_position
 	inc c
 	cp c
-	jr c, .asm_69a4
+	jr c, .reset_x_position
 	inc c
 	cp c
-	jr c, .asm_69a0
 	ld a, $02
-	jr .asm_69aa
-.asm_69a0
-	ld a, $01
-	jr .asm_69aa
-.asm_69a4
+	jr nc, .adjust_x_position
+	dec a ; $01
+	jr .adjust_x_position
+.reset_x_position
 	xor a
-	jr .asm_69aa
-.asm_69a7
-	ld l, a
-	jr .asm_69ab
-.asm_69aa
+.adjust_x_position
 	ld h, a
-.asm_69ab
+.update_keyboard_cursor
 	push hl
 	call PlayerNamingScreen_GetCharInfoFromPos
 	inc hl
@@ -399,22 +402,23 @@ PlayerNamingScreen_CheckButtonState:
 	jp z, PlayerNamingScreen_CheckButtonState
 	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
-.no_press
+.check_A_or_B
 	ldh a, [hKeysPressed]
 	and A_BUTTON | B_BUTTON
-	jr z, .asm_69ef
+	jr z, .check_sfx_and_cursor_blink
 	and A_BUTTON
-	jr nz, .asm_69e5
-	; the B button was pressed.
+	jr nz, .pressed_a
+	; pressed B
 	ld a, -1
-.asm_69e5
+.pressed_a
 	call PlaySFXConfirmOrCancel_Bank6
 	push af
 	call PlayerNamingScreen_DrawVisibleCursor
 	pop af
 	scf
 	ret
-.asm_69ef
+
+.check_sfx_and_cursor_blink
 	ld a, [wMenuInputSFX]
 	or a
 	call nz, PlaySFX
@@ -477,7 +481,7 @@ PlayerNamingScreen_AdjustCursorPosition:
 	ld b, a
 	ld a, [wInvisibleCursorTile]
 	cp b
-	jr z, .asm_6a60
+	jr z, .done
 	ld a, [wNamingScreenBufferLength]
 	srl a
 	ld d, a
@@ -486,9 +490,9 @@ PlayerNamingScreen_AdjustCursorPosition:
 	ld e, a
 	ld a, d
 	cp e
-	jr nz, .asm_6a49
+	jr nz, .buffer_not_full
 	dec a
-.asm_6a49
+.buffer_not_full
 	ld hl, wNamingScreenNamePosition
 	add [hl]
 	ld d, a
@@ -501,7 +505,7 @@ PlayerNamingScreen_AdjustCursorPosition:
 	ld e, $18
 	ld bc, $0000
 	call SetOneObjectAttributes
-.asm_6a60
+.done
 	pop hl
 	pop de
 	pop bc
@@ -512,24 +516,16 @@ PlayerNamingScreen_AdjustCursorPosition:
 ; loads, to the first tile of v0Tiles0, the graphics for the blinking black square
 ; used in name input screens for inputting full width text.
 ; this function is very similar to 'LoadHalfWidthTextCursorTile'.
+; preserves de and c
 LoadTextCursorTile:
 	ld hl, v0Tiles0 + $00 tiles
-	ld de, .data
-	ld b, 0
+	ld b, TILE_SIZE
+	ld a, $ff
 .loop
-	ld a, TILE_SIZE
-	cp b
-	ret z
-	inc b
-	ld a, [de]
-	inc de
 	ld [hli], a
-	jr .loop
-
-.data
-REPT TILE_SIZE
-	db $ff
-ENDR
+	dec b
+	jr nz, .loop
+	ret
 
 
 ; output:
@@ -547,102 +543,98 @@ PlayerNamingScreen_ProcessInput:
 	inc hl
 	ld a, [hli]
 	ld d, a
-	cp $09
-	jp z, TransformCharacter.return_carry
+	cp $09 ; "End"
+	scf
+	ret z ; return carry if "End" was selected
+
+; everything from this point up until .read_char doesn't seem like it's ever used.
+; it's probably left over from the original Japanese input data.
 	cp $07
-	jr nz, .asm_6ab8
+	jr nz, .next_1
 	ld a, [wd009]
 	or a
-	jr nz, .asm_6aac
-	ld a, $01
-	jr .asm_6ace
-.asm_6aac
+	jr z, .store_one
 	dec a
-	jr nz, .asm_6ab4
-	ld a, $02
-	jr .asm_6ace
-.asm_6ab4
+	jr z, .store_two
 	xor a
-	jr .asm_6ace
-.asm_6ab8
+	jr .set_var
+.next_1
 	cp $08
-	jr nz, .asm_6ad6
+	jr nz, .next_2
 	ld a, [wd009]
 	or a
-	jr nz, .asm_6ac6
-	ld a, $02
-	jr .asm_6ace
-.asm_6ac6
+	jr z, .store_two
 	dec a
-	jr nz, .asm_6acc
-	xor a
-	jr .asm_6ace
-.asm_6acc
+	jr z, .set_var
+.store_one
 	ld a, $01
 	; fallthrough
-.asm_6ace
+.set_var
 	ld [wd009], a
 	call DrawPlayerNamingScreenBG
 	or a
 	ret
+.store_two
+	ld a, $02
+	jr .set_var
 
-.asm_6ad6
+.next_2
 	ld a, [wd009]
 	cp $02
 	jr z, .read_char
+; check dakuten
 	lb bc, TX_FULLWIDTH3, "FW3_゛"
 	ld a, d
 	cp b
-	jr nz, .asm_6af4
+	jr nz, .check_handakuten
 	ld a, e
 	cp c
-	jr nz, .asm_6af4
+	jr nz, .check_handakuten
 	push hl
 	ld hl, TransitionTable1 ; from 55th.
 	call TransformCharacter
 	pop hl
-	jr c, .nothing
-	jr .asm_6b09
+	jr nc, .return_to_previous_char
+.cannot_transform
+	or a
+	ret
 
-.asm_6af4
+.check_handakuten
 	lb bc, TX_FULLWIDTH3, "FW3_゜"
 	ld a, d
 	cp b
-	jr nz, .asm_6b1d
+	jr nz, .check_font_type
 	ld a, e
 	cp c
-	jr nz, .asm_6b1d
+	jr nz, .check_font_type
 	push hl
 	ld hl, TransitionTable2 ; from 72th.
 	call TransformCharacter
 	pop hl
-	jr c, .nothing
-.asm_6b09
+	jr c, .cannot_transform
+.return_to_previous_char
 	ld a, [wNamingScreenBufferLength]
 	dec a
 	dec a
 	ld [wNamingScreenBufferLength], a
 	ld hl, wNamingScreenBuffer
 	push de
-	ld d, 0
+	ld d, $00
 	ld e, a
 	add hl, de
 	pop de
 	ld a, [hl]
-	jr .asm_6b37
+	jr .check_name_buffer
 
-.asm_6b1d
+.check_font_type
 	ld a, d
 	or a
-	jr nz, .asm_6b37
+	jr nz, .check_name_buffer
 	ld a, [wd009]
 	or a
-	jr nz, .asm_6b2b
-	ld a, TX_HIRAGANA
-	jr .asm_6b37
-.asm_6b2b
+	jr z, .use_hiragana
 	ld a, TX_KATAKANA
-	jr .asm_6b37
+	jr .check_name_buffer
 
 ; read character code from info. to register.
 ; input:
@@ -653,12 +645,10 @@ PlayerNamingScreen_ProcessInput:
 	ld a, [hl] ; a = first byte of the code.
 	or a
 	; if 2 bytes code, jump.
-	jr nz, .asm_6b37
-	; if 1 byte code(ascii),
-	; set first byte to $0e.
-	ld a, $0e
-; on 2 bytes code.
-.asm_6b37
+	jr nz, .check_name_buffer
+.use_hiragana
+	ld a, TX_HIRAGANA
+.check_name_buffer
 	ld d, a ; de = character code
 	ld hl, wNamingScreenBufferLength
 	ld a, [hl]
@@ -667,33 +657,33 @@ PlayerNamingScreen_ProcessInput:
 	ld hl, wNamingScreenBufferMaxLength
 	cp [hl]
 	pop hl
-	jr nz, .asm_6b4c
-	; if the buffer is full, just change the last character.
+	jr nz, .buffer_not_full
+	; buffer is full, so just change the last character.
 	ld hl, wNamingScreenBuffer
 	dec hl
 	dec hl
-	jr .asm_6b51
+	jr .add_character_to_buffer
 
 ; increase name length before adding the character.
-.asm_6b4c
+.buffer_not_full
 	inc [hl]
 	inc [hl]
 	ld hl, wNamingScreenBuffer
 
 ; write 2 byte character codes to the name buffer.
 ; input:
+;	c  = wNamingScreenBufferLength
 ;	de = 2 byte character code
 ;	hl = copy destination
-.asm_6b51
-	ld b, 0
+.add_character_to_buffer
+	ld b, $00
 	add hl, bc
 	ld [hl], d
 	inc hl
 	ld [hl], e
 	inc hl
-	ld [hl], TX_END ; null terminator.
+	ld [hl], b ; add null terminator (TX_END)
 	call PrintPlayerNameFromInput
-.nothing
 	or a
 	ret
 
@@ -716,7 +706,7 @@ TransformCharacter:
 	dec a
 	push hl
 	ld hl, wNamingScreenBuffer
-	ld d, 0
+	ld d, $00
 	ld e, a
 	add hl, de
 	ld e, [hl]
@@ -812,68 +802,68 @@ MACRO kbitem
 ENDM
 
 PlayerNamingScreen_KeyboardData:
-	kbitem $04, $02, $11, $00, TX_FULLWIDTH3,   "A"
-	kbitem $06, $02, $12, $00, TX_FULLWIDTH3,   "J"
-	kbitem $08, $02, $13, $00, TX_FULLWIDTH3,   "S"
-	kbitem $0a, $02, $14, $00, TX_FULLWIDTH0,   "?"
-	kbitem $0c, $02, $15, $00, TX_FULLWIDTH0,   "4"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4,  2, $11, $00, TX_FULLWIDTH3,   "A"
+	kbitem  6,  2, $12, $00, TX_FULLWIDTH3,   "J"
+	kbitem  8,  2, $13, $00, TX_FULLWIDTH3,   "S"
+	kbitem 10,  2, $14, $00, TX_FULLWIDTH0,   "?"
+	kbitem 12,  2, $15, $00, TX_FULLWIDTH0,   "4"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $04, $16, $00, TX_FULLWIDTH3,   "B"
-	kbitem $06, $04, $17, $00, TX_FULLWIDTH3,   "K"
-	kbitem $08, $04, $18, $00, TX_FULLWIDTH3,   "T"
-	kbitem $0a, $04, $19, $00, TX_FULLWIDTH3,   "&"
-	kbitem $0c, $04, $1a, $00, TX_FULLWIDTH0,   "5"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4,  4, $16, $00, TX_FULLWIDTH3,   "B"
+	kbitem  6,  4, $17, $00, TX_FULLWIDTH3,   "K"
+	kbitem  8,  4, $18, $00, TX_FULLWIDTH3,   "T"
+	kbitem 10,  4, $19, $00, TX_FULLWIDTH3,   "&"
+	kbitem 12,  4, $1a, $00, TX_FULLWIDTH0,   "5"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $06, $1b, $00, TX_FULLWIDTH3,   "C"
-	kbitem $06, $06, $1c, $00, TX_FULLWIDTH3,   "L"
-	kbitem $08, $06, $1d, $00, TX_FULLWIDTH3,   "U"
-	kbitem $0a, $06, $1e, $00, TX_FULLWIDTH0,   "+"
-	kbitem $0c, $06, $1f, $00, TX_FULLWIDTH0,   "6"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4,  6, $1b, $00, TX_FULLWIDTH3,   "C"
+	kbitem  6,  6, $1c, $00, TX_FULLWIDTH3,   "L"
+	kbitem  8,  6, $1d, $00, TX_FULLWIDTH3,   "U"
+	kbitem 10,  6, $1e, $00, TX_FULLWIDTH0,   "+"
+	kbitem 12,  6, $1f, $00, TX_FULLWIDTH0,   "6"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $08, $20, $00, TX_FULLWIDTH3,   "D"
-	kbitem $06, $08, $21, $00, TX_FULLWIDTH3,   "M"
-	kbitem $08, $08, $22, $00, TX_FULLWIDTH3,   "V"
-	kbitem $0a, $08, $23, $00, TX_FULLWIDTH0,   "-"
-	kbitem $0c, $08, $24, $00, TX_FULLWIDTH0,   "7"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4,  8, $20, $00, TX_FULLWIDTH3,   "D"
+	kbitem  6,  8, $21, $00, TX_FULLWIDTH3,   "M"
+	kbitem  8,  8, $22, $00, TX_FULLWIDTH3,   "V"
+	kbitem 10,  8, $23, $00, TX_FULLWIDTH0,   "-"
+	kbitem 12,  8, $24, $00, TX_FULLWIDTH0,   "7"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $0a, $25, $00, TX_FULLWIDTH3,   "E"
-	kbitem $06, $0a, $26, $00, TX_FULLWIDTH3,   "N"
-	kbitem $08, $0a, $27, $00, TX_FULLWIDTH3,   "W"
-	kbitem $0a, $0a, $28, $00, TX_FULLWIDTH0,   "・"
-	kbitem $0c, $0a, $29, $00, TX_FULLWIDTH0,   "8"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4, 10, $25, $00, TX_FULLWIDTH3,   "E"
+	kbitem  6, 10, $26, $00, TX_FULLWIDTH3,   "N"
+	kbitem  8, 10, $27, $00, TX_FULLWIDTH3,   "W"
+	kbitem 10, 10, $28, $00, TX_FULLWIDTH0,   "・"
+	kbitem 12, 10, $29, $00, TX_FULLWIDTH0,   "8"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $0c, $2a, $00, TX_FULLWIDTH3,   "F"
-	kbitem $06, $0c, $2b, $00, TX_FULLWIDTH3,   "O"
-	kbitem $08, $0c, $2c, $00, TX_FULLWIDTH3,   "X"
-	kbitem $0a, $0c, $2d, $00, TX_FULLWIDTH0,   "0"
-	kbitem $0c, $0c, $2e, $00, TX_FULLWIDTH0,   "9"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4, 12, $2a, $00, TX_FULLWIDTH3,   "F"
+	kbitem  6, 12, $2b, $00, TX_FULLWIDTH3,   "O"
+	kbitem  8, 12, $2c, $00, TX_FULLWIDTH3,   "X"
+	kbitem 10, 12, $2d, $00, TX_FULLWIDTH0,   "0"
+	kbitem 12, 12, $2e, $00, TX_FULLWIDTH0,   "9"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $0e, $2f, $00, TX_FULLWIDTH3,   "G"
-	kbitem $06, $0e, $30, $00, TX_FULLWIDTH3,   "P"
-	kbitem $08, $0e, $31, $00, TX_FULLWIDTH3,   "Y"
-	kbitem $0a, $0e, $32, $00, TX_FULLWIDTH0,   "1"
-	kbitem $0c, $0e, $33, $00, TX_FULLWIDTH3,   "#"
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4, 14, $2f, $00, TX_FULLWIDTH3,   "G"
+	kbitem  6, 14, $30, $00, TX_FULLWIDTH3,   "P"
+	kbitem  8, 14, $31, $00, TX_FULLWIDTH3,   "Y"
+	kbitem 10, 14, $32, $00, TX_FULLWIDTH0,   "1"
+	kbitem 12, 14, $33, $00, TX_FULLWIDTH3,   "#"
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $10, $34, $00, TX_FULLWIDTH3,   "H"
-	kbitem $06, $10, $35, $00, TX_FULLWIDTH3,   "Q"
-	kbitem $08, $10, $36, $00, TX_FULLWIDTH3,   "Z"
-	kbitem $0a, $10, $3c, $00, TX_FULLWIDTH0,   "2"
-	kbitem $0c, $10, $3d, $00, TX_SYMBOL,       SYM_Lv
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4, 16, $34, $00, TX_FULLWIDTH3,   "H"
+	kbitem  6, 16, $35, $00, TX_FULLWIDTH3,   "Q"
+	kbitem  8, 16, $36, $00, TX_FULLWIDTH3,   "Z"
+	kbitem 10, 16, $3c, $00, TX_FULLWIDTH0,   "2"
+	kbitem 12, 16, $3d, $00, TX_SYMBOL,       SYM_Lv
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 
-	kbitem $04, $12, $37, $00, TX_FULLWIDTH3,   "I"
-	kbitem $06, $12, $38, $00, TX_FULLWIDTH3,   "R"
-	kbitem $08, $12, $39, $00, TX_FULLWIDTH0,   "!"
-	kbitem $0a, $12, $3a, $00, TX_FULLWIDTH0,   "3"
-	kbitem $0c, $12, $3b, $00, TX_FULLWIDTH0,   " "
-	kbitem $10, $0f, $01, $09, $0000
+	kbitem  4, 18, $37, $00, TX_FULLWIDTH3,   "I"
+	kbitem  6, 18, $38, $00, TX_FULLWIDTH3,   "R"
+	kbitem  8, 18, $39, $00, TX_FULLWIDTH0,   "!"
+	kbitem 10, 18, $3a, $00, TX_FULLWIDTH0,   "3"
+	kbitem 12, 18, $3b, $00, TX_FULLWIDTH0,   " "
+	kbitem 16, 15, $01, $09, $0000          ; "End"
 	kbitem $00, $00, $00, $00, $0000
 
 
@@ -934,22 +924,18 @@ TransitionTable2:
 ; That is, the developers hard-coded it. -_-;;
 Deck1Data:
 	textitem 2, 1, Deck1Text
-	textitem 14, 1, DeckText
 	db $ff
 
 Deck2Data:
 	textitem 2, 1, Deck2Text
-	textitem 14, 1, DeckText
 	db $ff
 
 Deck3Data:
 	textitem 2, 1, Deck3Text
-	textitem 14, 1, DeckText
 	db $ff
 
 Deck4Data:
 	textitem 2, 1, Deck4Text
-	textitem 14, 1, DeckText
 	db $ff
 
 ; gets a deck name from user input and stores it in [de].
@@ -994,13 +980,13 @@ InputDeckName:
 	xor a
 	ld [wNamingScreenCursorX], a
 	ld [wNamingScreenCursorY], a
-	ld [wInvisibleCursorTile], a
+	ld [wInvisibleCursorTile], a ; SYM_SPACE
 
 	ld a, $09
 	ld [wNamingScreenNumColumns], a
 	ld a, $07
 	ld [wNamingScreenKeyboardHeight], a
-	ld a, $0f
+	ld a, SYM_CURSOR_R
 	ld [wVisibleCursorTile], a
 .loop
 	ld a, $01
@@ -1014,8 +1000,8 @@ InputDeckName:
 	jr z, .else
 
 	; the Start button was pressed.
-	ld a, $01
-	call PlaySFXConfirmOrCancel_Bank6
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	call DeckNamingScreen_DrawInvisibleCursor
 
 	ld a, 6
@@ -1059,11 +1045,11 @@ InputDeckName:
 
 	; erase one character.
 	ld e, a
-	ld d, 0
+	ld d, $00
 	ld hl, wNamingScreenBuffer
 	add hl, de
 	dec hl
-	ld [hl], TX_END
+	ld [hl], d ; add null terminator (TX_END)
 
 	ld hl, wNamingScreenBufferLength
 	dec [hl]
@@ -1075,24 +1061,16 @@ InputDeckName:
 ; loads, to the first tile of v0Tiles0, the graphics for the
 ; blinking black square used in name input screens for inputting half width text.
 ; this function is very similar to 'LoadTextCursorTile'.
+; preserves de and c
 LoadHalfWidthTextCursorTile:
 	ld hl, v0Tiles0 + $00 tiles
-	ld de, .data
-	ld b, 0
+	ld b, TILE_SIZE
+	ld a, $f0
 .loop
-	ld a, TILE_SIZE
-	cp b
-	ret z
-	inc b
-	ld a, [de]
-	inc de
 	ld [hli], a
-	jr .loop
-
-.data
-REPT TILE_SIZE
-	db $f0
-ENDR
+	dec b
+	jr nz, .loop
+	ret
 
 
 ; this is called when naming a deck.
@@ -1149,21 +1127,22 @@ DrawDeckNamingScreenBG:
 	lb bc, 20, 15 ; w, h
 	call DrawRegularTextBox
 	call PrintDeckNameFromInput
+	; print situational text item(s) if pointer isn't null
 	ld hl, wNamingScreenQuestionPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	or h
-	call nz, PlaceTextItems ; only print text item(s) if pointer isn't null
-.print
-	; print "End".
-	ld hl, DrawPlayerNamingScreenBG.data
+	call nz, PlaceTextItems
+	; print the keyboard characters and "End".
+	ld hl, .data
 	call PlaceTextItems
-	; print the keyboard characters.
-	ldtx hl, DeckNameKeyboardText ; "A B C D..."
-	lb de, 2, 4
-	call InitTextPrinting_ProcessTextFromID
 	jp EnableLCD
+.data
+	textitem 14,  1, DeckText ; " Deck"
+	textitem  2,  4, DeckNameKeyboardText
+	textitem 15, 16, EndText ; "End"
+	db $ff
 
 
 ; output:
@@ -1177,12 +1156,9 @@ DeckNamingScreen_ProcessInput:
 	inc hl
 	inc hl
 	ld a, [hl]
-	cp $01
-	jr nz, .asm_6ed7
+	cp $01 ; "End"
 	scf
-	ret
-
-.asm_6ed7
+	ret z ; return carry if "End" was selected
 	ld d, a
 	ld hl, wNamingScreenBufferLength
 	ld a, [hl]
@@ -1191,22 +1167,22 @@ DeckNamingScreen_ProcessInput:
 	ld hl, wNamingScreenBufferMaxLength
 	cp [hl]
 	pop hl
-	jr nz, .asm_6eeb
-	; if the buffer is full, just change the last character
+	jr nz, .buffer_not_full
+	; buffer is full, so just change the last character.
 	ld hl, wNamingScreenBuffer
 	dec hl
-	jr .asm_6eef
+	jr .add_character_to_buffer
 
-.asm_6eeb
-; increase name length before adding the character
+.buffer_not_full
+; increase name length before adding the character.
 	inc [hl]
 	ld hl, wNamingScreenBuffer
-.asm_6eef
-	ld b, 0
+.add_character_to_buffer
+	ld b, $00
 	add hl, bc
 	ld [hl], d
 	inc hl
-	ld [hl], TX_END
+	ld [hl], b ; add null terminator (TX_END)
 	call PrintDeckNameFromInput
 	or a
 	ret
@@ -1221,7 +1197,7 @@ DeckNamingScreen_CheckButtonState:
 	ld [wMenuInputSFX], a
 	ldh a, [hDPadHeld]
 	or a
-	jr z, .asm_6f73
+	jr z, .check_A_or_B
 	; detected any button press
 	ld b, a
 	ld a, [wNamingScreenKeyboardHeight]
@@ -1231,51 +1207,49 @@ DeckNamingScreen_CheckButtonState:
 	ld a, [wNamingScreenCursorY]
 	ld l, a
 	bit D_UP_F, b
-	jr z, .asm_6f1f
+	jr z, .check_d_down
 	; up
 	dec a
-	bit D_DOWN_F, a
-	jr z, .asm_6f4b
+	bit 7, a ; check underflow
+	jr z, .adjust_y_position
 	ld a, c
 	dec a
-	jr .asm_6f4b
-.asm_6f1f
+	jr .adjust_y_position
+.check_d_down
 	bit D_DOWN_F, b
-	jr z, .asm_6f2a
+	jr z, .check_d_left
 	; down
 	inc a
 	cp c
-	jr c, .asm_6f4b
+	jr c, .adjust_y_position
 	xor a
-	jr .asm_6f4b
-.asm_6f2a
-	cp $06
-	jr z, .asm_6f73
+.adjust_y_position
+	ld l, a
+	jr .update_keyboard_cursor
+.check_d_left
+	cp $06 ; cursor y = final keyboard row
+	jr z, .check_A_or_B
 	ld a, [wNamingScreenNumColumns]
 	ld c, a
 	ld a, h
 	bit D_LEFT_F, b
-	jr z, .asm_6f40
+	jr z, .check_d_right
 	dec a
-	bit D_DOWN_F, a
-	jr z, .asm_6f4e
+	bit 7, a ; check underflow
+	jr z, .adjust_x_position
 	ld a, c
 	dec a
-	jr .asm_6f4e
-.asm_6f40
+	jr .adjust_x_position
+.check_d_right
 	bit D_RIGHT_F, b
-	jr z, .asm_6f73
+	jr z, .check_A_or_B
 	inc a
 	cp c
-	jr c, .asm_6f4e
+	jr c, .adjust_x_position
 	xor a
-	jr .asm_6f4e
-.asm_6f4b
-	ld l, a
-	jr .asm_6f4f
-.asm_6f4e
+.adjust_x_position
 	ld h, a
-.asm_6f4f
+.update_keyboard_cursor
 	push hl
 	call DeckNamingScreen_GetCharInfoFromPos
 	inc hl
@@ -1291,27 +1265,28 @@ DeckNamingScreen_CheckButtonState:
 	ld [wNamingScreenCursorX], a
 	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
-	ld a, $02
+	ld a, $02 ; empty keyboard row
 	cp d
 	jr z, DeckNamingScreen_CheckButtonState
 	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
-.asm_6f73
+.check_A_or_B
 	ldh a, [hKeysPressed]
 	and A_BUTTON | B_BUTTON
-	jr z, .asm_6f89
+	jr z, .check_sfx_and_cursor_blink
 	and A_BUTTON
-	jr nz, .asm_6f7f
-	; B button was pressed
+	jr nz, .pressed_a
+	; pressed B
 	ld a, -1
-.asm_6f7f
+.pressed_a
 	call PlaySFXConfirmOrCancel_Bank6
 	push af
 	call DeckNamingScreen_DrawVisibleCursor
 	pop af
 	scf
 	ret
-.asm_6f89
+
+.check_sfx_and_cursor_blink
 	ld a, [wMenuInputSFX]
 	or a
 	call nz, PlaySFX
@@ -1374,16 +1349,16 @@ DeckNamingScreen_AdjustCursorPosition:
 	ld b, a
 	ld a, [wInvisibleCursorTile]
 	cp b
-	jr z, .asm_6ffb
+	jr z, .done
 	ld a, [wNamingScreenBufferLength]
 	ld d, a
 	ld a, [wNamingScreenBufferMaxLength]
 	ld e, a
 	ld a, d
 	cp e
-	jr nz, .asm_6fdf
+	jr nz, .buffer_not_full
 	dec a
-.asm_6fdf
+.buffer_not_full
 	dec a
 	ld d, a
 	ld hl, wNamingScreenNamePosition
@@ -1400,7 +1375,7 @@ DeckNamingScreen_AdjustCursorPosition:
 	ld e, $18
 	ld bc, $0000
 	call SetOneObjectAttributes
-.asm_6ffb
+.done
 	pop hl
 	pop de
 	pop bc
@@ -1444,76 +1419,76 @@ DeckNamingScreen_GetCharInfoFromPos:
 ; unit: 3 bytes
 ; structure: y position, x position, character code
 DeckNamingScreen_KeyboardData:
-	db $04, $02, "A"
-	db $06, $02, "J"
-	db $08, $02, "S"
-	db $0a, $02, "?"
-	db $0c, $02, "4"
-	db $0e, $02, $02
-	db $10, $0f, $01
+	db  4,  2, "A"
+	db  6,  2, "J"
+	db  8,  2, "S"
+	db 10,  2, "?"
+	db 12,  2, "4"
+	db 14,  2, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $04, "B"
-	db $06, $04, "K"
-	db $08, $04, "T"
-	db $0a, $04, "&"
-	db $0c, $04, "5"
-	db $0e, $04, $02
-	db $10, $0f, $01
+	db  4,  4, "B"
+	db  6,  4, "K"
+	db  8,  4, "T"
+	db 10,  4, "&"
+	db 12,  4, "5"
+	db 14,  4, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $06, "C"
-	db $06, $06, "L"
-	db $08, $06, "U"
-	db $0a, $06, "+"
-	db $0c, $06, "6"
-	db $0e, $06, $02
-	db $10, $0f, $01
+	db  4,  6, "C"
+	db  6,  6, "L"
+	db  8,  6, "U"
+	db 10,  6, "+"
+	db 12,  6, "6"
+	db 14,  6, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $08, "D"
-	db $06, $08, "M"
-	db $08, $08, "V"
-	db $0a, $08, "-"
-	db $0c, $08, "7"
-	db $0e, $08, $02
-	db $10, $0f, $01
+	db  4,  8, "D"
+	db  6,  8, "M"
+	db  8,  8, "V"
+	db 10,  8, "-"
+	db 12,  8, "7"
+	db 14,  8, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $0a, "E"
-	db $06, $0a, "N"
-	db $08, $0a, "W"
-	db $0a, $0a, "'"
-	db $0c, $0a, "8"
-	db $0e, $0a, $02
-	db $10, $0f, $01
+	db  4, 10, "E"
+	db  6, 10, "N"
+	db  8, 10, "W"
+	db 10, 10, "'"
+	db 12, 10, "8"
+	db 14, 10, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $0c, "F"
-	db $06, $0c, "O"
-	db $08, $0c, "X"
-	db $0a, $0c, "0"
-	db $0c, $0c, "9"
-	db $0e, $0c, $02
-	db $10, $0f, $01
+	db  4, 12, "F"
+	db  6, 12, "O"
+	db  8, 12, "X"
+	db 10, 12, "0"
+	db 12, 12, "9"
+	db 14, 12, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $0e, "G"
-	db $06, $0e, "P"
-	db $08, $0e, "Y"
-	db $0a, $0e, "1"
-	db $0c, $0e, " "
-	db $0e, $0e, $02
-	db $10, $0f, $01
+	db  4, 14, "G"
+	db  6, 14, "P"
+	db  8, 14, "Y"
+	db 10, 14, "1"
+	db 12, 14, " "
+	db 14, 14, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $10, "H"
-	db $06, $10, "Q"
-	db $08, $10, "Z"
-	db $0a, $10, "2"
-	db $0c, $10, " "
-	db $0e, $10, $02
-	db $10, $0f, $01
+	db  4, 16, "H"
+	db  6, 16, "Q"
+	db  8, 16, "Z"
+	db 10, 16, "2"
+	db 12, 16, " "
+	db 14, 16, $02
+	db 16, 15, $01 ; "End"
 
-	db $04, $12, "I"
-	db $06, $12, "R"
-	db $08, $12, "!"
-	db $0a, $12, "3"
-	db $0c, $12, " "
-	db $0e, $12, $02
-	db $10, $0f, $01
+	db  4, 18, "I"
+	db  6, 18, "R"
+	db  8, 18, "!"
+	db 10, 18, "3"
+	db 12, 18, " "
+	db 14, 18, $02
+	db 16, 15, $01 ; "End"
 
 	ds 4 ; empty

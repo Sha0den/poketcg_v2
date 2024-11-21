@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **November 20, 2024:** 19 Files Changed
+- **November 21, 2024:** 1 File Changed
+    - A lot of edits to engine/input_name.asm: labeling, comments, reformating, and refactoring
+
+<br/>
+
+- **[November 20, 2024](https://github.com/Sha0den/poketcg_v2/commit/ac959e618ce1c7b0fdc3147d1badc7321e8f4598):** 19 Files Changed
     - Simplify a lot of code relating to storing and loading pointers in wram
 
 <br/>
