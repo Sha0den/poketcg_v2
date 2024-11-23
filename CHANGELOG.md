@@ -116,7 +116,7 @@
 
 
 ## Code Optimization
-- **November 21, 2024:** 1 File Changed
+- **[November 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/56a6afe4a22a0132d5d7b875441c784c14e5c9d8):** 1 File Changed
     - A lot of edits to engine/input_name.asm: labeling, comments, reformating, and refactoring
 
 <br/>
@@ -1054,6 +1054,13 @@
 
 
 ## New Features
+- **November 23, 2024:** 12 Files Changed
+    - Redesign the deck naming screen to allow more variety when naming
+        - *Keyboard now has 3 layouts (switch between them by pressing SELECT or the Uppercase/Lowercase/Accents buttons)*
+    - Update and reformat the halfwidth/fullwidth3 font graphics and redistribute the graphics data to account for the larger size
+
+<br/>
+
 - **[November 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/750a585911a4652d4f8a7b85557da7995ee89bc8):** 12 Files Changed
     - Implement new booster pack card list display that informs the player which cards from the booster pack are newly obtained (using a red ! symbol)
         - *Most of the edited functions from engine/duel/core.asm were originally located in home/menus.asm*
@@ -1076,6 +1083,7 @@
     - Add support for common accented characters (halfwidth and fullwidth)
     - Expand the halfwidth font graphics (at the cost of some kanji)
     - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
+    - Current build includes more edits to halfwidth and fullwidth font data (also redistributed data in src/gfx.asm and updated pointers in home/tiles.asm as a more sensible alternative to commenting out some of the Japanese font data)
 
 <br/>
 

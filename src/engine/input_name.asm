@@ -923,19 +923,23 @@ TransitionTable2:
 ; without any bank description.
 ; That is, the developers hard-coded it. -_-;;
 Deck1Data:
-	textitem 2, 1, Deck1Text
+	textitem  2,  1, Deck1Text ; "1."
+	textitem 14,  1, DeckText  ; " Deck"
 	db $ff
 
 Deck2Data:
-	textitem 2, 1, Deck2Text
+	textitem  2,  1, Deck2Text ; "2."
+	textitem 14,  1, DeckText  ; " Deck"
 	db $ff
 
 Deck3Data:
-	textitem 2, 1, Deck3Text
+	textitem  2,  1, Deck3Text ; "3."
+	textitem 14,  1, DeckText  ; " Deck"
 	db $ff
 
 Deck4Data:
-	textitem 2, 1, Deck4Text
+	textitem  2,  1, Deck4Text ; "4."
+	textitem 14,  1, DeckText  ; " Deck"
 	db $ff
 
 ; gets a deck name from user input and stores it in [de].
@@ -974,7 +978,15 @@ InputDeckName:
 	call LoadHalfWidthTextCursorTile
 
 	xor a
+	ld [wWhichKeyboard], a
 	ld [wd009], a
+	ld d, a ; x = 0
+	ld e, a ; y = 0
+	lb bc, 20, 18 ; w, h
+	call DrawRegularTextBox
+	ld b, SCREEN_WIDTH
+	lb de, 0, 2
+	call DrawTextBoxSeparator
 	call DrawDeckNamingScreenBG
 
 	xor a
@@ -996,16 +1008,31 @@ InputDeckName:
 	call UpdateRNGSources
 
 	ldh a, [hDPadHeld]
-	and START
+	and SELECT | START
 	jr z, .else
+	and START
+	jr nz, .pressed_start
 
-	; the Start button was pressed.
+; pressed SELECT
+; changes the keyboard (Uppercase -> Lowercase -> Accents -> Uppercase...)
+	ld a, [wWhichKeyboard]
+	inc a
+	cp ACCENTS_KEYBOARD + 1
+	jr c, .swap_keyboard
+	xor a ; UPPERCASE_KEYBOARD
+.swap_keyboard
+	ld [wWhichKeyboard], a
+	call DrawDeckNamingScreenBG
+	jr .loop
+
+.pressed_start
+; moves cursor to the Done button
 	ld a, SFX_CONFIRM
 	call PlaySFX
 	call DeckNamingScreen_DrawInvisibleCursor
-
-	ld a, 6
+	ld a, 4
 	ld [wNamingScreenCursorX], a
+	ld a, 6
 	ld [wNamingScreenCursorY], a
 	call DeckNamingScreen_DrawVisibleCursor
 	jr .loop
@@ -1021,7 +1048,7 @@ InputDeckName:
 	call DeckNamingScreen_ProcessInput
 	jr nc, .loop
 
-	; Player selected the "End" button.
+	; Player selected the "Done" button.
 	call FinalizeInputName
 
 	ld hl, wNamingScreenDestPointer
@@ -1053,8 +1080,7 @@ InputDeckName:
 
 	ld hl, wNamingScreenBufferLength
 	dec [hl]
-	call PrintDeckNameFromInput
-
+	call DrawDeckNamingScreenBG
 	jr .loop
 
 
@@ -1123,10 +1149,6 @@ ENDR
 ; input:
 ;	[wNamingScreenQuestionPointer] = pointer for text data (2 bytes)
 DrawDeckNamingScreenBG:
-	lb de, 0, 3 ; x, y
-	lb bc, 20, 15 ; w, h
-	call DrawRegularTextBox
-	call PrintDeckNameFromInput
 	; print situational text item(s) if pointer isn't null
 	ld hl, wNamingScreenQuestionPointer
 	ld a, [hli]
@@ -1134,19 +1156,30 @@ DrawDeckNamingScreenBG:
 	ld l, a
 	or h
 	call nz, PlaceTextItems
-	; print the keyboard characters and "End".
-	ld hl, .data
-	call PlaceTextItems
+	; print the keyboard text
+	ld a, [wWhichKeyboard]
+	add a
+	ld e, a
+	ld d, $00
+	ld hl, KeyboardTextIDTable
+	add hl, de
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	lb de, 2, 4
+	call InitTextPrinting_ProcessTextFromID
+	; print the text for the currently selected name
+	call PrintDeckNameFromInput
 	jp EnableLCD
-.data
-	textitem 14,  1, DeckText ; " Deck"
-	textitem  2,  4, DeckNameKeyboardText
-	textitem 15, 16, EndText ; "End"
-	db $ff
+
+KeyboardTextIDTable:
+	tx UppercaseKeyboardText  ; UPPERCASE_KEYBOARD
+	tx LowercaseKeyboardText  ; LOWERCASE_KEYBOARD
+	tx AccentsKeyboardText    ; ACCENTS_KEYBOARD
 
 
 ; output:
-;	carry = set:  if "End" was selected on the keyboard
+;	carry = set:  if "Done" was selected on the keyboard
 DeckNamingScreen_ProcessInput:
 	ld a, [wNamingScreenCursorX]
 	ld h, a
@@ -1156,9 +1189,19 @@ DeckNamingScreen_ProcessInput:
 	inc hl
 	inc hl
 	ld a, [hl]
-	cp $01 ; "End"
+	cp $05
+	jr nc, .normal_key
+	dec a ; cp $01 ("Done")
 	scf
-	ret z ; return carry if "End" was selected
+	ret z ; return carry if "Done" was selected
+	dec a
+	; a = UPPERCASE_KEYBOARD if initial value was $02
+	; a = LOWERCASE_KEYBOARD if initial value was $03
+	; a = ACCENTS_KEYBOARD if initial value was $04
+	ld [wWhichKeyboard], a
+	jr .done
+
+.normal_key
 	ld d, a
 	ld hl, wNamingScreenBufferLength
 	ld a, [hl]
@@ -1183,7 +1226,8 @@ DeckNamingScreen_ProcessInput:
 	ld [hl], d
 	inc hl
 	ld [hl], b ; add null terminator (TX_END)
-	call PrintDeckNameFromInput
+.done
+	call DrawDeckNamingScreenBG
 	or a
 	ret
 
@@ -1227,15 +1271,20 @@ DeckNamingScreen_CheckButtonState:
 	ld l, a
 	jr .update_keyboard_cursor
 .check_d_left
-	cp $06 ; cursor y = final keyboard row
-	jr z, .check_A_or_B
 	ld a, [wNamingScreenNumColumns]
 	ld c, a
-	ld a, h
+	ld a, l
 	bit D_LEFT_F, b
 	jr z, .check_d_right
+	cp $06 ; cursor y = final keyboard row
+	ld a, h
 	dec a
-	bit 7, a ; check underflow
+	jr c, .check_underflow
+	; buttons in bottom row are the size of 3 regular keys
+	dec a
+	dec a
+.check_underflow
+	bit 7, a
 	jr z, .adjust_x_position
 	ld a, c
 	dec a
@@ -1243,7 +1292,14 @@ DeckNamingScreen_CheckButtonState:
 .check_d_right
 	bit D_RIGHT_F, b
 	jr z, .check_A_or_B
+	cp $06 ; cursor y = final keyboard row
+	ld a, h
 	inc a
+	jr c, .check_overflow
+	; buttons in bottom row are the size of 3 regular keys
+	inc a
+	inc a
+.check_overflow
 	cp c
 	jr c, .adjust_x_position
 	xor a
@@ -1251,13 +1307,7 @@ DeckNamingScreen_CheckButtonState:
 	ld h, a
 .update_keyboard_cursor
 	push hl
-	call DeckNamingScreen_GetCharInfoFromPos
-	inc hl
-	inc hl
-	ld d, [hl]
-	push de
 	call DeckNamingScreen_DrawInvisibleCursor
-	pop de
 	pop hl
 	ld a, l
 	ld [wNamingScreenCursorY], a
@@ -1265,9 +1315,6 @@ DeckNamingScreen_CheckButtonState:
 	ld [wNamingScreenCursorX], a
 	xor a
 	ld [wCheckMenuCursorBlinkCounter], a
-	ld a, $02 ; empty keyboard row
-	cp d
-	jr z, DeckNamingScreen_CheckButtonState
 	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
 .check_A_or_B
@@ -1397,13 +1444,22 @@ DeckNamingScreen_GetCharInfoFromPos:
 	; (information index) = (x) * (height) + (y)
 	; (height) = 0x05(Deck) or 0x06(Player)
 	ld e, l
-	ld d, h
 	ld a, [wNamingScreenKeyboardHeight]
 	ld l, a
 	call HtimesL
 	ld a, l
 	add e
-	ld hl, DeckNamingScreen_KeyboardData
+	ld e, a
+	ld a, [wWhichKeyboard]
+	ld hl, DeckNamingScreen_UppercaseKeyboardData
+	or a
+	jr z, .check_position
+	ld hl, DeckNamingScreen_LowercaseKeyboardData
+	dec a
+	jr z, .check_position
+	ld hl, DeckNamingScreen_AccentsKeyboardData
+.check_position
+	ld a, e
 	pop de
 	or a
 	ret z
@@ -1415,80 +1471,233 @@ DeckNamingScreen_GetCharInfoFromPos:
 	jr nz, .loop
 	ret
 
+
 ; a set of keyboard datum
 ; unit: 3 bytes
 ; structure: y position, x position, character code
-DeckNamingScreen_KeyboardData:
+DeckNamingScreen_UppercaseKeyboardData:
 	db  4,  2, "A"
 	db  6,  2, "J"
 	db  8,  2, "S"
-	db 10,  2, "?"
-	db 12,  2, "4"
-	db 14,  2, $02
-	db 16, 15, $01 ; "End"
+	db 10,  2, "1"
+	db 12,  2, "("
+	db 14,  2, "'"
+	db 16,  2, $03 ; "Lowercase"
 
 	db  4,  4, "B"
 	db  6,  4, "K"
 	db  8,  4, "T"
-	db 10,  4, "&"
-	db 12,  4, "5"
-	db 14,  4, $02
-	db 16, 15, $01 ; "End"
+	db 10,  4, "2"
+	db 12,  4, ")"
+	db 14,  4, "”"
+	db 16,  2, $03 ; "Lowercase"
 
 	db  4,  6, "C"
 	db  6,  6, "L"
 	db  8,  6, "U"
-	db 10,  6, "+"
-	db 12,  6, "6"
-	db 14,  6, $02
-	db 16, 15, $01 ; "End"
+	db 10,  6, "3"
+	db 12,  6, "‹"
+	db 14,  6, ","
+	db 16,  2, $03 ; "Lowercase"
 
 	db  4,  8, "D"
 	db  6,  8, "M"
 	db  8,  8, "V"
-	db 10,  8, "-"
-	db 12,  8, "7"
-	db 14,  8, $02
-	db 16, 15, $01 ; "End"
+	db 10,  8, "4"
+	db 12,  8, ">"
+	db 14,  8, "."
+	db 16,  9, $01 ; "Done"
 
 	db  4, 10, "E"
 	db  6, 10, "N"
 	db  8, 10, "W"
-	db 10, 10, "'"
-	db 12, 10, "8"
-	db 14, 10, $02
-	db 16, 15, $01 ; "End"
+	db 10, 10, "5"
+	db 12, 10, "="
+	db 14, 10, " "
+	db 16,  9, $01 ; "Done"
 
 	db  4, 12, "F"
 	db  6, 12, "O"
 	db  8, 12, "X"
-	db 10, 12, "0"
-	db 12, 12, "9"
-	db 14, 12, $02
-	db 16, 15, $01 ; "End"
+	db 10, 12, "6"
+	db 12, 12, "+"
+	db 14, 12, "!"
+	db 16,  9, $01 ; "Done"
 
 	db  4, 14, "G"
 	db  6, 14, "P"
 	db  8, 14, "Y"
-	db 10, 14, "1"
-	db 12, 14, " "
-	db 14, 14, $02
-	db 16, 15, $01 ; "End"
+	db 10, 14, "7"
+	db 12, 14, "-"
+	db 14, 14, "?"
+	db 16, 14, $04 ; "Accents"
 
 	db  4, 16, "H"
 	db  6, 16, "Q"
 	db  8, 16, "Z"
-	db 10, 16, "2"
-	db 12, 16, " "
-	db 14, 16, $02
-	db 16, 15, $01 ; "End"
+	db 10, 16, "8"
+	db 12, 16, "•"
+	db 14, 16, ":"
+	db 16, 14, $04 ; "Accents"
 
 	db  4, 18, "I"
 	db  6, 18, "R"
-	db  8, 18, "!"
-	db 10, 18, "3"
-	db 12, 18, " "
-	db 14, 18, $02
-	db 16, 15, $01 ; "End"
+	db  8, 18, "0"
+	db 10, 18, "9"
+	db 12, 18, "/"
+	db 14, 18, "&"
+	db 16, 14, $04 ; "Accents"
 
-	ds 4 ; empty
+
+; a set of keyboard datum
+; unit: 3 bytes
+; structure: y position, x position, character code
+DeckNamingScreen_LowercaseKeyboardData:
+	db  4,  2, "a"
+	db  6,  2, "j"
+	db  8,  2, "s"
+	db 10,  2, "1"
+	db 12,  2, "("
+	db 14,  2, "'"
+	db 16,  2, $02 ; "Uppercase"
+
+	db  4,  4, "b"
+	db  6,  4, "k"
+	db  8,  4, "t"
+	db 10,  4, "2"
+	db 12,  4, ")"
+	db 14,  4, "”"
+	db 16,  2, $02 ; "Uppercase"
+
+	db  4,  6, "c"
+	db  6,  6, "l"
+	db  8,  6, "u"
+	db 10,  6, "3"
+	db 12,  6, "‹"
+	db 14,  6, ","
+	db 16,  2, $02 ; "Uppercase"
+
+	db  4,  8, "d"
+	db  6,  8, "m"
+	db  8,  8, "v"
+	db 10,  8, "4"
+	db 12,  8, ">"
+	db 14,  8, "."
+	db 16,  9, $01 ; "Done"
+
+	db  4, 10, "e"
+	db  6, 10, "n"
+	db  8, 10, "w"
+	db 10, 10, "5"
+	db 12, 10, "="
+	db 14, 10, " "
+	db 16,  9, $01 ; "Done"
+
+	db  4, 12, "f"
+	db  6, 12, "o"
+	db  8, 12, "x"
+	db 10, 12, "6"
+	db 12, 12, "+"
+	db 14, 12, "!"
+	db 16,  9, $01 ; "Done"
+
+	db  4, 14, "g"
+	db  6, 14, "p"
+	db  8, 14, "y"
+	db 10, 14, "7"
+	db 12, 14, "-"
+	db 14, 14, "?"
+	db 16, 14, $04 ; "Accents"
+
+	db  4, 16, "h"
+	db  6, 16, "q"
+	db  8, 16, "z"
+	db 10, 16, "8"
+	db 12, 16, "•"
+	db 14, 16, ":"
+	db 16, 14, $04 ; "Accents"
+
+	db  4, 18, "i"
+	db  6, 18, "r"
+	db  8, 18, "0"
+	db 10, 18, "9"
+	db 12, 18, "/"
+	db 14, 18, "&"
+	db 16, 14, $04 ; "Accents"
+
+
+; a set of keyboard datum
+; unit: 3 bytes
+; structure: y position, x position, character code
+DeckNamingScreen_AccentsKeyboardData:
+	db  4,  2, "À"
+	db  6,  2, "Ê"
+	db  8,  2, "Ô"
+	db 10,  2, "à"
+	db 12,  2, "ê"
+	db 14,  2, "ô"
+	db 16,  2, $02 ; "Uppercase"
+
+	db  4,  4, "Á"
+	db  6,  4, "Ë"
+	db  8,  4, "Õ"
+	db 10,  4, "á"
+	db 12,  4, "ë"
+	db 14,  4, "õ"
+	db 16,  2, $02 ; "Uppercase"
+
+	db  4,  6, "Â"
+	db  6,  6, "Ì"
+	db  8,  6, "Ö"
+	db 10,  6, "â"
+	db 12,  6, "ì"
+	db 14,  6, "ö"
+	db 16,  2, $02 ; "Uppercase"
+
+	db  4,  8, "Ã"
+	db  6,  8, "Í"
+	db  8,  8, "Ù"
+	db 10,  8, "ã"
+	db 12,  8, "í"
+	db 14,  8, "ù"
+	db 16,  9, $01 ; "Done"
+
+	db  4, 10, "Ä"
+	db  6, 10, "Î"
+	db  8, 10, "Ú"
+	db 10, 10, "ä"
+	db 12, 10, "î"
+	db 14, 10, "ú"
+	db 16,  9, $01 ; "Done"
+
+	db  4, 12, "Å"
+	db  6, 12, "Ï"
+	db  8, 12, "Û"
+	db 10, 12, "å"
+	db 12, 12, "ï"
+	db 14, 12, "û"
+	db 16,  9, $01 ; "Done"
+
+	db  4, 14, "Ç"
+	db  6, 14, "Ñ"
+	db  8, 14, "Ü"
+	db 10, 14, "ç"
+	db 12, 14, "ñ"
+	db 14, 14, "ü"
+	db 16, 14, $03 ; "Lowercase"
+
+	db  4, 16, "È"
+	db  6, 16, "Ò"
+	db  8, 16, "Ý"
+	db 10, 16, "è"
+	db 12, 16, "ò"
+	db 14, 16, "ý"
+	db 16, 14, $03 ; "Lowercase"
+
+	db  4, 18, "É"
+	db  6, 18, "Ó"
+	db  8, 18, "Ÿ"
+	db 10, 18, "é"
+	db 12, 18, "ó"
+	db 14, 18, "ÿ"
+	db 16, 14, $03 ; "Lowercase"

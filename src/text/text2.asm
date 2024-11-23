@@ -727,7 +727,7 @@ OpponentsDiscardPileText:
 	done
 
 DeckText:
-	text "Deck"
+	text " Deck"
 	done
 
 UnusedText021a: ; Unused (Hiragana)
@@ -748,14 +748,6 @@ EndText:
 
 WhatIsYourNameText:
 	text "What is your name?"
-	done
-
-UnusedText021f: ; Unused
-	text "????"
-	done
-
-UnusedText0220: ; Unused
-	text "????"
 	done
 
 ;HiraganaKeyboardText:
@@ -785,13 +777,37 @@ PlayerNameKeyboardText:
 	linefw "                 "
 	done
 
-DeckNameKeyboardText:
+UppercaseKeyboardText:
 	textfw "A B C D E F G H I"
 	linefw "J K L M N O P Q R"
-	linefw "S T U V W X Y Z !"
-	linefw "? & + - ' 0 1 2 3"
-	linefw "4 5 6 7 8 9      "
-	linefw "                 "
+	linefw "S T U V W X Y Z 0"
+	linefw "1 2 3 4 5 6 7 8 9"
+	linefw "( ) < > = + - • /"
+	linefw "' ” , .   ! ? ꞉ &"
+	text ""
+	line " Lowercase     Done      Accents  "
+	done
+
+LowercaseKeyboardText:
+	textfw "a b c d e f g h i"
+	linefw "j k l m n o p q r"
+	linefw "s t u v w x y z 0"
+	linefw "1 2 3 4 5 6 7 8 9"
+	linefw "( ) < > = + - • /"
+	linefw "' ” , .   ! ? ꞉ &"
+	text ""
+	line " Uppercase     Done      Accents  "
+	done
+
+AccentsKeyboardText:
+	textfw "À Á Â Ã Ä Å Ç È É"
+	linefw "Ê Ë Ì Í Î Ï Ñ Ò Ó"
+	linefw "Ô Õ Ö Ù Ú Û Ü Ý Ÿ"
+	linefw "à á â ã ä å ç è é"
+	linefw "ê ë ì í î ï ñ ò ó"
+	linefw "ô õ ö ù ú û ü ý ÿ"
+	text ""
+	line " Uppercase     Done      Lowercase"
 	done
 
 NewDeckText:

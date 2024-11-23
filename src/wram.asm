@@ -1652,6 +1652,8 @@ wCardListCursorYPos:: ; cea6
 wCardListYSpacing:: ; cea7
 	ds $1
 
+wWhichKeyboard:: ; cea8
+
 wCardListXSpacing:: ; cea8
 	ds $1
 
@@ -2559,7 +2561,7 @@ wDuelAnimEffectiveness:: ; d4b3
 	ds $1
 
 ; stores the character symbols of some value that was converted to decimal
-; through ConvertWordToNumericalDigits
+; through ThreeDigitNumberToTxSymbol_TrimLeadingZeros
 wDecimalChars:: ; d4b4
 	ds $3
 

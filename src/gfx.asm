@@ -12,13 +12,18 @@ INCBIN "gfx/fonts/full_width/0_2_digits_kanji1.1bpp"
 INCBIN "gfx/fonts/full_width/1_kanji2.1bpp"
 INCBIN "gfx/fonts/full_width/2_kanji3.1bpp"
 INCBIN "gfx/fonts/full_width/3.1bpp"
-;INCBIN "gfx/fonts/full_width/4.1bpp"
+INCBIN "gfx/fonts/full_width/4.1bpp"
 
 HalfWidthFont::
 INCBIN "gfx/fonts/half_width.1bpp"
 
 SymbolsFont::
 INCBIN "gfx/fonts/symbols.2bpp"
+
+SymbolsFontEnd::
+
+
+SECTION "Gfx 2", ROMX
 
 DuelGraphics::
 
@@ -29,12 +34,7 @@ DuelDmgSgbSymbolGraphics::
 INCBIN "gfx/duel/dmg_sgb_symbols.2bpp"
 
 DuelCgbSymbolGraphics::
-INCBIN "gfx/duel/cgb_symbols.2bpp", $0, $808
-
-
-SECTION "Gfx 2", ROMX
-
-INCBIN "gfx/duel/cgb_symbols.2bpp", $808, $8
+INCBIN "gfx/duel/cgb_symbols.2bpp"
 
 DuelOtherGraphics::
 INCBIN "gfx/duel/other.2bpp"

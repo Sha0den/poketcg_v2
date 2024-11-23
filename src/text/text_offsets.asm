@@ -544,10 +544,10 @@ TextOffsets::
 	textpointer UnusedText021c                                     ; 0x021c
 	textpointer EndText                                            ; 0x021d
 	textpointer WhatIsYourNameText                                 ; 0x021e
-	textpointer UnusedText021f                                     ; 0x021f
-	textpointer UnusedText0220                                     ; 0x0220
-	textpointer PlayerNameKeyboardText                             ; 0x0221
-	textpointer DeckNameKeyboardText                               ; 0x0222
+	textpointer PlayerNameKeyboardText                             ; 0x021f
+	textpointer UppercaseKeyboardText                              ; 0x0220
+	textpointer LowercaseKeyboardText                              ; 0x0221
+	textpointer AccentsKeyboardText                                ; 0x0222
 	textpointer NewDeckText                                        ; 0x0223
 	textpointer PleaseSelectDeckText                               ; 0x0224
 	textpointer ModifyDeckText                                     ; 0x0225

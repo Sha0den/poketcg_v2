@@ -417,35 +417,38 @@ SpecialConditions2DescriptionText:
 ;	line "6) Play the game."
 ;	done
 ;
-;HalfwidthCharactersText:
-;	text "  ! ” ≠ ♂ ♀ & ' ( ) * + , - . /"
-;	line "0 1 2 3 4 5 6 7 8 9 : ; ‹ = > ?"
-;	line "É A B C D E F G H I J K L M N O"
-;	line "P Q R S T U V W X Y Z [ \\ ] ^ _"
-;	line "é a b c d e f g h i j k l m n o"
-;	line "p q r s t u v w x y z \{ ¦ } | ‾"
-;	line "à á â ä ç è ê ë ì í î ï ò ó ô ö"
-;	line "ù ú û ü ã ñ õ ′ À Á Â Ä Ç È Ê Ë"
-;	line "Ì Í Î Ï Ò Ó Ô Ö Ù Ú Û Ü Ã Ñ Õ ¿"
-;	line "¡ $ ‘ ’ % ° • ■"
+;DisplayHalfwidthFontCharactersText:
+;	text "   ! ” ≠ $ % & ' ( ) * + , - . /"
+;	line " 0 1 2 3 4 5 6 7 8 9 : ; ‹ = > ?"
+;	line " ′ A B C D E F G H I J K L M N O"
+;	line " P Q R S T U V W X Y Z [ \\ ] ^ _"
+;	line " ` a b c d e f g h i j k l m n o"
+;	line " p q r s t u v w x y z \{ | } ~ ■"
+;	line " ‘ ’ • °     ♀ ♂"
 ;	line ""
-;	line ""
+;	line "                             ¡ ¿"
+;	line " À Á Â Ã Ä Å   Ç È É Ê Ë Ì Í Î Ï"
+;	line "   Ñ Ò Ó Ô Õ Ö     Ù Ú Û Ü Ý Ÿ  "
+;	line " à á â ã ä å   ç è é ê ë ì í î ï"
+;	line "   ñ ò ó ô õ ö     ù ú û ü ý ÿ  "
 ;	done
 ;
-;FullwidthCharactersText:
-;	textfw " ABCDEFGHIJKLMNOP"
-;	linefw " QRSTUVWXYZṙṡṫṛ♀♂"
-;	linefw " 【】●◆★☆_▪℃゛°゜ˍ&꞉○"
-;	linefw " ※ ^♪ß"
-;	linefw "   ╚╔║═¿“‘'”.■abc"
-;	linefw " defghijklmnopqrs"
-;	linefw " tuvwxyz「＼」|ˉ !₽#"
-;	linefw " $%ǶĽ()*+、-—/0123"
-;	linefw " 456789:;<=>?@æçœ"
-;	linefw " àáâäèéêëìíîïòóôö"
-;	linefw " ùúûüãñõ[¥]"
+;DisplayFullwidthFontCharactersText:
+;	textfw "  !”#$%&'()*+,-./"
+;	linefw " 0123456789:;<=>?"
+;	linefw " @ABCDEFGHIJKLMNO"
+;	linefw " PQRSTUVWXYZ[\\]^_"
+;	linefw " `abcdefghijklmno"
+;	linefw " pqrstuvwxyz\{|}~■"
+;	linefw " ‘“•꞉—※○ ḋśṫṛ℃ ǶĽ"
+;	linefw " ●◆★☆♪♀♂₽═║╚╔"
+;	linefw "            【】゛゜¿"
+;	linefw " ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"
+;	linefw "  ÑÒÓÔÕÖØŒÙÚÛÜÝŸß"
+;	linefw " àáâãäåæçèéêëìíîï"
+;	linefw "  ñòóôõöøœùúûüýÿ"
 ;	done
-;
+
 UnusedText0320: ; Unused
 	text "Send a Card"
 	line "Receive a Card"
