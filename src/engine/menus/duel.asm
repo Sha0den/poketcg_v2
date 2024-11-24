@@ -435,12 +435,13 @@ _DrawYourOrOppPlayAreaScreen::
 .get_text_length
 	ld hl, wDefaultText
 
+	; center the text label
 	call GetTextLengthInTiles
-	ld a, MAX_PLAYER_NAME_LENGTH ; 6 tiles
+	ld a, MAX_PLAYER_NAME_LENGTH / 2
 	sub b
 	srl a
 	add 4
-	; a = (6 - name text in tiles) / 2 + 4
+	; a = (max name length in tiles - actual name length in tiles) / 2 + 4
 	ld d, a ; text horizontal alignment
 
 	ld e, 0

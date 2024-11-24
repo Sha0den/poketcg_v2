@@ -880,6 +880,13 @@
 
 
 ## Miscellaneous Changes
+- **November 23, 2024:** 4 Files Changed
+    - Use the deck naming screen when naming the Player at the start of the game
+        - *The Player's name now uses halfwidth font, so it can be up to 12 characters long*
+        - *All of the old player naming functions were commented out and moved to the end of the file*
+    
+<br/>
+
 - **[November 8, 2024](https://github.com/Sha0den/poketcg_v2/commit/151a63eb0641e3c8fa649ff24f3e11bd3f43a3d1):** 5 Files Changed
     - Increase minimum probability for a type when generating a booster pack card to 5% (1/160 -> 8/160), to encourage more variety
     - Officially add Double Colorless Energy to the Mystery set and remove the code that allows any Energy card to be included in a booster, regardless of set
@@ -1054,10 +1061,11 @@
 
 
 ## New Features
-- **November 23, 2024:** 12 Files Changed
+- **[November 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/1ddbd58ad2236e388cd5cfc7c7d2b50ad42de644):** 12 Files Changed
     - Redesign the deck naming screen to allow more variety when naming
         - *Keyboard now has 3 layouts (switch between them by pressing SELECT or the Uppercase/Lowercase/Accents buttons)*
     - Update and reformat the halfwidth/fullwidth3 font graphics and redistribute the graphics data to account for the larger size
+    - The following commit substitutes the new deck naming screen when naming the Player at the start of the game
 
 <br/>
 
@@ -1083,7 +1091,7 @@
     - Add support for common accented characters (halfwidth and fullwidth)
     - Expand the halfwidth font graphics (at the cost of some kanji)
     - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
-    - Current build includes more edits to halfwidth and fullwidth font data (also redistributed data in src/gfx.asm and updated pointers in home/tiles.asm as a more sensible alternative to commenting out some of the Japanese font data)
+    - [The deck naming screen update](https://github.com/Sha0den/poketcg_v2/commit/1ddbd58ad2236e388cd5cfc7c7d2b50ad42de644) includes more edits to halfwidth and fullwidth font data (also redistributed data in src/gfx.asm and updated pointers in home/tiles.asm as a more sensible alternative to commenting out some of the Japanese font data)
 
 <br/>
 

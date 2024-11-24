@@ -9,7 +9,6 @@ DisplayPlayerNamingScreen:
 	jr nz, .clear_loop
 
 	; get player's name from the user into hl
-	ld hl, wNameBuffer
 	farcall InputPlayerName
 
 	farcall WhiteOutDMGPals
