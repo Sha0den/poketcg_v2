@@ -116,6 +116,12 @@
 
 
 ## Code Optimization
+- **November 24, 2024:** 2 Files Changed
+    - Rewrite the SwitchAfterAttack (Teleport) functions to allow cancelling the attack and create a new effect command for a switch attack that does damage
+    - Also clean up some effect functions code that includes `call Random`
+
+<br/>
+
 - **[November 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/56a6afe4a22a0132d5d7b875441c784c14e5c9d8):** 1 File Changed
     - A lot of edits to engine/input_name.asm: labeling, comments, reformating, and refactoring
 
@@ -880,7 +886,7 @@
 
 
 ## Miscellaneous Changes
-- **November 23, 2024:** 4 Files Changed
+- **[November 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/36efe66857cb965b1d7883a930afa9415766c032):** 4 Files Changed
     - Use the deck naming screen when naming the Player at the start of the game
         - *The Player's name now uses halfwidth font, so it can be up to 12 characters long*
         - *All of the old player naming functions were commented out and moved to the end of the file*
@@ -1065,7 +1071,7 @@
     - Redesign the deck naming screen to allow more variety when naming
         - *Keyboard now has 3 layouts (switch between them by pressing SELECT or the Uppercase/Lowercase/Accents buttons)*
     - Update and reformat the halfwidth/fullwidth3 font graphics and redistribute the graphics data to account for the larger size
-    - The following commit substitutes the new deck naming screen when naming the Player at the start of the game
+    - [The following commit](https://github.com/Sha0den/poketcg_v2/commit/36efe66857cb965b1d7883a930afa9415766c032) replaces the original player naming screen with the new deck naming screen (also makes the player name use halfwidth font)
 
 <br/>
 

@@ -1497,18 +1497,29 @@ PossibleSwitch_PlayerSelection:
 	ret
 
 
-; handles the Player's selection of a Benched Pokemon
+; handles the Player's selection of a Benched Pokémon for a damage-dealing attack (which doesn't use BenchedPokemonCheck)
 ; output:
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
+;	carry = set:  if the operation was cancelled by the Player (with B button)
+;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant, -1 if none)
+AlsoSwitchAfterAttack_PlayerSelection:
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	get_turn_duelist_var
+	dec a ; cp 1
+	jr z, SwitchAfterAttack_AISelection.no_bench
+;	fallthrough
+
+; handles the Player's selection of a Benched Pokémon for an attack that has BenchedPokemonCheck as an Initial_Effect_1 command
+; output:
+;	carry = set:  if the operation was cancelled by the Player (with B button)
+;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant)
 SwitchAfterAttack_PlayerSelection:
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
 	call InitPlayAreaScreenVars_OnlyBench
 	inc a ; $00 -> $01
 	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
-.loop_input
 	bank1call OpenPlayAreaScreenForSelection
-	jr c, .loop_input ; must choose, B button can't be used to exit
+;	ret c ; exit if the B button was pressed
 	ldh [hTemp_ffa0], a
 	ret
 
@@ -1518,11 +1529,18 @@ SwitchAfterAttack_PlayerSelection:
 ; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
 ; preserves bc and de
 ; output:
-;	[hTemp_ffa0] = play area location offset of a random Benched Pokemon (PLAY_AREA_* constant)
+;	[hTemp_ffa0] = play area location offset of a random Benched Pokemon (PLAY_AREA_* constant, -1 if none)
 SwitchAfterAttack_AISelection:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
+	dec a ; can't select the Active Pokémon
+	jr z, .no_bench
 	call Random
+	inc a ; first value should be PLAY_AREA_BENCH_1, not PLAY_AREA_ARENA
+	ldh [hTemp_ffa0], a
+	ret
+.no_bench
+	ld a, -1
 	ldh [hTemp_ffa0], a
 	ret
 
@@ -1530,10 +1548,12 @@ SwitchAfterAttack_AISelection:
 ; switches the turn holder's Active Pokemon with a given Benched Pokemon
 ; preserves bc and hl
 ; input:
-;	[hTemp_ffa0] = play area location offset of the Benched Pokemon to switch with the Active Pokemon
+;	[hTemp_ffa0] = location of the Benched Pokémon to switch with Active (PLAY_AREA_* constant, -1 if none)
 SwitchAfterAttack_SwitchEffect:
 	ldh a, [hTemp_ffa0]
 	ld e, a
+	inc a ; cp -1
+	ret z
 	call SwapArenaWithBenchPokemon
 	xor a
 	ld [wDuelDisplayedScreen], a
@@ -5297,9 +5317,7 @@ DamageTo1Benched_20DamageEffect:
 PickRandomPlayAreaCard:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	call Random
-	or a
-	ret
+	jp Random
 
 
 ; does 20 damage to a randomly chosen Pokemon in the opponent's play area
@@ -5370,9 +5388,7 @@ RandomlyDamagePlayAreaPokemon:
 ; own play area
 	ld a, TRUE
 	ld [wIsDamageToSelf], a
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	call Random
+	call PickRandomPlayAreaCard
 	ld b, a
 	; can't select the Pokemon that used the attack
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -5388,9 +5404,7 @@ RandomlyDamagePlayAreaPokemon:
 	xor a ; FALSE
 	ld [wIsDamageToSelf], a
 	rst SwapTurn
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	call Random
+	call PickRandomPlayAreaCard
 	ld b, a
 	call .damage
 	jp SwapTurn

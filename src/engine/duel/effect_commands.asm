@@ -160,7 +160,13 @@ EnergyAbsorptionEffectCommands:
 
 SwitchAfterAttackEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SwitchAfterAttack_PlayerSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchAfterAttack_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchAfterAttack_AISelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchAfterAttack_SwitchEffect
+	db  $00
+
+AlsoSwitchAfterAttackEffectCommands:
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, AlsoSwitchAfterAttack_PlayerSelection
 	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchAfterAttack_AISelection
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchAfterAttack_SwitchEffect
 	db  $00
