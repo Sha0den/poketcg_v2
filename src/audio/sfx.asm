@@ -301,7 +301,7 @@ Func_fc18d:
 	add hl, bc
 	bit 7, a
 	jr z, .asm_fc1aa
-	xor $ff
+	cpl
 	inc a
 	ld d, a
 	ld a, [hl]
@@ -351,7 +351,7 @@ Func_fc1cd:
 	ld hl, wde3d
 	bit 7, a
 	jr z, .asm_fc1e5
-	xor $ff
+	cpl
 	inc a
 	ld d, a
 	ld e, [hl]

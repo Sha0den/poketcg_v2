@@ -225,11 +225,10 @@ SendSGBBorder:
 	ld a, [wd420]
 	ld [wLCDC], a
 	call DisableLCD
-	ei
 	pop de
 	pop bc
 	pop hl
-	ret
+	reti
 
 
 ; MASK_EN on
@@ -267,10 +266,9 @@ Func_701c0:
 	di
 	ld hl, MaskEnPacket_Cancel_Bank1c
 	call SendSGB
-	ei
 	pop bc
 	pop hl
-	ret
+	reti
 
 
 ; decompresses data pointed by hl to de

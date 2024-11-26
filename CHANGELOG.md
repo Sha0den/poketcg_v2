@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **November 24, 2024:** 2 Files Changed
+- **November 26, 2024:** 8 Files Changed
+    - Replace `ei` + `ret` with `reti` and `xor $ff` with `cpl`
+
+<br/>
+
+- **[November 24, 2024](https://github.com/Sha0den/poketcg_v2/commit/29b04f2533c70b94653c1acfa9200a3c03898a01):** 2 Files Changed
     - Rewrite the SwitchAfterAttack (Teleport) functions to allow cancelling the attack and create a new effect command for a switch attack that does damage
     - Also clean up some effect functions code that includes `call Random`
 

@@ -1358,7 +1358,7 @@ Music1_f4866:
 	swap d
 	or d
 	ld d, a
-	xor $ff
+	cpl
 	ld e, a
 	ld a, [hld]
 	and d
@@ -1369,7 +1369,7 @@ Music1_f4866:
 .asm_f4888
 	ld d, a
 	ld a, [wddf0]
-	xor $ff
+	cpl
 	and $f
 	ld e, a
 	swap e
@@ -1447,7 +1447,7 @@ Music1_UpdateVibrato:
 	ld d, a
 	ret
 .asm_f48df
-	xor $ff
+	cpl
 	inc a
 	push bc
 	ld c, a
@@ -1526,7 +1526,7 @@ Music1_f4967:
 	ld d, a
 	ret
 .asm_f4976
-	xor $ff
+	cpl
 	ld h, a
 	ld a, e
 	sub h
@@ -1587,16 +1587,14 @@ Music1_PauseSong:
 	call Music1_f4980
 	call Music1_BackupSong
 	call Music1_StopAllChannels
-	ei
-	ret
+	reti
 
 Music1_ResumeSong:
 	di
 	call Music1_f4980
 	call Music1_StopAllChannels
 	call Music1_LoadBackup
-	ei
-	ret
+	reti
 
 Music1_BackupSong:
 	ld a, [wCurSongID]

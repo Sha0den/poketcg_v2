@@ -12,8 +12,7 @@ SetSpriteAnimationsAsVBlankFunction:
 	ld [hl], LOW(HandleAllSpriteAnimations)
 	inc hl
 	ld [hl], HIGH(HandleAllSpriteAnimations)
-	ei
-	ret
+	reti
 
 
 ; sets backup VBlank function as wVBlankFunctionTrampoline
@@ -38,5 +37,4 @@ BackupVBlankFunctionTrampoline:
 	inc de
 	ld a, [hld]
 	ld [de], a
-	ei
-	ret
+	reti

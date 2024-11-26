@@ -297,8 +297,7 @@ CloseIRCommunications:
 	cp STAT_ON_VBLANK
 	jr nz, .wait_vblank_off
 	call SwitchToCGBDoubleSpeed
-	ei
-	ret
+	reti
 
 
 ; expects to receive a command (IRCMD_* constant) in wIRDataBuffer + 1,

@@ -256,8 +256,7 @@ MltReq2Packet::
 ;	ldh [rLCDC], a
 ;	pop hl
 ;	call SendSGB
-;	ei
-;	ret
+;	reti
 ;
 ;
 ;Pal23Packet_0b00::

@@ -10,7 +10,7 @@ InvalidateSaveData:
 	ld a, BANK("SRAM2")
 	call BankswitchSRAM
 	ld a, $08
-	xor $ff
+	cpl
 	ld [sBackupGeneralSaveData + 0], a
 	ld a, $ff
 	ld [sBackupGeneralSaveData + 1], a
