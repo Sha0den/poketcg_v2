@@ -14,9 +14,9 @@ AIDecideWhetherToRetreat:
 	or a
 	jr z, .check_status
 	; add wAIRetreatScore * 8 to score
-	srl a
-	srl a
-	sla a ; *8
+	add a ; *2
+	add a ; *4
+	add a ; *8
 	call AddToAIScore
 
 ; increase the score by 2 if the AI's Active Pokémon is Poisoned and

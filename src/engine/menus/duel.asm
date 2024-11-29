@@ -12,7 +12,7 @@ _OpenDuelCheckMenu::
 	ret z ; exit if the B button was pressed
 	; A button was pressed
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
@@ -55,7 +55,7 @@ DuelCheckMenu_YourPlayArea:
 
 ; convert cursor position and store it in wYourOrOppPlayAreaLastCursorPosition
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
@@ -89,7 +89,7 @@ DuelCheckMenu_YourPlayArea:
 ; A button was pressed
 ; jump to function corresponding to cursor position
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
@@ -182,7 +182,7 @@ DuelCheckMenu_OppPlayArea:
 
 ; convert cursor position and store it in wYourOrOppPlayAreaLastCursorPosition
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
@@ -223,7 +223,7 @@ DuelCheckMenu_OppPlayArea:
 ; A button was pressed
 ; jump to function corresponding to cursor position
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
@@ -278,7 +278,7 @@ DrawYourOrOppPlayArea_RefreshArrows:
 	add b
 	ld c, a
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld b, a
 	ld a, [wCheckMenuCursorXPosition]
 	add b
@@ -323,7 +323,7 @@ DrawYourOrOppPlayArea_EraseArrows:
 DrawYourOrOppPlayArea_DrawArrows:
 	push bc
 	ld hl, YourOrOppPlayAreaArrowPositions
-	sla a
+	add a
 	ld c, a
 	ld b, $00
 	add hl, bc
@@ -899,8 +899,8 @@ DrawPlayArea_BenchCards:
 	ld a, [hli]
 	push hl
 	push bc
-	sla a
-	sla a
+	add a ; *2
+	add a ; *4
 	add $e4
 	; a holds the correct stage gfx tile
 	ld b, a

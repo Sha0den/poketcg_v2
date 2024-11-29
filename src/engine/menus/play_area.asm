@@ -130,10 +130,10 @@ OpenInPlayAreaScreen::
 	lb de, 1, 17
 	call InitTextPrinting
 	pop af
-	ld hl, OpenInPlayAreaScreen_TextTable
-	ld b, 0
-	sla a
+	add a
 	ld c, a
+	ld b, $00
+	ld hl, OpenInPlayAreaScreen_TextTable
 	add hl, bc
 
 	; hl = OpenInPlayAreaScreen_TextTable + 2 * (wInPlayAreaCurPosition)

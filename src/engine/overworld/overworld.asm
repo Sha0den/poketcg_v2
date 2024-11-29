@@ -685,9 +685,9 @@ Func_c430:
 ; update wSCXBuffer
 	push bc
 	ld a, [wd237]
-	sla a
-	sla a
-	sla a ; *8
+	add a ; *2
+	add a ; *4
+	add a ; *8
 	ld b, a
 	ld a, [wSCXBuffer]
 	cp $b1
@@ -703,9 +703,9 @@ Func_c430:
 
 ; update wSCYBuffer
 	ld a, [wd238]
-	sla a
-	sla a
-	sla a ; *8
+	add a ; *2
+	add a ; *4
+	add a ; *8
 	ld b, a
 	ld a, [wSCYBuffer]
 	cp $b9

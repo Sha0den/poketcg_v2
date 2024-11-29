@@ -150,10 +150,10 @@ OpenGlossaryScreen:
 	; that is,
 	; hl += (5 * a).
 	ld c, a
-	ld b, 0
+	ld b, $00
 	add hl, bc
-	sla a
-	sla a
+	add a ; *2
+	add a ; *4
 	ld c, a
 	add hl, bc
 	ld a, [hli]

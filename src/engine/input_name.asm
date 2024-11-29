@@ -590,7 +590,7 @@ DeckNamingScreen_AdjustCursorPosition:
 	ld d, a
 	ld hl, wNamingScreenNamePosition
 	ld a, [hl]
-	sla a
+	add a
 	add d
 	ld d, a
 	ld h, $04
@@ -1708,4 +1708,3 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	dw $0e50, $0055 ; be -> pe
 ;	dw $0e51, $0056 ; bo -> po
 ;	dw $0000
-;

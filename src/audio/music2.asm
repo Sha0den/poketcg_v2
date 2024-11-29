@@ -775,11 +775,11 @@ Music2_note:
 	add hl, bc
 	ld a, [hl]
 	ld d, a
-	sla a
-	add d
-	sla a
-	sla a
-	sla a
+	add a ; *2
+	add d ; *3
+	add a ; *6
+	add a ; *12
+	add a ; *24
 	ld e, a
 	pop af
 	ld hl, Music2_NoiseInstruments

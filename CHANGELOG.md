@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **November 26, 2024:** 8 Files Changed
+- **November 29, 2024:** 12 Files Changed
+    - Replace `sla a` with `add a` (instances in engine/menus/deck_machine.asm not included; they'll be changed in an upcoming update)
+
+<br/>
+
+- **[November 26, 2024](https://github.com/Sha0den/poketcg_v2/commit/c96a79943ed492b10f2cccfd44d8062d4fdca3f3):** 8 Files Changed
     - Replace `ei` + `ret` with `reti` and `xor $ff` with `cpl`
 
 <br/>

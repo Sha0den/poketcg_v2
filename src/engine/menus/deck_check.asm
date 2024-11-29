@@ -108,7 +108,7 @@ DrawCheckMenuCursor:
 	add 1
 	ld b, a
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	add 14
 	ld c, a
 

@@ -2388,7 +2388,7 @@ Func_17583:
 	call ConvertHPToDamageCounters_Bank5
 	ld b, a ; b = number of damage counters
 	call CountNumberOfEnergyCardsAttached
-	sla a
+	add a
 	add $80
 	sub b
 	pop de

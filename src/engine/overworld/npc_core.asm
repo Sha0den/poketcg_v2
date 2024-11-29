@@ -472,17 +472,17 @@ UpdateNPCSpritePosition:
 	; hl = sprite coords
 	; de = NPC coords
 	ld a, [de] ; x
-	sla a
-	sla a
-	sla a
+	add a ; *2
+	add a ; *4
+	add a ; *8
 	add $8
 	sub b
 	ld [hli], a
 	inc de
 	ld a, [de] ; y
-	sla a
-	sla a
-	sla a
+	add a ; *2
+	add a ; *4
+	add a ; *8
 	add $10
 	sub c
 	ld [hli], a

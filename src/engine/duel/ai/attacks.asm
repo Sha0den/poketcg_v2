@@ -334,7 +334,7 @@ GetAIScoreOfAttack:
 	jr nc, .high_recoil_generic_checks
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
-	sla a
+	add a
 	cp c
 	jr c, .high_recoil_generic_checks
 	ld b, 0
