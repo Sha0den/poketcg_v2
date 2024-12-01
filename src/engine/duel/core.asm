@@ -422,7 +422,9 @@ DuelMenu_Attack:
 	call CheckUnableToAttackDueToEffect
 	jr nc, .can_attack
 	; unable to attack
+.print_text_and_return
 	call DrawWideTextBox_WaitForInput
+.return
 	jr PrintDuelMenuAndHandleInput
 
 .can_attack
@@ -433,8 +435,7 @@ DuelMenu_Attack:
 	or a
 	jr nz, .open_attack_menu
 	ldtx hl, NoSelectableAttackText
-	call DrawWideTextBox_WaitForInput
-	jp PrintDuelMenuAndHandleInput
+	jr .print_text_and_return
 
 .open_attack_menu
 	push af
@@ -455,7 +456,7 @@ DuelMenu_Attack:
 	call HandleMenuInput
 	jr nc, .wait_for_input
 	cp -1 ; was B pressed?
-	jp z, PrintDuelMenuAndHandleInput
+	jr z, .return
 	; A button was pressed
 	ld [wSelectedDuelSubMenuItem], a
 	call CheckIfEnoughEnergiesToAttack
@@ -644,7 +645,7 @@ HandleDuelMenuInput::
 	bit 4, [hl]
 	jr z, .draw_cursor
 .erase_cursor
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 .draw_cursor
 	ld e, a
 	ld a, [wCurMenuItem]
@@ -687,7 +688,7 @@ OpenActivePokemonScreen:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp -1
-	ret z
+	ret z ; return if there's no Active Pokémon
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
 	ld hl, wCurPlayAreaSlot
@@ -721,7 +722,7 @@ OpenVariousPlayAreaScreens_FromSelectPresses:
 	call OpenPlayAreaScreenForViewing
 	ldh a, [hKeysPressed]
 	and B_BUTTON
-	ret z
+	ret z ; return no carry if the B button wasn't pressed
 	scf
 	ret
 
@@ -769,6 +770,29 @@ OpenTurnHolderHandScreen_Simple:
 	jp DrawWideTextBox_WaitForInput
 
 
+; sorts the turn holder's hand cards by ID (highest to lowest ID).
+; makes use of wDuelTempList (what de is initially pointing to).
+SortHandCardsByID:
+	call FindLastCardInHand
+.loop
+	ld a, [hld]
+	ld [de], a
+	inc de
+	dec b
+	jr nz, .loop
+	ld a, $ff ; terminating byte
+	ld [de], a
+	call SortCardsInDuelTempListByID
+	call FindLastCardInHand
+.loop2
+	ld a, [de]
+	inc de
+	ld [hld], a
+	dec b
+	jr nz, .loop2
+	ret
+
+
 ; draws the screen for the player's hand and handles user input to
 ; check or attempt to play a card from the hand
 OpenPlayerHandScreen:
@@ -785,7 +809,7 @@ OpenPlayerHandScreen:
 	or a
 	call nz, SortHandCardsByID
 	pop af
-	jp c, DuelMainInterface ; exit if the B button was pressed
+	jr c, .exit ; exit if the B button was pressed
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	ld c, a
@@ -794,35 +818,20 @@ OpenPlayerHandScreen:
 	bit TYPE_ENERGY_F, c
 	jr nz, PlayEnergyCard
 	call PlayPokemonCard
-	jp c, ReloadCardListScreen ; jump if card not played
+	jr c, ReloadCardListScreen ; jump if card not played
+.exit
 	jp DuelMainInterface
 .trainer_card
 	call PlayTrainerCard
-	jr c, ReloadCardListScreen ; jump if card not played
-	jp DuelMainInterface
+	jr nc, .exit
+;	fallthrough if card not played
 
-
-; sorts the turn holder's hand cards by ID (highest to lowest ID)
-; makes use of wDuelTempList (what de is initially pointing to)
-SortHandCardsByID:
-	call FindLastCardInHand
-.loop
-	ld a, [hld]
-	ld [de], a
-	inc de
-	dec b
-	jr nz, .loop
-	ld a, $ff
-	ld [de], a
-	call SortCardsInDuelTempListByID
-	call FindLastCardInHand
-.loop2
-	ld a, [de]
-	inc de
-	ld [hld], a
-	dec b
-	jr nz, .loop2
-	ret
+; reloads the card list screen (because the selected card could not be played)
+ReloadCardListScreen:
+	call CreateHandCardList
+	; skip doing the things that have already been done when initially opened
+	call DrawCardListScreenLayout
+	jr OpenPlayerHandScreen.handle_input
 
 
 ; input:
@@ -864,8 +873,14 @@ PlayEnergyCard:
 .rain_dance_active
 	call InitVarsAndOpenPlayAreaScreenForSelection ; choose Pokemon to attach Energy card to
 	jr c, .exit ; exit if the B button was pressed
-	call CheckRainDanceScenario
-	jr c, .play_energy
+	call GetPlayAreaCardColor
+	cp TYPE_PKMN_WATER
+	jr nz, .no_rain_dance ; attach normally if the target isn't a Water Pokémon
+	ldh a, [hTempCardIndex_ff98]
+	call GetCardTypeFromDeckIndex_SaveDE
+	cp TYPE_ENERGY_WATER
+	jr z, .play_energy ; ignore once per turn restriction if a Water Energy is being attached to a Water Pokémon
+.no_rain_dance
 	ld a, [wAlreadyPlayedEnergy]
 	or a
 	jr z, .play_energy_set_played
@@ -876,14 +891,7 @@ PlayEnergyCard:
 .already_played_energy
 	ldtx hl, MayOnlyAttachOneEnergyCardText
 	call DrawWideTextBox_WaitForInput
-;	fallthrough
-
-; reloads the card list screen (because the selected card could not be played)
-ReloadCardListScreen:
-	call CreateHandCardList
-	; skip doing the things that have already been done when initially opened
-	call DrawCardListScreenLayout
-	jp OpenPlayerHandScreen.handle_input
+	jr ReloadCardListScreen
 
 
 ; puts a Basic Pokemon into play, either in the Arena or on the Bench, or puts a
@@ -954,9 +962,7 @@ PlayPokemonCard:
 	jr nz, .find_cant_evolve_reason_loop
 	ldtx hl, NoPokemonCapableOfEvolvingText
 .print_text_and_return_carry
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
+	jp DrawWideTextBox_WaitForInput_ReturnCarry
 
 .can_evolve
 	pop bc
@@ -991,18 +997,13 @@ PlayPokemonCard:
 ;	carry = set:  if the Trainer card wasn't played
 PlayTrainerCard:
 	call CheckCantUseTrainerDueToEffect
-	jr c, .cant_use
+	jr c, PlayPokemonCard.print_text_and_return_carry
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempCardIndex_ff9f], a
 	call LoadNonPokemonCardEffectCommands
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
-	jr nc, .can_use
-.cant_use
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
-.can_use
+	jr c, PlayPokemonCard.print_text_and_return_carry
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
 	jr c, .done
@@ -1022,27 +1023,6 @@ PlayTrainerCard:
 	call MoveHandCardToDiscardPile
 	call ExchangeRNG
 .done
-	or a
-	ret
-
-
-; preserves all registers except af
-; input:
-;	[hTempCardIndex_ff98] = deck index of the Energy card to check (0-59)
-;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokemon to check
-; output:
-;	carry = set:  if both cards from input are Water type
-CheckRainDanceScenario:
-	ldh a, [hTempCardIndex_ff98]
-	call GetCardTypeFromDeckIndex_SaveDE
-	cp TYPE_ENERGY_WATER
-	jr nz, .no_carry
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	call GetPlayAreaCardColor
-	cp TYPE_PKMN_WATER
-	scf
-	ret z
-.no_carry
 	or a
 	ret
 
@@ -1070,11 +1050,9 @@ CheckAbleToRetreat:
 	ld a, [wEnergyCardsRequiredToRetreat]
 	ld hl, wTxRam3
 	ld [hli], a
-	xor a
-	ld [hl], a
+	ld [hl], $00
 	ldtx hl, EnergyCardsRequiredToRetreatText
-	scf
-	ret
+	ret ; carry set
 .unable_to_retreat
 	ldtx hl, UnableToRetreatText
 	scf
@@ -1241,12 +1219,12 @@ DisplayEnergyDiscardScreen:
 	ld a, [wEnergyDiscardPlayAreaLocation]
 	ld hl, wCurPlayAreaSlot
 	ld [hli], a
-	ld [hl], 0 ; wCurPlayAreaY
-	call PrintPlayAreaCardInformation
 	xor a
+	ld [hl], a ; wCurPlayAreaY = 0
 	ld [wEnergyDiscardMenuNumerator], a
-	inc a
+	inc a ; 1
 	ld [wEnergyDiscardMenuDenominator], a
+	call PrintPlayAreaCardInformation
 ;	fallthrough
 
 ; displays the menu that belongs to the Energy discard screen, which has the
@@ -1327,6 +1305,8 @@ HandleEnergyDiscardMenuInput:
 ; draws the attack page of the card at wLoadedCard1 and of the attack selected in the Attack
 ; menu by hCurMenuItem, and listen for input in order to switch the page or to exit.
 ; input:
+;	wDuelTempList = start of an $ff-terminated list with info for a Pokémon's attacks,
+;	                list format: <deck index of Pokémon card (0-59)>, <attack index (0-1)>
 ;	[wLoadedCard1] = all of the Pokémon's data (card_data_struct)
 OpenAttackPage:
 	ld a, CARDPAGE_POKEMON_OVERVIEW
@@ -1351,22 +1331,15 @@ OpenAttackPage:
 	ld d, $00
 	ld hl, wDuelTempList + 1
 	add hl, de
-	ld a, [hl]
-	or a
-	jr nz, .attack_2
-	xor a ; ATTACKPAGE_ATTACK1_1
-	jr .attack_1
-
-.attack_2
+	ld a, [hl] ; load the relevant attack index
+	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
+	jr z, .store_page_number ; use ATTACKPAGE_ATTACK1_1
 	ld a, ATTACKPAGE_ATTACK2_1
-
-.attack_1
+.store_page_number
 	ld [wAttackPageNumber], a
-
 .open_page
 	call DisplayAttackPage
 	call EnableLCD
-
 .loop
 	call DoFrame
 	; switch page (see SwitchAttackPage) if Right or Left D-Pad pressed
@@ -1400,6 +1373,7 @@ AttackPageDisplayPointerTable:
 DisplayAttackPage_Attack1Page1:
 	call DisplayCardPage_PokemonAttack1Page1
 	ld hl, wLoadedCard1Atk1Description + 2
+.print_down_arrow_and_switch_attack_page
 	call PrintDownArrowIfSecondDescriptionPage
 ;	fallthrough
 
@@ -1420,7 +1394,7 @@ DisplayAttackPage_Attack1Page2:
 	ld hl, wLoadedCard1Atk1Description + 2
 	ld a, [hli]
 	or [hl]
-	ret z
+	ret z ; return if the pointer is null (i.e. this attack doesn't have a second page)
 	call DisplayCardPage_PokemonAttack1Page2
 	call PrintUpArrowOnSecondDescriptionPage
 	jr SwitchAttackPage
@@ -1430,8 +1404,7 @@ DisplayAttackPage_Attack1Page2:
 DisplayAttackPage_Attack2Page1:
 	call DisplayCardPage_PokemonAttack2Page1
 	ld hl, wLoadedCard1Atk2Description + 2
-	call PrintDownArrowIfSecondDescriptionPage
-	jr SwitchAttackPage
+	jr DisplayAttackPage_Attack1Page1.print_down_arrow_and_switch_attack_page
 
 
 ; displays ATTACKPAGE_ATTACK2_2 if it exists. otherwise, return in order
@@ -1440,7 +1413,7 @@ DisplayAttackPage_Attack2Page2:
 	ld hl, wLoadedCard1Atk2Description + 2
 	ld a, [hli]
 	or [hl]
-	ret z
+	ret z ; return if the pointer is null (i.e. this attack doesn't have a second page)
 	call DisplayCardPage_PokemonAttack2Page2
 	call PrintUpArrowOnSecondDescriptionPage
 	jr SwitchAttackPage
@@ -1450,8 +1423,8 @@ DisplayAttackPage_Attack2Page2:
 ; prints its information at lines 13 (first attack, if any), and 15 (second attack, if any)
 ; output:
 ;	a = number of non-empty, non-Pokemon Power attacks
-;	wDuelTempList = $ff terminated list with info for non-Pokemon Power attacks,
-;	                list format: <deck index>, <attack index> (either 0 or 1)
+;	wDuelTempList = start of an $ff-terminated list with info for the Active Pokémon's attacks,
+;	                list format: <deck index of Pokémon card (0-59)>, <attack index (0-1)>
 PrintAndLoadAttacksToDuelTempList:
 	call DrawWideTextBox
 	ld a, DUELVARS_ARENA_CARD
@@ -1460,11 +1433,11 @@ PrintAndLoadAttacksToDuelTempList:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	lb bc, 13, 0
 	; b = y-coordinate, c = counter for number of actual attacks
-	ld hl, wDuelTempList
 	xor a
 	ld [wCardPageNumber], a
-	ld de, wLoadedCard1Atk1Name
+	ld hl, wLoadedCard1Atk1Name
 	call .CheckAttackSlotEmptyOrPokemonPower
+	ld hl, wDuelTempList
 	jr c, .check_second_atk_slot
 	ldh a, [hTempCardIndex_ff98]
 	ld [hli], a
@@ -1478,59 +1451,50 @@ PrintAndLoadAttacksToDuelTempList:
 	pop hl
 	inc b
 	inc b ; 15
-
 .check_second_atk_slot
-	ld de, wLoadedCard1Atk2Name
+	push hl
+	ld hl, wLoadedCard1Atk2Name
 	call .CheckAttackSlotEmptyOrPokemonPower
+	pop hl
 	jr c, .done
 	ldh a, [hTempCardIndex_ff98]
 	ld [hli], a
 	ld a, SECOND_ATTACK
 	ld [hli], a
 	inc c
-	push hl
 	ld e, b
 	ld hl, wLoadedCard1Atk2Name
 	call PrintAttackOrPkmnPowerInformation
-	pop hl
-
 .done
 	ld a, c
 	ret
 
-; preserves all registers except af
+; preserves bc
 ; input:
-;	de = wLoadedCard*Atk*Name
+;	hl = wLoadedCard*Atk*Name
 ; output:
 ;	carry = set:  if the attack is a Pokemon Power or if the attack slot is empty
 .CheckAttackSlotEmptyOrPokemonPower:
-	push hl
-	push de
-	push bc
-	ld a, [de]
-	ld c, a
-	inc de
-	ld a, [de]
-	or c
+	ld a, [hli]
+	or [hl]
 	scf
-	jr z, .return ; return carry if this attack slot is blank
-	ld hl, CARD_DATA_ATTACK1_CATEGORY - (CARD_DATA_ATTACK1_NAME + 1)
+	ret z ; return carry if this attack slot is blank
+	ld de, CARD_DATA_ATTACK1_CATEGORY - (CARD_DATA_ATTACK1_NAME + 1)
 	add hl, de
 	ld a, [hl]
 	and $ff ^ RESIDUAL
 	cp POKEMON_POWER
 	scf
-	jr z, .return ; return carry if this attack slot contains a Pokémon Power
+	ret z ; return carry if this attack slot contains a Pokémon Power
 	or a
-.return
-	pop bc
-	pop de
-	pop hl
 	ret
 
 
 ; checks if the Active Pokemon card has enough Energy attached to it to use the selected attack.
 ; preserves bc and hl
+; input:
+;	wDuelTempList = start of an $ff-terminated list with info for a Pokémon's attacks,
+;	                list format: <deck index of Pokémon card (0-59)>, <attack index (0-1)>
 ; output:
 ;	carry = set:  if the Pokemon doesn't have enough Energy to use the attack
 ;	           OR if the given attack slot contains a Pokemon Power or is blank
@@ -1571,7 +1535,7 @@ _CheckIfEnoughEnergiesToAttack:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, e
 	ld de, wLoadedCard1Atk1EnergyCost
-	or a
+	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
 	jr z, .got_atk
 	ld de, wLoadedCard1Atk2EnergyCost
 
@@ -1742,9 +1706,10 @@ PlayTurnDuelistDrawAnimation:
 .loop_anim
 	call DoFrame
 	call CheckSkipDelayAllowed
-	jp c, FinishQueuedAnimations ; done with animation
+	jr c, .done
 	call CheckAnyAnimationPlaying
 	jr c, .loop_anim
+.done
 	jp FinishQueuedAnimations
 
 
@@ -1968,12 +1933,20 @@ PrintDuelResultStats:
 	jp InitTextPrinting_ProcessTextFromID
 
 
+; after a Trainer card is played, draws its graphic in a card frame and prints "Used xxx"
+; input:
+;	[hTempCardIndex_ff9f] = Trainer card's deck index (0-59)
+DisplayUsedTrainerCardDetailScreen::
+	ldh a, [hTempCardIndex_ff9f]
+	ldtx hl, UsedText
+	jr DisplayCardDetailScreen
+
 ; displays the card detail screen after the Player draws a card from their deck
 ; input:
 ;	[hTempCardIndex_ff98] = deck index of the card to display (0-59)
 DisplayPlayerDrawCardScreen:
-	ldtx hl, YouDrewText
 	ldh a, [hTempCardIndex_ff98]
+	ldtx hl, YouDrewText
 ;	fallthrough
 
 ; draws an oversized card oncreen revealing its type and graphic and prints the text at hl
@@ -2008,7 +1981,7 @@ _DisplayCardDetailScreen:
 DisplayCardListDetails:
 	ld a, [wDuelTempList]
 	cp $ff
-	ret z
+	ret z ; return if the list is empty
 	call InitAndDrawCardListScreenLayout
 	call CountCardsInDuelTempList ; list length
 	ld hl, CardListParameters ; other list params
@@ -2027,10 +2000,7 @@ DisplayCardListDetails:
 ; - tossing a coin to determine which player player goes first
 HandleDuelSetup:
 ; init variables and shuffle cards
-	call InitializeDuelVariables
-	rst SwapTurn
-	call InitializeDuelVariables
-	rst SwapTurn
+	call InitDuelVariables_BothDuelists
 	call PlayShuffleAndDrawCardsAnimation_BothDuelists
 	call ShuffleDeckAndDrawSevenCards
 	ldh [hTemp_ffa0], a
@@ -2054,34 +2024,31 @@ HandleDuelSetup:
 ;.player_drew_no_basic_pkmn
 .ensure_player_basic_pkmn_loop
 	call DisplayNoBasicPokemonInHandScreenAndText
-	call InitializeDuelVariables
+	call InitDuelVariables_TurnDuelist
 	call PlayShuffleAndDrawCardsAnimation_TurnDuelist
 	call ShuffleDeckAndDrawSevenCards
 	jr c, .ensure_player_basic_pkmn_loop
-	jr .hand_cards_ok
-
-.opp_drew_no_basic_pkmn
-	rst SwapTurn
-.ensure_opp_basic_pkmn_loop
-	call DisplayNoBasicPokemonInHandScreenAndText
-	call InitializeDuelVariables
-	call PlayShuffleAndDrawCardsAnimation_TurnDuelist
-	call ShuffleDeckAndDrawSevenCards
-	jr c, .ensure_opp_basic_pkmn_loop
-	rst SwapTurn
 	jr .hand_cards_ok
 
 .neither_drew_basic_pkmn
 	ldtx hl, NeitherPlayerHasBasicPkmnText
 	call DrawWideTextBox_WaitForInput
 	call DisplayNoBasicPokemonInHandScreen
-	call InitializeDuelVariables
 	rst SwapTurn
 	call DisplayNoBasicPokemonInHandScreen
-	call InitializeDuelVariables
 	rst SwapTurn
 	call PrintReturnCardsToDeckDrawAgain
 	jr HandleDuelSetup
+
+.opp_drew_no_basic_pkmn
+	rst SwapTurn
+.ensure_opp_basic_pkmn_loop
+	call DisplayNoBasicPokemonInHandScreenAndText
+	call InitDuelVariables_TurnDuelist
+	call PlayShuffleAndDrawCardsAnimation_TurnDuelist
+	call ShuffleDeckAndDrawSevenCards
+	jr c, .ensure_opp_basic_pkmn_loop
+	rst SwapTurn
 
 .hand_cards_ok
 	ldh a, [hWhoseTurn]
@@ -2117,10 +2084,7 @@ HandleDuelSetup:
 	pop af
 
 	ldh [hWhoseTurn], a
-	call InitTurnDuelistPrizes
-	rst SwapTurn
-	call InitTurnDuelistPrizes
-	rst SwapTurn
+	call InitPrizes_BothDuelists
 	call EmptyScreen
 	ld a, BOXMSG_COIN_TOSS
 	call DrawDuelBoxMessage
@@ -2323,7 +2287,6 @@ ChooseInitialArenaAndBenchPokemon:
 	ld a, PRACTICEDUEL_VERIFY_INITIAL_PLAY
 	call DoPracticeDuelAction
 	jr c, .bench_loop
-	or a
 	ret
 
 
@@ -2334,7 +2297,6 @@ ChooseInitialArenaAndBenchPokemon:
 ;	a = $00:  if no Basic Pokemon were drawn
 ;	carry = set:  if no Basic Pokemon were drawn
 ShuffleDeckAndDrawSevenCards:
-	call InitializeDuelVariables
 	ld a, [wDuelType]
 	cp DUELTYPE_PRACTICE
 	jr z, .deck_ready
@@ -2533,7 +2495,7 @@ PlayShuffleAndDrawCardsAnimation:
 	cp 7
 	jr c, .draw_card
 
-	ld c, 30
+	ld c, 10
 .wait_loop
 	call DoFrame
 	call CheckSkipDelayAllowed
@@ -2658,7 +2620,7 @@ DrawDuelMainScene::
 ;.place_player_arena_pkmn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	inc a ; cp -1
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .place_opponent_arena_pkmn
 	ld a, $d0 ; v0Tiles1 + $50 tiles
 	lb hl, 6, 1
@@ -2667,10 +2629,9 @@ DrawDuelMainScene::
 	call FillRectangle
 	call ApplyBGP7OrSGB2ToCardImage
 .place_opponent_arena_pkmn
-	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	inc a ; cp -1
+	call GetNonTurnDuelistVariable
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .place_other_elements
 	ld a, $a0 ; v0Tiles1 + $20 tiles
 	lb hl, 6, 1
@@ -2679,7 +2640,6 @@ DrawDuelMainScene::
 	call FillRectangle
 	call ApplyBGP6OrSGB3ToCardImage
 .place_other_elements
-	rst SwapTurn
 	ld hl, DuelEAndHPTileData
 	call WriteDataBlocksToBGMap0
 	call DrawDuelHorizontalSeparator
@@ -2768,7 +2728,7 @@ DrawDuelHUD:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	cp -1
-	ret z
+	ret z ; return if there's no Active Pokémon
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, 32
 	call CopyCardNameAndLevel
@@ -2831,7 +2791,7 @@ DrawDuelHUD:
 	inc b
 	inc b
 	inc b
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 	call WriteByteToBGMap0
 	jr .check_pluspower
 .twodigits 
@@ -3417,9 +3377,7 @@ OpenTurnHolderDiscardPileScreen:
 	ret
 .discard_pile_empty
 	ldtx hl, TheDiscardPileHasNoCardsText
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
+	jp DrawWideTextBox_WaitForInput_ReturnCarry
 
 
 ; sets wCardListHeaderText and SetCardListInfoBoxText to the text
@@ -3499,7 +3457,7 @@ DrawCardListScreenLayout:
 	ld a, [wDuelTempList]
 	cp $ff
 	scf
-	ret z
+	ret z ; return carry if wDuelTempList is empty
 	or a
 	ret
 
@@ -3532,7 +3490,15 @@ DisplayCardList:
 	call EnableLCD
 .wait_button
 	call DoFrame
-	call .UpdateListOnDPadInput
+	ldh a, [hDPadHeld]
+	and D_PAD
+	jr z, .d_pad_not_pressed
+	ld a, $01
+	ldh [hffb0], a
+	call PrintCardListHeaderAndInfoBoxTexts
+	xor a
+	ldh [hffb0], a
+.d_pad_not_pressed
 	call HandleMenuInput
 	jr nc, .wait_button
 	; refresh the position of the last checked card of the list, so that
@@ -3589,6 +3555,8 @@ DisplayCardList:
 	ld hl, wSelectedDuelSubMenuScrollOffset
 	ld [hld], a
 	ld [hl], $00 ; wSelectedDuelSubMenuItem
+	ld a, SFX_CURSOR
+	call PlaySFX
 .open_card_page
 	; open the card page directly, without an item selection menu
 	; in this mode, D_UP and D_DOWN can be used to open the card page
@@ -3614,17 +3582,6 @@ DisplayCardList:
 .b_pressed
 	ldh a, [hCurMenuItem]
 	scf
-	ret
-
-.UpdateListOnDPadInput:
-	ldh a, [hDPadHeld]
-	and D_PAD
-	ret z
-	ld a, $01
-	ldh [hffb0], a
-	call PrintCardListHeaderAndInfoBoxTexts
-	xor a
-	ldh [hffb0], a
 	ret
 
 
@@ -3839,8 +3796,13 @@ InitializeCardListParameters:
 	ret
 
 
-; this function is always loaded to wMenuUpdateFunc by PrintCardListItems
-; takes care of things like handling page scrolling and calling the function at wListFunctionPointer
+; this function is always loaded to wMenuUpdateFunc by PrintCardListItems.
+; takes care of things like handling page scrolling and calling the function at wListFunctionPointer.
+; output:
+;	carry = set:  if either the A or the B button were pressed (might be different if wListFunctionPointer isn't null)
+;	[wCurMenuItem] = index for the currently selected item (based on the number of items on screen)
+;	[hCurMenuItem] = index for the currently selected item (based on the number of items in the list)
+;	               = -1:  if the B button was pressed (might be different if wListFunctionPointer isn't null)
 CardListMenuFunction:
 	ldh a, [hDPadHeld]
 	ld b, a
@@ -3848,10 +3810,11 @@ CardListMenuFunction:
 	dec a
 	ld c, a
 	ld a, [wCurMenuItem]
+; check d up
 	bit D_UP_F, b
-	jr z, .not_up
-	cp c
-	jp nz, .continue
+	jr z, .check_d_down
+	cp c ; check if wCurMenuItem is the last visible item (because cursor wrapped around)
+	jp nz, .continue ; ignore up input if no scrolling occurred
 	; we're at the top of the page
 	xor a
 	ld [wCurMenuItem], a ; set to first item
@@ -3860,13 +3823,12 @@ CardListMenuFunction:
 	or a ; can we scroll up?
 	jr z, .no_more_items
 	dec [hl] ; scroll page up
-	call ReloadCardListItems
-	jp .continue
-.not_up
+	jp .reload_list_and_continue
+.check_d_down
 	bit D_DOWN_F, b
-	jr z, .not_down
-	or a
-	jr nz, .not_last_visible_item
+	jr z, .check_d_left
+	or a ; check if wCurMenuItem is the first visible item (because cursor wrapped around)
+	jp nz, .continue ; ignore down input if no scrolling occurred
 	; we're at the bottom of the page
 	ld a, c
 	ld [wCurMenuItem], a ; set to last item
@@ -3878,33 +3840,22 @@ CardListMenuFunction:
 	jr z, .no_more_items
 	ld hl, wListScrollOffset
 	inc [hl] ; scroll page down
-	call ReloadCardListItems
-	jp .continue
-.not_last_visible_item
-	; this appears to be a redundant check
-	ld hl, wListScrollOffset
-	add [hl]
-	ld hl, wNumListItems
-	cp [hl]
-	jp c, .continue ; should always jump
-	ld hl, wCurMenuItem
-	dec [hl]
+	jr .reload_list_and_continue
 .no_more_items
 	xor a
 	ld [wRefreshMenuCursorSFX], a
-	jp .continue
-.not_down
+	jr .continue
+.check_d_left
 	bit D_LEFT_F, b
-	jr z, .not_left
+	jr z, .check_d_right
 	ld a, [wListScrollOffset]
 	or a
-	jr z, .continue
+	jr z, .continue ; ignore left input if the page hasn't been scrolled
 	ld hl, wNumMenuItems
 	sub [hl]
 	jr c, .top_of_page_reached
 	ld [wListScrollOffset], a
-	call ReloadCardListItems
-	jr .continue
+	jr .reload_list_and_continue
 .top_of_page_reached
 	call EraseCursor
 	ld a, [wListScrollOffset]
@@ -3920,15 +3871,14 @@ CardListMenuFunction:
 	xor a
 	ld [wListScrollOffset], a
 	ld [wRefreshMenuCursorSFX], a
-	call ReloadCardListItems
-	jr .continue
-.not_left
+	jr .reload_list_and_continue
+.check_d_right
 	bit D_RIGHT_F, b
 	jr z, .continue
 	ld a, [wNumMenuItems]
 	ld hl, wNumListItems
 	cp [hl]
-	jr nc, .continue
+	jr nc, .continue ; ignore right input if every card in the list can be displayed on the same screen
 	ld a, [wListScrollOffset]
 	ld hl, wNumMenuItems
 	add [hl]
@@ -3937,12 +3887,11 @@ CardListMenuFunction:
 	dec a
 	ld hl, wNumListItems
 	cp [hl]
-	jr nc, .asm_28f9
+	jr nc, .bottom_of_page_reached
 	ld a, c
 	ld [wListScrollOffset], a
-	call ReloadCardListItems
-	jr .continue
-.asm_28f9
+	jr .reload_list_and_continue
+.bottom_of_page_reached
 	call EraseCursor
 	ld a, [wListScrollOffset]
 	ld hl, wCurMenuItem
@@ -3959,6 +3908,7 @@ CardListMenuFunction:
 	add [hl]
 .asm_2914
 	ld [wCurMenuItem], a
+.reload_list_and_continue
 	call ReloadCardListItems
 .continue
 	ld a, [wListScrollOffset]
@@ -4246,32 +4196,19 @@ OpenCardPage:
 	jr .input_loop
 
 
-; displays the previous valid card page of the card at wLoadedCard1 if bit D_LEFT_F
-; of a is set, and the first or next valid card page otherwise.
-; DisplayFirstOrNextCardPage and DisplayPreviousCardPage only call DisplayCardPage
-; when GoToFirstOrNextCardPage and GoToPreviousCardPage respectively return nc,
-; so the "jr c, DisplayCardPage" instructions makes sure the card page switched
-; to is always displayed.
+; displays the previous valid card page of the card at wLoadedCard1
+; if bit D_LEFT_F of a is set, and the first or next valid card page otherwise.
 ; input:
 ;	a = [hKeysPressed]
 DisplayCardPageOnLeftOrRightPressed:
 	bit D_LEFT_F, a
 	jr nz, .left
 ;.right
-	call DisplayFirstOrNextCardPage
-	jr c, DisplayCardPage
-	ret
+	call GoToFirstOrNextCardPage
+	jr DisplayCardPage
 .left
-	call DisplayPreviousCardPage
-	jr c, DisplayCardPage
-	ret
-
-
-; displays the previous valid card page
-DisplayPreviousCardPage:
 	call GoToPreviousCardPage
-	jr nc, DisplayCardPage
-	ret
+	jr DisplayCardPage
 
 
 ; displays the next valid card page or load the first valid card page if [wCardPageNumber] = 0
@@ -4943,8 +4880,8 @@ PrintAttackOrPkmnPowerInformation:
 	inc hl
 	inc hl
 	inc hl
+	ld a, [hli]
 	push hl
-	ld a, [hl]
 	or a
 	jr z, .print_category
 	; print attack damage at 15,(e+1) if non-0
@@ -4954,7 +4891,6 @@ PrintAttackOrPkmnPowerInformation:
 	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 .print_category
 	pop hl
-	inc hl
 	ld a, [hl]
 	and $ff ^ RESIDUAL
 	jr z, .print_energy_cost
@@ -5034,7 +4970,7 @@ PrintPokemonCardPageGenericInformation:
 	ld a, [wLoadedCard1Type]
 .got_color
 	lb bc, 18, 1
-	inc a
+	inc a ; Energy text symbols start at 1, not 0
 	call WriteByteToBGMap0
 ;	fallthrough
 
@@ -5127,8 +5063,7 @@ PrintDownArrowIfSecondDescriptionPage:
 	ld a, [hli]
 	or [hl]
 	ret z
-	ld b, 18
-	ld c, 16
+	lb bc, 18, 16
 	ld a, SYM_CURSOR_D
 	jp WriteByteToBGMap0
 
@@ -5144,8 +5079,7 @@ DisplayCardPage_PokemonAttack1Page2:
 ; draws an up arrow symbol in the bottom right corner of the attack page
 ; preserves de and hl
 PrintUpArrowOnSecondDescriptionPage:
-	ld b, 18
-	ld c, 16
+	lb bc, 18, 16
 	ld a, SYM_CURSOR_U
 	jp WriteByteToBGMap0
 
@@ -5459,27 +5393,18 @@ PrintPokemonCardLength:
 	push de
 	push bc
 	call TwoByteNumberToTxSymbol_TrimLeadingZeros
-	ld a, b
+	ld a, b ; number of digits in the number (discounting any leading zeros)
 	inc a
 	ld [wPokemonLengthPrintOffset], a
 	pop bc
-	push bc
-	push hl
-	call BCCoordToBGMap0Address
-	ld a, [wPokemonLengthPrintOffset]
-	ld b, a
-	pop hl
-	call SafeCopyDataHLtoDE
-	pop bc
+	call CopyDataToBGMap0
 	ld a, [wPokemonLengthPrintOffset]
 	add b
 	ld b, a
 	pop hl
-	push bc
 	ld e, c
 	ld d, b
 	call InitTextPrinting_ProcessTextFromID
-	pop bc
 	inc b
 	ret
 
@@ -5513,19 +5438,18 @@ DisplayPlayAreaScreen:
 	push af
 	ld a, [wPlayAreaScreenLoaded]
 	or a
-	jr nz, .skip_ahead
-	xor a
-	ld [wSelectedDuelSubMenuItem], a
-	inc a ; TRUE
+	jr nz, .start_selection
+	ld [wSelectedDuelSubMenuItem], a ; 0
+	inc a ; 1 (TRUE)
 	ld [wPlayAreaScreenLoaded], a
-.asm_6022
+.reload_screen
 	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
 	call LoadDuelCardSymbolTiles
 	call LoadDuelCheckPokemonScreenTiles
 	call PrintPlayAreaCardList
 	call EnableLCD
-.skip_ahead
+.start_selection
 	ld hl, PlayAreaScreenMenuParameters_ActivePokemonIncluded
 	ld a, [wExcludeArenaPokemon]
 	or a
@@ -5536,18 +5460,18 @@ DisplayPlayAreaScreen:
 	call InitializeMenuParameters
 	ld a, [wNumPlayAreaItems]
 	ld [wNumMenuItems], a
-.asm_604c
+.wait_input
 	call DoFrame
 	call SelectingBenchPokemonMenu
-	jr nc, .asm_6061
+	jr nc, .use_normal_input
 	cp CYCLE_PLAY_AREA_SCREENS
-	jp z, .asm_60ac
+	jp z, .no_carry ; done if using the default SELECT button shortcuts
 	pop af
 	ldh [hTempCardIndex_ff98], a
 	jr OpenPlayAreaScreenForSelection
-.asm_6061
+.use_normal_input
 	call HandleMenuInput
-	jr nc, .asm_604c
+	jr nc, .wait_input
 	ld a, e
 	ld [wSelectedDuelSubMenuItem], a
 	ld a, [wExcludeArenaPokemon]
@@ -5557,17 +5481,18 @@ DisplayPlayAreaScreen:
 	ld b, a
 	ldh a, [hKeysPressed]
 	and b
-	jr z, .asm_6091
+	jr z, .selection_made
+; open card page
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp -1
-	jr z, .asm_6022
+	cp -1 ; empty play area slot?
+	jr z, .reload_screen
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
 	call OpenCardPage_FromCheckPlayArea
-	jr .asm_6022
-.asm_6091
+	jr .reload_screen
+.selection_made
 	ld a, [wExcludeArenaPokemon]
 	ld c, a
 	ldh a, [hCurMenuItem]
@@ -5575,20 +5500,20 @@ DisplayPlayAreaScreen:
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ldh a, [hCurMenuItem]
 	inc a ; cp -1
-	jr z, .asm_60b5
+	jr z, .set_carry ; exit if the B button was pressed
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
 	or a
-	jr z, .skip_ahead
-.asm_60ac
+	jr z, .start_selection ; loop back to the beginning if this Pokémon has 0 HP
+.no_carry
 	pop af
 	ldh [hTempCardIndex_ff98], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hCurMenuItem], a
 	or a
 	ret
-.asm_60b5
+.set_carry
 	pop af
 	ldh [hTempCardIndex_ff98], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -5631,22 +5556,24 @@ PlayAreaScreenMenuFunction:
 	ret
 
 
+; handles input upon pressing SELECT during a forced switch,
+; usually after one of the Player's Pokémon has been Knocked Out.
 ; output:
 ;	carry = set:  if this screen was opened with the SELECT duel shortcut
 ;	              and the Player pressed the SELECT button again
 SelectingBenchPokemonMenu:
-	ld a, [wPlayAreaSelectAction]
-	or a
-	ret z ; return if pressing Select does nothing
 	ldh a, [hKeysPressed]
 	and SELECT
-	ret z ; return if the Select button wasn't pressed
+	ret z ; return if the SELECT button wasn't pressed
 	ld a, [wPlayAreaSelectAction]
+	or a
+	ret z ; return if pressing SELECT does nothing
 	cp CYCLE_PLAY_AREA_SCREENS
 	jr z, .return_carry
+	; must be FORCED_SWITCH_CHECK_MENU
 	xor a
 	ld [wCurrentDuelMenuItem], a
-.duel_main_scene
+.open_submenu
 	call DrawDuelMainScene
 	ldtx hl, SelectingBenchPokemonHandExamineBackText
 	call DrawWideTextBox_PrintTextNoDelay
@@ -5663,7 +5590,7 @@ SelectingBenchPokemonMenu:
 	jr nc, .loop_input
 	ldh a, [hKeysPressed]
 	and SELECT
-	jr z, .duel_main_scene
+	jr z, .open_submenu
 .back
 	call InitPlayAreaScreenVars_OnlyBench
 	inc a ; $00 -> $01
@@ -5680,10 +5607,10 @@ SelectingBenchPokemonMenu:
 	jr z, .check_hand
 ; examine
 	call OpenDuelCheckMenu
-	jr .duel_main_scene
+	jr .open_submenu
 .check_hand
 	call OpenTurnHolderHandScreen_Simple
-	jr .duel_main_scene
+	jr .open_submenu
 
 .HandleInput:
 	ldh a, [hDPadHeld]
@@ -5719,8 +5646,9 @@ SelectingBenchPokemonMenu:
 	add d
 	add a
 	add 2
-	ld d, a
-	ld e, 16
+	; a = wCurrentDuelMenuItem * 6 + 2 (either 2, 8, or 14)
+	ld d, a ; cursor x coordinate
+	ld e, 16 ; cursor y coordinate
 	lb bc, SYM_CURSOR_R, SYM_SPACE
 	jp SetCursorParametersForTextBox
 
@@ -5752,15 +5680,16 @@ PrintPlayAreaCardList:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	ld c, a
-	ld b, $00
+	ld b, PLAY_AREA_ARENA
 .print_cards_info_loop
 	; for each Pokemon in the play area, print its information (and location)
 	push bc
 	ld a, b
-	ld [wCurPlayAreaSlot], a
-	add a
-	add b
-	ld [wCurPlayAreaY], a
+	ld hl, wCurPlayAreaSlot
+	ld [hli], a
+	add a ; *2
+	add b ; *3
+	ld [hl], a ; wCurPlayAreaY = wCurPlayAreaSlot * 3
 	ld a, b
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -5776,10 +5705,11 @@ PrintPlayAreaCardList:
 	ld a, b
 	cp MAX_PLAY_AREA_POKEMON
 	jr z, .locations_printed
-	ld [wCurPlayAreaSlot], a
-	add a
-	add b
-	ld [wCurPlayAreaY], a
+	ld hl, wCurPlayAreaSlot
+	ld [hli], a
+	add a ; *2
+	add b ; *3
+	ld [hl], a ; wCurPlayAreaY = wCurPlayAreaSlot * 3
 	push bc
 	call PrintPlayAreaCardLocation
 	pop bc
@@ -5819,9 +5749,9 @@ InitAndPrintPlayAreaCardInformationAndLocation:
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld [hli], a
 	ld c, a
-	add a
-	add c
-	ld [hl], a
+	add a ; *2
+	add c ; *3
+	ld [hl], a ; wCurPlayAreaY = wCurPlayAreaSlot * 3
 ;	fallthrough
 
 ; prints a turn holder's play area Pokemon's name, level, face down stage icon,
@@ -5835,8 +5765,8 @@ PrintPlayAreaCardInformationAndLocation:
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	inc a ; cp -1
-	ret z
+	inc a ; cp -1 (empty play area slot?)
+	ret z ; return if there's no Pokémon in that location
 	call PrintPlayAreaCardInformation
 ;	fallthrough
 
@@ -5844,8 +5774,8 @@ PrintPlayAreaCardInformationAndLocation:
 PrintPlayAreaCardLocation:
 	; print the ACT/BPx indicator
 	ld a, [wCurPlayAreaSlot]
-	add a
-	add a
+	add a ; *2
+	add a ; *4
 	ld e, a
 	ld d, $00
 	ld hl, PlayAreaLocationTileNumbers
@@ -5987,7 +5917,7 @@ PrintPlayAreaCardHeader:
 	ld b, 18
 	ld a, [wCurPlayAreaSlot]
 	call GetPlayAreaCardColor
-	inc a ; TX_SYMBOL color tiles start at 1
+	inc a ; Energy text symbol tiles start at 1, not 0
 	call WriteByteToBGMap0
 	ld b, 14
 	ld a, SYM_Lv
@@ -6033,7 +5963,7 @@ PrintPlayAreaCardHeader:
 	ld a, [hli]
 	or a
 	jr nz, .skip_status
-	ld c, [hl]
+	ld c, [hl] ; wCurPlayAreaY
 	inc c
 	inc c
 	ld b, 2
@@ -6095,7 +6025,7 @@ FaceDownCardTileNumbers:
 CheckPrintPoisoned:
 	push af
 	and POISONED
-	jr z, .print
+	jr z, .print ; use SYM_SPACE
 .poison
 	ld a, SYM_POISONED
 .print
@@ -6159,7 +6089,7 @@ PrintPlayAreaCardAttachedEnergies:
 	ld [hli], a
 	dec c
 	jr nz, .empty_loop
-	pop hl
+	pop hl ; wDefaultText
 	ld de, wAttachedEnergies
 	lb bc, SYM_FIRE, NUM_TYPES - 1
 .next_color
@@ -6213,7 +6143,7 @@ DisplayPlayAreaScreenToUsePkmnPower:
 	cp -1
 	scf
 	ret z ; return carry if the B button was pressed
-	; A button was pressed
+	; A or START button were pressed
 	ld [wSelectedDuelSubMenuItem], a
 	ldh a, [hKeysPressed]
 	and START
@@ -6244,7 +6174,7 @@ DisplayPlayAreaScreenToUsePkmnPower:
 .power_can_be_used
 	ldtx hl, UseThisPokemonPowerText
 	call YesOrNoMenuWithText
-	jr c, .start
+	jr c, .start ; loop back to the beginning if "No" was selected
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	or a
@@ -6284,9 +6214,21 @@ DisplayPlayAreaScreenToUsePkmnPower:
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call SetNextElementOfList
+	; print Pokémon's name, level, type, stage, status, pluspower/defender
 	call PrintPlayAreaCardHeader
+	; print the ACT/BPx indicator
 	call PrintPlayAreaCardLocation
-	call .PrintCardNameIfHasPkmnPower
+	; print name of Pokémon Power (if any power exists)
+	ld a, [wLoadedCard1Atk1Category]
+	cp POKEMON_POWER
+	jr nz, .next ; skip printing name if this Pokémon doesn't have a Pokémon Power
+	ld a, [wCurPlayAreaY]
+	inc a
+	ld e, a
+	ld d, 4
+	ld hl, wLoadedCard1Atk1Name
+	call InitTextPrinting_ProcessTextFromPointerToID
+.next
 	ld a, [wLoadedCard1Atk1Category]
 	call SetNextElementOfList
 	pop bc
@@ -6298,18 +6240,6 @@ DisplayPlayAreaScreenToUsePkmnPower:
 	ld [wNumPlayAreaItems], a
 	jp EnableLCD
 
-; preserves bc
-.PrintCardNameIfHasPkmnPower:
-	ld a, [wLoadedCard1Atk1Category]
-	cp POKEMON_POWER
-	ret nz
-	ld a, [wCurPlayAreaY]
-	inc a
-	ld e, a
-	ld d, 4
-	ld hl, wLoadedCard1Atk1Name
-	jp InitTextPrinting_ProcessTextFromPointerToID
-
 
 ; displays the screen that prompts the player to use the selected card's Pokemon Power.
 ; includes the card's information above, and the Pokemon Power's description below.
@@ -6317,9 +6247,9 @@ DisplayPlayAreaScreenToUsePkmnPower:
 ;	[hTempPlayAreaLocation_ff9d] = Pokemon's play area location offset (PLAY_AREA_* constant)
 DisplayUsePokemonPowerScreen::
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld [wCurPlayAreaSlot], a
-	xor a
-	ld [wCurPlayAreaY], a
+	ld hl, wCurPlayAreaSlot
+	ld [hli], a
+	ld [hl], 0 ; wCurPlayAreaY
 	call ZeroObjectPositionsAndToggleOAMCopy
 	call EmptyScreen
 	call LoadDuelCardSymbolTiles
@@ -6372,26 +6302,12 @@ DisplayOpponentUsedAttackScreen:
 	call LoadCardDataToBuffer1_FromCardID
 	ld a, CARDPAGE_POKEMON_OVERVIEW
 	ld [wCardPageNumber], a
-	ld hl, wLoadedCard1Atk1Name
-	ld a, [wSelectedAttack]
-	or a
-	jr z, .first_atk
-	ld hl, wLoadedCard1Atk2Name
-.first_atk
 	ld e, 1
+	ld hl, wLoadedAttackName
 	call PrintAttackOrPkmnPowerInformation
 	lb de, 1, 4
 	ld hl, wLoadedAttackDescription
 	jr PrintAttackOrCardDescription
-
-
-; after a Trainer card is played, draws its graphic in a card frame and prints "Used xxx"
-; input:
-;	[hTempCardIndex_ff9f] = Trainer card's deck index (0-59)
-DisplayUsedTrainerCardDetailScreen::
-	ldh a, [hTempCardIndex_ff9f]
-	ldtx hl, UsedText
-	jp DisplayCardDetailScreen
 
 
 ; prints the name and description of a Trainer card, along with the
@@ -6624,11 +6540,9 @@ ValidateSavedNonLinkDuelData:
 	ld a, [sCurrentDuelData]
 	call DisableSRAM
 	cp DUELTYPE_LINK
-	jr nz, ValidateSavedDuelData
-	; ignore any saved data of a link duel
 	scf
-	ret
-
+	ret z ; return carry to ignore any saved data from a link duel
+;	fallthrough
 
 ; preserves de
 ; input:
@@ -6852,7 +6766,7 @@ HandleSpecialDuelMainSceneHotkeys:
 .start_pressed
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	cp -1
+	cp -1 ; empty play area slot?
 	jr z, .return_carry
 	call GetCardIDFromDeckIndex
 	call LoadCardDataToBuffer1_FromCardID
@@ -6999,9 +6913,9 @@ AIMakeDecision:
 	ret
 
 
-; actions for the opponent's turn
-; on a link duel, this is referenced by DoLinkOpponentTurn in a loop (on each opponent's HandleTurn)
-; on a non-link duel (vs AI opponent), this is referenced by AIMakeDecision
+; actions for the opponent's turn.
+; on a link duel, this is referenced by DoLinkOpponentTurn in a loop (on each opponent's HandleTurn).
+; on a non-link duel (vs AI opponent), this is referenced by AIMakeDecision.
 OppActionTable:
 	table_width 2, OppActionTable
 	dw DuelTransmissionError
@@ -7393,7 +7307,7 @@ UpdateSubstatusConditions_StartOfTurn::
 	get_turn_duelist_var
 	ld [hl], $0
 	or a
-	ret z ; return if the Active Pokémon isn't affected by any SUBSTATUS1 effects
+	ret z ; return if the Active Pokémon wasn't affected by any SUBSTATUS1 effects
 	cp SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
 	ret nz
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
@@ -7495,7 +7409,7 @@ HandleBetweenTurnsEvents:
 	and CNF_SLP_PRZ
 	cp PARALYZED
 	jr nz, .discard_pluspower
-	; heal paralysis
+	; heal paralysis by erasing everything but Poisoned/Double Poisoned
 	ld a, DOUBLE_POISONED
 	and [hl]
 	ld [hl], a
@@ -7536,7 +7450,7 @@ DiscardAttachedPluspowers:
 	ld [hli], a
 	dec e
 	jr nz, .unattach_pluspower_loop
-	ld de, PLUSPOWER
+	ld bc, PLUSPOWER
 	jr MoveCardToDiscardPileIfInArena
 
 
@@ -7551,16 +7465,14 @@ DiscardAttachedDefenders:
 	ld [hli], a
 	dec e
 	jr nz, .unattach_defender_loop
-	ld de, DEFENDER
+	ld bc, DEFENDER
 ;	fallthrough
 
 ; moves all of the cards with the given card ID in the given player's play area to the discard pile.
 ; input:
-;	de = card ID to check
+;	bc = card ID to check
 ;	h = hWhoseTurn constant (PLAYER_TURN or OPPONENT_TURN)
 MoveCardToDiscardPileIfInArena:
-	ld c, e
-	ld b, d
 	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .next_card
 	dec l ; go through deck indices in reverse order
@@ -7592,7 +7504,7 @@ IsArenaPokemonAsleepOrPoisoned:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
 	or a
-	ret z
+	ret z ; return if the Active Pokémon isn't affected by any Special Conditions
 	; note that POISONED | DOUBLE_POISONED is the same as just DOUBLE_POISONED ($c0)
 	; poison status masking is normally done with PSN_DBLPSN ($f0)
 	and POISONED | DOUBLE_POISONED
@@ -7689,6 +7601,7 @@ PrintCardNameFromCardIDInTextBox:
 ; this is done by flipping a coin and printing various notification texts.
 ; if coin flip is heads, the Asleep Special Condition is removed from the Pokemon.
 ; also plays the appropriate animation (either DUEL_ANIM_SLEEP or DUEL_ANIM_HEAL).
+; preserves hl
 ; input:
 ;	h = hWhoseTurn constant (PLAYER_TURN or OPPONENT_TURN)
 ;	l = DUELVARS_ARENA_CARD_STATUS
@@ -7720,7 +7633,7 @@ HandleSleepCheck:
 ; coin toss was heads, so remove the Asleep condition
 	pop hl
 	push hl
-	ld a, DOUBLE_POISONED
+	ld a, DOUBLE_POISONED ; Poisoned and Double Poisoned
 	and [hl]
 	ld [hl], a
 	ld a, DUEL_ANIM_HEAL
@@ -7741,11 +7654,11 @@ HandleSleepCheck:
 
 ; preserves hl
 ; input:
-;	a = Active Pokémon's Special Conditions status (from DUELVARS_ARENA_CARD_STATUS)
+;	h = hWhoseTurn constant (PLAYER_TURN or OPPONENT_TURN)
+;	l = DUELVARS_ARENA_CARD_STATUS
 ; output:
 ;	carry = set:  if the poison damage reduced the Active Pokémon's HP to 0
 HandlePoisonDamage:
-	or a
 	bit POISONED_F , [hl]
 	ret z ; return if Pokemon isn't Poisoned
 
@@ -7808,7 +7721,7 @@ ApplyStatusConditionQueue::
 	ld a, [hl]
 	or a
 	ret z
-	ld e, [hl]
+	ld e, a
 	ld d, $00
 	ld hl, wStatusConditionQueue
 	add hl, de
@@ -7870,8 +7783,8 @@ ApplyStatusConditionToArenaPokemon:
 	and [hl]
 	inc hl
 	or [hl]
-	inc hl
 	ld [de], a
+	inc hl
 	ret
 
 
@@ -7885,7 +7798,7 @@ HandleDestinyBondSubstatus::
 	ret nz ; return if Destiny Bond isn't active
 	ld l, DUELVARS_ARENA_CARD
 	ld a, [hl]
-	cp -1
+	inc a ; cp -1 (empty play area slot?)
 	ret z ; return if there's no Defending Pokémon
 	ld l, DUELVARS_ARENA_CARD_HP
 	ld a, [hl]
@@ -7922,8 +7835,11 @@ HandleBetweenTurnKnockOuts:
 	call .ClearDamageReductionSubstatus2_AllKnockedOutPokemon
 	xor a
 	ld [wDuelFinishParam], a
+	; have turn holder draw Prizes for each of their opponent's Knocked Out Pokémon
 	rst SwapTurn
-	call .Func_6ef6
+	call Func_6fa5
+	ld hl, wDuelFinishParam
+	rl [hl] ; only update wDuelFinishParam if carry was set
 	rst SwapTurn
 	ld a, [wDuelFinishParam]
 	or a
@@ -7947,9 +7863,15 @@ HandleBetweenTurnKnockOuts:
 	rst SwapTurn
 	ld a, TURN_PLAYER_WON
 	jr .set_duel_finished
+.turn_player_lost
+	ld a, TURN_PLAYER_LOST
+	jr .set_duel_finished
 
 .check_other_player
-	call .Func_6ef6
+	; have non-turn holder draw Prizes for each of their opponent's Knocked Out Pokémon
+	call Func_6fa5
+	ld hl, wDuelFinishParam
+	rl [hl]
 	ld a, [wDuelFinishParam]
 	cp $01
 	jr nz, .try_to_continue_duel
@@ -7957,26 +7879,24 @@ HandleBetweenTurnKnockOuts:
 	rst SwapTurn
 	call CheckIfTurnDuelistPlayAreaPokemonAreAllKnockedOut
 	rst SwapTurn
-	jr c, .try_to_continue_duel
-	; non-turn holder still has at least one Pokémon in the play area with more than 0 HP
-	ld a, TURN_PLAYER_LOST
-	jr .set_duel_finished
+	jr nc, .turn_player_lost ; jump if non-turn holder still has at least one Pokémon in play that isn't KO'd
 
 .try_to_continue_duel
 	rst SwapTurn
-	call .Func_6eff
+	call ReplaceKnockedOutPokemon
+	ld hl, wDuelFinishParam
+	rl [hl]
 	rst SwapTurn
-	call .Func_6eff
+	call ReplaceKnockedOutPokemon
+	ld hl, wDuelFinishParam
+	rl [hl]
 	ld a, [wDuelFinishParam]
-	or a ; DUEL_NOT_FINISHED
+	or a
 	jr nz, .determine_outcome_of_duel
 	xor a
 .clean_up_play_area
 	push af
-	call MoveAllTurnHolderKnockedOutPokemonToDiscardPile
-	rst SwapTurn
-	call MoveAllTurnHolderKnockedOutPokemonToDiscardPile
-	rst SwapTurn
+	call MoveAllKnockedOutPokemonToDiscardPile
 	call ShiftAllPokemonToFirstPlayAreaSlots
 	pop af
 	ret
@@ -7998,21 +7918,6 @@ HandleBetweenTurnKnockOuts:
 	db TURN_PLAYER_WON,   TURN_PLAYER_TIED, TURN_PLAYER_WON,  TURN_PLAYER_WON
 	db TURN_PLAYER_TIED,  TURN_PLAYER_LOST, TURN_PLAYER_WON,  TURN_PLAYER_TIED
 
-; handles the non-turn holder drawing Prizes for each of the turn holder's KO'd Pokémon.
-; wDuelFinishParam is updated if the non-turn holder drew all of their Prize cards.
-.Func_6ef6:
-	call Func_6fa5
-	ld hl, wDuelFinishParam
-	rl [hl]
-	ret
-
-; handles the turn holder replacing their Active Pokemon after it's been Knocked Out.
-; wDuelFinishParam is updated if the turn holder has no more Pokemon in the play area.
-.Func_6eff:
-	call ReplaceKnockedOutPokemon
-	ld hl, wDuelFinishParam
-	rl [hl]
-	ret
 
 ; clears SUBSTATUS2_CANNOT_ATTACK_THIS, SUBSTATUS2_REDUCE_BY_10,
 ; and SUBSTATUS2_REDUCE_BY_20 for each Active Pokemon with 0 HP
@@ -8048,6 +7953,14 @@ ClearDamageReductionSubstatus2::
 	ld [hl], 0
 	ret
 
+
+; moves each Pokémon with 0 HP in either play area to the discard pile (and any attached cards).
+; preserves bc
+MoveAllKnockedOutPokemonToDiscardPile:
+	rst SwapTurn
+	call MoveAllTurnHolderKnockedOutPokemonToDiscardPile
+	rst SwapTurn
+;	fallthrough
 
 ; for each Pokemon in the turn holder's play area (Arena and Bench),
 ; move that card to the discard pile if its HP is 0
@@ -8214,7 +8127,7 @@ CountKnockedOutPokemon:
 	lb bc, 0, MAX_PLAY_AREA_POKEMON
 .loop
 	ld a, [de]
-	inc a ; cp -1
+	inc a ; cp -1 (empty play area slot?)
 	jr z, .next ; jump if no Pokemon in this location
 	ld a, [hli]
 	or a
@@ -8275,7 +8188,10 @@ TurnDuelistTakePrizes:
 	ret
 
 .opponent
-	call .Func_588a
+	ldh a, [hWhoseTurn]
+	ld h, a
+	ld l, PLAYER_TURN
+	call DrawYourOrOppPlayAreaScreen_Bank0
 	ldtx hl, WillDrawNPrizesText
 	call DrawWideTextBox_PrintText
 	call CountPrizes
@@ -8312,12 +8228,6 @@ TurnDuelistTakePrizes:
 	ldtx hl, DrewNPrizesText
 	call DrawWideTextBox_WaitForInput
 	jr .return_has_prizes
-
-.Func_588a:
-	ld l, PLAYER_TURN
-	ldh a, [hWhoseTurn]
-	ld h, a
-	jp DrawYourOrOppPlayAreaScreen_Bank0
 
 
 ; preserves de and b
@@ -8370,11 +8280,17 @@ InitVariablesToBeginDuel:
 	ret
 
 
+InitDuelVariables_BothDuelists:
+	rst SwapTurn
+	call InitDuelVariables_TurnDuelist
+	rst SwapTurn
+;	fallthrough
+
 ; initializes duel variables such as cards in the deck and hand or Pokemon in the play area
 ; player turn: [c200, c2ff]
 ; opponent turn: [c300, c3ff]
 ; preserves de
-InitializeDuelVariables:
+InitDuelVariables_TurnDuelist:
 	ld a, DUELVARS_DUELIST_TYPE
 	get_turn_duelist_var
 	push hl
@@ -8384,18 +8300,18 @@ InitializeDuelVariables:
 .zero_duel_variables_loop
 	ld [hl], a
 	inc l
-	jr nz, .zero_duel_variables_loop
+	jr nz, .zero_duel_variables_loop ; wPlayerDuelVariables and wOpponentDuelVariables are each exactly $100 bytes long
 	pop af
 	pop hl
 	ld [hl], a
-	lb bc, DUELVARS_CARD_LOCATIONS, DECK_SIZE
+	lb bc, 0, DECK_SIZE
 	ld l, DUELVARS_DECK_CARDS
 .init_duel_variables_loop
 ; zero card locations and cards in hand, and init order of cards in deck
 	push hl
-	ld [hl], b
-	ld l, b
-	ld [hl], $0
+	ld [hl], b ; add current deck index to deck cards
+	ld l, b ; DUELVARS_CARD_LOCATIONS + current deck index
+	ld [hl], CARD_LOCATION_DECK
 	pop hl
 	inc l
 	inc b
@@ -8403,43 +8319,50 @@ InitializeDuelVariables:
 	jr nz, .init_duel_variables_loop
 	ld l, DUELVARS_ARENA_CARD
 	ld c, MAX_PLAY_AREA_POKEMON + 1
+	ld a, -1
 .init_play_area
 ; initialize to $ff cards in Arena and Bench (plus a terminator)
-	ld [hl], -1
-	inc l
+	ld [hli], a
 	dec c
 	jr nz, .init_play_area
 	ret
 
 
+; draws [wDuelInitialPrizes] cards from each player's deck and places them as Prizes:
+; writes their deck indices to DUELVARS_PRIZE_CARDS, sets their location to
+; CARD_LOCATION_PRIZE, and sets [wDuelInitialPrizes] bits of DUELVARS_PRIZES.
+InitPrizes_BothDuelists:
+	rst SwapTurn
+	call InitPrizes_TurnDuelist
+	rst SwapTurn
+;	fallthrough
+
 ; draws [wDuelInitialPrizes] cards from the turn holder's deck and places them as Prizes:
 ; writes their deck indices to DUELVARS_PRIZE_CARDS, sets their location to
 ; CARD_LOCATION_PRIZE, and sets [wDuelInitialPrizes] bits of DUELVARS_PRIZES.
-InitTurnDuelistPrizes:
+InitPrizes_TurnDuelist:
 	ldh a, [hWhoseTurn]
 	ld h, a
 	ld d, a
 	ld e, DUELVARS_PRIZE_CARDS
 	ld a, [wDuelInitialPrizes]
 	ld c, a
-	ld b, 0
+	ld b, a
 .draw_prizes_loop
 	call DrawCardFromDeck
 	ld [de], a
 	inc de
 	ld l, a
 	ld [hl], CARD_LOCATION_PRIZE
-	inc b
-	ld a, b
-	cp c
+	dec b
 	jr nz, .draw_prizes_loop
-	push hl
+	ld b, h
 	ld e, c
 	ld d, $00
 	ld hl, PrizeBitmasks
 	add hl, de
 	ld a, [hl]
-	pop hl
+	ld h, b
 	ld l, DUELVARS_PRIZES
 	ld [hl], a
 	ret
@@ -8518,14 +8441,14 @@ ClearNonTurnTemporaryDuelvars::
 	ld a, DUELVARS_ARENA_CARD_DISABLED_ATTACK_INDEX
 	call GetNonTurnDuelistVariable
 	xor a
-	ld [hli], a
-	ld [hli], a
-	ld [hli], a
-	ld [hli], a
-	ld [hli], a
-	ld [hli], a
-	ld [hli], a
-	ld [hl], a
+	ld [hli], a ; w*ArenaCardDisabledAttackIndex
+	ld [hli], a ; w*ArenaCardLastTurnDamage + 0
+	ld [hli], a ; w*ArenaCardLastTurnDamage + 1
+	ld [hli], a ; w*ArenaCardLastTurnStatus
+	ld [hli], a ; w*ArenaCardLastTurnSubstatus2
+	ld [hli], a ; w*ArenaCardLastTurnChangeWeak
+	ld [hli], a ; w*ArenaCardLastTurnEffect
+	ld [hl], a  ; wc2f9/wc3f9 (unused duel variable?)
 	ret
 
 
@@ -8722,6 +8645,7 @@ UsePokemonPower:
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	jp SetOppAction_SerialSendDuelData
 
+
 ; input:
 ;	hl = text ID
 ; output:
@@ -8741,12 +8665,6 @@ DrawWideTextBox_WaitForInput_ReturnCarry:
 	scf
 	ret
 
-
-; preserves bc and de
-ClearNonTurnTemporaryDuelvars_ResetCarry:
-	call ClearNonTurnTemporaryDuelvars
-	or a
-	ret
 
 ; uses an attack (from DuelMenu_Attack) or a Pokemon Power (from DuelMenu_PkmnPower)
 ; input:
@@ -8780,7 +8698,7 @@ UseAttackOrPokemonPower::
 .sand_attack_smokescreen
 	call SendAttackDataToLinkOpponent
 	call HandleSmokescreenSubstatus
-	jr c, ClearNonTurnTemporaryDuelvars_ResetCarry
+	jp c, ClearNonTurnTemporaryDuelvars
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
 	call TryExecuteEffectCommandFunction
 	ret c
@@ -8852,7 +8770,7 @@ HandleAfterDamageEffects::
 	call TryExecuteEffectCommandFunction
 	pop af
 	ld [wTempNonTurnDuelistCardID], a
-	call HandleStrikesBack_AgainstResidualAttack
+	call HandleStrikesBack_AgainstNormalAttack
 	call ApplyStatusConditionQueue
 	call Func_1bb4
 	call UpdateArenaCardLastTurnDamage
@@ -8870,6 +8788,7 @@ HandleAfterDamageEffects::
 ;	c = wDamageEffectiveness constant (to print WEAK or RESIST if necessary)
 ;	de = damage dealt by the attack
 ;	h = hWhoseTurn constant  (for animation screen coordinates)
+;	l = DUELVARS_ARENA_CARD_HP
 ;	[wLoadedAttackAnimation] = which animation to play (ATK_ANIM_* constant)
 PlayAttackAnimation_DealAttackDamageSimple::
 	push hl
@@ -8920,7 +8839,7 @@ CheckSmokescreenSubstatus:
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	get_turn_duelist_var
 	or a
-	ret z
+	ret z ; return if the Active Pokémon isn't affected by any SUBSTATUS2 effects
 	ldtx de, SmokescreenCheckText
 	cp SUBSTATUS2_SMOKESCREEN
 	jr z, .card_is_affected
@@ -8945,9 +8864,7 @@ HandleSmokescreenSubstatus:
 	ccf
 	ret nc ; return if heads
 	ldtx hl, AttackUnsuccessfulText
-	call DrawWideTextBox_WaitForInput
-	scf
-	ret
+	jp DrawWideTextBox_WaitForInput_ReturnCarry
 
 
 ; flips a coin to see whether or not a Confused Pokemon will attack itself
@@ -9033,14 +8950,13 @@ PrintFailedEffectText:
 	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
 	ld hl, wTxRam2
 	ld [hli], a
-	ld [hl], a
-	ld hl, wLoadedAttackName
-	ld de, wTxRam2_b
-	ld a, [hli]
-	ld [de], a
+	ld [hli], a
+	ld de, wLoadedAttackName
+	ld a, [de]
 	inc de
-	ld a, [hli]
-	ld [de], a
+	ld [hli], a ; wTxRam2_b
+	ld a, [de]
+	ld [hl], a
 	ldtx hl, WasUnsuccessfulText
 	call DrawWideTextBox_PrintText
 	scf
@@ -9104,13 +9020,12 @@ ApplyDamageModifiers_DamageToTarget:
 	ld [wDamageEffectiveness], a
 	ld hl, wDamage
 	ld a, [hli]
-	or [hl]
+	ld d, [hl]
+	ld e, a
+	or d
 	jp z, PreventAllDamage ; set de to 0 if wDamage = 0
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
-	ld d, [hl]
-	dec hl
-	ld e, [hl]
 	bit UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
 	jr z, .safe
 	res UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
@@ -9120,9 +9035,6 @@ ApplyDamageModifiers_DamageToTarget:
 	jr .check_pluspower_and_defender
 .safe
 	call HandleDoubleDamageSubstatus
-	ld a, e
-	or d
-	ret z
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	call GetPlayAreaCardColor
 	call TranslateColorToWR
@@ -9207,7 +9119,7 @@ ApplyTransparencyIfApplicable:
 ;	[wLoadedAttack] = Attacking Pokémon card's attack data (atk_data_struct)
 ;	[wTempTurnDuelistCardID] = Attacking Pokémon's card ID
 ;	[wTempNonTurnDuelistCardID] = Defending Pokémon's card ID
-HandleStrikesBack_AgainstResidualAttack:
+HandleStrikesBack_AgainstNormalAttack:
 	ld a, [wTempNonTurnDuelistCardID]
 	cp MACHAMP
 	ret nz ; return if the Defending Pokemon isn't a Machamp

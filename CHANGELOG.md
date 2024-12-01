@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **November 29, 2024:** 12 Files Changed
+- **December 1, 2024:** 1 File Changed
+    - Make a wide variety of small optimizations throughout engine/duel/core.asm (plus some label and comment changes)
+
+<br/>
+
+- **[November 29, 2024](https://github.com/Sha0den/poketcg_v2/commit/7df3379c8db9846c89243ae6efb319fff9835c3f):** 12 Files Changed
     - Replace `sla a` with `add a` (instances in engine/menus/deck_machine.asm not included; they'll be changed in an upcoming update)
 
 <br/>
