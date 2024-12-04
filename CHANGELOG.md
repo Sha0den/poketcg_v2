@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **December 1, 2024:** 1 File Changed
+- **December 4, 2024:** 8 Files Changed
+    - Major update to the engine/menus files associated with decks and deck building, refactoring A LOT of code and relabeling numerous subroutines
+
+<br/>
+
+- **[December 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/a88234c5bf7b12580d6f788b6e72599b09af66a5):** 1 File Changed
     - Make a wide variety of small optimizations throughout engine/duel/core.asm (plus some label and comment changes)
 
 <br/>

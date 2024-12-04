@@ -1308,6 +1308,10 @@ PauseMenu_Card:
 	ldh [hSCY], a
 	call Set_OBJ_8x16
 	call SetDefaultPalettes
+	ld hl, wHandlePlayersCardsScreenPointer
+	xor a
+	ld [hli], a
+	ld [hl], a
 	farcall HandlePlayersCardsScreen
 	jp Set_OBJ_8x8
 

@@ -31,13 +31,22 @@ HandleDeckMissingCardsList:
 	call InitCardSelectionParams
 	ld a, [wNumUniqueCards]
 	ld [wNumCardListEntries], a
-	cp $05
+	cp 5
 	jr c, .got_num_positions
-	ld a, $05
+	ld a, 5 ; display the maximum number of visible entries
 .got_num_positions
 	ld [wCardListNumCursorPositions], a
 	ld [wNumVisibleCardListEntries], a
-	call .PrintTitleAndList
+
+; draw the screen
+	call EmptyScreenAndLoadFontDuelAndDeckIcons
+	call .PrintDeckIndexAndName
+	call EnableLCD
+	ld hl, wCardListCoords
+	ld [hl], 3 ; initial y coordinate
+	inc hl
+	ld [hl], 3 ; initial x coordinate
+	call PrintConfirmationCardList
 	ld hl, wCardConfirmationText
 	ld a, [hli]
 	ld h, [hl]
@@ -48,8 +57,7 @@ HandleDeckMissingCardsList:
 	ld hl, wCardListUpdateFunction
 	ld a, LOW(.CardListUpdateFunction)
 	ld [hli], a
-	ld a, HIGH(.CardListUpdateFunction)
-	ld [hl], a
+	ld [hl], HIGH(.CardListUpdateFunction)
 	xor a
 	ld [wced2], a
 
@@ -62,28 +70,21 @@ HandleDeckMissingCardsList:
 	ldh a, [hDPadHeld]
 	and START
 	jr z, .loop_input
+	; START button was pressed
 
-.open_card_pge
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+.open_card_page
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	ld a, [wCardListCursorPos]
 	ld [wced7], a
-
-	; set wOwnedCardsCountList as the current card list
-	; and then show the card page screen
 	ld de, wOwnedCardsCountList
-	ld hl, wCurCardListPtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
 	call OpenCardPageFromCardList
 	jr .loop
 
 .selection_made
-	ldh a, [hffb3]
-	cp $ff
-	ret z
-	jr .open_card_pge
+	cp -1
+	ret z ; exit if the B button was pressed
+	jr .open_card_page
 
 .DeckConfirmationCardSelectionParams
 	db 0 ; x position
@@ -109,20 +110,6 @@ HandleDeckMissingCardsList:
 	ld [hl], $00
 	jp PrintConfirmationCardList
 
-.PrintTitleAndList
-	call .ClearScreenAndPrintDeckTitle
-	lb de, 3, 3
-	ld hl, wCardListCoords
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	jp PrintConfirmationCardList
-
-.ClearScreenAndPrintDeckTitle
-	call EmptyScreenAndLoadFontDuelAndDeckIcons
-	call .PrintDeckIndexAndName
-	jp EnableLCD
-
 ; prints text in the form "X.<DECK NAME> deck",
 ; where X is the deck index in the list
 .PrintDeckIndexAndName
@@ -135,7 +122,7 @@ HandleDeckMissingCardsList:
 	call ConvertToNumericalDigits
 	ld a, TX_FULLWIDTH3
 	ld [hli], a
-	ld [hl], $7b ; Period
+	ld [hl], "FW3_." ; period punctuation mark
 	inc hl
 	ld [hl], TX_END
 	ld hl, wDefaultText
@@ -162,17 +149,15 @@ HandleDeckMissingCardsList:
 HandleDeckSaveMachineMenu:
 	xor a
 	ld [wCardListVisibleOffset], a
-	ldtx de, DeckSaveMachineText
 	ld hl, wDeckMachineTitleText
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(DeckSaveMachineText_)
+	ld [hli], a
+	ld [hl], HIGH(DeckSaveMachineText_)
 	call ClearScreenAndDrawDeckMachineScreen
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
-
 	xor a
-.wait_input
+.start_selection
 	ld hl, DeckMachineSelectionParams
 	call InitCardSelectionParams
 	call DrawListScrollArrows
@@ -182,7 +167,7 @@ HandleDeckSaveMachineMenu:
 	ldtx de, PleaseSelectDeckText
 	call InitDeckMachineDrawingParams
 	call HandleDeckMachineSelection
-	jr c, .wait_input
+	jr c, .start_selection
 	cp -1
 	ret z ; exit if the B button was pressed
 	; get the index of the selected deck
@@ -200,74 +185,64 @@ HandleDeckSaveMachineMenu:
 	call HandleCheckMenuInput
 	jr nc, .wait_input_submenu
 	cp -1
-	jr nz, .submenu_option_selected
-	; return from submenu
-	ld a, [wTempDeckMachineCursorPos]
-	jr .wait_input
+	jr z, .restart_selection ; close submenu if the B button was pressed
 
 .submenu_option_selected
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld hl, wCheckMenuCursorXPosition
 	add [hl]
+	; a = 2 * cursor y position + cursor x position
 	or a
-	jr nz, .ok_1
+	jr nz, .check_second_submenu_option
 
 ; Save a Deck
 	call CheckIfSelectedDeckMachineEntryIsEmpty
-	jr nc, .prompt_ok_if_deleted
-	call SaveDeckInDeckSaveMachine
-	ld a, [wTempDeckMachineCursorPos]
-	jr c, .wait_input
-	jr .return_to_list
-.prompt_ok_if_deleted
+	jr c, .save_deck
+	; slot isn't empty, so ask if it's okay to replace the current entry
 	ldtx hl, OKIfFileDeletedText
 	call YesOrNoMenuWithText
-	ld a, [wTempDeckMachineCursorPos]
-	jr c, .wait_input
+	jr c, .restart_selection ; cancel save if the Player answered "No"
+.save_deck
 	call SaveDeckInDeckSaveMachine
-	ld a, [wTempDeckMachineCursorPos]
-	jr c, .wait_input
-	jr .return_to_list
-
-.ok_1
-	cp $1
-	jr nz, .ok_2
-
-; Delete a Deck
-	call CheckIfSelectedDeckMachineEntryIsEmpty
-	jr c, .is_empty
-	call TryDeleteSavedDeck
-	ld a, [wTempDeckMachineCursorPos]
-	jp c, .wait_input
-	jr .return_to_list
-
-; Empty Deck
-.is_empty
-	ldtx hl, NoDeckIsSavedText
-	call DrawWideTextBox_WaitForInput
-	ld a, [wTempDeckMachineCursorPos]
-	jp .wait_input
-
-.ok_2
-	cp $2
-	ret nz ; cancel
-
-; Build a Deck
-	call CheckIfSelectedDeckMachineEntryIsEmpty
-	jr c, .is_empty
-	call TryBuildDeckMachineDeck
-	ld a, [wTempDeckMachineCursorPos]
-	jp nc, .wait_input
-
-.return_to_list
+	jr c, .restart_selection
+.redraw_screen_and_restart_selection
 	ld a, [wTempCardListVisibleOffset]
 	ld [wCardListVisibleOffset], a
 	call ClearScreenAndDrawDeckMachineScreen
 	call DrawListScrollArrows
 	call PrintNumSavedDecks
+.restart_selection
 	ld a, [wTempDeckMachineCursorPos]
-	jp .wait_input
+	jr .start_selection
+
+.check_second_submenu_option
+	dec a
+	jr nz, .check_third_submenu_option
+
+; Delete a Deck
+	call CheckIfSelectedDeckMachineEntryIsEmpty
+	jr c, .is_empty
+	call TryDeleteSavedDeck
+	jr nc, .redraw_screen_and_restart_selection
+	jr .restart_selection
+
+; Empty Deck
+.is_empty
+	ldtx hl, NoDeckIsSavedText
+	call DrawWideTextBox_WaitForInput
+	jr .restart_selection
+
+.check_third_submenu_option
+	dec a
+	ret nz ; must be fourth submenu option "Cancel"
+
+; Build a Deck
+	call CheckIfSelectedDeckMachineEntryIsEmpty
+	jr c, .is_empty
+	call TryBuildDeckMachineDeck
+	jr c, .redraw_screen_and_restart_selection
+	jr .restart_selection
 
 .DeckMachineMenuData
 	textitem  2, 14, SaveADeckText
@@ -292,8 +267,7 @@ InitDeckMachineDrawingParams:
 	ld hl, wCardListUpdateFunction
 	ld a, LOW(DrawDeckMachineScreen)
 	ld [hli], a
-	ld a, HIGH(DrawDeckMachineScreen)
-	ld [hl], a
+	ld [hl], HIGH(DrawDeckMachineScreen)
 	xor a
 	ld [wced2], a
 	ret
@@ -352,8 +326,8 @@ HandleDeckMachineSelection:
 
 ; show deck confirmation screen with deck cards
 ; and return with the carry flag set
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	call OpenDeckConfirmationMenu
 	ld a, [wTempCardListVisibleOffset]
 	ld [wCardListVisibleOffset], a
@@ -430,7 +404,7 @@ HandleDeckMachineSelection:
 ;	              selected in the Deck Machine menu is empty
 CheckIfSelectedDeckMachineEntryIsEmpty:
 	ld a, [wSelectedDeckMachineEntry]
-	sla a
+	add a
 	ld l, a
 	ld h, $0
 	ld bc, wMachineDeckPtrs
@@ -451,7 +425,7 @@ CheckIfSelectedDeckMachineEntryIsEmpty:
 
 ClearScreenAndDrawDeckMachineScreen:
 	call Set_OBJ_8x8
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call ZeroObjectPositions
 	call EmptyScreen
@@ -558,7 +532,7 @@ PrintVisibleDeckMachineEntries:
 ; also checks whether the deck can be built, either directly from the player's collection
 ; or by dismantling other decks, and places the corresponding symbol next to the name.
 ; input:
-;	a = wMachineDeckPtrs index
+;	a = index for the entry that should be printed
 ;	de = screen coordinates for printing the text
 ; output:
 ;	carry = set:  if the deck from input is not valid, i.e. it has no cards
@@ -566,12 +540,12 @@ PrintDeckMachineEntry:
 	ld b, a
 	push bc
 	ld hl, wDefaultText
-	inc a
+	inc a ; entry indices start at 0, not 1
 	call ConvertToNumericalDigits
 	ld a, TX_FULLWIDTH3
 	ld [hli], a
-	ld [hl], $7b ; Period
-	inc hl
+	ld a, "FW3_." ; period punctuation mark
+	ld [hli], a
 	ld [hl], TX_END
 	ld hl, wDefaultText
 	call InitTextPrinting_ProcessText
@@ -580,7 +554,7 @@ PrintDeckMachineEntry:
 ; get the deck corresponding to the index from input
 ; and append its name to wDefaultText
 	push af
-	sla a
+	add a ; 2 * index (pointers are 2 bytes)
 	ld l, a
 	ld h, $0
 	ld bc, wMachineDeckPtrs
@@ -624,7 +598,7 @@ PrintDeckMachineEntry:
 	lb de, TX_FULLWIDTH3, "FW3_○" ; can build
 	; fallthrough
 
-.asm_b4c2
+.print_build_status_symbol
 	call Func_22ca
 	pop de
 	ld d, 13
@@ -641,7 +615,7 @@ PrintDeckMachineEntry:
 	jr c, .cannot_build_at_all
 	pop bc
 	lb de, TX_FULLWIDTH3, "FW3_※" ; can build by dismantling
-	jr .asm_b4c2
+	jr .print_build_status_symbol
 
 .cannot_build_at_all
 	lb de, TX_FULLWIDTH0, "FW0_×" ; cannot build even by dismantling
@@ -651,11 +625,9 @@ PrintDeckMachineEntry:
 
 ; place in wDefaultText the number of cards
 ; that are needed in order to build the deck
-	push bc
 	ld d, 17
 	inc e
 	call InitTextPrinting
-	pop bc
 	call .GetNumCardsMissingToBuildDeck
 	ld hl, wDefaultText
 	call ConvertToNumericalDigits
@@ -670,7 +642,7 @@ PrintDeckMachineEntry:
 	done
 
 ; input:
-;	b = index for wMachineDeckPtrs
+;	b = index for the current deck machine entry
 ; output:
 ;	a = how many cards the player still needs before being able to build the deck
 .GetNumCardsMissingToBuildDeck
@@ -694,12 +666,8 @@ PrintDeckMachineEntry:
 
 	call EnableSRAM
 	ld de, wTempCardCollection
-	lb bc, 0, 0
+	lb bc, DECK_SIZE, 0
 .loop
-	inc b
-	ld a, DECK_SIZE
-	cp b
-	jr c, .done
 	ld a, [hli]
 	push hl
 	ld l, a
@@ -709,17 +677,17 @@ PrintDeckMachineEntry:
 	and CARD_COUNT_MASK
 	or a
 	jr z, .none
-	dec a
-	ld [hl], a
+	dec [hl]
+.next
 	pop hl
-	jr .loop
-.none
-	inc c
-	pop hl
-	jr .loop
+	dec b
+	jr nz, .loop
 .done
 	ld a, c
 	jp DisableSRAM
+.none
+	inc c
+	jr .next
 
 
 ; output:
@@ -735,11 +703,10 @@ GetSavedDeckCount:
 	jr z, .empty_slot
 	inc e
 .empty_slot
-	dec d
-	jr z, .got_count
 	add hl, bc
-	jr .loop
-.got_count
+	dec d
+	jr nz, .loop
+; got count
 	ld a, e
 	ld [wNumSavedDecks], a
 	jp DisableSRAM
@@ -770,17 +737,17 @@ SaveDeckInDeckSaveMachine:
 	ld a, ALL_DECKS
 	call DrawDecksScreen
 	xor a
-.wait_input
+.start_selection
 	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	ldtx hl, ChooseADeckToSaveText
 	call DrawWideTextBox_PrintText
-.wait_submenu_input
+.wait_input
 	call DoFrame
 	call HandleStartButtonInDeckSelectionMenu
-	jr c, .wait_input
+	jr c, .start_selection
 	call HandleMenuInput
-	jr nc, .wait_submenu_input
+	jr nc, .wait_input
 	cp -1
 	ret z ; exit if the B button was pressed
 	ld [wCurDeck], a
@@ -788,8 +755,7 @@ SaveDeckInDeckSaveMachine:
 	jr nc, .SaveDeckInSelectedEntry
 	; is an empty deck
 	call PrintThereIsNoDeckHereText
-	ld a, [wCurDeck]
-	jr .wait_input
+	jr .start_selection
 
 ; overwrites data in the selected deck in SRAM
 ; with the deck that was chosen, in wCurDeck
@@ -799,9 +765,7 @@ SaveDeckInDeckSaveMachine:
 	call GetPointerToDeckName
 	call GetSelectedSavedDeckPtr
 	ld b, DECK_STRUCT_SIZE
-	call EnableSRAM
-	call CopyNBytesFromHLToDE
-	call DisableSRAM
+	call CopyNBytesFromHLToDEInSRAM
 
 	call ClearScreenAndDrawDeckMachineScreen
 	call DrawListScrollArrows
@@ -842,7 +806,7 @@ GetSelectedSavedDeckPtr:
 	push af
 	push hl
 	ld a, [wSelectedDeckMachineEntry]
-	sla a
+	add a
 	ld e, a
 	ld d, $00
 	ld hl, wMachineDeckPtrs
@@ -855,8 +819,8 @@ GetSelectedSavedDeckPtr:
 	ret
 
 
-; checks if it's possible to build saved deck with index b
-; includes cards from already built decks from flags in a
+; checks if it's possible to build saved deck with index b.
+; includes cards from already built decks based on the flags in a.
 ; input:
 ;	a = DECK_* flags for which decks to include in the collection
 ;	b = saved deck index
@@ -888,12 +852,8 @@ CheckIfCanBuildSavedDeck:
 CheckIfHasEnoughCardsToBuildDeck:
 	call EnableSRAM
 	ld de, wTempCardCollection
-	ld b, 0
+	ld b, DECK_SIZE
 .loop
-	inc b
-	ld a, DECK_SIZE
-	cp b
-	jr c, .no_carry
 	ld a, [hli]
 	push hl
 	ld l, a
@@ -904,19 +864,18 @@ CheckIfHasEnoughCardsToBuildDeck:
 	jr z, .set_carry
 	cp CARD_NOT_OWNED
 	jr z, .set_carry
-	dec a
-	ld [hl], a
+	dec [hl]
 	pop hl
-	jr .loop
+	dec b
+	jr nz, .loop
+	or a
+	jp DisableSRAM
 
 .set_carry
 	pop hl
 	scf
 	jp DisableSRAM
 
-.no_carry
-	or a
-	jp DisableSRAM
 
 
 ; switches to SRAM bank 0 and stores current SRAM bank in wTempBankSRAM.
@@ -980,7 +939,7 @@ FindFirstEmptyDeckSlot:
 	ld a, [hl]
 	or a
 	jr nz, .check_deck_3
-	ld a, 1
+	inc a ; 1
 	ret
 
 .check_deck_3
@@ -1012,7 +971,7 @@ FindFirstEmptyDeckSlot:
 TryDeleteSavedDeck:
 	ldtx hl, DoYouReallyWishToDeleteText
 	call YesOrNoMenuWithText
-	jr c, .no
+	ret c ; return if "No" was selected
 	call GetSelectedSavedDeckPtr
 	ld l, e
 	ld h, d
@@ -1029,25 +988,16 @@ TryDeleteSavedDeck:
 	ld [hli], a
 	ld [hl], a
 	ldtx hl, DeletedTheConfigurationForText
-	call DrawWideTextBox_WaitForInput
-	or a
-	ret
-
-.no
-	ld a, [wCardListCursorPos]
-	scf
-	ret
+	jp DrawWideTextBox_WaitForInput
 
 
 ; preserves de and hl
 DrawListScrollArrows:
 	ld a, [wCardListVisibleOffset]
 	or a
-	jr z, .no_up_cursor
-	ld a, SYM_CURSOR_U
-	jr .got_tile_1
-.no_up_cursor
 	ld a, SYM_BOX_RIGHT
+	jr z, .got_tile_1
+	ld a, SYM_CURSOR_U
 .got_tile_1
 	lb bc, 19, 1
 	call WriteByteToBGMap0
@@ -1082,7 +1032,7 @@ HandleDismantleDeckToMakeSpace:
 	ld a, ALL_DECKS
 	call DrawDecksScreen
 	xor a
-.init_menu_params
+.start_selection
 	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	ldtx hl, ChooseADeckToDismantleText
@@ -1090,7 +1040,7 @@ HandleDismantleDeckToMakeSpace:
 .loop_input
 	call DoFrame
 	call HandleStartButtonInDeckSelectionMenu
-	jr c, .init_menu_params
+	jr c, .start_selection
 	call HandleMenuInput
 	jr nc, .loop_input
 	cp -1
@@ -1104,11 +1054,9 @@ HandleDismantleDeckToMakeSpace:
 	ld [wCurDeck], a
 	ldtx hl, DismantleThisDeckText
 	call YesOrNoMenuWithText
-	jr nc, .dismantle
 	ld a, [wCurDeck]
-	jr .init_menu_params
-
-.dismantle
+	jr c, .start_selection ; loop back to the start if "No" was selected
+	; player chose to dismantle the deck
 	call GetPointerToDeckName
 	push hl
 	ld de, wDismantledDeckName
@@ -1161,23 +1109,12 @@ TryBuildDeckMachineDeck:
 	jr nc, .build_deck
 	ld a, ALL_DECKS
 	call CheckIfCanBuildSavedDeck
-	jr c, .do_not_own_all_cards_needed
+	jp c, .ShowMissingCardList
 	; can only be built by dismantling some deck
 	ldtx hl, ThisDeckCanOnlyBeBuiltIfYouDismantleText
 	call DrawWideTextBox_WaitForInput
 	call .DismantleDecksNeededToBuild
-	jr nc, .build_deck
-	; player chose not to dismantle
-
-.set_carry_and_return
-	ld a, [wCardListCursorPos]
-	scf
-	ret
-
-.do_not_own_all_cards_needed
-	ldtx hl, YouDoNotOwnAllCardsNeededToBuildThisDeckText
-	call DrawWideTextBox_WaitForInput
-	jp .ShowMissingCardList
+	jp c, .set_carry ; return carry if the player chose not to dismantle the deck(s)
 
 .build_deck
 	call EnableSRAM
@@ -1193,9 +1130,9 @@ TryBuildDeckMachineDeck:
 .got_deck_slot
 	ld [wDeckSlotForNewDeck], a
 	ld a, [wSelectedDeckMachineEntry]
+	add a
 	ld c, a
-	ld b, $0
-	sla c
+	ld b, $00
 	ld hl, wMachineDeckPtrs
 	add hl, bc
 	ld a, [hli]
@@ -1251,60 +1188,50 @@ TryBuildDeckMachineDeck:
 	scf
 	ret
 
+
 ; asks the player for confirmation to dismantle decks
 ; needed to build the selected deck from the Deck Save Machine.
 ; if the player selected "Yes", then dismantle the decks.
 ; output:
 ;	carry = set:  if player selected "No"
 .DismantleDecksNeededToBuild
-; shows Decks screen with the names
-; of the decks to be dismantled
+; shows Decks screen with the names of the decks to be dismantled
 	call CheckWhichDecksToDismantleToBuildSavedDeck
 	call SafelySwitchToSRAM0
 	call DrawDecksScreen
 	ldtx hl, DismantleTheseDecksText
 	call YesOrNoMenuWithText
-	jr nc, .yes
-; no
-	call SafelySwitchToTempSRAMBank
-	scf
-	ret
-
-.yes
+	jp c, SafelySwitchToTempSRAMBank ; reset SRAM bank and return carry if "No" was selected
+	; player chose to dismantle the required deck(s)
 	call EnableSRAM
+; deck 1
 	ld a, [wDecksToBeDismantled]
 	bit DECK_1_F, a
-	jr z, .deck_2
 	ld a, DECK_1_F
-	call .DismantleDeck
-.deck_2
+	call nz, .DismantleDeck
+; deck 2
 	ld a, [wDecksToBeDismantled]
 	bit DECK_2_F, a
-	jr z, .deck_3
 	ld a, DECK_2_F
-	call .DismantleDeck
-.deck_3
+	call nz, .DismantleDeck
+; deck 3
 	ld a, [wDecksToBeDismantled]
 	bit DECK_3_F, a
-	jr z, .deck_4
 	ld a, DECK_3_F
-	call .DismantleDeck
-.deck_4
+	call nz, .DismantleDeck
+; deck 4
 	ld a, [wDecksToBeDismantled]
 	bit DECK_4_F, a
-	jr z, .done_dismantling
 	ld a, DECK_4_F
-	call .DismantleDeck
-
-.done_dismantling
+	call nz, .DismantleDeck
+; done dismantling
 	call DisableSRAM
 	ld a, [wDecksToBeDismantled]
 	call DrawDecksScreen
 	call SafelySwitchToTempSRAMBank
 	ldtx hl, DismantledTheDeckText
-	call DrawWideTextBox_WaitForInput
-	or a
-	ret
+	jp DrawWideTextBox_WaitForInput
+
 
 ; dismantles built deck given by a
 ; and adds its cards to the collection
@@ -1324,12 +1251,14 @@ TryBuildDeckMachineDeck:
 	ld a, DECK_STRUCT_SIZE ; number of bytes that will be cleared
 	jp ClearMemory_Bank2
 
-; collects cards missing from the player's collection
-; and shows its confirmation list
+
+; collects cards missing from the player's collection and shows its confirmation list
 ; output:
 ;	carry = set
 .ShowMissingCardList
-; copy saved deck card from SRAM to wCurDeckCards
+	ldtx hl, YouDoNotOwnAllCardsNeededToBuildThisDeckText
+	call DrawWideTextBox_WaitForInput
+; copy saved deck cards from SRAM to wCurDeckCards
 ; and make unique card list sorted by ID
 	ld a, [wSelectedDeckMachineEntry]
 	ld [wCurDeck], a
@@ -1338,11 +1267,9 @@ TryBuildDeckMachineDeck:
 	add hl, de
 	ld de, wCurDeckCards
 	ld b, DECK_SIZE
-	call EnableSRAM
-	call CopyNBytesFromHLToDE
-	call DisableSRAM
+	call CopyNBytesFromHLToDEInSRAM
 	xor a ; terminator byte for deck
-	ld [wCurDeckCards + DECK_SIZE], a
+	ld [de], a
 	call SortCurDeckCardsByID
 	call CreateCurDeckUniqueCardList
 
@@ -1361,14 +1288,12 @@ TryBuildDeckMachineDeck:
 	or a
 	jr z, .finish_missing_card_list
 	ld b, a
-;	push bc
 	push de
 	push hl
 	ld hl, wCurDeckCards
 	call .CheckIfCardIsMissing
 	pop hl
 	pop de
-;	pop bc
 	jr nc, .loop_deck_configuration
 	; this card is missing, so store in wFilteredCardList this card ID
 	; a number of times equal to the amount still needed
@@ -1385,24 +1310,25 @@ TryBuildDeckMachineDeck:
 	xor a ; terminator byte
 	ld [de], a
 
-	ldtx bc, TheseCardsAreNeededToBuildThisDeckText
 	ld hl, wCardConfirmationText
-	ld a, c
+	ld a, LOW(TheseCardsAreNeededToBuildThisDeckText_)
 	ld [hli], a
-	ld a, b
-	ld [hl], a
+	ld [hl], HIGH(TheseCardsAreNeededToBuildThisDeckText_)
 
 	call GetSelectedSavedDeckPtr
 	ld h, d
 	ld l, e
 	ld de, wFilteredCardList
 	call HandleDeckMissingCardsList
-	jp .set_carry_and_return
+.set_carry
+	ld a, [wCardListCursorPos]
+	scf
+	ret
 
 
 ; checks if player has enough cards with ID given in register a
 ; in the collection to build the deck, and if not,
-; sets the carry flag and outputs in a the difference
+; sets the carry flag and outputs in a the difference.
 ; preserves bc
 ; input:
 ;	a = card ID
@@ -1411,66 +1337,37 @@ TryBuildDeckMachineDeck:
 ;	a = number of cards needed to build the deck (only if cannot build)
 ;	carry = set:  if the player doesn't have enough cards to build the deck
 .CheckIfCardIsMissing
-	call .GetCardCountFromDeck
-	ld hl, wTempCardCollection
-	push de
-	call .GetCardCountFromCollection
-	ld a, e
-	pop de
-
-	; d = card count in deck
-	; a = card count in collection
-	cp d
-	jr c, .not_enough
-	or a
-	ret
-
-; needs more cards than the player has in their in collection
-; return with carry set and the number of cards needed in a
-.not_enough
-	ld e, a
-	ld a, d
-	sub e
-	scf
-	ret
-
-; preserves af and bc
-; input:
-;	a = card ID
-;	hl = list of deck cards (e.g. wCurDeckCards)
-; output:
-;	d = how many cards with ID from input are in the deck from input
-.GetCardCountFromDeck
-	push af
+; get card count from deck
 	ld e, a
 	ld d, 0
 .loop_deck_cards
 	ld a, [hli]
 	or a
-	jr z, .done_deck_cards
+	jr z, .get_card_count_from_collection
 	cp e
 	jr nz, .loop_deck_cards
 	inc d
 	jr .loop_deck_cards
-.done_deck_cards
-	pop af
-	ret
 
-; preserves af and bc
-; input:
-;	a = card ID
-;	hl = card collection
-; output:
-;	e = how many cards with ID from input are in the player's collection
-.GetCardCountFromCollection
-	push af
-	ld e, a
-	ld d, $0
+.get_card_count_from_collection
+	push de
+	ld hl, wTempCardCollection
+	ld d, $00
 	add hl, de
+	pop de
 	ld a, [hl]
 	and CARD_COUNT_MASK
+	; d = card count in deck
+	; a = card count in collection
+	cp d
+	ret nc ; return no carry if there are enough of this card in the collection
+
+; needs more cards than the player has in their in collection
+; return with carry set and the number of cards needed in a
 	ld e, a
-	pop af
+	ld a, d
+	sub e
+	scf
 	ret
 
 
@@ -1488,7 +1385,7 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 .loop_single_built_decks
 	call .CheckIfCanBuild
 	ret nc
-	sla a ; next deck
+	add a ; move on to the next deck (each bit is twice the previous bit: 1, 2, 4, 8)
 	cp (1 << NUM_DECKS)
 	jr nz, .loop_single_built_decks
 
@@ -1521,7 +1418,7 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 	cp $ff
 	jr nz, .loop_three_deck_combinations
 
-; finally check if can be built by dismantling all decks
+; finally check if can be built by dismantling all decks (a = $ff)
 ;	fallthrough
 
 ; preserves af
@@ -1549,7 +1446,7 @@ CheckWhichDecksToDismantleToBuildSavedDeck:
 HandleAutoDeckMenu:
 	ld a, [wCurAutoDeckMachine]
 	ld hl, .DeckMachineTitleTextList
-	sla a
+	add a
 	ld c, a
 	ld b, $0
 	add hl, bc
@@ -1566,7 +1463,7 @@ HandleAutoDeckMenu:
 	ld [wNumDeckMachineEntries], a
 	xor a
 
-.please_select_deck
+.start_deck_selection
 	ld hl, .MenuParameters
 	call InitializeMenuParameters
 	ldtx hl, PleaseSelectDeckText
@@ -1576,18 +1473,11 @@ HandleAutoDeckMenu:
 	ld hl, wCardListUpdateFunction
 	ld a, LOW(UpdateDeckMachineScrollArrowsAndEntries)
 	ld [hli], a
-	ld a, HIGH(UpdateDeckMachineScrollArrowsAndEntries)
-	ld [hl], a
+	ld [hl], HIGH(UpdateDeckMachineScrollArrowsAndEntries)
 .wait_input
 	call DoFrame
 	call HandleMenuInput
 	jr c, .deck_selection_made
-
-	; the following lines do nothing
-;	ldh a, [hDPadHeld]
-;	and D_UP | D_DOWN
-;	jr z, .asm_ba4e
-;.asm_ba4e
 
 ; check whether to show deck confirmation list
 	ldh a, [hDPadHeld]
@@ -1624,16 +1514,18 @@ HandleAutoDeckMenu:
 	jr z, .wait_input ; invalid deck
 
 	; show confirmation list
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	call SafelySwitchToSRAM1
 	call OpenDeckConfirmationMenu
 	call SafelySwitchToSRAM0
+.redraw_screen_and_restart_deck_selection
 	ld a, [wTempCardListVisibleOffset]
 	ld [wCardListVisibleOffset], a
 	call .InitAutoDeckMenu
+.restart_deck_selection
 	ld a, [wTempDeckMachineCursorPos]
-	jr .please_select_deck
+	jr .start_deck_selection
 
 .deck_selection_made
 	call DrawCursor2
@@ -1643,7 +1535,7 @@ HandleAutoDeckMenu:
 	ld [wTempDeckMachineCursorPos], a
 	ldh a, [hCurMenuItem]
 	cp -1
-	jr z, .exit ; operation cancelled
+	jr z, .exit ; exit if the B button was pressed
 	ld [wSelectedDeckMachineEntry], a
 	call ResetCheckMenuCursorPositionAndBlink
 	ld [wce5e], a ; 0
@@ -1655,33 +1547,27 @@ HandleAutoDeckMenu:
 	call HandleCheckMenuInput_YourOrOppPlayArea
 	jr nc, .wait_submenu_input
 	cp -1
-	jr nz, .submenu_option_selected
-	ld a, [wTempDeckMachineCursorPos]
-	jp .please_select_deck
+	jr z, .restart_deck_selection ; loop back if the B button was pressed
 
-.submenu_option_selected
 	ld a, [wCheckMenuCursorYPosition]
-	sla a
+	add a
 	ld hl, wCheckMenuCursorXPosition
 	add [hl]
+	; a = 2 * cursor y position + cursor x position
 	or a
-	jr nz, .asm_bb09
+	jr nz, .check_other_submenu_options
 
 ; Build a Deck
 	call SafelySwitchToSRAM1
 	call TryBuildDeckMachineDeck
 	call SafelySwitchToSRAM0
-	ld a, [wTempDeckMachineCursorPos]
-	jp nc, .please_select_deck
-	ld a, [wTempCardListVisibleOffset]
-	ld [wCardListVisibleOffset], a
-	call .InitAutoDeckMenu
-	ld a, [wTempDeckMachineCursorPos]
-	jp .please_select_deck
+	jr c, .redraw_screen_and_restart_deck_selection
+	jr nc, .restart_deck_selection
 
-.asm_bb09
-	cp $1
+.check_other_submenu_options
+	dec a ; cp $1
 	jr nz, .read_the_instructions
+	; "Cancel" was selected
 .exit
 	xor a
 	ld [wTempBankSRAM], a
@@ -1695,9 +1581,9 @@ HandleAutoDeckMenu:
 	ld a, [wCurMenuItem]
 	ld [wTempDeckMachineCursorPos], a
 	add b
-	ld c, a
 	ld [wCurDeck], a
-	sla c
+	add a
+	ld c, a
 	ld b, $0
 	ld hl, wMachineDeckPtrs
 	add hl, bc
@@ -1730,17 +1616,12 @@ HandleAutoDeckMenu:
 	jp z, .wait_input ; invalid deck
 
 	; show confirmation list
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	call SafelySwitchToSRAM1
-	xor a
 	call HandleDeckMissingCardsList
 	call SafelySwitchToSRAM0
-	ld a, [wTempCardListVisibleOffset]
-	ld [wCardListVisibleOffset], a
-	call .InitAutoDeckMenu
-	ld a, [wTempDeckMachineCursorPos]
-	jp .please_select_deck
+	jp .redraw_screen_and_restart_deck_selection
 
 .MenuParameters
 	db 1, 2 ; cursor x, cursor y
@@ -1775,7 +1656,7 @@ HandleAutoDeckMenu:
 ;	[wDeckMachineTitleText] = text ID (2 bytes)
 .InitAutoDeckMenu
 	call Set_OBJ_8x8
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call ZeroObjectPositions
 	call EmptyScreen
@@ -1797,14 +1678,8 @@ HandleAutoDeckMenu:
 	call InitTextPrinting_ProcessTextFromID
 	call SafelySwitchToSRAM1
 	farcall ReadAutoDeckConfiguration
-	call .CreateAutoDeckPointerList
-	call PrintVisibleDeckMachineEntries
-	call SafelySwitchToSRAM0
-	jp EnableLCD
 
-; writes to wMachineDeckPtrs the pointers
-; to the Auto Decks in sAutoDecks
-.CreateAutoDeckPointerList
+; write to wMachineDeckPtrs the Auto Deck pointers in sAutoDecks
 	ld a, 2 * NUM_DECK_MACHINE_SLOTS ; number of bytes that will be cleared
 	ld hl, wMachineDeckPtrs
 	call ClearMemory_Bank2
@@ -1824,7 +1699,10 @@ HandleAutoDeckMenu:
 	pop af
 	dec a
 	jr nz, .loop
-	ret
+
+	call PrintVisibleDeckMachineEntries
+	call SafelySwitchToSRAM0
+	jp EnableLCD
 
 
 ;----------------------------------------

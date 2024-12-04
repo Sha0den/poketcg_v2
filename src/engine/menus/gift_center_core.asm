@@ -3,14 +3,14 @@ HandleGiftCenter::
 	and $3
 	ld hl, .GiftCenterFunctionTable
 	call JumpToFunctionInTable
-	jr c, .asm_b18f
+	jr c, .exit
 	or a
-	jr nz, .asm_b18f
+	jr nz, .exit
 	; a = $00
 	ld [wTxRam2 + 0], a
 	ld [wTxRam2 + 1], a
 	ret
-.asm_b18f
+.exit
 	ld a, -1
 	ld [wGiftCenterChoice], a
 	ret
@@ -22,8 +22,10 @@ HandleGiftCenter::
 	dw GiftCenter_ReceiveDeck ; GIFT_CENTER_MENU_RECEIVE_DECK
 
 
+; output:
+;	carry = set:  if a connection error occurred and the Player chose to quit
 GiftCenter_SendCard:
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call ZeroObjectPositions
 	call EmptyScreen
@@ -49,12 +51,12 @@ GiftCenter_SendCard:
 
 	call EnableLCD
 	call PrepareToBuildDeckConfigurationToSend
-	jr c, .asm_af6b
+	jr c, .send
 	ld a, $01
 	or a
 	ret
 
-.asm_af6b
+.send
 	ld hl, wCurDeckCards
 	ld de, wDuelTempList
 	call CopyListFromHLToDE
@@ -74,6 +76,8 @@ GiftCenter_SendCard:
 	ret
 
 
+; output:
+;	carry = set:  if a connection error occurred and the Player chose to quit
 GiftCenter_ReceiveCard:
 	xor a
 	ld [wDuelTempList], a
@@ -88,78 +92,78 @@ GiftCenter_ReceiveCard:
 	call SaveGame
 	xor a
 	ld [wCardListVisibleOffset], a
-	ld hl, Data_b04a
+	ld hl, GiftCenterCardSelectionParams
 	call InitCardSelectionParams
 	call PrintReceivedTheseCardsText
-	call Func_b088
+	call PrintFilteredCardList_UseDuelTempList
 	call EnableLCD
 	ld a, [wNumEntriesInCurFilter]
 	ld [wNumCardListEntries], a
 	ld hl, wNumVisibleCardListEntries
 	cp [hl]
-	jr nc, .asm_afd4
+	jr nc, .enough_entries
+	; total number of entries is less than the number of visible entries,
+	; so set the number of cursor positions to the list size.
 	ld [wCardListNumCursorPositions], a
-.asm_afd4
+.enough_entries
 	ld hl, wCardListUpdateFunction
 	ld a, LOW(ShowReceivedCardsList)
 	ld [hli], a
-	ld a, HIGH(ShowReceivedCardsList)
-	ld [hl], a
-
+	ld [hl], HIGH(ShowReceivedCardsList)
 	xor a
 	ld [wced2], a
-.asm_afe2
+
+.wait_input
 	call DoFrame
 	call HandleDeckCardSelectionList
-	jr c, .asm_b02f
+	jr c, .selection_made
 	call HandleLeftRightInCardList
-	jr c, .asm_afe2
+	jr c, .wait_input
 	ldh a, [hDPadHeld]
 	and START
-	jr z, .asm_afe2
-.asm_aff5
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+	jr z, .wait_input
+	; START button was pressed
+
+.open_card_page
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
-
-	; set wFilteredCardList as the current card list
-	; and then show the card page screen
 	ld de, wFilteredCardList
-	ld hl, wCurCardListPtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
 	call OpenCardPageFromCardList
+	; return to card list
 	call PrintReceivedTheseCardsText
-
 	call PrintCardSelectionList
 	call EnableLCD
-	ld hl, Data_b04a
+	ld hl, GiftCenterCardSelectionParams
 	call InitCardSelectionParams
 	ld a, [wNumEntriesInCurFilter]
 	ld hl, wNumVisibleCardListEntries
 	cp [hl]
-	jr nc, .asm_b027
+	jr nc, .enough_entries_2
+	; total number of entries is less than the number of visible entries,
+	; so set the number of cursor positions to the list size.
 	ld [wCardListNumCursorPositions], a
-.asm_b027
+.enough_entries_2
 	ld a, [wTempCardListCursorPos]
 	ld [wCardListCursorPos], a
-	jr .asm_afe2
-.asm_b02f
+	jr .wait_input
+
+.selection_made
 	call DrawListCursor_Invisible
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 	ldh a, [hffb3]
-	cp -1
-	jr nz, .asm_aff5
+	inc a ; cp -1
+	jr nz, .open_card_page ; jump if B button wasn't pressed (i.e. pressed A button)
+	; B button was pressed
 	ld hl, wNameBuffer
 	ld de, wDefaultText
 	call CopyListFromHLToDE
 	or a
 	ret
 
-Data_b04a:
+GiftCenterCardSelectionParams:
 	db 1 ; x position
 	db 3 ; y position
 	db 2 ; y spacing
@@ -170,19 +174,20 @@ Data_b04a:
 	dw NULL ; wCardListHandlerFunction
 
 
+; output:
+;	carry = set:  if a connection error occurred and the Player chose to quit
 GiftCenter_SendDeck:
 	xor a
 	ld [wCardListVisibleOffset], a
-	ldtx de, DeckSaveMachineText
 	ld hl, wDeckMachineTitleText
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(DeckSaveMachineText_)
+	ld [hli], a
+	ld [hl], HIGH(DeckSaveMachineText_)
 	call ClearScreenAndDrawDeckMachineScreen
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
 	xor a
-.asm_bc1a
+.start_selection
 	ld hl, DeckMachineSelectionParams
 	call InitCardSelectionParams
 	call DrawListScrollArrows
@@ -191,30 +196,29 @@ GiftCenter_SendDeck:
 	call DrawWideTextBox_PrintText
 	ldtx de, PleaseChooseADeckConfigurationToSendText
 	call InitDeckMachineDrawingParams
-.asm_bc32
+.wait_input
 	call HandleDeckMachineSelection
-	jr c, .asm_bc1a
+	jr c, .start_selection
 	cp -1
-	jr nz, .asm_bc3f
+	jr nz, .selection_made
+	; B button was pressed
 	ld a, $01
 	or a
 	ret
-.asm_bc3f
+.selection_made
 	ld b, a
 	ld a, [wCardListVisibleOffset]
 	add b
 	ld [wSelectedDeckMachineEntry], a
 	call CheckIfSelectedDeckMachineEntryIsEmpty
-	jr c, .asm_bc32
+	jr c, .wait_input
 
 	call GetSelectedSavedDeckPtr
 	ld l, e
 	ld h, d
 	ld de, wDuelTempList
 	ld b, DECK_STRUCT_SIZE
-	call EnableSRAM
-	call CopyNBytesFromHLToDE
-	call DisableSRAM
+	call CopyNBytesFromHLToDEInSRAM
 
 	xor a
 	ld [wNameBuffer], a
@@ -225,25 +229,33 @@ GiftCenter_SendDeck:
 	ld l, e
 	ld h, d
 	ld de, wDefaultText
+;	fallthrough
+
+; copies a $00-terminated list from hl to de
+; preserves bc
+; input:
+;	hl = list to copy
+;	de = where to copy
+CopyListFromHLToDEInSRAM:
 	call EnableSRAM
 	call CopyListFromHLToDE
-	or a
 	jp DisableSRAM
 
 
+; output:
+;	carry = set:  if a connection error occurred and the Player chose to quit
 GiftCenter_ReceiveDeck:
 	xor a
 	ld [wCardListVisibleOffset], a
-	ldtx de, DeckSaveMachineText
 	ld hl, wDeckMachineTitleText
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(DeckSaveMachineText_)
+	ld [hli], a
+	ld [hl], HIGH(DeckSaveMachineText_)
 	call ClearScreenAndDrawDeckMachineScreen
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
 	xor a
-.asm_bc90
+.start_selection
 	ld hl, DeckMachineSelectionParams
 	call InitCardSelectionParams
 	call DrawListScrollArrows
@@ -253,26 +265,27 @@ GiftCenter_ReceiveDeck:
 	ldtx de, PleaseChooseASaveSlotText
 	call InitDeckMachineDrawingParams
 	call HandleDeckMachineSelection
-	jr c, .asm_bc90
+	jr c, .start_selection
 	cp -1
-	jr nz, .asm_bcb5
+	jr nz, .selection_made
 	ld a, $01
 	or a
 	ret
-.asm_bcc4
+.ask_to_delete
 	ldtx hl, OKIfFileDeletedText
 	call YesOrNoMenuWithText
-	jr nc, .asm_bcd1
+	jr nc, .save_new_configuration ; proceed if the Player chose to delete the selected entry
+	; otherwise, return to the selection process
 	ld a, [wCardListCursorPos]
-	jr .asm_bc90
-.asm_bcb5
+	jr .start_selection
+.selection_made
 	ld b, a
 	ld a, [wCardListVisibleOffset]
 	add b
 	ld [wSelectedDeckMachineEntry], a
 	call CheckIfSelectedDeckMachineEntryIsEmpty
-	jr nc, .asm_bcc4
-.asm_bcd1
+	jr nc, .ask_to_delete
+.save_new_configuration
 	xor a
 	ld [wDuelTempList], a
 	ld [wNameBuffer], a
@@ -306,18 +319,19 @@ GiftCenter_ReceiveDeck:
 	ld l, e
 	ld h, d
 	ld de, wDefaultText
-	call EnableSRAM
-	call CopyListFromHLToDE
+	call CopyListFromHLToDEInSRAM
 	xor a
-	jp DisableSRAM
+	ret
 
 
 ; initializes WRAM variables to start creating a deck configuration to send
+; output:
+;	carry = set:  if the Player decided to send a deck configuration
 PrepareToBuildDeckConfigurationToSend:
 	ld hl, wCurDeckCards
 	ld a, wCurDeckCardsEnd - wCurDeckCards ; number of bytes that will be cleared
 	call ClearMemory_Bank2
-	ld a, $ff
+	ld a, -1
 	ld [wCurDeck], a
 	ld hl, .text
 	ld de, wCurDeckName
@@ -352,8 +366,12 @@ SendDeckConfigurationMenuData:
 	textitem 16, 2, CancelText
 	db $ff
 
+; this function is loaded to wDeckConfigurationMenuHandlerFunction
+; during PrepareToBuildDeckConfigurationToSend.
+; output:
+;	carry = set:  if the Player decided to send a deck configuration
 HandleSendDeckConfigurationMenu:
-	ld de, $0
+	lb de, 0, 0
 	lb bc, 20, 6
 	call DrawRegularTextBox
 	ld hl, SendDeckConfigurationMenuData
@@ -367,15 +385,16 @@ HandleSendDeckConfigurationMenu:
 	call YourOrOppPlayAreaScreen_HandleInput
 	jr nc, .loop_input
 	ld [wced6], a
-	cp $ff
-	jr nz, .asm_a23b
+	cp -1
+	jr nz, .pressed_a
+	; pressed B
 	call DrawCardTypeIconsAndPrintCardCounts
 	ld a, [wTempCardListCursorPos]
 	ld [wCardListCursorPos], a
 	ld a, [wCurCardTypeFilter]
 	call PrintFilteredCardList
 	jp HandleDeckBuildScreen.skip_draw
-.asm_a23b
+.pressed_a
 	ld hl, .func_table
 	call JumpToFunctionInTable
 	jp OpenDeckConfigurationMenu.skip_init
@@ -391,20 +410,20 @@ HandleSendDeckConfigurationMenu:
 	jr z, .CancelSendDeckConfiguration
 	xor a
 	ld [wCardListVisibleOffset], a
-	ld hl, Data_b04a
+	ld hl, GiftCenterCardSelectionParams
 	call InitCardSelectionParams
 	ld hl, wCurDeckCards
 	ld de, wDuelTempList
 	call CopyListFromHLToDE
 	call PrintCardToSendText
-	call Func_b088
+	call PrintFilteredCardList_UseDuelTempList
 	call EnableLCD
 	ldtx hl, SendTheseCardsText
 	call YesOrNoMenuWithText
-	jr nc, .asm_a279
+	jr nc, .send ; jump if the Player selected "Yes"
 	add sp, $2
 	jp HandleDeckBuildScreen.skip_count
-.asm_a279
+.send
 	add sp, $2
 	scf
 	ret
@@ -437,116 +456,35 @@ ShowReceivedCardsList:
 	jp PrintCardSelectionList
 
 
-Func_b088:
+PrintFilteredCardList_UseDuelTempList:
 	ld a, CARD_COLLECTION_SIZE - 1 ; number of bytes that will be cleared
 	ld hl, wTempCardCollection
 	call ClearMemory_Bank2
+	; add cards in wDuelTempList to wTempCardCollection
 	ld de, wDuelTempList
-	call .Func_b0b2
-	ld a, $ff
-	call .Func_b0c0
-	ld a, $05
-	ld [wNumVisibleCardListEntries], a
-	lb de, 2, 3
-	ld hl, wCardListCoords
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ld a, SYM_BOX_RIGHT
-	ld [wCursorAlternateTile], a
-	jp PrintCardSelectionList
-
-.Func_b0b2
 	ld bc, wTempCardCollection
 .loop
 	ld a, [de]
 	inc de
 	or a
-	ret z
+	jr z, .create_list
 	ld h, $00
 	ld l, a
 	add hl, bc
 	inc [hl]
 	jr .loop
-
-; preserves all registers
-.Func_b0c0
-	push af
-	push bc
-	push de
-	push hl
-	push af
-	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
-	ld hl, wOwnedCardsCountList
-	call ClearMemory_Bank2
-;	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
-	ld hl, wFilteredCardList
-	call ClearMemory_Bank2
-	pop af
-	ld hl, $0
-	ld de, $0
-	ld b, a
-.asm_b0dd
-	inc e
-	call GetCardType
-	jr c, .asm_b119
-	ld c, a
-	ld a, b
-	cp $ff
-	jr z, .asm_b0fc
-	and FILTER_ENERGY
-	cp FILTER_ENERGY
-	jr z, .asm_b0f5
-	ld a, c
-	cp b
-	jr nz, .asm_b0dd
-	jr .asm_b0fc
-.asm_b0f5
-	ld a, c
-	and TYPE_ENERGY
-	cp TYPE_ENERGY
-	jr nz, .asm_b0dd
-.asm_b0fc
-	push bc
-	push hl
-	ld bc, wFilteredCardList
-	add hl, bc
-	ld [hl], e
-	ld hl, wTempCardCollection
-	add hl, de
-	ld a, [hl]
-	and $7f
-	pop hl
-	or a
-	jr z, .asm_b116
-	push hl
-	ld bc, wOwnedCardsCountList
-	add hl, bc
-	ld [hl], a
-	pop hl
-	inc l
-.asm_b116
-	pop bc
-	jr .asm_b0dd
-
-.asm_b119
-	ld a, l
-	ld [wNumEntriesInCurFilter], a
-	xor a
-	ld c, l
-	ld b, h
-	ld hl, wFilteredCardList
-	add hl, bc
-	ld [hl], a
-	ld a, $ff ; terminating byte
-	ld hl, wOwnedCardsCountList
-	add hl, bc
-	ld [hl], a
-	pop hl
-	pop de
-	pop bc
-	pop af
-	ret
+.create_list
+	ld a, $ff
+	call CreateFilteredCardList
+	ld a, $05
+	ld [wNumVisibleCardListEntries], a
+	ld hl, wCardListCoords
+	ld a, 3 ; initial y coordinate
+	ld [hli], a
+	ld [hl], 2 ; initial x coordinate
+	ld a, SYM_BOX_RIGHT
+	ld [wCursorAlternateTile], a
+	jp PrintCardSelectionList
 
 
 PrintCardToSendText:

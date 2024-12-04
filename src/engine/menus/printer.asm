@@ -44,190 +44,69 @@ PrinterMenuFunctionTable:
 
 
 PrinterMenu_PokemonCards:
-	call WriteCardListsTerminatorBytes
-	call PrintPlayersCardsHeaderInfo
-	xor a
-	ld [wCardListVisibleOffset], a
-	ld [wCurCardTypeFilter], a
-	call PrintFilteredCardSelectionList
-	call EnableLCD
-	xor a
-	ld hl, FiltersCardSelectionParams
-	call InitCardSelectionParams
-
-.loop_frame_1
-	call DoFrame
-	ld a, [wCurCardTypeFilter]
-	ld b, a
-	ld a, [wTempCardTypeFilter]
-	cp b
-	jr z, .handle_input
-	ld [wCurCardTypeFilter], a
-	ld hl, wCardListVisibleOffset
-	ld [hl], $00
-	call PrintFilteredCardSelectionList
-	ld hl, hffb0
-	ld [hl], $01
-	call PrintPlayersCardsText
-	ld hl, hffb0
-	ld [hl], $00
-	ld a, NUM_FILTERS
-	ld [wCardListNumCursorPositions], a
-.handle_input
-	ldh a, [hDPadHeld]
-	and D_DOWN
-	jr z, .asm_abca
-; dpad_down
-	call ConfirmSelectionAndReturnCarry
-	jr .asm_abd7
-.asm_abca
-	call HandleCardSelectionInput
-	jr nc, .loop_frame_1
-	cp -1
-	ret z ; exit if the B button was pressed
-;	fallthrough
-
-.asm_abd7
-	ld a, [wNumEntriesInCurFilter]
-	or a
-	jr z, .loop_frame_1
-
-	xor a
-	ld hl, Data_a396
-	call InitCardSelectionParams
-	ld a, [wNumEntriesInCurFilter]
-	ld [wNumCardListEntries], a
-	ld hl, wNumVisibleCardListEntries
-	cp [hl]
-	jr nc, .asm_abf6
-	ld [wCardListNumCursorPositions], a
-	ld [wTempCardListNumCursorPositions], a
-.asm_abf6
-	ld hl, wCardListUpdateFunction
-	ld a, LOW(PrintCardSelectionList)
+	ld hl, wHandlePlayersCardsScreenPointer
+	ld a, LOW(PrintThisCardMenu)
 	ld [hli], a
-	ld a, HIGH(PrintCardSelectionList)
-	ld [hl], a
-	xor a
-	ld [wced2], a
+	ld [hl], HIGH(PrintThisCardMenu)
+	jp HandlePlayersCardsScreen
 
-.loop_frame_2
-	call DoFrame
-	call HandleSelectUpAndDownInList
-	jr c, .loop_frame_2
-	call HandleDeckCardSelectionList
-	jr c, .asm_ac60
-	ldh a, [hDPadHeld]
-	and START
-	jr z, .loop_frame_2
-; start button
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
-	ld a, [wCardListNumCursorPositions]
-	ld [wTempCardListNumCursorPositions], a
-	ld a, [wCardListCursorPos]
-	ld [wTempCardListCursorPos], a
 
-	; set wFilteredCardList as the current card list
-	; and show the card page screen
-	ld de, wFilteredCardList
-	ld hl, wCurCardListPtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	call OpenCardPageFromCardList
-	call PrintPlayersCardsHeaderInfo
-
-.asm_ac37
-	ld hl, FiltersCardSelectionParams
-	call InitCardSelectionParams
-	ld a, [wCurCardTypeFilter]
-	ld [wTempCardTypeFilter], a
-	call DrawHorizontalListCursor_Visible
-	call PrintCardSelectionList
-	call EnableLCD
-	ld hl, Data_a396
-	call InitCardSelectionParams
-	ld a, [wTempCardListNumCursorPositions]
-	ld [wCardListNumCursorPositions], a
-	ld a, [wTempCardListCursorPos]
-	ld [wCardListCursorPos], a
-	jr .loop_frame_2
-
-.asm_ac60
-	call DrawListCursor_Invisible
-	ld a, [wCardListNumCursorPositions]
-	ld [wTempCardListNumCursorPositions], a
-	ld a, [wCardListCursorPos]
-	ld [wTempCardListCursorPos], a
-	ldh a, [hffb3]
-	cp $ff
-	jr nz, .asm_ac92
-
-	ld hl, FiltersCardSelectionParams
-	call InitCardSelectionParams
-	ld a, [wCurCardTypeFilter]
-	ld [wTempCardTypeFilter], a
-	ld hl, hffb0
-	ld [hl], $01
-	call PrintPlayersCardsText
-	ld hl, hffb0
-	ld [hl], $00
-	jp .loop_frame_1
-
-.asm_ac92
+PrintThisCardMenu:
 	call DrawListCursor_Visible
-	call .Func_acde
+	call EraseHeader
 	lb de, 1, 1
 	ldtx hl, PrintThisCardYesNoText
 	call InitTextPrinting_ProcessTextFromID
-	ld a, $01
-	ld hl, Data_ad05
+	ld a, $01 ; default option is "No"
+	ld hl, YesNoInHeaderSelectionParams
 	call InitCardSelectionParams
-.loop_frame
+.loop_input
 	call DoFrame
 	call HandleCardSelectionInput
-	jr nc, .loop_frame
+	jr nc, .loop_input
 	or a
-	jr nz, .asm_acd5
+	jr nz, .quickly_return_to_card_list ; return immediately if "No" was selected
 	ld hl, wFilteredCardList
+	ld b, $00
 	ld a, [wTempCardListCursorPos]
 	ld c, a
-	ld b, $00
 	add hl, bc
 	ld a, [wCardListVisibleOffset]
 	ld c, a
-	ld b, $00
 	add hl, bc
 	ld a, [hl]
 	farcall RequestToPrintCard
-	call PrintPlayersCardsHeaderInfo
-	jp .asm_ac37
+	jp HandlePlayersCardsScreen.return_to_card_list
 
-.asm_acd5
-	call .Func_acde
+.quickly_return_to_card_list
+	call EraseHeader
 	call PrintPlayersCardsHeaderInfo.skip_empty_screen
-	jp .asm_ac37
+	jp HandlePlayersCardsScreen.skip_header
 
-.Func_acde
-	xor a
-	lb hl, 0, 0
-	lb de, 0, 0
+
+; fills the first 4 rows of the screen with blank tiles
+EraseHeader:
+	xor a ; SYM_SPACE
+	ld h, a
+	ld l, a
+	ld d, a ; starting x coordinate
+	ld e, a ; starting y coordinate
 	lb bc, 20, 4
 	call FillRectangle
 	ld a, [wConsole]
 	cp CONSOLE_CGB
 	ret nz ; exit if not CGB
 
-	xor a
-	lb hl, 0, 0
-	lb de, 0, 0
+	xor a ; CGB Background Palette 0 (monochrome)
+	ld h, a
+	ld l, a
 	lb bc, 20, 4
 	call BankswitchVRAM1
 	call FillRectangle
 	jp BankswitchVRAM0
 
-Data_ad05:
+
+YesNoInHeaderSelectionParams:
 	db 3 ; x position
 	db 3 ; y position
 	db 0 ; y spacing
@@ -244,7 +123,6 @@ PrinterMenu_DeckConfiguration:
 	call ClearScreenAndDrawDeckMachineScreen
 	ld a, NUM_DECK_SAVE_MACHINE_SLOTS
 	ld [wNumDeckMachineEntries], a
-
 	xor a
 .start_selection
 	ld hl, DeckMachineSelectionParams
@@ -258,9 +136,8 @@ PrinterMenu_DeckConfiguration:
 .loop_input
 	call HandleDeckMachineSelection
 	jr c, .start_selection
-	cp $ff
-	ret z
-
+	cp -1
+	ret z ; exit if the B button was pressed
 	ld b, a
 	ld a, [wCardListVisibleOffset]
 	add b
@@ -276,16 +153,13 @@ PrinterMenu_DeckConfiguration:
 	add hl, de
 	ld de, wCurDeckCards
 	ld b, DECK_SIZE
-	call EnableSRAM
-	call CopyNBytesFromHLToDE
-	call DisableSRAM
+	call CopyNBytesFromHLToDEInSRAM
 	xor a ; terminator byte for deck
-	ld [wCurDeckCards + DECK_SIZE], a
+	ld [de], a
 	call SortCurDeckCardsByID
 	ld a, [wSelectedDeckMachineEntry]
 	farcall PrintDeckConfiguration
 	call ClearScreenAndDrawDeckMachineScreen
-
 .no
 	ld a, [wTempDeckMachineCursorPos]
 	ld [wCardListCursorPos], a
@@ -299,7 +173,6 @@ PrinterMenu_CardList:
 	lb bc, 0, 4
 	ld a, SYM_BOX_TOP
 	call FillBGMapLineWithA
-
 	xor a
 	ld [wCardListVisibleOffset], a
 	ld [wCurCardTypeFilter], a
@@ -309,7 +182,7 @@ PrinterMenu_CardList:
 	ldtx hl, PrintTheCardListText
 	call InitTextPrinting_ProcessTextFromID
 	ld a, $01
-	ld hl, Data_ad05
+	ld hl, YesNoInHeaderSelectionParams
 	call InitCardSelectionParams
 .loop_frame
 	call DoFrame
@@ -327,7 +200,7 @@ PrinterMenu_PrintQuality:
 	call EnableSRAM
 	ld a, [sPrinterContrastLevel]
 	call DisableSRAM
-	ld hl, Data_adf5
+	ld hl, .SelectionParams
 	call InitCardSelectionParams
 .loop_frame
 	call DoFrame
@@ -347,7 +220,7 @@ PrinterMenu_PrintQuality:
 	call DrawWideTextBox_PrintText
 	jp HandlePrinterMenu.loop_input
 
-Data_adf5:
+.SelectionParams
 	db 5  ; x position
 	db 16 ; y position
 	db 0  ; y spacing

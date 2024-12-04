@@ -1689,12 +1689,12 @@ wCheckMenuCursorYPosition:: ; ceb0
 wCurDeck:: ; ceb1
 	ds $1
 
-; each of these are a boolean to represent whether a given deck built by the player is valid
-wDecksValid::
-wDeck1Valid:: ds $1 ; ceb2
-wDeck2Valid:: ds $1 ; ceb3
-wDeck3Valid:: ds $1 ; ceb4
-wDeck4Valid:: ds $1 ; ceb5
+; uses deck flags, each flag represents whether the given deck built by the player is valid
+wValidDecks:: ; ceb2
+	ds $1
+
+; Unused wram bytes
+	ds $3
 
 ; holds symbols for representing a number in decimal
 ; goes up in magnitude (first byte is ones place,
@@ -1827,7 +1827,9 @@ wCurCardListPtr:: ; cfd8
 wCardConfirmationText:: ; cfda
 	ds $2
 
-; Unused wram bytes?
+; pointer to function that determines what happens when A button is pressed in Cards screen.
+; if pointer is null ($0000), then A button will open the card page for the currently selected card.
+wHandlePlayersCardsScreenPointer:: ; cfdc
 	ds $2
 
 ; the tile to draw in place of the cursor, in case

@@ -42,9 +42,7 @@ HandleCheckMenuInput:
 .okay
 	ld a, SFX_CURSOR
 	ld [wMenuInputSFX], a
-	push de
 	call EraseCheckMenuCursor
-	pop de
 
 ; updates x and y cursor positions
 	ld a, d
@@ -88,35 +86,38 @@ HandleCheckMenuInput:
 	jr z, DrawCheckMenuCursor
 ;	fallthrough
 
-; draws in the cursor position
+; draws a blank tile over the menu cursor.
+; preserves de
 EraseCheckMenuCursor:
-	ld a, SYM_SPACE ; empty cursor
+	xor a ; SYM_SPACE (blank tile)
 ;	fallthrough
 
-; draws in the cursor position
+; transforms the cursor position into coordinates
+; in order to draw the tile in a over the menu cursor.
+; preserves de
 ; input:
 ;	a = tile byte to draw (SYM_* constant)
 DrawCheckMenuCursor:
-	ld e, a
-	ld a, 10
-	ld l, a
+	push af
 	ld a, [wCheckMenuCursorXPosition]
 	ld h, a
+	ld l, 10
 	call HtimesL
-
-	ld a, l
-	add 1
-	ld b, a
+	ld b, l
+	inc b
+	; b = 10 * cursor x position + 1
 	ld a, [wCheckMenuCursorYPosition]
 	add a
 	add 14
 	ld c, a
-
-	ld a, e
+	; c = 2 * cursor y position + 14
+	pop af
 	call WriteByteToBGMap0
 	or a
 	ret
 
+; draws a right-facing arrow icon where the cursor should go.
+; preserves de
 DisplayCheckMenuCursor:
 	ld a, SYM_CURSOR_R
 	jr DrawCheckMenuCursor
@@ -129,11 +130,9 @@ DisplayCheckMenuCursor:
 ;	a != -1:  play SFX_CONFIRM (usually following an A press)
 PlaySFXConfirmOrCancel_Bank2:
 	push af
-	inc a
-	jr z, .cancel_sfx
+	inc a ; cp -1
 	ld a, SFX_CONFIRM
-	jr .play_sfx
-.cancel_sfx
+	jr nz, .play_sfx
 	ld a, SFX_CANCEL
 .play_sfx
 	call PlaySFX

@@ -1,6 +1,17 @@
 INCLUDE "data/glossary_menu_transitions.asm"
 
 
+; copies b bytes of SRAM data from hl to de
+; input:
+;	b = number of bytes to copy
+;	hl = address from which to start copying the data
+;	de = where to copy the data
+CopyNBytesFromHLToDEInSRAM:
+	call EnableSRAM
+	call CopyNBytesFromHLToDE
+	jp DisableSRAM
+
+
 ; copies DECK_SIZE number of cards (60 cards) from de to hl in SRAM
 ; preserves bc
 ; input:
@@ -11,7 +22,7 @@ CopyDeckFromSRAM:
 	call EnableSRAM
 	ld c, DECK_SIZE
 	call CopyNBytesFromDEToHL
-	xor a
+	xor a ; terminating byte
 	ld [hl], a
 	pop bc
 	jp DisableSRAM
@@ -21,15 +32,15 @@ CopyDeckFromSRAM:
 ; to wFilteredCardList and wCurDeckCards
 ; preserves de
 WriteCardListsTerminatorBytes:
-	xor a
+	xor a ; both lists are null-terminated
 	ld hl, wFilteredCardList
 	ld bc, DECK_SIZE
 	add hl, bc
-	ld [hl], a ; terminator byte
+	ld [hl], a ; add terminating byte to wFilteredCardList
 	ld hl, wCurDeckCards
 	ld bc, DECK_CONFIG_BUFFER_SIZE
 	add hl, bc
-	ld [hl], a ; terminator byte
+	ld [hl], a ; add terminating byte to wCurDeckCards
 	ret
 
 
@@ -46,7 +57,7 @@ LoadDeckBoxIcon:
 	ld hl, DeckBoxGfx
 	ld de, v0Tiles1 + $4c tiles
 	ld b, 64 ; 16 pixels * 16 pixels = 256 pixels, 256 pixels / 4 (2 bits per pixel) = 64 bytes
-	jp CopyNBytesFromHLToDE
+	jp SafeCopyDataHLtoDE
 
 DeckBoxGfx:
 	INCBIN "gfx/deck_box.2bpp"
@@ -56,7 +67,7 @@ DeckBoxGfx:
 ; loads tiles for font symbols, card type symbols, and deck/deck box icons,
 ; sets default palettes, and designates tiles for text
 EmptyScreenAndLoadFontDuelAndDeckIcons:
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call ZeroObjectPositions
 	call EmptyScreen
@@ -108,16 +119,16 @@ DeckSelectionMenu:
 	call DrawDecksScreen
 	xor a
 
-.init_menu_params
+.start_selection
 	ld hl, DeckSelectionMenuParameters
 	call InitializeMenuParameters
 	ldtx hl, PleaseSelectDeckText
 	call DrawWideTextBox_PrintText
 .loop_input
 	call DoFrame
-	jr c, .init_menu_params ; reinitialize menu parameters
+	jr c, .start_selection ; reinitialize menu parameters
 	call HandleStartButtonInDeckSelectionMenu
-	jr c, .init_menu_params
+	jr c, .start_selection
 	call HandleMenuInput
 	jr nc, .loop_input
 	cp -1
@@ -143,7 +154,7 @@ DeckSelectionSubMenu:
 	; and go back to the deck selection handling
 	call EraseCheckMenuCursor
 	ld a, [wCurDeck]
-	jr DeckSelectionMenu.init_menu_params
+	jr DeckSelectionMenu.start_selection
 
 .option_selected
 	ld a, [wCheckMenuCursorXPosition]
@@ -169,7 +180,8 @@ DeckSelectionSubMenu:
 	call CopyListFromHLToDEInSRAM
 
 	call HandleDeckBuildScreen
-	jr nc, .asm_8ec4
+	jr nc, .return_to_deck_selection
+	; save the current deck configuration
 	call EnableSRAM
 	ld hl, wCurDeckCards
 	call DecrementDeckCardsInCollection
@@ -190,17 +202,17 @@ DeckSelectionSubMenu:
 	call DisableSRAM
 	or a
 	jr z, .get_input_deck_name
-.asm_8ec4
+.return_to_deck_selection
 	ld a, ALL_DECKS
 	call DrawDecksScreen
 	ld a, [wCurDeck]
-	jp DeckSelectionMenu.init_menu_params
+	jp DeckSelectionMenu.start_selection
 
 .ChangeName
 	call CheckIfCurDeckIsValid
 	jr nc, .get_input_deck_name
 	call PrintThereIsNoDeckHereText
-	jp DeckSelectionMenu.init_menu_params
+	jp DeckSelectionMenu.start_selection
 .get_input_deck_name
 	ld a, MAX_DECK_NAME_LENGTH ; number of bytes that will be cleared (20)
 	ld hl, wCurDeckName
@@ -214,10 +226,7 @@ DeckSelectionSubMenu:
 	ld e, l
 	ld hl, wCurDeckName
 	call CopyListFromHLToDEInSRAM
-	ld a, ALL_DECKS
-	call DrawDecksScreen
-	ld a, [wCurDeck]
-	jp DeckSelectionMenu.init_menu_params
+	jr .return_to_deck_selection
 
 DeckSelectionData:
 	textitem  2, 14, ModifyDeckText
@@ -244,15 +253,15 @@ HandleStartButtonInDeckSelectionMenu:
 	jr nc, .valid_deck
 
 ; not a valid deck, cancel
-	ld a, -1 ; cancel
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CANCEL
+	call PlaySFX
 	call PrintThereIsNoDeckHereText
 	scf
 	ret
 
 .valid_deck
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	call GetPointerToDeckCards
 	push hl
 	call GetPointerToDeckName
@@ -331,7 +340,7 @@ InputCurDeckName:
 	ld [hli], a
 	ld a, [de]
 	ld [hli], a
-	xor a
+	xor a ; TX_END
 	ld [hl], a
 
 ; increment the unnamed deck counter
@@ -357,9 +366,9 @@ InputCurDeckName:
 	jp DisableSRAM
 
 
-; handles the deck selection sub-menu
+; handles the deck selection sub-menu.
 ; the choices are either "Select Deck" or "Cancel",
-; depending on the cursor's Y position
+; depending on the cursor's Y position.
 DeckSelectionSubMenu_SelectOrCancel:
 	ld a, [wCheckMenuCursorYPosition]
 	or a
@@ -370,7 +379,7 @@ DeckSelectionSubMenu_SelectOrCancel:
 	jr nc, .SelectDeck
 	; invalid deck
 	call PrintThereIsNoDeckHereText
-	jp DeckSelectionMenu.init_menu_params
+	jp DeckSelectionMenu.start_selection
 
 .SelectDeck
 	call EnableSRAM
@@ -386,7 +395,7 @@ DeckSelectionSubMenu_SelectOrCancel:
 	ld d, 1
 	call DrawDeckIcon
 	; draw an empty rectangle
-;	xor a
+;	xor a ; SYM_SPACE
 ;	lb hl, 0, 0
 ;	lb bc, 2, 2
 ;	call FillRectangle
@@ -411,7 +420,7 @@ DeckSelectionSubMenu_SelectOrCancel:
 	ldtx hl, ChosenAsDuelingDeckText
 	call DrawWideTextBox_WaitForInput
 	ld a, [wCurDeck]
-	jp DeckSelectionMenu.init_menu_params
+	jp DeckSelectionMenu.start_selection
 
 
 PrintThereIsNoDeckHereText:
@@ -422,19 +431,31 @@ PrintThereIsNoDeckHereText:
 
 
 ; preserves de
+; input:
+;	[wCurDeck] = which deck to check (0-3)
 ; output:
 ;	carry = set:  if the deck in wCurDeck is not a valid deck
 CheckIfCurDeckIsValid:
 	ld a, [wCurDeck]
-	ld hl, wDecksValid
-	ld b, $0
+;	fallthrough
+
+; preserves de
+; input:
+;	a = which deck to check (0-3)
+; output:
+;	carry = set:  if the given deck is not a valid deck
+CheckIfDeckIsValid:
 	ld c, a
+	ld b, $00
+	ld hl, PowersOf2
 	add hl, bc
 	ld a, [hl]
-	or a
-	ret nz ; is valid
+	ld hl, wValidDecks
+	and [hl]
+	ret nz ; return no carry if the given deck is valid
+	; not valid, so return carry
 	scf
-	ret ; is not valid
+	ret
 
 
 ; preserves bc and de
