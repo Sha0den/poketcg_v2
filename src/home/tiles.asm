@@ -83,7 +83,7 @@ FillRectangle::
 LoadCardSet2Tiles::
 	and $7 ; mask out PRO
 	ld e, a
-	ld d, 0
+	ld d, $00
 	ld hl, .tile_offsets
 	add hl, de
 	ld a, [hl]
@@ -91,7 +91,6 @@ LoadCardSet2Tiles::
 	ccf
 	ret z
 	ld e, a
-	ld d, 0
 	ld hl, DuelOtherGraphics + $1d tiles
 	add hl, de
 	ld de, v0Tiles1 + $7c tiles

@@ -6,7 +6,7 @@
 HandleDoubleDamageSubstatus::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	get_turn_duelist_var
-	bit SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, [hl]
+	bit SUBSTATUS3_THIS_TURN_DOUBLE_DAMAGE_F, a
 	ret z
 ;	fallthrough
 
@@ -381,8 +381,7 @@ CheckUnableToRetreatDueToEffect::
 CheckCantUseTrainerDueToEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	get_turn_duelist_var
-	or a
-	bit SUBSTATUS3_HEADACHE_F, [hl]
+	bit SUBSTATUS3_HEADACHE_F, a
 	ret z
 	ldtx hl, UnableToUseTrainerDueToHeadacheText
 	scf

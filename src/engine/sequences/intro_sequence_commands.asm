@@ -277,13 +277,9 @@ IntroSequenceCmd_PlayTitleScreenMusic:
 IntroSequenceCmd_WaitSFX:
 	call AssertSFXFinished
 	or a
-	jr nz, .no_carry
+	ret nz
 	call AdvanceIntroSequenceCmdPtrBy2
 	scf
-	ret
-
-.no_carry
-	or a
 	ret
 
 

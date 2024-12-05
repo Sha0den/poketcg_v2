@@ -29,9 +29,7 @@ DoFrameIfLCDEnabled::
 	push af
 	ldh a, [rLCDC]
 	bit LCDC_ENABLE_F, a
-	jr z, .done
-	call DoFrame
-.done
+	call nz, DoFrame
 	pop af
 	ret
 

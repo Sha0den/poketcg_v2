@@ -217,9 +217,7 @@ CreateCardSetListAndInitListCoords:
 	ld hl, sCardCollection
 	ld de, wTempCardCollection
 	ld b, CARD_COLLECTION_SIZE - 1
-	call EnableSRAM
-	call CopyNBytesFromHLToDE
-	call DisableSRAM
+	call CopyNBytesFromHLToDEInSRAM
 	pop af
 
 	push af
@@ -309,12 +307,9 @@ PrintCardSetListEntries:
 ; draw up cursor on top right
 	ld a, [wCardListVisibleOffset]
 	or a
-	jr z, .no_up_cursor
+	jr z, .got_cursor_tile ; use SYM_SPACE (blank tile)
 	ld a, SYM_CURSOR_U
-	jr .got_up_cursor_tile
-.no_up_cursor
-	ld a, SYM_SPACE
-.got_up_cursor_tile
+.got_cursor_tile
 	call WriteByteToBGMap0
 
 	ld a, [wCardListVisibleOffset]
@@ -383,7 +378,7 @@ PrintCardSetListEntries:
 	pop de
 	ld a, TRUE
 	ld [wUnableToScrollDown], a
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 .got_down_cursor_tile
 	lb bc, 18, 16
 	call WriteByteToBGMap0
@@ -533,12 +528,8 @@ HandleCardAlbumCardPage:
 .check_d_down
 	bit D_DOWN_F, b
 	jr z, .open_card_page
-
-	push af
-	ld a, SFX_CURSOR
-	ld [wMenuInputSFX], a
-	pop af
-
+	ld hl, wMenuInputSFX
+	ld [hl], SFX_CURSOR
 	inc a
 	cp c
 	jr c, .got_new_pos
@@ -547,14 +538,13 @@ HandleCardAlbumCardPage:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+	ld b, $00
 	ld a, [wCardListCursorPos]
 	ld c, a
-	ld b, $00
 	add hl, bc
 	ld a, [wCardListVisibleOffset]
 	inc a
 	ld c, a
-	ld b, $00
 	add hl, bc
 	ld a, [hl]
 	or a
@@ -631,35 +621,44 @@ CardAlbum:
 	call EnableLCD
 	ld a, [wNumEntriesInCurFilter]
 	or a
-	jr nz, .asm_a968
+	jr nz, .get_num_card_entries
 
 .loop_input_2
 	call DoFrame
 	ldh a, [hKeysPressed]
 	and B_BUTTON
 	jr z, .loop_input_2
-	ld a, -1
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CANCEL
+	call PlaySFX
 	ldh a, [hCurMenuItem]
 	jr .booster_pack_menu
 
-.asm_a968
-	call .GetNumCardEntries
+.get_num_card_entries
+	ld hl, wFilteredCardList
+	ld b, -1
+.loop_card_ids
+	inc b
+	ld a, [hli]
+	or a
+	jr nz, .loop_card_ids
+	ld a, b
+	ld [wNumCardListEntries], a
+
 	xor a
 	ld hl, .CardListMenuParams
 	call InitCardSelectionParams
 	ld a, [wNumEntriesInCurFilter]
 	ld hl, wNumVisibleCardListEntries
 	cp [hl]
-	jr nc, .asm_a97e
+	jr nc, .enough_entries
+	; total number of entries is less than the number of visible entries,
+	; so set the number of cursor positions to the list size.
 	ld [wCardListNumCursorPositions], a
-.asm_a97e
+.enough_entries
 	ld hl, wCardListUpdateFunction
 	ld a, LOW(PrintCardSetListEntries)
 	ld [hli], a
-	ld a, HIGH(PrintCardSetListEntries)
-	ld [hl], a
-
+	ld [hl], HIGH(PrintCardSetListEntries)
 	xor a
 	ld [wced2], a
 .loop_input_3
@@ -671,9 +670,10 @@ CardAlbum:
 	ldh a, [hDPadHeld]
 	and START
 	jr z, .loop_input_3
+	; START button was pressed
 .open_card_page
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank2
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	ld a, [wCardListNumCursorPositions]
 	ld [wTempCardListNumCursorPositions], a
 	ld a, [wCardListCursorPos]
@@ -690,11 +690,10 @@ CardAlbum:
 	jr z, .loop_input_3
 
 	; set wFilteredCardList as current card list
-	ld de, wFilteredCardList
 	ld hl, wCurCardListPtr
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld a, LOW(wFilteredCardList)
+	ld [hli], a
+	ld [hl], HIGH(wFilteredCardList)
 
 	call GetFirstOwnedCardIndex
 	call HandleCardAlbumCardPage
@@ -714,8 +713,9 @@ CardAlbum:
 	ld a, [wCardListCursorPos]
 	ld [wTempCardListCursorPos], a
 	ldh a, [hffb3]
-	inc a ; cp $ff
-	jr nz, .open_card_page
+	inc a ; cp -1
+	jr nz, .open_card_page ; jump if B button wasn't pressed (i.e. pressed A button)
+	; B button was pressed
 	ldh a, [hCurMenuItem]
 	jp .booster_pack_menu
 
@@ -736,18 +736,6 @@ CardAlbum:
 	db SYM_CURSOR_R ; visible cursor tile
 	db SYM_SPACE ; invisible cursor tile
 	dw NULL ; wCardListHandlerFunction
-
-.GetNumCardEntries
-	ld hl, wFilteredCardList
-	ld b, -1
-.loop_card_ids
-	inc b
-	ld a, [hli]
-	or a
-	jr nz, .loop_card_ids
-	ld a, b
-	ld [wNumCardListEntries], a
-	ret
 
 ; prints "X/Y" where X is number of cards owned in the set
 ; and Y is the total card count of the Card Set

@@ -64,7 +64,7 @@ LoadNewCardSymbolGraphics:
 	ld hl, NewCardSymbolGfx
 	ld de, v0Tiles1 + $1f tiles
 	ld b, 16 ; 1 tile = 8*8 = 64 pixels, 64 pixels / 4 (2 bits per pixel) = 16 bytes
-	jp CopyNBytesFromHLToDE
+	jp SafeCopyDataHLtoDE
 
 NewCardSymbolGfx:
 	INCBIN "gfx/new_card_symbol.2bpp"

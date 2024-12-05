@@ -3,6 +3,8 @@
 ; input:
 ;	a = length in number of tiles (the resulting string will be padded with spaces to match it)
 ;	[wLoadedCard1] = all of the card's data (card_data_struct)
+; output:
+;	hl = first empty space at the end of the text string that was stored in wDefaultText
 _CopyCardNameAndLevel::
 	push bc
 	push de
@@ -14,91 +16,77 @@ _CopyCardNameAndLevel::
 	ld de, wDefaultText
 	push de
 	call CopyText ; copy card name to wDefaultText
-	pop hl
-	ld a, [hli]
+	pop hl ; hl = wDefaultText
+	ld a, [hl]
 	cp TX_HALFWIDTH
 	jr z, _CopyCardNameAndLevel_HalfwidthText
 
 ; the name doesn't start with TX_HALFWIDTH
 ; this doesn't appear to ever be the case (unless caller manipulates wLoadedCard1Name)
+	call GetTextLengthInTiles
 	ld a, [wCardNameLength]
-	ld c, a
+	sub b ; number of tiles used by the card's name
+	ld b, a
+	ld h, d
+	ld l, e
+	; hl = byte immediately after the end of the last character from the card's name in wDefaultText
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
 	jr nc, .level_done ; skip level if Energy or Trainer card
 	ld a, [wLoadedCard1Level]
 	or a
 	jr z, .level_done
-	inc c
-	inc c
-	ld a, [wLoadedCard1Level]
-	cp 10
-	jr c, .level_done
-	inc c ; second digit
-.level_done
-	ld hl, wLoadedCard1Name
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	ld de, wDefaultText
-	push de
-	call CopyText
-	pop hl
-	push de
-	ld e, c
-	call GetTextLengthInTiles
-	add e
-	ld c, a
-	pop hl
-	push hl
-.fill_loop
-	ld a, $70
+	ld a, FW_SPACE
 	ld [hli], a
-	dec c
-	jr nz, .fill_loop
-	ld [hl], TX_END
-	pop hl
-	ld a, [wLoadedCard1Type]
-	cp TYPE_ENERGY
-	jr nc, .done
-	ld a, [wLoadedCard1Level]
-	or a
-	jr z, .done
+	dec b
 	ld a, TX_SYMBOL
 	ld [hli], a
-	ld [hl], SYM_Lv
-	inc hl
+	ld a, SYM_Lv
+	ld [hli], a
+	dec b
 	ld a, [wLoadedCard1Level]
 	cp 10
-	jr c, .one_digit
+	jr c, .copy_ones_digit
 	ld [hl], TX_SYMBOL
 	inc hl
+	push bc
 	ld b, SYM_0 - 1
-.first_digit_loop
+.tens_digit_loop
 	inc b
 	sub 10
-	jr nc, .first_digit_loop
+	jr nc, .tens_digit_loop
 	add 10
-	ld [hl], b ; first digit
+	ld [hl], b ; tens digit
 	inc hl
-.one_digit
+	pop bc
+	dec b
+.copy_ones_digit
 	ld [hl], TX_SYMBOL
 	inc hl
 	add SYM_0
-	ld [hl], a ; last (or only) digit
-	inc hl
-.done
+	ld [hli], a ; ones digit
+	dec b
+.level_done
+	push hl
+	ld a, FW_SPACE
+.fill_spaces_loop
+	ld [hli], a
+	dec b
+	jr nz, .fill_spaces_loop
+	ld [hl], TX_END
+	pop hl
 	pop de
 	pop bc
 	ret
 
 ; the name starts with TX_HALFWIDTH
+; input:
+;	hl = wDefaultText (with card name already stored)
 _CopyCardNameAndLevel_HalfwidthText:
 	ld a, [wCardNameLength]
-	inc a
-	add a
+	inc a ; +1 (because of the control characters)
+	add a ; *2 (because each tile holds 2 characters)
 	ld b, a
-	ld hl, wDefaultText
 .find_end_text_loop
 	dec b
 	ld a, [hli]
@@ -111,7 +99,6 @@ _CopyCardNameAndLevel_HalfwidthText:
 	ld a, [wLoadedCard1Level]
 	or a
 	jr z, .level_done
-	ld c, a
 	ld a, " "
 	ld [hli], a
 	dec b
@@ -121,23 +108,21 @@ _CopyCardNameAndLevel_HalfwidthText:
 	ld a, "v"
 	ld [hli], a
 	dec b
-	ld a, c
+	ld a, [wLoadedCard1Level]
 	cp 10
-	jr c, .got_level
+	jr c, .copy_ones_digit
 	push bc
 	ld b, "0" - 1
-.first_digit_loop
+.tens_digit_loop
 	inc b
 	sub 10
-	jr nc, .first_digit_loop
+	jr nc, .tens_digit_loop
 	add 10
 	ld [hl], b ; first digit
 	inc hl
 	pop bc
-	ld c, a
 	dec b
-.got_level
-	ld a, c
+.copy_ones_digit
 	add "0"
 	ld [hli], a ; last (or only) digit
 	dec b

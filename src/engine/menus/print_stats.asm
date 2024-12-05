@@ -222,15 +222,8 @@ PrintAlbumProgress_SkipGetProgress:
 ; input:
 ;	bc = screen coordinates for printing text
 PrintMedalCount:
-	push bc
 	farcall TryGiveMedalPCPacks
 	ld a, EVENT_MEDAL_COUNT
 	farcall GetEventValue
-	ld l, a
-	ld h, $00
-	call ThreeDigitNumberToTxSymbol_TrimLeadingZeros
-	pop bc
-	call BCCoordToBGMap0Address
-	ld hl, wDecimalChars + 2
-	ld b, 1
-	jp SafeCopyDataHLtoDE
+	add SYM_0
+	jp WriteByteToBGMap0

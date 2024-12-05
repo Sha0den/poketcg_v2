@@ -91,15 +91,15 @@ CheckIfHasSaveData:
 	farcall ValidateBackupGeneralSaveData
 	ld a, TRUE
 	jr c, .no_error
-	ld a, FALSE
+	xor a ; FALSE
 .no_error
 	ld [wHasSaveData], a
-	cp $00 ; or a
+	or a
 	jr z, .write_has_duel_data
 	bank1call ValidateSavedNonLinkDuelData
 	ld a, TRUE
 	jr nc, .write_has_duel_data
-	ld a, FALSE
+	xor a ; FALSE
 .write_has_duel_data
 	ld [wHasDuelSaveData], a
 	farcall ValidateBackupGeneralSaveData
@@ -128,8 +128,34 @@ HandleStartMenu:
 	ld [wLineSeparation], a
 	lb bc, 14, 1
 	call DrawPlayerPortrait
-	call .SetStartMenuParams
 
+	ld hl, .StartMenuParams
+	ld de, wStartMenuParams
+	ld b, .StartMenuParamsEnd - .StartMenuParams
+	call CopyNBytesFromHLToDE
+
+	ld a, [wHasSaveData]
+	or a
+	jr z, .params_ok ; New Game (use all of the default parameters)
+	ld a, 2
+	call .AddItems
+	ldtx de, CardPopContinueDiaryNewGameText
+	ld a, [wHasDuelSaveData]
+	or a
+	jr z, .update_text_id ; Continue From Diary
+	ld a, 1
+	call .AddItems
+	ldtx de, CardPopContinueDiaryNewGameContinueDuelText
+	; Continue Duel
+
+.update_text_id
+	; set text ID as Start Menu param
+	ld hl, wStartMenuParams + 6
+	ld [hl], e
+	inc hl
+	ld [hl], d
+
+.params_ok
 	ld a, $ff
 	ld [wTitleScreenIgnoreInputCounter], a
 	ld a, [wLastSelectedStartMenuItem]
@@ -169,39 +195,6 @@ HandleStartMenu:
 	ld [wStartMenuChoice], a
 	ret
 
-.SetStartMenuParams
-	ld hl, .StartMenuParams
-	ld de, wStartMenuParams
-	ld bc, .StartMenuParamsEnd - .StartMenuParams
-	call CopyDataHLtoDE
-
-	ld e, 0
-	ld a, [wHasSaveData]
-	or a
-	jr z, .get_text_id ; New Game
-	inc e
-	ld a, 2
-	call .AddItems
-	ld a, [wHasDuelSaveData]
-	or a
-	jr z, .get_text_id ; Continue From Diary
-	inc e
-	ld a, 1
-	call .AddItems
-	; Continue Duel
-
-.get_text_id
-	sla e
-	ld d, $00
-	ld hl, .StartMenuTextIDs
-	add hl, de
-	; set text ID as Start Menu param
-	ld a, [hli]
-	ld [wStartMenuParams + 6], a
-	ld a, [hl]
-	ld [wStartMenuParams + 7], a
-	ret
-
 ; adds c items to start menu list, 
 ; this means adding 2 units per item to the text box height
 ; and adding to the number of items
@@ -215,7 +208,7 @@ HandleStartMenu:
 	add c
 	ld [wStartMenuParams + 12], a
 	; height of text box
-	sla c
+	sla c ; 2 * number of items
 	ld a, [wStartMenuParams + 3]
 	add c
 	ld [wStartMenuParams + 3], a
@@ -237,11 +230,6 @@ HandleStartMenu:
 	db SYM_SPACE ; tile behind cursor
 	dw NULL ; function pointer if non-0
 .StartMenuParamsEnd
-
-.StartMenuTextIDs
-	tx NewGameText
-	tx CardPopContinueDiaryNewGameText
-	tx CardPopContinueDiaryNewGameContinueDuelText
 
 
 ; prints the description for the current selected item
@@ -265,7 +253,6 @@ PrintStartMenuDescriptionText:
 	inc e
 	inc e
 .has_data
-
 	ld a, e
 	push af
 	lb de, 0, 10
@@ -383,10 +370,7 @@ AskToContinueFromDiaryWithDuelData:
 	ldtx hl, DataExistsWhenPowerWasTurnedOFFDuringDuelText
 	call PrintScrollableText_NoTextBoxLabel
 	ldtx hl, ContinueFromDiaryText
-	call YesOrNoMenuWithText
-	ret c
-	or a
-	ret
+	jp YesOrNoMenuWithText
 
 
 ; shows the disclaimer for Card Pop! in case the player

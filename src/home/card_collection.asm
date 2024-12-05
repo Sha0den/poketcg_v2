@@ -27,12 +27,12 @@ GetAmountOfCardsOwned::
 	jr nz, .next_deck
 	; hl = DECK_SIZE * (number of non-empty decks)
 	ld de, sCardCollection
+	ld b, $00
 .next_card
 	ld a, [de]
 	bit CARD_NOT_OWNED_F, a
 	jr nz, .skip_card
 	ld c, a ; card count in sCardCollection
-	ld b, $0
 	add hl, bc
 .skip_card
 	inc e
@@ -55,7 +55,7 @@ GetCardCountInCollectionAndDecks::
 	push bc
 	call EnableSRAM
 	ld c, a
-	ld b, $0
+	ld b, 0 ; initial counter
 	ld hl, sDeck1Cards
 	ld d, NUM_DECKS
 .next_deck
@@ -74,10 +74,10 @@ GetCardCountInCollectionAndDecks::
 	jr nz, .next_card
 	pop hl
 .deck_done
-	push de
+	ld a, d
 	ld de, sDeck2Cards - sDeck1Cards
 	add hl, de
-	pop de
+	ld d, a
 	dec d
 	jr nz, .next_deck
 	; all decks done
@@ -229,8 +229,8 @@ GetCardAlbumProgress::
 	jr z, .next2
 	dec e ; if MEW_LV15 isn't owned
 .next2
-	ld d, LOW(sCardCollection)
-	ld l, d
+	ld d, 0 ; initial card counter
+	ld l, d ; LOW(sCardCollection)
 .next_card
 	bit CARD_NOT_OWNED_F, [hl]
 	jr nz, .skip

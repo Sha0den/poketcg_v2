@@ -1500,18 +1500,18 @@ PossibleSwitch_PlayerSelection:
 ; handles the Player's selection of a Benched Pokémon for a damage-dealing attack (which doesn't use BenchedPokemonCheck)
 ; output:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant, -1 if none)
+;	[hTemp_ffa0] = play area location offset of a Pokémon on own Bench (PLAY_AREA_* constant, -1 if none)
 AlsoSwitchAfterAttack_PlayerSelection:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	dec a ; cp 1
+	cp 1
 	jr z, SwitchAfterAttack_AISelection.no_bench
 ;	fallthrough
 
 ; handles the Player's selection of a Benched Pokémon for an attack that has BenchedPokemonCheck as an Initial_Effect_1 command
 ; output:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant)
+;	[hTemp_ffa0] = play area location offset of a Pokémon on own Bench (PLAY_AREA_* constant)
 SwitchAfterAttack_PlayerSelection:
 	ldtx hl, SelectNewActivePokemonText
 	call DrawWideTextBox_WaitForInput
@@ -7069,7 +7069,6 @@ Curse_PlayerSelection:
 	ld b, SYM_SPACE
 	call DrawSymbolOnPlayAreaCursor
 	call EraseCursor
-	or a
 	jp SwapTurn
 
 ; returns carry if the operation was cancelled

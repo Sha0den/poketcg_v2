@@ -35,12 +35,12 @@ Func_3e44::
 	jr z, .asm_3e93
 	ld hl, wd659
 	ld de, wd64b
-	ld bc, $6
-	call CopyDataHLtoDE
+	ld b, $6
+	call CopyNBytesFromHLToDE
 	ld hl, wd65f
 	ld de, wd651
-	ld bc, $6
-	call CopyDataHLtoDE
+	ld b, $6
+	call CopyNBytesFromHLToDE
 .asm_3e93
 	xor a
 	ld [wd665], a

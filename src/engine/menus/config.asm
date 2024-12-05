@@ -157,14 +157,11 @@ TextDelaySettings:
 ; input:
 ;	a = used to find the cursor's y position (usually from wConfigCursorYPos)
 UpdateConfigMenuCursor:
-	push af
+	ld h, a
 	ld a, [wCursorBlinkTimer]
 	and $10
-	jr z, .show
-	pop af
-	jr HideConfigMenuCursor
-.show
-	pop af
+	ld a, h
+	jr nz, HideConfigMenuCursor
 ;	fallthrough
 
 ; preserves bc and de
@@ -184,7 +181,7 @@ ShowConfigMenuCursor:
 HideConfigMenuCursor:
 	push bc
 	ld c, a
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 	call DrawConfigMenuCursor
 	pop bc
 	ret
@@ -295,7 +292,7 @@ ConfigScreenDPadDown:
 .valid
 	ld [wConfigCursorYPos], a
 	ld c, a
-	ld b, 0
+	ld b, $00
 	ld hl, Unknown_106ff
 	add hl, bc
 	ld a, [hl]

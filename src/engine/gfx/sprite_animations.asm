@@ -17,7 +17,7 @@ _ClearSpriteAnimations::
 	xor a
 	ld [wWhichSprite], a
 	call GetFirstSpriteAnimBufferProperty
-	lb bc, 0, SPRITE_ANIM_LENGTH
+	ld bc, SPRITE_ANIM_LENGTH
 
 ; disable all sprite animations
 .loop_sprites
@@ -73,18 +73,7 @@ CreateSpriteAndAnimBufferEntry:
 	scf
 	jr .quit
 .foundEmptyAnimField
-	ld a, $1
-	ld [hl], a
-	call .FillNewSpriteAnimBufferEntry
-	or a
-.quit
-	pop hl
-	pop bc
-	ret
-
-.FillNewSpriteAnimBufferEntry:
-	push hl
-	push bc
+	ld [hl], $1
 	push hl
 	inc hl
 	ld c, SPRITE_ANIM_LENGTH - 1
@@ -102,10 +91,11 @@ CreateSpriteAndAnimBufferEntry:
 	ld [hl], a
 	ld bc, SPRITE_ANIM_COUNTER - SPRITE_ANIM_ID
 	add hl, bc
-	ld a, $ff
 	ld [hl], a
-	pop bc
+	or a
+.quit
 	pop hl
+	pop bc
 	ret
 
 
@@ -502,8 +492,8 @@ Func_12ba7:
 	ld bc, $100
 	call CopyDataHLtoDE
 	ld hl, wSpriteVRAMBuffer
-	ld bc, $40
-	call CopyDataHLtoDE
+	ld b, $40
+	call CopyNBytesFromHLToDE
 	ld a, [wSpriteVRAMBufferSize]
 	ld [de], a
 	pop de
@@ -524,8 +514,8 @@ Func_12bcd:
 	ld bc, $100
 	call CopyDataHLtoDE
 	ld de, wSpriteVRAMBuffer
-	ld bc, $40
-	call CopyDataHLtoDE
+	ld b, $40
+	call CopyNBytesFromHLToDE
 	ld a, [hl]
 	ld [wSpriteVRAMBufferSize], a
 	pop de

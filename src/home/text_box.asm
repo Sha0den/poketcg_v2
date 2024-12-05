@@ -162,7 +162,7 @@ ContinueDrawingTextBoxDMGorSGB::
 	dec c
 	dec c
 .draw_text_box_body_loop
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 	lb de, SYM_BOX_LEFT, SYM_BOX_RIGHT
 	call CopyLine
 	dec c
@@ -226,7 +226,7 @@ ContinueDrawingTextBoxCGB::
 	dec c
 	dec c
 .draw_text_box_body_loop
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 	lb de, SYM_BOX_LEFT, SYM_BOX_RIGHT
 	push hl
 	call CopyLine
@@ -235,7 +235,7 @@ ContinueDrawingTextBoxCGB::
 	ld a, [wTextBoxFrameType] ; on CGB, wTextBoxFrameType determines the palette and the other attributes
 	ld e, a
 	ld d, a
-	xor a
+	xor a ; CGB Background palette 0 (monochrome) 
 	call CopyLine
 	call BankswitchVRAM0
 	dec c

@@ -8,7 +8,7 @@ SetMainSGBBorder:
 	farcall GetEventValue
 	or a
 	jr z, .asm_70013
-	ld b, $2
+	inc b ; $2
 .asm_70013
 	ld a, b
 	jr SetSGBBorder
@@ -492,12 +492,12 @@ SetSGB2AndSGB3MapPalette:
 	; load palettes to wTempSGBPacket
 	ld hl, wDecompressionBuffer
 	ld de, wTempSGBPacket + 1 ; PAL Packet color #0 (PAL23's SGB2)
-	ld bc, 8 ; pal size
-	call CopyDataHLtoDE
+	ld b, $8 ; pal size
+	call CopyNBytesFromHLToDE
 	ld hl, wDecompressionBuffer + 34
 	ld de, wTempSGBPacket + 9 ; PAL Packet color #4 (PAL23's SGB3)
-	ld bc, 6
-	call CopyDataHLtoDE
+	ld b, $6
+	call CopyNBytesFromHLToDE
 
 	xor a
 	ld [wTempSGBPacket + 15], a
@@ -538,12 +538,12 @@ Func_703cb:
 	call DecompressSGBPalette
 	ld hl, wDecompressionBuffer
 	ld de, wTempSGBPacket + $1
-	ld bc, $8 ; palette 2, color 0-3
-	call CopyDataHLtoDE
+	ld b, $8 ; palette 2, color 0-3
+	call CopyNBytesFromHLToDE
 	ld hl, wDecompressionBuffer + $22
 	ld de, wTempSGBPacket + $9
-	ld bc, $6 ; palette 3, color 1-3
-	call CopyDataHLtoDE
+	ld b, $6 ; palette 3, color 1-3
+	call CopyNBytesFromHLToDE
 	xor a
 	ld [wTempSGBPacket + $f], a
 	ld hl, wTempSGBPacket
@@ -602,15 +602,15 @@ SendSGBPortraitPalettes:
 	call DecompressSGBPalette
 	ld hl, wLoadedPalData
 	ld de, wTempSGBPacket + $1
-	ld bc, $8
-	call CopyDataHLtoDE
+	ld b, $8
+	call CopyNBytesFromHLToDE
 
 	pop hl ; input hl
 	call DecompressSGBPalette
 	ld hl, wLoadedPalData + 2
 	ld de, wTempSGBPacket + $9
-	ld bc, $6
-	call CopyDataHLtoDE
+	ld b, $6
+	call CopyNBytesFromHLToDE
 
 	xor a
 	ld [wTempSGBPacket + $f], a

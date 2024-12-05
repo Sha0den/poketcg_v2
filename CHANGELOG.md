@@ -116,7 +116,12 @@
 
 
 ## Code Optimization
-- **December 4, 2024:** 8 Files Changed
+- **December 5, 2024:** 32 Files Changed
+    - A wide variety of code optimizations throughout the home and engine files (plus a few corrections)
+
+<br/>
+
+- **[December 4, 2024](https://github.com/Sha0den/poketcg_v2/commit/b6a204da0d1297318db880263380a7bf7c58386a):** 8 Files Changed
     - Major update to the engine/menus files associated with decks and deck building, refactoring A LOT of code and relabeling numerous subroutines
 
 <br/>

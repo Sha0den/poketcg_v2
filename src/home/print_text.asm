@@ -45,11 +45,10 @@ InitTextPrinting_ProcessTextFromPointerToID::
 ;	[hl] = text ID
 ProcessTextFromPointerToID::
 	ld a, [hli]
-	or [hl]
-	ret z
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
+	ld h, [hl]
+	ld l, a
+	or h
+	ret z ; return if the pointer is null
 ;	fallthrough
 
 ; given the ID of a text in hl, reads the characters from it
@@ -552,10 +551,37 @@ PrintTextNoDelay::
 	jp BankswitchROM
 
 
+; copies the opponent's name to de
+; if text ID at wOpponentName is non-0, copy it from there
+; else, if text at wc500 is non-0, copy if from there
+; else, copy Player2Text
+; preserves bc
+; input:
+;	de = where to copy the data (usually wDefaultText)
+; output:
+;	de = end of the text string that was stored at de
+CopyOpponentName::
+	ld hl, wOpponentName
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	or h
+	jr nz, CopyText
+	; use wNameBuffer if pointer is null
+	ld hl, wNameBuffer
+	ld a, [hl]
+	or a
+	jr nz, CopyPlayerName.loop
+	; use "Player 2" if wNameBuffer is empty
+	ldtx hl, Player2Text
+;	fallthrough
+
 ; preserves bc
 ; input:
 ;	hl = ID of text to copy (if 0, then use turn duelist's name)
 ;	de = where to copy the data (usually wDefaultText)
+; output:
+;	de = end of the text string that was stored at de
 CopyText::
 	ld a, l
 	or h
@@ -567,7 +593,7 @@ CopyText::
 	ld a, [hli]
 	ld [de], a
 	inc de
-	or a
+	or a ; cp TX_END
 	jr nz, .next_tile_loop
 	pop af
 	rst BankswitchROM
@@ -583,6 +609,8 @@ CopyText::
 ; preserves bc
 ; input:
 ;	de = where to copy the data (usually wDefaultText)
+; output:
+;	de = end of the text string that was stored at de
 CopyPlayerName::
 	call EnableSRAM
 	ld hl, sPlayerName
@@ -594,32 +622,6 @@ CopyPlayerName::
 	jr nz, .loop
 	dec de
 	jp DisableSRAM
-
-; copies the opponent's name to de
-; if text ID at wOpponentName is non-0, copy it from there
-; else, if text at wc500 is non-0, copy if from there
-; else, copy Player2Text
-; preserves bc
-; input:
-;	de = where to copy the data (usually wDefaultText)
-CopyOpponentName::
-	ld hl, wOpponentName
-	ld a, [hli]
-	or [hl]
-	jr z, .special_name
-	ld a, [hld]
-	ld l, [hl]
-	ld h, a
-	jr CopyText
-.special_name
-	ld hl, wNameBuffer
-	ld a, [hl]
-	or a
-	jr z, .print_player2
-	jr CopyPlayerName.loop
-.print_player2
-	ldtx hl, Player2Text
-	jr CopyText
 
 
 ; copies text of maximum length a (in tiles) from its ID at hl to de,

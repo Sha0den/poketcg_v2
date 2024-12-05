@@ -532,26 +532,29 @@ ShuffleCards::
 	ret
 
 
-; sorts an $ff-terminated list of deck index cards by ID (lowest to highest ID).
-; the list is wDuelTempList.
+; sorts an $ff-terminated list of deck index cards in wDuelTempList by ID (lowest to highest ID).
+; input:
+;	[wDuelTempList] = start of an $ff-terminated list of cards (deck indices)
 SortCardsInDuelTempListByID::
 	ld hl, hTempListPtr_ff99
 	ld [hl], LOW(wDuelTempList)
 	inc hl
 	ld [hl], HIGH(wDuelTempList)
-	jr SortCardsInListByID_CheckForListTerminator
+;	fallthrough
 
 ; sorts an $ff-terminated list of deck index cards by ID (lowest to highest ID).
 ; sorting by ID rather than deck index means that the order of equal (same ID) cards does not matter,
 ; even if they have a different deck index.
 ; input:
-;	[hTempListPtr_ff99] = pointer to the list
+;	[hTempListPtr_ff99] = pointer for an $ff-terminated list with deck indices of cards (2 bytes)
 SortCardsInListByID::
-	; load [hTempListPtr_ff99] into hl and de
 	ld hl, hTempListPtr_ff99
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+	bit 7, [hl] ; check for the list terminator ($ff)
+	ret nz
+
 	ld e, l
 	ld d, h
 	; get ID of card with deck index at [de]
@@ -561,8 +564,8 @@ SortCardsInListByID::
 	ldh [hTempCardID_ff9b], a
 	ld a, b
 	ldh [hTempCardID_ff9b + 1], a ; 0
-	; hl = [hTempListPtr_ff99] + 1
 	inc hl
+	; hl = [hTempListPtr_ff99] + 1
 	jr .check_list_end
 
 .next_card_in_list
@@ -585,7 +588,7 @@ SortCardsInListByID::
 .not_lower_id
 	inc hl
 .check_list_end
-	bit 7, [hl] ; $ff is the list terminator
+	bit 7, [hl] ; check for the list terminator ($ff)
 	jr z, .next_card_in_list
 	; reached list terminator
 	ld hl, hTempListPtr_ff99
@@ -602,19 +605,10 @@ SortCardsInListByID::
 	pop hl
 	; [hTempListPtr_ff99] += 1 (point hl to next card in list)
 	inc [hl]
-	jr nz, SortCardsInListByID_CheckForListTerminator
+	jr nz, SortCardsInListByID
 	inc hl
 	inc [hl]
-;	fallthrough
-
-SortCardsInListByID_CheckForListTerminator::
-	ld hl, hTempListPtr_ff99
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	bit 7, [hl] ; $ff is the list terminator
-	jr z, SortCardsInListByID
-	ret
+	jr SortCardsInListByID
 
 
 ; preserves de and hl

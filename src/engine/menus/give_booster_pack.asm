@@ -9,11 +9,10 @@ GiveBoosterPack:
 	ld [wTextBoxFrameType], a
 	pop bc
 	push bc
-	ld b, 0
+	ld b, $00
 	ld hl, BoosterTypes
 	add hl, bc
 	ld a, [hl]
-	ld c, a
 	add a
 	add a
 	ld c, a

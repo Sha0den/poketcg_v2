@@ -103,10 +103,12 @@ CopyGeneralSaveDataToSRAM:
 	ld e, l
 	ld d, h
 	xor a
-	ld [wGeneralSaveDataByteCount + 0], a
-	ld [wGeneralSaveDataByteCount + 1], a
-	ld [wGeneralSaveDataCheckSum + 0], a
-	ld [wGeneralSaveDataCheckSum + 1], a
+	ld hl, wGeneralSaveDataCheckSum
+	ld [hli], a
+	ld [hl], a
+	ld hl, wGeneralSaveDataByteCount
+	ld [hli], a
+	ld [hl], a
 
 	ld hl, WRAMToSRAMMapper
 .loop_map
@@ -127,32 +129,7 @@ CopyGeneralSaveDataToSRAM:
 	ld a, [wGeneralSaveDataByteCount + 1]
 	adc b
 	ld [wGeneralSaveDataByteCount + 1], a
-	call .CopyBytesToSRAM
-	inc hl
-	inc hl
-	jr .loop_map
-
-.done_copy
-	pop hl ; SRAM location from de input
-	ld a, $08
-	ld [hli], a
-	ld a, $00
-	ld [hli], a
-	ld a, [wGeneralSaveDataByteCount + 0]
-	ld [hli], a
-	ld a, [wGeneralSaveDataByteCount + 1]
-	ld [hli], a
-	ld a, [wGeneralSaveDataCheckSum + 0]
-	ld [hli], a
-	ld a, [wGeneralSaveDataCheckSum + 1]
-	ld [hli], a
-	pop de
-	pop bc
-	pop hl
-	ret
-
-; preserves hl
-.CopyBytesToSRAM
+	; copy bytes to SRAM
 	push hl
 	ld hl, wTempPointer
 	ld a, [hli]
@@ -179,6 +156,27 @@ CopyGeneralSaveDataToSRAM:
 	ld [wTempPointer + 0], a
 	ld a, h
 	ld [wTempPointer + 1], a
+	pop hl	
+	inc hl
+	inc hl
+	jr .loop_map
+
+.done_copy
+	pop hl ; SRAM location from de input
+	ld a, $08
+	ld [hli], a
+	ld a, $00
+	ld [hli], a
+	ld a, [wGeneralSaveDataByteCount + 0]
+	ld [hli], a
+	ld a, [wGeneralSaveDataByteCount + 1]
+	ld [hli], a
+	ld a, [wGeneralSaveDataCheckSum + 0]
+	ld [hli], a
+	ld a, [wGeneralSaveDataCheckSum + 1]
+	ld [hli], a
+	pop de
+	pop bc
 	pop hl
 	ret
 

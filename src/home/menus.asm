@@ -100,11 +100,9 @@ HandleMenuInput::
 PlayOpenOrExitScreenSFX::
 	push af
 	ldh a, [hCurMenuItem]
-	inc a
-	jr z, .play_exit_sfx
+	inc a ; cp -1
 	ld a, SFX_CONFIRM
-	jr .play_sfx
-.play_exit_sfx
+	jr nz, .play_sfx
 	ld a, SFX_CANCEL
 .play_sfx
 	call PlaySFX
@@ -168,9 +166,13 @@ DrawCursor2::
 	jr DrawCursor
 
 
-; translates the TYPE_* constant in wLoadedCard1Type to an index for CardSymbolTable
-; preserves all registers except af
-CardTypeToSymbolID::
+; translates the TYPE_* constant in wLoadedCard1Type to an index
+; and then uses that index to find the relevant entry in CardSymbolTable.
+; preserves de
+; output:
+;	hl = pointing to an entry from CardSymbolTable
+;	a = starting tile number of the symbol being drawn (ICON_TILE_* constant)
+GetCardSymbolData::
 	ld a, [wLoadedCard1Type]
 	cp TYPE_TRAINER
 	jr nc, .trainer_card
@@ -178,24 +180,15 @@ CardTypeToSymbolID::
 	jr c, .pokemon_card
 	; Energy card
 	and 7 ; match TYPE_ENERGY_* with the appropriate Energy icon
-	ret
+	jr .got_index
 .trainer_card
 	ld a, 11 ; use the T icon
-	ret
+	jr .got_index
 .pokemon_card
 	ld a, [wLoadedCard1Stage] ; different symbol for each stage of evolution
 	add 8
-	ret
-
-
-; uses the TYPE_* constant in wLoadedCard1Type to find the relevant entry in CardSymbolTable
-; preserves de
-; output:
-;	hl = pointing to an entry from CardSymbolTable
-;	a = starting tile number of the symbol being drawn (ICON_TILE_* constant)
-GetCardSymbolData::
-	call CardTypeToSymbolID
-	add a ; double number to account for palette data
+.got_index
+	add a ; double index to account for palette data
 	ld c, a
 	ld b, 0
 	ld hl, CardSymbolTable
@@ -204,10 +197,14 @@ GetCardSymbolData::
 	ret
 
 
-; draws, at de, the 2x2 tile card symbol associated to the TYPE_* constant in wLoadedCard1Type
+; draws, at de, the 2x2 tile card symbol associated to the TYPE_* constant in wLoadedCard1Type.
+; the actual icon is drawn 2 tiles to the left and 1 tile up from the coordinates given in de.
+; Energy cards are given an icon that represents the type of Energy provided. (e.g. Grass, Fire, etc.)
+; Pokémon cards are given an icon that represents their stage. (e.g. Basic, Stage 1, etc.)
+; Trainer cards are simply given an icon that consists of a capital letter T.
 ; preserves all registers except af
 ; input:
-;	de = screen coordinates at which to begin drawing the symbol
+;	de = screen coordinates for drawing the symbol
 ;	[wLoadedCard1] = all of the card's data (card_data_struct)
 DrawCardSymbol::
 	push hl
@@ -255,6 +252,7 @@ CardSymbolTable::
 	db ICON_TILE_STAGE_1_POKEMON, $02 ; TYPE_PKMN_*, Stage 1
 	db ICON_TILE_STAGE_2_POKEMON, $01 ; TYPE_PKMN_*, Stage 2
 	db ICON_TILE_TRAINER,         $02 ; TYPE_TRAINER
+	db $00
 
 
 ; copies the name and level of the card at wLoadedCard1 to wDefaultText
@@ -262,6 +260,8 @@ CardSymbolTable::
 ; input:
 ;	a = length in number of tiles (the resulting string will be padded with spaces to match it)
 ;	[wLoadedCard1] = all of the card's data (card_data_struct)
+; output:
+;	hl = first empty space at the end of the text string that was stored in wDefaultText
 CopyCardNameAndLevel::
 	ld h, a
 	ldh a, [hBankROM]
@@ -291,15 +291,11 @@ WaitForButtonAorB::
 	call RefreshMenuCursor
 	ldh a, [hKeysPressed]
 	bit A_BUTTON_F, a
-	jr nz, .a_pressed
+	jp nz, EraseCursor ; erase cursor and return if A button was pressed
 	bit B_BUTTON_F, a
 	jr z, WaitForButtonAorB
 	call EraseCursor
 	scf
-	ret
-.a_pressed
-	call EraseCursor
-	or a
 	ret
 
 
@@ -533,16 +529,12 @@ HandleYesOrNoMenu::
 .a_pressed
 	ld a, [wCurMenuItem]
 	ldh [hCurMenuItem], a
+	ld hl, wDefaultYesOrNo
+	ld [hl], a
 	or a
-	jr nz, .no
-;.yes
-	ld [wDefaultYesOrNo], a ; 0
-	ret
-.no
-	xor a
-	ld [wDefaultYesOrNo], a ; 0
-	inc a ; 1
-	ldh [hCurMenuItem], a
+	ret z ; return no carry if "Yes" was selected
+	; "No" was selected, so return carry
+	ld [hl], $00 ; default set to "No"
 	scf
 	ret
 

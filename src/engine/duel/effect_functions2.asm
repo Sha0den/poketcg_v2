@@ -54,9 +54,7 @@ LookForCardsInDeck:
 	jr c, .none_in_deck
 	pop bc
 	pop hl
-	call DrawWideTextBox_WaitForInput
-	or a
-	ret
+	jp DrawWideTextBox_WaitForInput
 
 .none_in_deck
 	pop hl

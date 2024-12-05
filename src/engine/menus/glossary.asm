@@ -43,8 +43,8 @@ OpenGlossaryScreen:
 	jr .next
 
 .on_select
-	ld a, $1
-	call PlaySFXConfirmOrCancel_Bank6
+	ld a, SFX_CONFIRM
+	call PlaySFX
 .change_page
 	ld a, [wGlossaryPageNo]
 	xor $01 ; swap page

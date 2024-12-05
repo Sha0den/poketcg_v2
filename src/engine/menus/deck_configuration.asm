@@ -2702,7 +2702,7 @@ PrintConfirmationCardList:
 	call ConvertToNumericalDigits
 	ld [hl], TX_END
 	pop de
-	call .DrawCardTypeIcon
+	call DrawCardSymbol
 	ld hl, wDefaultText
 	call InitTextPrinting_ProcessText
 	pop hl
@@ -2712,117 +2712,6 @@ PrintConfirmationCardList:
 	inc e
 	inc e
 	jr .loop_cards
-
-
-; draws the icon corresponding to the loaded card's type
-; Grass/Fire/Water/Lightning/Fighting/Psychic/Colorless Symbol for Energy cards,
-; Stage Symbol for Pokemon cards, and Trainer Symbol for Trainer cards
-; draws it 2 tiles to the left and 1 up to the current coordinate in de
-; preserves de
-; input:
-;	de = screen coordinates for printing
-.DrawCardTypeIcon
-	push de
-	ld a, [wLoadedCard1Type]
-	cp TYPE_ENERGY
-	jr nc, .not_pkmn_card
-
-; Pokemon card
-; switch each of the commented lines with the line that precedes it
-; if you prefer to show the Pokemon's type instead of its Stage
-	ld a, [wLoadedCard1Stage]
-;	ld a, [wLoadedCard1Type]
-	ld b, a
-	add b
-	add b
-	add b ; *4
-	add ICON_TILE_BASIC_POKEMON
-;	add ICON_TILE_FIRE
-	jr .got_tile
-
-.not_pkmn_card
-	cp TYPE_TRAINER
-	jr nc, .trainer_card
-
-; Energy card
-; switch the commented line with the preceding 6 lines
-; if you prefer to use the Energy Symbol for all Energy cards
-	sub TYPE_ENERGY
-	ld b, a
-	add b
-	add b
-	add b ; *4
-	add ICON_TILE_FIRE
-;	ld a, ICON_TILE_ENERGY
-	jr .got_tile
-
-.trainer_card
-	ld a, ICON_TILE_TRAINER
-.got_tile
-	dec d
-	dec d
-	dec e
-	push af
-	lb hl, 1, 2
-	lb bc, 2, 2
-	call FillRectangle
-	pop af
-
-	call GetCardTypeIconPalette
-	ld b, a
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	jr nz, .skip_pal
-	ld a, b
-	lb bc, 2, 2
-	lb hl, 0, 0
-	call BankswitchVRAM1
-	call FillRectangle
-	call BankswitchVRAM0
-.skip_pal
-	pop de
-	ret
-
-
-; preserves all registers except af
-; input:
-;	a = ICON_TILE_* constant
-; output:
-;	a = background palette corresponding to the card type icon from input a
-;	a = 0:  if the palette wasn't found
-GetCardTypeIconPalette:
-	push bc
-	push hl
-	ld b, a
-	ld hl, .CardTypeIconPalettes - 1
-.loop
-	inc hl
-	ld a, [hli]
-	or a
-	jr z, .done
-	cp b
-	jr nz, .loop
-.done
-	ld a, [hl]
-	pop hl
-	pop bc
-	ret
-
-.CardTypeIconPalettes
-; icon tile, BG pal
-	db ICON_TILE_FIRE,            1
-	db ICON_TILE_GRASS,           2
-	db ICON_TILE_LIGHTNING,       1
-	db ICON_TILE_WATER,           2
-	db ICON_TILE_FIGHTING,        3
-	db ICON_TILE_PSYCHIC,         3
-	db ICON_TILE_COLORLESS,       0
-	db ICON_TILE_ENERGY,          2
-	db ICON_TILE_BASIC_POKEMON,   2
-	db ICON_TILE_STAGE_1_POKEMON, 2
-	db ICON_TILE_STAGE_2_POKEMON, 1
-	db ICON_TILE_TRAINER,         2
-	db $00, $00
 
 
 ; handles the screen showing all the player's cards.
@@ -3239,6 +3128,31 @@ DrawCardTypeIcons:
 	db $00
 
 
+; preserves all registers except af
+; input:
+;	a = ICON_TILE_* constant
+; output:
+;	a = background palette corresponding to the card type icon from input a
+;	a = 0:  if the palette wasn't found
+GetCardTypeIconPalette:
+	push bc
+	push hl
+	ld b, a
+	ld hl, CardSymbolTable - 1
+.loop
+	inc hl
+	ld a, [hli]
+	or a
+	jr z, .done
+	cp b
+	jr nz, .loop
+	ld a, [hl]
+.done
+	pop hl
+	pop bc
+	ret
+
+
 ; prints "<PLAYER>'s cards"
 PrintPlayersCardsText:
 	lb de, 1, 0
@@ -3288,10 +3202,70 @@ PrintTotalNumberOfCardsInCollection:
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; counts all values stored in wCardFilterCounts
-; if the total count is 0, then prints "No cards chosen."
-; output:
-;	c = sum of all card filter counts
+;; draws the icon corresponding to the loaded card's type:
+;; Grass/Fire/Water/Lightning/Fighting/Psychic/Colorless Symbol for Energy cards,
+;; Stage Symbol for Pokemon cards, and a T Symbol for Trainer cards.
+;; draws it 2 tiles to the left and 1 up to the current coordinate in de.
+;; this function is more or less identical to "DrawCardSymbol" in home/menus.asm
+;; preserves de
+;; input:
+;;	de = screen coordinates for drawing the symbol
+;;	[wLoadedCard1] = all of the card's data (card_data_struct)
+;DrawCardTypeIcon
+;	push de
+;	ld a, [wLoadedCard1Type]
+;	cp TYPE_ENERGY
+;	jr nc, .not_pkmn_card
+;
+;; Pokemon card
+;	ld a, [wLoadedCard1Stage]
+;	add a ; *2
+;	add a ; *4 (number of tiles in a type icon)
+;	add ICON_TILE_BASIC_POKEMON
+;	jr .got_tile
+;
+;.not_pkmn_card
+;	cp TYPE_TRAINER
+;	jr nc, .trainer_card
+;
+;; Energy card
+;	sub TYPE_ENERGY
+;	add a ; *2
+;	add a ; *4 (number of tiles in a type icon)
+;	add ICON_TILE_FIRE
+;	jr .got_tile
+;
+;.trainer_card
+;	ld a, ICON_TILE_TRAINER
+;.got_tile
+;	dec d
+;	dec d
+;	dec e
+;	push af
+;	lb hl, 1, 2
+;	lb bc, 2, 2
+;	call FillRectangle
+;	pop af
+;	call GetCardTypeIconPalette
+;	ld b, a
+;	ld a, [wConsole]
+;	cp CONSOLE_CGB
+;	jr nz, .skip_pal
+;	ld a, b
+;	lb bc, 2, 2
+;	lb hl, 0, 0
+;	call BankswitchVRAM1
+;	call FillRectangle
+;	call BankswitchVRAM0
+;.skip_pal
+;	pop de
+;	ret
+;
+;
+;; counts all values stored in wCardFilterCounts
+;; if the total count is 0, then prints "No cards chosen."
+;; output:
+;;	c = sum of all card filter counts
 ;TallyCardsInCardFilterLists:
 ;	lb bc, NUM_FILTERS, 0
 ;	ld hl, wCardFilterCounts
@@ -3309,7 +3283,7 @@ PrintTotalNumberOfCardsInCollection:
 ;	jp InitTextPrinting_ProcessTextFromID
 ;
 ;
-; opens card page from the card list
+;; opens card page from the card list
 ;Func_9ced:
 ;	ld hl, wVisibleListCardIDs
 ;	ld a, [wCardListCursorPos]

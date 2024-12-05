@@ -574,8 +574,8 @@ InitBoosterData:
 	jr nz, .clear_temp_card_collection_loop
 	call FindBoosterDataPointer
 	ld de, wBoosterData_Set
-	ld bc, wBoosterData_TypeChances - wBoosterData_Set + NUM_BOOSTER_CARD_TYPES ; Pack2 - Pack1
-	call CopyDataHLtoDE ; load booster pack data to wram
+	ld b, wBoosterData_TypeChances - wBoosterData_Set + NUM_BOOSTER_CARD_TYPES ; Pack2 - Pack1
+	call CopyNBytesFromHLToDE ; load booster pack data to wram
 	call LoadRarityAmountsToWram
 	ld bc, $0
 	lb de, NUM_BOOSTER_CARD_TYPES, NUM_BOOSTER_CARD_TYPES

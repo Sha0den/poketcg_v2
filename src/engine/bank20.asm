@@ -404,10 +404,8 @@ GetMapDataPointer:
 ;	pop af ; unnecessary?
 	ld l, a
 	ld h, $0
-	sla l
-	rl h
-	sla l
-	rl h
+	add hl, hl ; *2
+	add hl, hl ; *4
 	add hl, bc
 	pop bc
 	ret
@@ -1008,10 +1006,10 @@ LoadOWFrameTiles:
 	push bc
 	ld a, [wCurOWFrameDuration]
 	push af
-	ld a, [wCurMapOWFrameset]
+	ld hl, wCurMapOWFrameset
+	ld a, [hli]
+	ld h, [hl]
 	ld l, a
-	ld a, [wCurMapOWFrameset + 1]
-	ld h, a
 	call GetOWFramesetSubgroupData
 	pop af
 	ld [wCurOWFrameDuration], a
@@ -1221,9 +1219,7 @@ Func_80baa:
 	ld a, $1
 	ld [hl], a
 
-	ld a, c
-	add a
-	ld c, a
+	sla c
 	ld b, $0
 	ld hl, .TilemapPointers
 	add hl, bc

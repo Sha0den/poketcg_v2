@@ -13,14 +13,12 @@ AddStarterDeck::
 	ld a, PLAYER_TURN
 	ldh [hWhoseTurn], a
 	ld a, [hli] ; main deck
-	add 2
 	push hl
 	ld hl, sDeck1
 	call CopyDeckNameAndCards
 	pop hl
 	rst SwapTurn
 	ld a, [hli] ; extra deck
-	add 2
 	call LoadDeck
 	rst SwapTurn
 
@@ -38,7 +36,7 @@ AddStarterDeck::
 	dec c
 	jr nz, .loop_main_cards
 
-	ld h, HIGH(sCardCollection)
+;	ld h, HIGH(sCardCollection)
 	ld de, wOpponentDeck
 	ld c, 30 ; number of extra cards
 .loop_extra_cards
@@ -71,9 +69,9 @@ AddStarterDeck::
 
 .StarterCardIDs
 	; main deck, extra cards
-	db CHARMANDER_AND_FRIENDS_DECK_ID, CHARMANDER_EXTRA_DECK_ID
-	db SQUIRTLE_AND_FRIENDS_DECK_ID,   SQUIRTLE_EXTRA_DECK_ID
-	db BULBASAUR_AND_FRIENDS_DECK_ID,  BULBASAUR_EXTRA_DECK_ID
+	db CHARMANDER_AND_FRIENDS_DECK, CHARMANDER_EXTRA_DECK
+	db SQUIRTLE_AND_FRIENDS_DECK,   SQUIRTLE_EXTRA_DECK
+	db BULBASAUR_AND_FRIENDS_DECK,  BULBASAUR_EXTRA_DECK
 
 
 ; clears saved data (card collection/saved decks/Card Pop! data/etc)
@@ -156,7 +154,14 @@ CopyDeckNameAndCards:
 	push hl
 	call LoadDeck
 	jr c, .done
-	call .CopyDeckName
+
+; copy deck name
+	ld hl, wDeckName
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	ld de, wDefaultText
+	call CopyText
 	pop hl
 	call EnableSRAM
 	push hl
@@ -169,6 +174,7 @@ CopyDeckNameAndCards:
 	jr nz, .loop_write_name
 	pop hl
 
+; copy deck cards
 	push hl
 	ld de, DECK_NAME_SIZE
 	add hl, de
@@ -187,11 +193,3 @@ CopyDeckNameAndCards:
 	pop bc
 	pop de
 	ret
-
-.CopyDeckName
-	ld hl, wDeckName
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	ld de, wDefaultText
-	jp CopyText

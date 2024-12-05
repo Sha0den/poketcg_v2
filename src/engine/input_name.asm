@@ -29,11 +29,9 @@ ClearMemory_Bank6:
 ;	a != -1:  play SFX_CONFIRM (usually following an A press)
 PlaySFXConfirmOrCancel_Bank6:
 	push af
-	inc a
-	jr z, .cancel_sfx
+	inc a ; cp -1
 	ld a, SFX_CONFIRM
-	jr .play_sfx
-.cancel_sfx
+	jr nz, .play_sfx
 	ld a, SFX_CANCEL
 .play_sfx
 	call PlaySFX
@@ -150,6 +148,8 @@ InputDeckName:
 
 ; pressed SELECT
 ; changes the keyboard (Uppercase -> Lowercase -> Accents -> Uppercase...)
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	ld a, [wWhichKeyboard]
 	inc a
 	cp ACCENTS_KEYBOARD + 1

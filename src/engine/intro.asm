@@ -47,10 +47,6 @@ PlayIntroSequence:
 	call LoadScene
 .asm_1d39f
 	call EnableAndClearSpriteAnimations
-	call .ShowPressStart
-	jp EnableLCD
-
-.ShowPressStart
 	ld a, SPRITE_PRESS_START
 	farcall CreateSpriteAndAnimBufferEntry
 	ld c, SPRITE_ANIM_COORD_X
@@ -68,7 +64,7 @@ PlayIntroSequence:
 	ld a, c
 	ld bc, 60
 	farcall Func_12ac9
-	ret
+	jp EnableLCD
 
 LoadTitleScreenSprites:
 	xor a
