@@ -3439,7 +3439,7 @@ GetCardOneStageBelow:
 ; loads deck indices of the stages present in hTempPlayAreaLocation_ff9d.
 ; the three stages are loaded consecutively in wAllStagesIndices.
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or CARD_LOCATION_ARENA
+	or CARD_LOCATION_PLAY_AREA
 	ld c, a
 	ldh a, [hWhoseTurn]
 	ld h, a

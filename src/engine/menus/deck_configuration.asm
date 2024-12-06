@@ -2358,7 +2358,7 @@ HandleDeckConfirmationMenu:
 	call PlaySFX
 	ld a, [wCardListCursorPos]
 	ld [wced7], a
-	ld de, wOwnedCardsCountList
+	ld de, wUniqueDeckCardList
 	call OpenCardPageFromCardList
 	jr .start_selection
 

@@ -111,13 +111,15 @@ EstimateDamage_VersusDefendingCard:
 ;	hl = wDamage
 CalculateDamage_VersusDefendingPokemon:
 	ld hl, wAIMinDamage
-	call _CalculateDamage_VersusDefendingPokemon
+	call .CalculateDamage
 	ld hl, wAIMaxDamage
-	call _CalculateDamage_VersusDefendingPokemon
+	call .CalculateDamage
 	ld hl, wDamage
 ;	fallthrough
 
-_CalculateDamage_VersusDefendingPokemon:
+; input:
+;	[hl] = base damage to modify
+.CalculateDamage
 	ld e, [hl]
 	ld d, $00
 	push hl
@@ -142,7 +144,7 @@ _CalculateDamage_VersusDefendingPokemon:
 	pop de
 	jr nc, .vulnerable
 	; invulnerable to damage
-	ld de, $0
+	ld de, 0
 	jr .done
 
 .vulnerable
@@ -194,7 +196,7 @@ _CalculateDamage_VersusDefendingPokemon:
 	; test if de underflowed
 	bit 7, d
 	jr z, .no_underflow
-	ld de, $0
+	ld de, 0
 
 .no_underflow
 ; account for 1 turn of poison damage since it's the Active Pokémon.
@@ -218,13 +220,13 @@ _CalculateDamage_VersusDefendingPokemon:
 	rst SwapTurn
 
 .done
-	pop hl ; wDamage
+	pop hl ; address from input
 	ld [hl], e
 	ld a, d
 	or a
 	ret z
 	; cap damage at 255 (1 byte)
-	ld a, $ff
+	ld a, 255
 	ld [hl], a
 	ret
 
@@ -341,6 +343,8 @@ CalculateDamage_FromDefendingPokemon:
 	ld hl, wDamage
 	; fallthrough
 
+; input:
+;	[hl] = base damage to modify
 .CalculateDamage
 	ld e, [hl]
 	ld d, $00
@@ -436,7 +440,7 @@ CalculateDamage_FromDefendingPokemon:
 	; test if de underflowed
 	bit 7, d
 	jr z, .no_underflow
-	ld de, $0
+	ld de, 0
 
 .no_underflow
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -461,12 +465,12 @@ CalculateDamage_FromDefendingPokemon:
 	ld d, a
 
 .done
-	pop hl ; wDamage
+	pop hl ; address from input
 	ld [hl], e
 	ld a, d
 	or a
 	ret z
 	; cap damage at 255 (1 byte)
-	ld a, $ff
+	ld a, 255
 	ld [hl], a
 	ret

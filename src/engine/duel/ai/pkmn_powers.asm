@@ -62,45 +62,52 @@ HandleAIPkmnPowers:
 	call _GetCardIDFromDeckIndex
 	push bc
 
-.check_solar_power
+; solar power
 	cp VENUSAUR_LV64
-	jr nz, .check_heal
+	jr nz, .heal
 	call HandleAISolarPower
 	jr .next_1
-.check_heal
+
+.heal
 	cp VILEPLUME
-	jr nz, .check_shift
+	jr nz, .shift
 	call HandleAIHeal
 	jr .next_1
-.check_shift
+
+.shift
 	cp VENOMOTH
-	jr nz, .check_cowardice
+	jr nz, .cowardice
 	call HandleAIShift
 	jr .next_1
-.check_cowardice
+
+.cowardice
 	cp TENTACOOL
-	jr nz, .check_peek
+	jr nz, .peek
 	call HandleAICowardice
 	jr .next_1
-.check_peek
+
+.peek
 	cp MANKEY
-	jr nz, .check_strange_behavior
+	jr nz, .strange_behavior
 	call HandleAIPeek
 	jr .next_1
-.check_strange_behavior
+
+.strange_behavior
 	cp SLOWBRO
-	jr nz, .check_curse
+	jr nz, .curse
 	call HandleAIStrangeBehavior
 	jr .next_1
-.check_curse
+
+.curse
 	cp GENGAR
-	jr nz, .check_step_in
+	jr nz, .step_in
 	call HandleAICurse
 	jr nc, .next_1
 	; turn/duel has ended
 	pop bc
 	ret ; carry set
-.check_step_in
+
+.step_in
 	cp DRAGONITE_LV45
 	call z, HandleAIStepIn
 ;	fallthrough

@@ -525,7 +525,7 @@ DuelMenu_Retreat:
 	cp CONFUSED
 	ldh [hTemp_ffa0], a
 	jr nz, .not_confused
-	ld a, [wGotHeadsFromConfusionCheckDuringRetreat]
+	ld a, [wConfusionRetreatCheckWasUnsuccessful]
 	or a
 	jr nz, .unable_to_retreat
 	call DisplayRetreatScreen
@@ -1148,7 +1148,7 @@ DisplayRetreatScreen:
 ;	hTempRetreatCostCards = $ff terminated list with deck indices of cards to discard
 ; output:
 ;	carry = set:  if unable to retreat this turn due to a failed confusion check
-;	[wGotHeadsFromConfusionCheckDuringRetreat] = 1:  if the above condition is true (otherwise 0)
+;	[wConfusionRetreatCheckWasUnsuccessful] = 1:  if the above condition is true (otherwise 0)
 AttemptRetreat:
 	call DiscardRetreatCostCards
 	ldh a, [hTemp_ffa0]
@@ -1158,16 +1158,16 @@ AttemptRetreat:
 	ldtx de, ConfusionCheckRetreatText
 	call TossCoin
 	jr c, .success
-	ld a, 1
-	ld [wGotHeadsFromConfusionCheckDuringRetreat], a
+	ld a, TRUE
+	ld [wConfusionRetreatCheckWasUnsuccessful], a
 	scf
 	ret
 .success
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ld e, a
 	call SwapArenaWithBenchPokemon
-	xor a
-	ld [wGotHeadsFromConfusionCheckDuringRetreat], a
+	xor a ; FALSE
+	ld [wConfusionRetreatCheckWasUnsuccessful], a
 	ret
 
 
@@ -7338,7 +7338,7 @@ SetAllPlayAreaPokemonCanEvolve:
 InitVariablesToBeginTurn:
 	xor a
 	ld [wAlreadyPlayedEnergy], a
-	ld [wGotHeadsFromConfusionCheckDuringRetreat], a
+	ld [wConfusionRetreatCheckWasUnsuccessful], a
 	ld [wGotHeadsFromSmokescreenCheck], a
 	ldh a, [hWhoseTurn]
 	ld [wWhoseTurn], a
@@ -7451,7 +7451,7 @@ DiscardAttachedPluspowers:
 	dec e
 	jr nz, .unattach_pluspower_loop
 	ld bc, PLUSPOWER
-	jr MoveCardToDiscardPileIfInArena
+	jr MoveCardToDiscardPileIfInPlayArea
 
 
 ; resets the number of attached Defenders for each of the turn holder's Pokemon to 0
@@ -7472,12 +7472,12 @@ DiscardAttachedDefenders:
 ; input:
 ;	bc = card ID to check
 ;	h = hWhoseTurn constant (PLAYER_TURN or OPPONENT_TURN)
-MoveCardToDiscardPileIfInArena:
+MoveCardToDiscardPileIfInPlayArea:
 	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .next_card
 	dec l ; go through deck indices in reverse order
 	ld a, [hl]
-	and CARD_LOCATION_ARENA ; all Bench locations also have this bit set
+	and CARD_LOCATION_PLAY_AREA
 	jr z, .skip ; jump if the card isn't in the play area
 	ld a, l
 	call GetCardIDFromDeckIndex
@@ -8835,6 +8835,7 @@ SendAttackDataToLinkOpponent:
 ; output:
 ;	de = ID for TossCoin notification text
 ;	carry = set:  if the turn holder's Active Pokemon is affected by Smokescreen
+;	              and the result of the coin toss was tails
 CheckSmokescreenSubstatus:
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS2
 	get_turn_duelist_var
@@ -8870,11 +8871,11 @@ HandleSmokescreenSubstatus:
 ; flips a coin to see whether or not a Confused Pokemon will attack itself
 ; output:
 ;	carry = set:  if the Active Pokémon is Confused and it flipped a tails
-;	[wGotHeadsFromConfusionCheck] = 0:  if the attack will proceed as normal
-;	                              = 1:  if the Pokémon will attack itself (coin was tails)
+;	[wConfusionAttackCheckWasUnsuccessful] = FALSE: if the attack will proceed as normal
+;	                                       = TRUE:  if the Pokémon will attack itself (coin was tails)
 CheckSelfConfusionDamage:
-	xor a
-	ld [wGotHeadsFromConfusionCheck], a
+	xor a ; FALSE
+	ld [wConfusionAttackCheckWasUnsuccessful], a
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
 	and CNF_SLP_PRZ
@@ -8887,8 +8888,8 @@ CheckSelfConfusionDamage:
 	ldtx de, ConfusionCheckDamageText
 	call TossCoin
 	jr c, .no_carry ; return nc if heads
-	ld a, 1
-	ld [wGotHeadsFromConfusionCheck], a
+	ld a, TRUE
+	ld [wConfusionAttackCheckWasUnsuccessful], a
 	scf
 	ret
 
@@ -9027,13 +9028,13 @@ ApplyDamageModifiers_DamageToTarget:
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	bit UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
-	jr z, .safe
+	jr z, .affected_by_wr
 	res UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
 	xor a
 	ld [wDamageEffectiveness], a
 	call HandleDoubleDamageSubstatus
 	jr .check_pluspower_and_defender
-.safe
+.affected_by_wr
 	call HandleDoubleDamageSubstatus
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	call GetPlayAreaCardColor

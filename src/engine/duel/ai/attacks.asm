@@ -170,6 +170,7 @@ GetAIScoreOfAttack:
 
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
+	; a = FIRST_ATTACK_OR_PKMN_POWER
 	call CheckIfSelectedAttackIsUnusable
 	jr nc, .usable
 
@@ -228,7 +229,7 @@ GetAIScoreOfAttack:
 	jr nc, .check_damage
 .can_ko
 	ld a, 20
-	call AddToAIScore
+	call AIEncourage
 
 ; raise AI score by the number of damage counters that this attack deals.
 ; if no damage is dealt, decrease AI score by 1.
@@ -243,17 +244,17 @@ GetAIScoreOfAttack:
 	or a
 	jr z, .no_damage
 	call ConvertHPToDamageCounters_Bank5
-	call AddToAIScore
+	call AIEncourage
 	jr .check_recoil
 .no_damage
 	ld a, $01
 	ld [wAIAttackIsNonDamaging], a ; TRUE
-	call SubFromAIScore
+	call AIDiscourage
 	ld a, [wAIMaxDamage]
 	or a
 	jr z, .no_max_damage
 	ld a, 2
-	call AddToAIScore
+	call AIEncourage
 	xor a ; FALSE
 	ld [wAIAttackIsNonDamaging], a
 .no_max_damage
@@ -261,7 +262,7 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jr nc, .check_recoil
 	ld a, 2
-	call AddToAIScore
+	call AIEncourage
 
 ; handle recoil attacks (low and high recoil).
 .check_recoil
@@ -281,7 +282,7 @@ GetAIScoreOfAttack:
 	call ApplyDamageModifiers_DamageToSelf
 	ld a, e
 	call ConvertHPToDamageCounters_Bank5
-	call SubFromAIScore
+	call AIDiscourage
 
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
 	call CheckLoadedAttackFlag
@@ -295,7 +296,7 @@ GetAIScoreOfAttack:
 	jp nc, .check_defending_can_ko
 .kos_self
 	ld a, 10
-	call SubFromAIScore
+	call AIDiscourage
 
 .high_recoil
 	; dismiss this attack if the AI has no Benched Pokémon
@@ -357,7 +358,7 @@ GetAIScoreOfAttack:
 
 .encourage_high_recoil_atk
 	ld a, 20
-	jp AddToAIScore
+	jp AIEncourage
 
 ; Rock Crusher Deck only uses this attack if the Prize count is below 4
 ; and the attack wins (or potentially draws) the duel,
@@ -417,7 +418,7 @@ GetAIScoreOfAttack:
 ; attack would cause the AI to draw all of its remaining Prize cards
 .wins_the_duel
 	ld a, 20
-	jp AddToAIScore
+	jp AIEncourage
 
 ; subtract from AI score number of own Benched Pokémon that would be KO'd
 .count_own_ko_bench
@@ -425,12 +426,12 @@ GetAIScoreOfAttack:
 	or a
 	jr z, .count_player_ko_bench
 	dec a
-	call SubFromAIScore
+	call AIDiscourage
 
 ; add to AI score the number of Pokémon on the Player's Bench that would be KO'd
 .count_player_ko_bench
 	ld a, b
-	call AddToAIScore
+	call AIEncourage
 
 ; if the Defending Pokémon can KO the AI's Active Pokémon,
 ; then encourage the attack, unless it's non-damaging.
@@ -443,12 +444,12 @@ GetAIScoreOfAttack:
 	ld [wSelectedAttack], a
 	jr nc, .check_discard
 	ld a, 5
-	call AddToAIScore
+	call AIEncourage
 	ld a, [wAIAttackIsNonDamaging]
 	or a
 	jr z, .check_discard
 	ld a, 5
-	call SubFromAIScore
+	call AIDiscourage
 
 ; subtract from AI score if this attack requires discarding any Energy cards.
 .check_discard
@@ -462,23 +463,23 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jr nc, .check_encourage_flag
 	ld a, 1
-	call SubFromAIScore
+	call AIDiscourage
 	ld a, [wLoadedAttackEffectParam]
-	call SubFromAIScore
+	call AIDiscourage
 
 .check_encourage_flag
 	ld a, ATTACK_FLAG2_ADDRESS | ENCOURAGE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_discourage_flag
 	ld a, [wLoadedAttackEffectParam]
-	call AddToAIScore
+	call AIEncourage
 
 .check_discourage_flag
 	ld a, ATTACK_FLAG2_ADDRESS | DISCOURAGE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
 	jr nc, .check_nullify_flag
 	ld a, [wLoadedAttackEffectParam]
-	call SubFromAIScore
+	call AIDiscourage
 
 ; encourage the attack if it has a nullify or weaken attack effect.
 .check_nullify_flag
@@ -486,7 +487,7 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jr nc, .check_heal_flag
 	ld a, 1
-	call AddToAIScore
+	call AIEncourage
 
 .check_heal_flag
 	ld a, ATTACK_FLAG2_ADDRESS | HEAL_USER_F
@@ -521,7 +522,7 @@ GetAIScoreOfAttack:
 	jr c, .add_heal_score ; use number of damage counters on Active Pokémon if healing > damage
 	ld a, b ; heal the full amount
 .add_heal_score
-	call AddToAIScore
+	call AIEncourage
 
 .check_status_effect
 ; skip ahead if the Defending Pokémon can't be affected by any Special Conditions
@@ -550,11 +551,11 @@ GetAIScoreOfAttack:
 	call CheckLoadedAttackFlag
 	jr nc, .check_sleep
 	ld a, 2
-	call SubFromAIScore
+	call AIDiscourage
 	jr .check_sleep
 .add_poison_score
 	ld a, 2
-	call AddToAIScore
+	call AIEncourage
 
 ; encourage an attack that causes the Asleep condition
 ; if the Defending Pokémon isn't already Asleep.
@@ -567,7 +568,7 @@ GetAIScoreOfAttack:
 	cp ASLEEP
 	jr z, .check_paralysis
 	ld a, 1
-	call AddToAIScore
+	call AIEncourage
 
 ; encourage an attack that causes the Paralyzed condition if the Defending Pokémon isn't Asleep.
 ; discourage the attack if the Defending Pokémon is currently Asleep.
@@ -580,11 +581,11 @@ GetAIScoreOfAttack:
 	cp ASLEEP
 	jr z, .sub_prz_score
 	ld a, 1
-	call AddToAIScore
+	call AIEncourage
 	jr .check_confusion
 .sub_prz_score
 	ld a, 1
-	call SubFromAIScore
+	call AIDiscourage
 
 ; encourage an attack that causes the Confused condition if the Defending Pokémon
 ; isn't already Asleep or Confused. otherwise, discourage the attack.
@@ -601,11 +602,11 @@ GetAIScoreOfAttack:
 	cp CONFUSED
 	jr z, .check_if_confused
 	ld a, 1
-	call AddToAIScore
+	call AIEncourage
 	jr .check_if_confused
 .sub_cnf_score
 	ld a, 1
-	call SubFromAIScore
+	call AIDiscourage
 
 ; if this Pokémon is Confused, subtract from score.
 .check_if_confused
@@ -616,7 +617,7 @@ GetAIScoreOfAttack:
 	jr nz, .handle_special_atks
 .subtract_and_handle_special_atks
 	ld a, 1
-	call SubFromAIScore
+	call AIDiscourage
 
 ; SPECIAL_AI_HANDLING marks attacks that the AI handles individually.
 ; each attack has its own checks and modifies AI score accordingly.
@@ -628,12 +629,12 @@ GetAIScoreOfAttack:
 	cp $80
 	jr c, .negative_score
 	sub $80
-	jp AddToAIScore
+	jp AIEncourage
 .negative_score
 	ld b, a
 	ld a, $80
 	sub b
-	jp SubFromAIScore
+	jp AIDiscourage
 
 ; local function that gets called to determine damage to
 ; Benched Pokémon caused by a HIGH_RECOIL attack.
@@ -653,7 +654,7 @@ GetAIScoreOfAttack:
 	ld d, a
 	ld a, DUELVARS_BENCH
 	get_turn_duelist_var
-	ld e, PLAY_AREA_ARENA
+	ld e, PLAY_AREA_BENCH_1 - 1
 .loop_bench
 	inc e
 	ld a, [hli]
@@ -690,25 +691,23 @@ CheckWhetherToSwitchToFirstAttack:
 	cp $50
 	jr c, .keep_second_attack
 
-; first attack has more than minimum score to be used.
-; check if second attack can KO.
-; in case it can't, the AI keeps it as the attack to be used.
-; (possibly due to the assumption that if the
-; second attack cannot KO, the first attack can't KO as well.)
+; first attack has more than minimum score to be used,
+; check if it can KO, in case it can't
+; then the AI keeps second attack as selection.
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
+	; a = FIRST_ATTACK_OR_PKMN_POWER
 	call EstimateDamage_VersusDefendingCard
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetNonTurnDuelistVariable
 	dec a ; subtract 1 so carry will be set if final HP = 0
 	ld hl, wDamage
-	sub [hl]
-	jr nc, .keep_second_attack
+	sub [hl] ; HP - damage
+	jr nc, .keep_second_attack ; cannot KO
 
-; second attack can ko, check its flag.
+; first attack can ko, check its flags from second attack.
 ; in case its effect is to heal user or nullify/weaken damage
 ; next turn, keep second attack as the option.
-; otherwise switch to the first attack.
 .check_flag
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var

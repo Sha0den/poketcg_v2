@@ -175,7 +175,7 @@ AIPlay_TrainerCard_TwoVars:
 ;	a = amount of damage to heal, if any (usually 20)
 ;	[wce1a] = PLAY_AREA_ARENA:  if the AI decided to play Potion
 ;	carry = set:  if the AI decided to play Potion
-AIDecide_Potion1:
+AIDecide_Potion_Phase07:
 ; don't play Potion if the AI is going to retreat the Active Pokémon.
 	farcall AIDecideWhetherToRetreat
 	ccf
@@ -227,7 +227,7 @@ AIDecide_Potion1:
 ;	a = amount of damage to heal, if any (usually 20)
 ;	[wce1a] = target Pokémon's play area location offset (PLAY_AREA_* constant)
 ;	carry = set:  if the AI decided to play Potion
-AIDecide_Potion2:
+AIDecide_Potion_Phase10:
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
@@ -236,7 +236,7 @@ AIDecide_Potion2:
 ; determine whether the Defending Pokémon can still KO this Pokémon,
 ; next turn, even after having used a Potion on it, and if it can't,
 ; then decide to play Potion and target the Active Pokémon.
-	call AIDecide_Potion1.check_if_can_prevent_ko
+	call AIDecide_Potion_Phase07.check_if_can_prevent_ko
 	ret c
 
 ; using Potion on the Active Pokémon does not prevent a KO.
@@ -360,7 +360,7 @@ AIPlay_SuperPotion:
 ; output:
 ;	a = PLAY_AREA_ARENA:  if the AI decided to play Super Potion
 ;	carry = set:  if the AI decided to play Super Potion
-AIDecide_SuperPotion1:
+AIDecide_SuperPotion_Phase08:
 ; don't play Super Potion if the AI is going to retreat the Active Pokémon.
 	farcall AIDecideWhetherToRetreat
 	ccf
@@ -416,7 +416,7 @@ AIDecide_SuperPotion1:
 ; output:
 ;	a = target Pokémon's play area location offset (PLAY_AREA_* constant)
 ;	carry = set:  if the AI decided to play Super Potion
-AIDecide_SuperPotion2:
+AIDecide_SuperPotion_Phase11:
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
 	farcall CheckIfDefendingPokemonCanKnockOut
@@ -425,7 +425,7 @@ AIDecide_SuperPotion2:
 ; determine whether the Defending Pokémon can still KO this Pokémon,
 ; next turn, even after having used a Super Potion on it, and if it can't,
 ; then decide to play Super Potion and target the Active Pokémon.
-	call AIDecide_SuperPotion1.check_if_can_prevent_ko
+	call AIDecide_SuperPotion_Phase08.check_if_can_prevent_ko
 	ret c
 
 ; using Super Potion on the Active Pokémon does not prevent a KO.
@@ -458,7 +458,7 @@ AIDecide_SuperPotion2:
 	or a
 	jr z, .next
 	push de
-	call AIDecide_Potion2.check_boost_if_taken_damage
+	call AIDecide_Potion_Phase10.check_boost_if_taken_damage
 	pop de
 	jr c, .next
 	push de
@@ -523,7 +523,7 @@ AIPlay_Defender:
 ; this takes into account both of its attacks and whether they're useable.
 ; output:
 ;	carry = set:  if the AI decided to play Defender
-AIDecide_Defender1:
+AIDecide_Defender_Phase13:
 ; don't play Defender if the AI's Active Pokémon could KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
@@ -552,7 +552,7 @@ AIDecide_Defender1:
 ;	[wLoadedAttack] = attack data for the Active Pokémon's chosen attack (atk_data_struct)
 ; output:
 ;	carry = set:  if the AI decided to play Defender
-AIDecide_Defender2:
+AIDecide_Defender_Phase14:
 ; don't play Defender unless the selected attack has a recoil effect.
 	ld a, ATTACK_FLAG1_ADDRESS | HIGH_RECOIL_F
 	call CheckLoadedAttackFlag
@@ -606,7 +606,7 @@ AIDecide_Defender2:
 .subtract
 	ld a, d
 	or a
-	jr nz, AIDecide_Defender1.check_if_defender_prevents_ko
+	jr nz, AIDecide_Defender_Phase13.check_if_defender_prevents_ko
 	ret
 
 
@@ -630,7 +630,7 @@ AIPlay_Pluspower:
 ; output:
 ;	a = attack index for the attack that should be used with PlusPower (0 = first attack, 1 = second attack)
 ;	carry = set:  if the AI decided to play PlusPower
-AIDecide_Pluspower1:
+AIDecide_Pluspower_Phase13:
 ; don't play PlusPower if the AI's Active Pokémon can already KO the Defending Pokémon this turn.
 	farcall CheckIfActiveWillNotBeAbleToKODefending
 	ret nc
@@ -665,7 +665,7 @@ AIDecide_Pluspower1:
 
 ; selected attack can KO with Pluspower.
 .kos_with_pluspower
-	call AIDecide_Pluspower2.check_if_can_damage_mr_mime_after_pluspower
+	call AIDecide_Pluspower_Phase14.check_if_can_damage_mr_mime_after_pluspower
 	ret nc
 	ld a, [wSelectedAttack]
 	ret ; carry set
@@ -713,7 +713,7 @@ AIDecide_Pluspower1:
 ;	[wSelectedAttack] = attack index for the attack being used (0 = first attack, 1 = second attack)
 ; output:
 ;	carry = set:  if the AI decided to play PlusPower
-AIDecide_Pluspower2:
+AIDecide_Pluspower_Phase14:
 ; don't play PlusPower if the selected attack isn't usable.
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -937,7 +937,7 @@ AIDecide_GustOfWind:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
 	ld d, a
-	ld e, PLAY_AREA_ARENA
+	ld e, PLAY_AREA_BENCH_1 - 1
 ; loop through the Bench and check attached Energy cards
 .loop_1
 	inc e
@@ -1010,7 +1010,7 @@ AIDecide_GustOfWind:
 FindBenchCardWithWeakness:
 	ld a, DUELVARS_BENCH
 	call GetNonTurnDuelistVariable
-	ld e, PLAY_AREA_ARENA
+	ld e, PLAY_AREA_BENCH_1 - 1
 .loop_bench
 	inc e
 	ld a, [hli]
@@ -1038,7 +1038,7 @@ FindBenchCardWithWeakness:
 FindBenchCardToKnockOut:
 	ld a, DUELVARS_BENCH
 	call GetNonTurnDuelistVariable
-	ld e, PLAY_AREA_ARENA
+	ld e, PLAY_AREA_BENCH_1 - 1
 
 .loop_bench
 	ld a, [hli]

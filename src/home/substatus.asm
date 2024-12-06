@@ -97,10 +97,12 @@ HandleDamageReductionExceptSubstatus2::
 	ld a, [wNoDamageOrEffect]
 	or a
 	jr nz, PreventAllDamage
+
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
 	get_turn_duelist_var
 	or a
 	jr z, .not_affected_by_substatus1
+
 	cp SUBSTATUS1_NO_DAMAGE
 	jr z, PreventAllDamage
 	cp SUBSTATUS1_REDUCE_BY_10
@@ -111,6 +113,7 @@ HandleDamageReductionExceptSubstatus2::
 	jr z, PreventAllDamage_IfLessThan40
 	cp SUBSTATUS1_HALVE_DAMAGE
 	jr z, HalveDamage_RoundedDown
+
 .not_affected_by_substatus1
 	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
 	ret c ; return if Pokemon Powers can't be used because of status or Toxic Gas

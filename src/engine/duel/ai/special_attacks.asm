@@ -421,7 +421,7 @@ HandleSpecialAIAttacks:
 	ld a, DUELVARS_BENCH
 	get_turn_duelist_var
 
-	lb de, 0, PLAY_AREA_ARENA
+	lb de, 0, PLAY_AREA_BENCH_1 - 1
 .loop_earthquake
 	inc e
 	ld a, [hli]
