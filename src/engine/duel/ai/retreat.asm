@@ -346,9 +346,9 @@ AIDecideWhetherToRetreat:
 
 .one_or_none
 ; if the AI's Active Pokémon isn't set up, then look for Benched Pokémon
-; that are set, and increase the score by 1 for each one that qualifies.
+; that are set up, and increase the score by 1 for each one that qualifies.
 ; A Pokémon is set up if it isn't able to evolve, has at least half
-; of its HP left, and is capable of using its second attack.
+; of its HP left, and has enough Energy to use each of its attacks.
 	call CheckIfArenaCardIsFullyPowered
 	jr c, .check_defending_can_ko
 	call CountNumberOfSetUpBenchPokemon

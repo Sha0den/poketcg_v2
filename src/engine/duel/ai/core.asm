@@ -283,6 +283,40 @@ CheckIfSelectedAttackIsUnusable:
 	jp CheckLoadedAttackFlag
 
 
+; input:
+;	[hTempPlayAreaLocation_ff9d] = Pokémon's play area location offset (PLAY_AREA_* constant)
+; output:
+;	carry = set:  if the Pokémon in the given location doesn't have enough attached Energy to use each of its attacks
+CheckIfNotEnoughEnergyForAttacks:
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	ld d, a
+	ld e, FIRST_ATTACK_OR_PKMN_POWER
+	call CopyAttackDataAndDamage_FromDeckIndex
+	ld hl, wLoadedAttackName
+	ld a, [hli]
+	or [hl]
+	jr z, .check_second_attack ; skip Energy check if this attack slot if empty
+	ld a, [wLoadedAttackCategory]
+	cp POKEMON_POWER
+	jr z, .check_second_attack ; skip Energy check if it's a Pokémon Power
+	call CheckEnergyNeededForAttack.is_attack
+	ret c ; return carry if this Pokémon doesn't have enough Energy to use its first attack
+.check_second_attack
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	ld d, a
+	ld e, SECOND_ATTACK
+	call CopyAttackDataAndDamage_FromDeckIndex
+	ld hl, wLoadedAttackName
+	ld a, [hli]
+	or [hl]
+	ret z ; return no carry if this attack slot if empty
+	jr CheckEnergyNeededForAttack.is_attack
+
+
 ; loads the selected attack of the Pokémon in hTempPlayAreaLocation_ff9d
 ; and checks if there is enough Energy to execute the selected attack.
 ; input:
@@ -1664,7 +1698,7 @@ LookForCardThatIsKnockedOutOnDevolution:
 ;		- Active Pokémon's HP >= half max HP
 ;		- Active Pokémon's HAS_EVOLUTION flag isn't set or
 ;		  it is set but there's no matching Evolution card in hand/deck
-;		- Active Pokémon can use its second attack
+;		- Active Pokémon has enough Energy to use each of its attacks
 CheckIfArenaCardIsFullyPowered:
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
@@ -1680,18 +1714,16 @@ CheckIfArenaCardIsFullyPowered:
 
 	ld a, [wLoadedCard1PokemonFlags]
 	and HAS_EVOLUTION
-	jr z, .check_second_attack
+	jr z, .check_energy
 	ld a, d
 	call CheckCardEvolutionInHandOrDeck
 	ccf
 	ret nc
 
-.check_second_attack
+.check_energy
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a
-	inc a ; SECOND_ATTACK
-	ld [wSelectedAttack], a
-	call CheckIfSelectedAttackIsUnusable
+	call CheckIfNotEnoughEnergyForAttacks
 	ccf
 	ret
 
@@ -1700,7 +1732,7 @@ CheckIfArenaCardIsFullyPowered:
 ;	- that Pokémon's HP >= half max HP
 ;	- that Pokémon's HAS_EVOLUTION flag isn't set or
 ;	  it is set but there's no matching Evolution card in hand/deck
-;	- that Pokémon can use its second attack
+;	- that Pokémon has enough Energy to use each of its attacks
 ; output:
 ;	a = number of Benched Pokémon that meet all of the above requirements
 ;	carry = set:  if one or more suitable Pokémon were found
@@ -1742,18 +1774,16 @@ CountNumberOfSetUpBenchPokemon:
 
 	ld a, [wLoadedCard1PokemonFlags]
 	and HAS_EVOLUTION
-	jr z, .check_second_attack
+	jr z, .check_energy
 	ld a, d
 	call CheckCardEvolutionInHandOrDeck
 	jr c, .next
 
-.check_second_attack
+.check_energy
 	ld a, c
 	ldh [hTempPlayAreaLocation_ff9d], a
-	ld a, SECOND_ATTACK
-	ld [wSelectedAttack], a
 	push bc
-	call CheckIfSelectedAttackIsUnusable
+	call CheckIfNotEnoughEnergyForAttacks
 	pop bc
 	jr c, .next
 	inc b
@@ -2166,8 +2196,8 @@ CheckIfNotABossDeckID:
 ;	a = card ID to check for
 ; output:
 ;	carry = set:  if any Benched Pokémon matching the given card ID still has
-;	              more than half its max HP and is capable of using its 2nd attack
-CheckForBenchIDAtHalfHPAndCanUseSecondAttack:
+;	              more than half its max HP and enough Energy to use each of its attacks
+CheckForSetUpBenchPokemonWithThisID:
 	ld [wSamePokemonCardID], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld d, a
@@ -2204,10 +2234,8 @@ CheckForBenchIDAtHalfHPAndCanUseSecondAttack:
 
 	ld a, c
 	ldh [hTempPlayAreaLocation_ff9d], a
-	ld a, SECOND_ATTACK
-	ld [wSelectedAttack], a
 	push bc
-	call CheckIfSelectedAttackIsUnusable
+	call CheckIfNotEnoughEnergyForAttacks
 	pop bc
 	jr c, .loop_bench
 	inc b

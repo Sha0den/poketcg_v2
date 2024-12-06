@@ -131,7 +131,7 @@ HandleDamageReductionExceptSubstatus2::
 ; output:
 ;	de /= 2 (rounded down to the nearest 10)
 HalveDamage_RoundedDown::
-	sla d
+	sra d
 	rr e
 	bit 0, e
 	ret z

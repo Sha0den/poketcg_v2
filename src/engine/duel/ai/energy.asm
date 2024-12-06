@@ -233,7 +233,7 @@ AIProcessEnergyCards:
 	; already reached target number of Energy cards
 	ld a, 10
 	call AIDiscourage
-	jr .store_score
+	jr .check_boss_deck
 
 .next_id
 	inc hl

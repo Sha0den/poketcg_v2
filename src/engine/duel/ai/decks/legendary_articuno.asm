@@ -74,19 +74,19 @@ ScoreLegendaryArticunoCards:
 	ret c
 
 ; player prizes >= 3
-; if Lapras has more than half HP and
-; can use second attack, check next for Articuno
-; otherwise, check if Articuno or Dewgong
-; have more than half HP and can use second attack
-; and if so, the next Pokémon to check is Lapras
+; if Lapras has more than half HP and enough Energy
+; to use each of its attacks, then start with Articuno.
+; otherwise, check if Articuno or Dewgong have more than half HP
+; and enough Energy to use each of their attacks. If either one does,
+; then consider Lapras before moving on to Articuno.
 	ld a, LAPRAS
-	call CheckForBenchIDAtHalfHPAndCanUseSecondAttack
+	call CheckForSetUpBenchPokemonWithThisID
 	jr c, .articuno
 	ld a, ARTICUNO_LV35
-	call CheckForBenchIDAtHalfHPAndCanUseSecondAttack
+	call CheckForSetUpBenchPokemonWithThisID
 	jr c, .lapras
 	ld a, DEWGONG
-	call CheckForBenchIDAtHalfHPAndCanUseSecondAttack
+	call CheckForSetUpBenchPokemonWithThisID
 	jr c, .lapras
 	jr .articuno
 
