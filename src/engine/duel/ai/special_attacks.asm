@@ -1,7 +1,9 @@
-; this function handles attacks with the SPECIAL_AI_HANDLING set,
-; and makes specific checks in each of these attacks
-; to either return a positive score (value above $80)
-; or a negative score (value below $80).
+; this function handles attacks with the SPECIAL_AI_HANDLING flag set,
+; and makes specific checks in each of these attacks to either return
+; a positive score (value above $80) or a negative score (value below $80).
+; $80 (128) is simply the base value. For example,
+;	- if $82 (130) is returned, then 2 is added to this attack's score
+;	- if $7a (122) is returned, then 6 is subtracted from this attack's score
 ; if an attack has the SPECIAL_AI_HANDLING flag but the Pokémon
 ; isn't listed below, then dismiss the attack by returning a score of 0.
 ; input:
@@ -418,31 +420,9 @@ HandleSpecialAIAttacks:
 ; which would be KO'd after using Earthquake is greater than or equal to
 ; the number of Prize cards that the Player has not yet drawn
 .Earthquake:
-	ld a, DUELVARS_BENCH
-	get_turn_duelist_var
-
-	lb de, 0, PLAY_AREA_BENCH_1 - 1
-.loop_earthquake
-	inc e
-	ld a, [hli]
-	inc a ; cp -1 (empty play area slot?)
-	jr z, .count_prizes
-	ld a, e
-	add DUELVARS_ARENA_CARD_HP
-	push hl
-	get_turn_duelist_var
-	pop hl
-	cp 20
-	jr nc, .loop_earthquake
-	inc d
-	jr .loop_earthquake
-
-.count_prizes
-	rst SwapTurn
-	call CountPrizes
-	rst SwapTurn
-	dec a ; subtract 1 so carry will be set if number of KO'd Pokémon = number of Prizes
-	cp d
+	xor a ; Active won't be KO'd
+	ld b, 20 ; damage to Bench
+	call CheckIfDamageToAllTurnHolderBenchedPokemonLosesDuel
 	jr c, .zero_score2
 	ld a, $80
 	ret

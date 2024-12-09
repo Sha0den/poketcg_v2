@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **December 6, 2024:** 5 Files Changed
+- **[December 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/6cb8f87e0433424b3f0b59ee83fa595a59a84838):** 5 Files Changed
     - Have AI compare amount of attached Energy with each of a Pokémon's attacks when deciding whether a Pokémon is set up, rather than checking if its second attack is usable
         - *this avoids the problem of some Pokémon not having a second attack and also ignores looking at temporary effects that prevent attacking, such as status/substatus/amnesia*
     - Also correct a faulty jump in engine/duel/ai/energy.asm and a math error in home/substatus.asm (all identified in PR #156 of the original disassembly)
@@ -123,6 +123,11 @@
 
 
 ## Code Optimization
+- **December 9, 2024:** 2 Files Changed
+    - Update AI attack logic (engine/duel/ai/attacks.asm)
+
+<br/>
+
 - **[December 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/3ec1ad5dfe3a9a65b638e05bc1b7623b4a18e30f):** 32 Files Changed
     - A wide variety of code optimizations throughout the home and engine files (plus a few corrections)
 
