@@ -130,46 +130,6 @@ LoadDefendingPokemonColorWRAndPrizeCards:
 	ret
 
 
-; called when AI has chosen its attack. executes all effects and damage.
-; also handles AI choosing parameters for certain attacks as well.
-; input:
-;	[wSelectedAttack] = attack index (0 = first attack, 1 = second attack)
-AITryUseAttack:
-	ld a, [wSelectedAttack]
-	ldh [hTemp_ffa0], a
-	ld e, a
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	ldh [hTempCardIndex_ff9f], a
-	ld d, a
-	call CopyAttackDataAndDamage_FromDeckIndex
-	ld a, OPPACTION_BEGIN_ATTACK
-	bank1call AIMakeDecision
-	ret c ; return if the opponent's turn has ended
-
-	call AISelectSpecialAttackParameters
-	jr c, .use_attack
-	ld a, EFFECTCMDTYPE_AI_SELECTION
-	call TryExecuteEffectCommandFunction
-
-.use_attack
-	ld a, [wSelectedAttack]
-	ld e, a
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	ld d, a
-	call CopyAttackDataAndDamage_FromDeckIndex
-	ld a, OPPACTION_USE_ATTACK
-	bank1call AIMakeDecision
-	ret c ; return if the opponent's turn has ended
-
-	ld a, EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN
-	call TryExecuteEffectCommandFunction
-	ld a, OPPACTION_ATTACK_ANIM_AND_DAMAGE
-	bank1call AIMakeDecision
-	ret
-
-
 AIPickPrizeCards:
 	ld a, [wNumberPrizeCardsToTake]
 	ld b, a
@@ -1463,7 +1423,6 @@ GetAttacksEnergyCostBits:
 	or c
 	ret
 
-
 ; returns in a the Energy cost of an attack in [hl], represented by energy bit flags,
 ; i.e. each bit represents a different Energy type/color cost.
 ; if any Colorless Energy is required, all bits are set.
@@ -1747,8 +1706,7 @@ CountNumberOfSetUpBenchPokemon:
 	lb bc, 0, PLAY_AREA_BENCH_1 - 1
 	push hl
 
-.next
-	inc c
+.loop_bench
 	pop hl
 	ld a, [hli]
 	push hl
@@ -1757,6 +1715,7 @@ CountNumberOfSetUpBenchPokemon:
 
 	ld d, a
 	call LoadCardDataToBuffer1_FromDeckIndex
+	inc c
 
 ; compares card's current HP with max HP
 	ld a, c
@@ -1770,14 +1729,14 @@ CountNumberOfSetUpBenchPokemon:
 ; e = current HP
 ; jumps if (current HP) <= (max HP / 2)
 	cp e
-	jr nc, .next
+	jr nc, .loop_bench
 
 	ld a, [wLoadedCard1PokemonFlags]
 	and HAS_EVOLUTION
 	jr z, .check_energy
 	ld a, d
 	call CheckCardEvolutionInHandOrDeck
-	jr c, .next
+	jr c, .loop_bench
 
 .check_energy
 	ld a, c
@@ -1785,9 +1744,9 @@ CountNumberOfSetUpBenchPokemon:
 	push bc
 	call CheckIfNotEnoughEnergyForAttacks
 	pop bc
-	jr c, .next
+	jr c, .loop_bench
 	inc b
-	jr .next
+	jr .loop_bench
 
 .done
 	pop hl
@@ -1799,146 +1758,6 @@ CountNumberOfSetUpBenchPokemon:
 	ld a, b
 	or a
 	ret z
-	scf
-	ret
-
-
-; handles AI logic to determine some selections for certain attacks,
-; if any of these attacks were chosen to be used.
-; also outputs the chosen parameters in hram (e.g. $ffa0, $ffa1, etc.).
-; output:
-;	carry = set:  if the parameter selection was successful
-AISelectSpecialAttackParameters:
-	ld a, [wSelectedAttack]
-	push af
-	call .SelectAttackParameters
-	pop bc
-	ld a, b
-	ld [wSelectedAttack], a
-	ret
-
-.SelectAttackParameters:
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call _GetCardIDFromDeckIndex
-	cp MEW_LV23
-	jr z, .DevolutionBeam
-	cp MEWTWO_ALT_LV60
-	jr z, .EnergyAbsorption
-	cp MEWTWO_LV60
-	jr z, .EnergyAbsorption
-	cp EXEGGUTOR
-	jr z, .Teleport
-	cp ELECTRODE_LV35
-	jr z, .EnergySpike
-	cp MOLTRES_LV35
-	jr z, .Wildfire
-	or a
-	ret
-
-
-; if the selected attack is Devolution Beam, store $01 in hTemp_ffa0 and
-; the location of the Pokémon to devolve in hTempPlayAreaLocation_ffa1.
-; carry is only set if the devolution will KO one of the Player's Pokémon.
-.DevolutionBeam
-	ld a, [wSelectedAttack]
-	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
-	ret z ; return no carry if the Active Pokémon is using its first attack
-
-	ld a, $01 ; always target the Player's play area
-	ldh [hTemp_ffa0], a
-	call LookForCardThatIsKnockedOutOnDevolution
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ret
-
-
-; if the selected attack is Energy Absorption, select up to two Energy cards in the discard pile.
-; carry is only set if there's a Psychic Energy in the discard pile to use for the first selection. 
-.EnergyAbsorption
-	ld a, [wSelectedAttack]
-	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
-	ret nz ; return no carry if the Active Pokémon isn't using its first attack
-
-; add terminating bytes to the list.
-	ld a, $ff
-	ldh [hTempList + 1], a
-	ldh [hTempList + 2], a
-
-; search for Psychic Energy cards in the discard pile.
-	ld e, PSYCHIC_ENERGY
-	ld a, CARD_LOCATION_DISCARD_PILE
-	call LookForCardIDInLocation_Bank5
-	ret nc ; return no carry if there weren't any Psychic Energy cards in the discard pile
-	ldh [hTempList], a
-	farcall CreateEnergyCardListFromDiscardPile_AllEnergy
-
-; find any Energy card different from the one found by LookForCardIDInLocation_Bank5.
-; since using this attack requires a Psychic Energy card, and another one is in hTempList,
-; then any other Energy card would account for the Energy Cost of Psyburn.
-	ld hl, wDuelTempList
-.loop_energy_cards
-	ld a, [hli]
-	cp $ff
-	jr z, .set_carry
-	ld b, a
-	ldh a, [hTempList]
-	cp b
-	jr z, .loop_energy_cards ; same card, keep looking
-
-; store the deck index of the found Energy card.
-	ld a, b
-	ldh [hTempList + 1], a
-
-.set_carry
-	scf
-	ret
-
-
-; if the selected attack is Teleport, decide the Benched Pokémon to switch to.
-; carry is only set if there's at least one Benched Pokémon.
-.Teleport
-	ld a, [wSelectedAttack]
-	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
-	ret nz ; return no carry if the Active Pokémon isn't using its first attack
-	call AIDecideBenchPokemonToSwitchTo
-	ldh [hTemp_ffa0], a
-	ccf
-	ret
-
-
-; if the selected attack is Energy Spike, choose a Basic Energy card
-; to fetch from the deck and the Pokémon to attach it to.
-; carry is only set if there's a Lightning Energy card to target in the deck
-; and a Pokémon in the AI's play area that would benefit from more Energy.
-.EnergySpike
-	ld a, [wSelectedAttack]
-	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
-	ret z ; return no carry if the Active Pokémon is using its first attack
-
-; try to target a Lightning Energy in the deck.
-	ld a, CARD_LOCATION_DECK
-	ld e, LIGHTNING_ENERGY
-	call LookForCardIDInLocation_Bank5
-	ret nc ; return no carry if there are no Lightning Energy in the deck
-	ldh [hTemp_ffa0], a
-
-; find a suitable play area Pokémon to attach the Energy card to.
-	call AIProcessButDontPlayEnergy_SkipEvolution
-	ret nc ; return no carry if none of the AI's Pokémon need more Energy
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ret ; carry set
-
-
-; if the selected attack is Wildfire, always choose to discard all attached Fire Energy cards.
-.Wildfire
-	ld a, [wSelectedAttack]
-	or a ; cp FIRST_ATTACK_OR_PKMN_POWER
-	ret nz ; return no carry if the Active Pokémon isn't using its first attack
-	ld e, a ; PLAY_AREA_ARENA
-	call GetPlayAreaCardAttachedEnergies
-	ld a, [wAttachedEnergies + FIRE]
-	ldh [hTemp_ffa0], a
 	scf
 	ret
 
@@ -2210,7 +2029,6 @@ CheckForSetUpBenchPokemonWithThisID:
 	push hl
 
 .loop_bench
-	inc c
 	pop hl
 	ld a, [hli]
 	push hl
@@ -2218,6 +2036,7 @@ CheckForSetUpBenchPokemonWithThisID:
 	jr z, .done
 	ld d, a
 	call LoadCardDataToBuffer1_FromDeckIndex
+	inc c
 	ld a, c
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
@@ -2263,10 +2082,10 @@ RaiseAIScoreToAllMatchingIDsInBench:
 	get_turn_duelist_var
 	ld e, PLAY_AREA_BENCH_1 - 1
 .loop
-	inc e
 	ld a, [hli]
 	cp -1 ; empty play area slot?
 	ret z ; return if there are no more Benched Pokémon to check
+	inc e
 	call _GetCardIDFromDeckIndex
 	cp d
 	jr nz, .loop
@@ -2304,12 +2123,12 @@ HandleAIEnergyScoringForRepeatedBenchPokemon:
 	call ClearMemory_Bank5
 	pop hl
 
-	inc e
 	ld a, [hli]
 	cp -1 ; empty play area slot?
 	ret z ; return if there are no more Benched Pokémon to check
 
 	ld [wSamePokemonCardID], a ; deck index
+	inc e
 
 ; checks wSamePokemonEnergyScoreHandled of location in e.
 ; if != 0, go to next in play area.
@@ -2335,10 +2154,10 @@ HandleAIEnergyScoringForRepeatedBenchPokemon:
 	push de
 	call .CalculateScore
 .loop_search_same_card_id
-	inc e
 	ld a, [hli]
 	cp -1 ; empty play area slot?
 	jr z, .tally_repeated_pokemon
+	inc e
 	push de
 	call GetCardIDFromDeckIndex
 	ld a, [wSamePokemonCardID]

@@ -123,7 +123,14 @@
 
 
 ## Code Optimization
-- **December 9, 2024:** 2 Files Changed
+- **December 10, 2024:** 12 Files Changed
+    - Miscellaneous small optimizations throughout the AI logic files (plus more comments and a few fixes)
+    - Move `AITryUseAttack` from engine/duel/ai/core.asm to engine/duel/ai/attacks.asm
+    - Move `AISelectSpecialAttackParameters` from engine/duel/ai/core.asm to engine/duel/ai/special_attacks.asm
+
+<br/>
+
+- **[December 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/cf0172fa077954b802a62840b1a6f550d15c1ae5):** 2 Files Changed
     - Update AI attack logic (engine/duel/ai/attacks.asm)
 
 <br/>

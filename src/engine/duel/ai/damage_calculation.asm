@@ -120,9 +120,10 @@ CalculateDamage_VersusDefendingPokemon:
 ; input:
 ;	[hl] = base damage to modify
 .CalculateDamage
-	ld e, [hl]
-	ld d, $00
 	push hl
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
 
 	; load the Attacking Pokémon's card data
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -149,7 +150,7 @@ CalculateDamage_VersusDefendingPokemon:
 
 .vulnerable
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	call z, HandleDoubleDamageSubstatus
 	; skips the weak/res checks if unaffected.
 	bit UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
@@ -296,25 +297,11 @@ EstimateDamage_FromDefendingPokemon:
 	ld c, [hl]
 	ld [hl], a
 	push bc ; backup Defending Pokémon's Substatus 1/2
-	; reset changed weakness
-	inc l ; DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
-	ld b, [hl]
-	ld [hl], a
-	; reset changed resistance
-	inc l ; DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	ld c, [hl]
-	ld [hl], a
-	push bc ; backup Defending Pokémon's changed Weakness/Resistance
 	push hl
 	call CalculateDamage_FromDefendingPokemon
 ; ...and subsequently recovered to continue the duel normally
-	pop hl ; DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	pop bc ; Defending Pokémon's changed Weakness/Resistance
-	ld [hl], c
-	dec l ; DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
-	ld [hl], b
+	pop hl ; DUELVARS_ARENA_CARD_SUBSTATUS2
 	pop bc ; Defending Pokémon's Substatus 1/2
-	dec l ; DUELVARS_ARENA_CARD_SUBSTATUS2
 	ld [hl], c
 	dec l ; DUELVARS_ARENA_CARD_SUBSTATUS1
 	ld [hl], b
@@ -346,9 +333,10 @@ CalculateDamage_FromDefendingPokemon:
 ; input:
 ;	[hl] = base damage to modify
 .CalculateDamage
-	ld e, [hl]
-	ld d, $00
 	push hl
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
 
 	; load the card data for the Player's Active Pokémon
 	rst SwapTurn
@@ -365,33 +353,24 @@ CalculateDamage_FromDefendingPokemon:
 	call _GetCardIDFromDeckIndex
 	ld [wTempNonTurnDuelistCardID], a
 
-	rst SwapTurn
-	call HandleDoubleDamageSubstatus
+; handle double damage substatus
+	ld a, DUELVARS_ARENA_CARD_SUBSTATUS1
+	call GetNonTurnDuelistVariable
+	cp SUBSTATUS1_NEXT_TURN_DOUBLE_DAMAGE
+	call z, DoubleDamage
+
 	bit UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
 	res UNAFFECTED_BY_WEAKNESS_RESISTANCE_F, d
 	jr nz, .not_resistant
 
 ; handle weakness
+	rst SwapTurn
 	call GetArenaCardColor
+	rst SwapTurn
 	call TranslateColorToWR
 	ld b, a
-	rst SwapTurn
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a ; cp PLAY_AREA_ARENA
-	jr nz, .get_weakness_from_card_data
-; it's the AI's Active Pokémon, so check if the Weakness was changed by an effect.
-	ld a, DUELVARS_ARENA_CARD_CHANGED_WEAKNESS
-	get_turn_duelist_var
-	or a
-	jr nz, .apply_weakness
-
-.get_weakness_from_card_data
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Weakness]
-.apply_weakness
+	call GetPlayAreaCardWeakness
 	and b
 	jr z, .not_weak
 	; double de
@@ -401,21 +380,7 @@ CalculateDamage_FromDefendingPokemon:
 .not_weak
 ; handle resistance
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a ; cp PLAY_AREA_ARENA
-	jr nz, .get_resistance_from_card_data
-; it's the AI's Active Pokémon, so check if the Resistance was changed by an effect.
-	ld a, DUELVARS_ARENA_CARD_CHANGED_RESISTANCE
-	get_turn_duelist_var
-	or a
-	jr nz, .apply_resistance
-
-.get_resistance_from_card_data
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, [wLoadedCard2Resistance]
-.apply_resistance
+	call GetPlayAreaCardResistance
 	and b
 	jr z, .not_resistant
 	ld hl, -30
@@ -433,10 +398,7 @@ CalculateDamage_FromDefendingPokemon:
 	add CARD_LOCATION_ARENA
 	ld b, a
 	call ApplyAttachedDefender
-; only apply remaining damage modifiers if the Active Pokémon is attacking.
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	or a
-	call z, HandleDamageReduction
+	call HandleDamageReduction
 	; test if de underflowed
 	bit 7, d
 	jr z, .no_underflow

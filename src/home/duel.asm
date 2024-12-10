@@ -1288,7 +1288,7 @@ SwapPlayAreaPokemon::
 
 
 ; calculates the damage and maximum HP of the Pokémon at location e.
-; preserves all registers except af and c
+; preserves all registers except af and b
 ; input:
 ;	e = play area location offset of the Pokémon to check (PLAY_AREA_* constant)
 ; output:

@@ -662,7 +662,7 @@ HandleAIEnergyTrans:
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	dec a
+	dec a ; cp 1
 	ret z ; return if there are no Benched Pokémon
 
 	ld a, VENUSAUR_LV67
@@ -1033,7 +1033,7 @@ AIEnergyTransTransferEnergyToBench:
 HandleAIDamageSwap:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	dec a
+	dec a ; cp 1
 	ret z ; return if there are no Benched Pokémon
 
 	call AIChooseRandomlyNotToDoAction

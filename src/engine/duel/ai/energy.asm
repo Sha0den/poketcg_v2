@@ -38,8 +38,8 @@ AIProcessButDontPlayEnergy_SkipEvolutionAndArena:
 	ld [wAIEnergyAttachLogicFlags], a
 
 ; backup wPlayAreaAIScore in wTempPlayAreaAIScore.
-	ld de, wTempPlayAreaAIScore
 	ld hl, wPlayAreaAIScore
+	ld de, wTempPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
 	call CopyNBytesFromHLToDE
 	ld a, [wAIScore]
@@ -103,9 +103,8 @@ AIProcessEnergyCards:
 .no_evolution_in_hand
 	ld a, [wCurCardCanAttack]
 	call CheckForEvolutionInDeck
-	jr nc, .check_venusaur
 	ld a, 1
-	call AIEncourage
+	call c, AIEncourage ; add 1 if there's a relevant Evolution card in the deck
 
 ; if there's a VenusaurLv67 in the AI's play area with
 ; an active Energy Trans, then increase the AI score by 1.
@@ -114,9 +113,8 @@ AIProcessEnergyCards:
 	jr c, .check_if_active
 	ld a, VENUSAUR_LV67
 	call CountTurnDuelistPokemonWithActivePkmnPower
-	jr nc, .check_if_active
 	ld a, 1
-	call AIEncourage
+	call c, AIEncourage ; add 1 if Energy Trans is active
 
 .check_if_active
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -145,10 +143,9 @@ AIProcessEnergyCards:
 .check_bench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	dec a
-	jr nz, .ai_score_bonus
+	dec a ; cp 1
 	ld a, 6
-	call AIEncourage
+	call z, AIEncourage ; add 6 if there are no Pokémon on the Bench
 	jr .ai_score_bonus
 
 ; increase the AI score by 4 if the Player isn't running a MewtwoLv53 mill deck.
@@ -339,7 +336,7 @@ AIProcessEnergyCards:
 DetermineAIScoreOfAttackEnergyRequirement:
 	ld [wSelectedAttack], a
 	call CheckEnergyNeededForAttack
-	jp c, .not_enough_energy
+	jr c, .not_enough_energy
 	ld a, ATTACK_FLAG2_ADDRESS | ATTACHED_ENERGY_BOOST_F
 	call CheckLoadedAttackFlag
 	jr c, .attached_energy_boost
@@ -405,9 +402,8 @@ DetermineAIScoreOfAttackEnergyRequirement:
 	call AIEncourage
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or a ; cp PLAY_AREA_ARENA
-	jr nz, .check_evolution
 	ld a, 10
-	call AIEncourage
+	call z, AIEncourage ; add 10 if this is the Active Pokémon
 	jr .check_evolution
 
 ; checks if there is surplus Energy for an attack that requires discarding attached Energy.
@@ -425,13 +421,11 @@ DetermineAIScoreOfAttackEnergyRequirement:
 .not_enough_energy
 	ld a, ATTACK_FLAG2_ADDRESS | IGNORE_THIS_ATTACK_F
 	call CheckLoadedAttackFlag
-	jr nc, .check_color_needed
 	ld a, 5
-	call AIDiscourage
+	call c, AIDiscourage ; subtract 5 if this flag is set
 
 ; if there is an Energy card in the hand that provides the needed type/color,
 ; or if Colorless Energy is needed, then increase the AI score.
-.check_color_needed
 ;	call CheckEnergyNeededForAttack
 	ld a, b
 	or a
@@ -474,9 +468,8 @@ DetermineAIScoreOfAttackEnergyRequirement:
 ; add 10 more in case it's the Active Pokémon
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	or a ; cp PLAY_AREA_ARENA
-	jr nz, .check_evolution
 	ld a, 10
-	call AIEncourage
+	call z, AIEncourage ; add 10 if this is the Active Pokémon
 
 .check_evolution
 	ld a, [wTempAI] ; deck index of evolution in hand
@@ -512,9 +505,8 @@ DetermineAIScoreOfAttackEnergyRequirement:
 .check_colorless_needed_evo
 	ld a, c
 	or a
-	jr z, .done
 	ld a, 1
-	call AIEncourage
+	call nz, AIEncourage ; add 1 if Colorless Energy is needed to attack
 
 ; recover the original card in that play area location.
 .done
@@ -563,7 +555,7 @@ FindPlayAreaCardWithHighestAIScore:
 .only_bench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	dec a
+	dec a ; cp 1
 	ret z ; return no carry if there are no Benched Pokémon
 
 	ld b, a
@@ -844,10 +836,9 @@ AITryToPlayEnergyCard:
 	jr z, .check_if_done
 	call CheckIfOpponentHasBossDeckID
 	jr nc, .load_card
-	push af
+	ld b, a
 	call _GetCardIDFromDeckIndex
 	cp DOUBLE_COLORLESS_ENERGY
-	pop bc
 	jr z, .loop_2
 	ld a, b
 .load_card
@@ -969,8 +960,8 @@ CheckSpecificDecksToAttachDoubleColorless:
 ;Func_16488:
 ;	ld a, AI_ENERGY_FLAG_DONT_PLAY
 ;	ld [wAIEnergyAttachLogicFlags], a
-;	ld de, wTempPlayAreaAIScore
 ;	ld hl, wPlayAreaAIScore
+;	ld de, wTempPlayAreaAIScore
 ;	ld b, MAX_PLAY_AREA_POKEMON
 ;	call CopyNBytesFromHLToDE
 ;	ld a, [wAIScore]

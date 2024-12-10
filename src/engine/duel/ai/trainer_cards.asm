@@ -243,18 +243,16 @@ AIDecide_Potion_Phase10:
 ; if the Player is on their last Prize, start loop with the Active Pokémon.
 ; otherwise, start loop at the first Benched Pokémon.
 .count_prizes
+	ld e, PLAY_AREA_BENCH_1
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
-	dec a
-	jr z, .start_from_active
-	ld e, PLAY_AREA_BENCH_1
-	jr .loop
-
-; find a play area Pokémon with at least 20 damage.
-; skip a Pokémon if it has a BOOST_IF_TAKEN_DAMAGE attack.
+	dec a ; cp 1
+	jr nz, .loop ; don't consider the Active Pokémon if opponent has more than 1 Prize
 .start_from_active
 	ld e, PLAY_AREA_ARENA
+; find a play area Pokémon with at least 20 damage.
+; skip a Pokémon if it has a BOOST_IF_TAKEN_DAMAGE attack.
 .loop
 	ld a, DUELVARS_ARENA_CARD
 	add e
@@ -284,7 +282,7 @@ AIDecide_Potion_Phase10:
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
-	dec a
+	dec a ; cp 1
 	jr z, .skip_random
 	; randomly decide to not play Potion 30% of the time.
 	ld a, 10
@@ -435,7 +433,7 @@ AIDecide_SuperPotion_Phase11:
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
-	dec a
+	dec a ; cp 1
 	jr z, .start_from_active
 	ld e, PLAY_AREA_BENCH_1
 	jr .loop
@@ -483,7 +481,7 @@ AIDecide_SuperPotion_Phase11:
 	rst SwapTurn
 	call CountPrizes
 	rst SwapTurn
-	dec a
+	dec a ; cp 1
 	jr z, .skip_random
 	; randomly decide to not play Super Potion 30% of the time.
 	ld a, 10
@@ -1012,10 +1010,10 @@ FindBenchCardWithWeakness:
 	call GetNonTurnDuelistVariable
 	ld e, PLAY_AREA_BENCH_1 - 1
 .loop_bench
-	inc e
 	ld a, [hli]
 	cp -1 ; empty play area slot?
 	ret z ; return no carry if there are no more Benched Pokémon to check
+	inc e
 	rst SwapTurn
 	call LoadCardDataToBuffer1_FromDeckIndex
 	rst SwapTurn
@@ -1782,70 +1780,26 @@ AIDecide_PokemonBreeder:
 	ret
 
 
+; if evolving the Active Pokémon, checks whether DragoniteLv41 would be able to attack.
+; if that check fails or if it's evolving a Benched Pokémon, then only play DragoniteLv41
+; if its Healing Wind power would remove at least 6 damage counters from the play area.
 ; preserves all registers except af
 ; input:
 ;	d = deck index of the Stage 2 Evolution card being considered (0-59)
 ;	e = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
 ; output:
-;	carry = set:  if a Benched Pokémon is being evolved into DragoniteLv41 and
-;	              Toxic Gas would negate DragoniteLv41's Pokémon Power or
-;	              there are fewer than 8 damage counters in the AI's play area
-;	           OR if the Active Pokémon is being evolved into DragoniteLv41 and
-;	              its damage counters < 5 or its amount of attached Energy < 3
+;	carry = set:  if DragoniteLv41 is evolving the Active Pokémon and it wouldn't have enough Energy to attack
+;	           OR if fewer than 6 damage counters would be removed by DragoniteLv41's Healing Wind power
 .HandleDragoniteLv41Evolution
 	push bc
 	push de
 	push hl
-
-; return no carry if the Evolution card being considered isn't DragoniteLv41.
 	ld a, d
 	call _GetCardIDFromDeckIndex
 	cp DRAGONITE_LV41
-	jr nz, .no_carry
-
-; check whether DragoniteLv41 is being used to evolve the Active Pokémon.
-	ld a, e
-	or a ; cp PLAY_AREA_ARENA
-	jr z, .active_card_dragonite
-
-; the Pokémon being evolved is on the Bench.
-; return carry if DragoniteLv41's Pokémon Power would be negated.
-	call CheckIfPkmnPowersAreCurrentlyDisabled
-	jr c, .done
-
-; count all of the damage counters in the play area.
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	ld b, a
-	ld c, 0 ; damage counter counter
-	ld e, c ; PLAY_AREA_ARENA
-.loop_play_area_damage
-	push bc
-	call GetCardDamageAndMaxHP
-	pop bc
-	call ConvertHPToDamageCounters_Bank8
-	add c
-	ld c, a
-	inc e
-	dec b
-	jr nz, .loop_play_area_damage
-
-; return carry if there are fewer than 8 damage counters in the AI's play area.
-	ld a, 7
-	cp c
-	ccf
+	jr nz, .no_carry ; return no carry if the Evolution card being considered isn't DragoniteLv41
+	farcall AIDecidePlayLegendaryDragonite
 	jr .done
-
-.active_card_dragonite
-; return carry if the Active Pokémon has fewer than 5 damage counters on it.
-	call GetCardDamageAndMaxHP
-	cp 50
-	jr c, .done
-
-; return carry if the Active Pokémon has fewer than 3 attached Energy.
-	call GetPlayAreaCardAttachedEnergies
-	cp 3
-	jr c, .done
 .no_carry
 	or a
 .done

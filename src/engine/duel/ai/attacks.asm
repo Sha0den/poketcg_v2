@@ -710,3 +710,43 @@ CheckWhetherToSwitchToFirstAttack:
 	ld a, SECOND_ATTACK
 	ld [wSelectedAttack], a
 	ret
+
+
+; called when AI has chosen its attack. executes all effects and damage.
+; also handles AI choosing parameters for certain attacks as well.
+; input:
+;	[wSelectedAttack] = attack index (0 = first attack, 1 = second attack)
+AITryUseAttack:
+	ld a, [wSelectedAttack]
+	ldh [hTemp_ffa0], a
+	ld e, a
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	ldh [hTempCardIndex_ff9f], a
+	ld d, a
+	call CopyAttackDataAndDamage_FromDeckIndex
+	ld a, OPPACTION_BEGIN_ATTACK
+	bank1call AIMakeDecision
+	ret c ; return if the opponent's turn has ended
+
+	call AISelectSpecialAttackParameters
+	jr c, .use_attack
+	ld a, EFFECTCMDTYPE_AI_SELECTION
+	call TryExecuteEffectCommandFunction
+
+.use_attack
+	ld a, [wSelectedAttack]
+	ld e, a
+	ld a, DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	ld d, a
+	call CopyAttackDataAndDamage_FromDeckIndex
+	ld a, OPPACTION_USE_ATTACK
+	bank1call AIMakeDecision
+	ret c ; return if the opponent's turn has ended
+
+	ld a, EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN
+	call TryExecuteEffectCommandFunction
+	ld a, OPPACTION_ATTACK_ANIM_AND_DAMAGE
+	bank1call AIMakeDecision
+	ret

@@ -145,6 +145,8 @@ AIProcessRetreat:
 	ld [wAIPlayAreaCardToSwitch], a
 	ld a, TRUE
 	ld [wAIRetreatedThisTurn], a
+	ld hl, wPreviousAIFlags
+	res 0, [hl] ; clear AI_FLAG_USED_PLUSPOWER so preselected attack will be ignored
 
 ; if AI can use Switch from hand, use it instead...
 	ld a, AI_TRAINER_CARD_PHASE_09

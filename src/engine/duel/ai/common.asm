@@ -131,7 +131,6 @@ FindBasicEnergyCardsInLocation:
 ;	           OR if the given Energy card is Double Colorless Energy
 ;	           OR if the given Energy card provides the same type as [wTempCardType]
 ;	           OR if the Pokémon has an attack that needs Energy from the given Energy card
-;	           OR if the Pokémon is Eevee and the Energy card provides Water, Fire or Lightning Energy
 CheckIfEnergyIsUseful:
 	push de
 	call GetCardIDFromDeckIndex
@@ -158,16 +157,6 @@ CheckIfEnergyIsUseful:
 	jr z, .check_energy
 	cp SURFING_PIKACHU_ALT_LV13
 	jr z, .check_energy
-
-	cp EEVEE
-	jr nz, .check_type
-	ld a, e
-	cp WATER_ENERGY
-	jr z, .set_carry
-	cp FIRE_ENERGY
-	jr z, .set_carry
-	cp LIGHTNING_ENERGY
-	jr z, .set_carry
 
 .check_type
 	call GetCardType
