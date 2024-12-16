@@ -417,12 +417,6 @@ DrawDeckBoxTileAtDE:
 	call FillRectangle
 	jp BankswitchVRAM0
 
-
-ChangeDeckName:
-	call InputCurDeckName
-	add sp, $2
-	jr HandleDeckBuildScreen.skip_count
-
 ; handles user input when selecting a card filter while building a deck.
 ; the handling of selecting cards from the list, to add to or remove cards
 ; from the deck, is done in HandleDeckCardSelectionList.
@@ -435,23 +429,19 @@ HandleDeckBuildScreen:
 	xor a
 	ld [wCardListVisibleOffset], a
 	ld [wCurCardTypeFilter], a ; FILTER_GRASS
+.print_card_list
 	call PrintFilteredCardList
 .skip_draw
 	ld hl, FiltersCardSelectionParams
 	call InitCardSelectionParams
 .wait_input
 	call DoFrame
+	xor a ; FALSE
+	ld [wReturnToCardListFromDeckBuildMenu], a ; FALSE
 	ldh a, [hDPadHeld]
 	and START
-	jr z, .no_start_btn_1
-	ld a, SFX_CONFIRM
-	call PlaySFX
-	call ConfirmDeckConfiguration
-	ld a, [wCurCardTypeFilter]
-	ld [wTempCardTypeFilter], a
-	jr .wait_input
+	jp nz, OpenDeckConfigurationMenu
 
-.no_start_btn_1
 	ld a, [wCurCardTypeFilter]
 	ld b, a
 	ld a, [wTempCardTypeFilter]
@@ -475,7 +465,7 @@ HandleDeckBuildScreen:
 	call HandleCardSelectionInput
 	jr nc, .wait_input
 	cp -1
-	jp z, OpenDeckConfigurationMenu ; display the deck building submenu if the B button was pressed
+	jp z, .try_to_exit ; ask to exit the deck builder if the B button was pressed
 
 ; input was made to jump to the card list
 .jump_to_list
@@ -505,20 +495,14 @@ HandleDeckBuildScreen:
 
 .loop_input
 	call DoFrame
-	ldh a, [hDPadHeld]
-	and START
-	jr z, .no_start_btn_2
-	ld a, SFX_CONFIRM
-	call PlaySFX
-
-	; temporarily store the current cursor position (to retrieve it later)
 	ld a, [wCardListCursorPos]
 	ld [wTempFilteredCardListNumCursorPositions], a
-	call ConfirmDeckConfiguration
-	ld a, [wTempFilteredCardListNumCursorPositions]
-	jr .start_list_selection
+	ld a, TRUE
+	ld [wReturnToCardListFromDeckBuildMenu], a
+	ldh a, [hDPadHeld]
+	and START
+	jp nz, OpenDeckConfigurationMenu
 
-.no_start_btn_2
 	call HandleSelectUpAndDownInList
 	jr c, .loop_input
 	call HandleDeckCardSelectionList
@@ -564,6 +548,46 @@ HandleDeckBuildScreen:
 	ld [wTempCardTypeFilter], a
 	jp .wait_input
 
+.try_to_exit
+	ld hl, wDeckConfigurationMenuHandlerFunction
+	ld a, [hli]
+	cp LOW(HandleDeckConfigurationMenu)
+	jr nz, .ask_to_cancel
+	ld a, [hl]
+	cp HIGH(HandleDeckConfigurationMenu)
+	jr nz, .ask_to_cancel
+	; currently building a deck, so decide whether deck should be saved
+	ldtx hl, QuitModifyingTheDeckText
+	call YesOrNoMenuWithText
+	jr c, .return_to_selection ; erase text box and return if "No" was selected
+	; Player chose to quit
+	call CheckIfCurrentDeckWasChanged
+	ret nc ; return no carry if the deck wasn't changed
+	ld hl, wCurDeckCards
+	call CheckCardListForBasicPokemonUsingCardID
+	ret nc ; return no carry if the deck doesn't have any Basic Pokémon cards
+	ld a, [wTotalCardCount]
+	cp DECK_SIZE
+	jr z, .ask_to_save_deck
+	or a
+	ret
+
+.ask_to_save_deck
+	ldtx hl, SaveThisDeckText
+	call YesOrNoMenuWithText_SetCursorToYes
+	ccf ; return if carry if "Yes" and no carry if "No"
+	ret
+
+.ask_to_cancel
+	ldtx hl, WouldYouLikeToQuitText
+	call YesOrNoMenuWithText
+	ret nc ; exit if the Player selected "Yes"
+	; "No" was selected
+.return_to_selection
+	call ClearWideTextBox
+	ld a, [wCurCardTypeFilter]
+	jp .print_card_list
+
 FiltersCardSelectionParams:
 	db 1 ; x position
 	db 1 ; y position
@@ -586,6 +610,8 @@ FilteredCardListSelectionParams:
 
 
 OpenDeckConfigurationMenu:
+	ld a, SFX_CONFIRM
+	call PlaySFX
 	xor a
 	ld [wYourOrOppPlayAreaCurPosition], a
 	ld de, wDeckConfigurationMenuTransitionTable
@@ -607,20 +633,217 @@ OpenDeckConfigurationMenu:
 	jp hl
 
 
+; related to wMenuInputTablePointer
+; with this table, the cursor moves into the proper location based on the input.
+; x coordinate, y coordinate, , D-pad up, D-pad down, D-pad right, D-pad left
+DeckConfigurationMenu_TransitionTable:
+	cursor_transition $10, $18, $00, $04, $02, $01, $01 ; View Deck List
+	cursor_transition $60, $18, $00, $05, $03, $00, $00 ; Change Name
+	cursor_transition $10, $28, $00, $00, $04, $03, $03 ; Discard Changes
+	cursor_transition $60, $28, $00, $01, $05, $02, $02 ; Empty Deck
+	cursor_transition $10, $38, $00, $02, $00, $05, $05 ; Save and Quit
+	cursor_transition $60, $38, $00, $03, $01, $04, $04 ; Delete Deck
+
+DeckBuildMenuData:
+	; x, y, text ID
+	textitem  2, 1, DeckBuildingMenuOptions1Text
+	textitem 12, 1, DeckBuildingMenuOptions2Text
+	db $ff
+
+StatisticsSuffix:
+	db " Statistics"
+	done
+
 ; this function is loaded to wDeckConfigurationMenuHandlerFunction during DeckSelectionMenu.
-; output:
-;	carry = set:  if the Player decided to save the current deck configuration
 HandleDeckConfigurationMenu:
+; draw the menu box
 	lb de, 0, 0
-	lb bc, 20, 6
+	lb bc, 20, 7
 	call DrawRegularTextBox
+; print the menu options
 	ld hl, DeckBuildMenuData
 	call PlaceTextItems
+; draw the deck info box
+	lb de, 0, 7
+	lb bc, 20, 11
+	call DrawRegularTextBox
+; get the name of the deck for the info box header
+	ld hl, wCurDeckName
+	ld a, [hl]
+	or a
+	jr z, .print_new_deck_title
+	ld de, wDefaultText
+	push de
+	call CopyListFromHLToDE
+	pop hl ; wDefaultText
+	push hl
+	call GetTextLengthInTiles
+	ld b, $0
+	add hl, bc
+	ld d, h
+	ld e, l
+	ld hl, DeckNameSuffix
+	call CopyListFromHLToDE
+	ld hl, StatisticsSuffix
+	call CopyListFromHLToDE
+	pop hl ; wDefaultText (contains "<deck name> Deck Statistics")
+	ld e, 8
+	call InitTextPrinting_ProcessCenteredText
+	ld hl, wDefaultText + 1 ; ignore control character (TX_HALFWIDTH)
+	ld b, -1
+.get_length
+	inc b
+	ld a, [hli]
+	or a ; cp TX_END
+	jr nz, .get_length
+	jr .print_underline
+
+.print_new_deck_title
+	lb de, 5, 8
+	ldtx hl, NewDeckStatisticsText
+	call InitTextPrinting_ProcessTextFromID
+	ld b, 19 ; number of characters in "New Deck Statistics"
+
+; underline the newly printed text
+.print_underline
+	ld hl, wDefaultText
+	ld a, TX_HALFWIDTH
+	ld [hli], a
+	ld a, b
+	cp 35
+	ld a, "￣"
+	jr nc, .underline_loop ; skip underline extension if text uses all 18 tiles
+	; extend underline one character to the left
+	dec d
+	ld a, " "
+	ld [hli], a
+	ld a, "￣"
+	ld [hli], a
+.underline_loop
+	ld [hli], a
+	dec b
+	jr nz, .underline_loop
+	ld [hl], b ; TX_END
+	ld hl, wDefaultText
+	inc e
+	call InitTextPrinting_ProcessText
+
+; find how many of each type of card is in the current deck and store counts in wram
+	xor a
+	ld hl, wCurDeckBasicPokemonCardCount
+	ld [hli], a ; wCurDeckBasicPokemonCardCount = 0
+	ld [hli], a ; wCurDeckEvolutionCardCount = 0
+	ld [hli], a ; wCurDeckTrainerCardCount = 0
+	ld [hl], a  ; wCurDeckEnergyCardCount = 0
+	ld bc, wCurDeckCards
+.card_type_quantities_loop
+	ld a, [bc]
+	or a
+	jr z, .print_deck_statistics
+	ld e, a
+	call LoadCardDataToBuffer1_FromCardID
+	inc bc
+	ld a, [wLoadedCard1Type]
+	cp TYPE_ENERGY
+	jr c, .pokemon_card
+	cp TYPE_TRAINER
+	jr nc, .trainer_card
+; Energy card
+	ld hl, wCurDeckEnergyCardCount
+	inc [hl]
+	jr .card_type_quantities_loop
+.pokemon_card
+	ld a, [wLoadedCard1Stage]
+	or a ; cp BASIC
+	jr nz, .evolution
+	ld hl, wCurDeckBasicPokemonCardCount
+	inc [hl]
+	jr .card_type_quantities_loop
+.evolution
+	ld hl, wCurDeckEvolutionCardCount
+	inc [hl]
+	jr .card_type_quantities_loop
+.trainer_card
+	ld hl, wCurDeckTrainerCardCount
+	inc [hl]
+	jr .card_type_quantities_loop
+
+; print the relevant card types and their quantities in the info box
+.print_deck_statistics
+	lb de, 5, 10
+; check Basic Pokémon count
+	ld a, [wCurDeckBasicPokemonCardCount]
+	or a
+	jr z, .check_evolution_count
+	call WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros
+	ldtx hl, BasicPokemonText
+	inc d
+	inc d
+	call InitTextPrinting_ProcessTextFromID
+	dec d
+	dec d
+	inc e
+	inc e
+.check_evolution_count
+	ld a, [wCurDeckEvolutionCardCount]
+	or a
+	jr z, .check_trainer_count
+	ld b, a
+	call WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros
+	dec b ; cp 1
+	ldtx hl, EvolutionCardsText
+	jr nz, .print_evolution_text
+	ldtx hl, EvolutionCardText
+.print_evolution_text
+	inc d
+	inc d
+	call InitTextPrinting_ProcessTextFromID
+	dec d
+	dec d
+	inc e
+	inc e
+.check_trainer_count
+	ld a, [wCurDeckTrainerCardCount]
+	or a
+	jr z, .check_energy_count
+	ld b, a
+	call WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros
+	dec b ; cp 1
+	ldtx hl, TrainerCardsText
+	jr nz, .print_trainer_text
+	ldtx hl, TrainerCardText
+.print_trainer_text
+	inc d
+	inc d
+	call InitTextPrinting_ProcessTextFromID
+	dec d
+	dec d
+	inc e
+	inc e
+.check_energy_count
+	ld a, [wCurDeckEnergyCardCount]
+	or a
+	jr z, .wait_input
+	ld b, a
+	call WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros
+	dec b ; cp 1
+	ldtx hl, EnergyCardsText
+	jr nz, .print_energy_text
+	ldtx hl, EnergyCardText
+.print_energy_text
+	inc d
+	inc d
+	call InitTextPrinting_ProcessTextFromID
 
 .wait_input
 	ld a, $1
 	ld [wVBlankOAMCopyToggle], a
 	call DoFrame
+	ldh a, [hDPadHeld]
+	and START
+	ld a, -1
+	call nz, PlaySFXConfirmOrCancel_Bank2
+	jr nz, .close_menu
 	call YourOrOppPlayAreaScreen_HandleInput
 	jr nc, .wait_input
 	ld [wced6], a
@@ -633,7 +856,12 @@ HandleDeckConfigurationMenu:
 	ld [wCardListCursorPos], a
 	ld a, [wCurCardTypeFilter]
 	call PrintFilteredCardList
-	jp HandleDeckBuildScreen.skip_draw
+	ld a, [wReturnToCardListFromDeckBuildMenu]
+	or a
+	ld a, [wCurCardTypeFilter]
+	jp z, HandleDeckBuildScreen.skip_draw
+	ld a, [wTempFilteredCardListNumCursorPositions]
+	jp HandleDeckBuildScreen.start_list_selection
 
 .selection_made
 	push af
@@ -643,84 +871,95 @@ HandleDeckConfigurationMenu:
 	pop af
 	ld hl, .func_table
 	call JumpToFunctionInTable
-	jr OpenDeckConfigurationMenu.skip_init
+	jp OpenDeckConfigurationMenu.skip_init
 
 .func_table
-	dw ConfirmDeckConfiguration ; Confirm
-	dw ModifyDeckConfiguration  ; Modify
-	dw ChangeDeckName           ; Name
-	dw SaveDeckConfiguration    ; Save
-	dw DismantleDeck            ; Dismantle
-	dw CancelDeckModifications  ; Cancel
-
-DeckBuildMenuData:
-	; x, y, text ID
-	textitem  2, 2, ConfirmText
-	textitem  9, 2, ModifyText
-	textitem 16, 2, NameText
-	textitem  2, 4, SaveText
-	textitem  9, 4, DismantleText
-	textitem 16, 4, CancelText
-	db $ff
-
-; related to wMenuInputTablePointer
-; with this table, the cursor moves into the proper location based on the input.
-; x coordinate, y coordinate, , D-pad up, D-pad down, D-pad right, D-pad left
-DeckConfigurationMenu_TransitionTable:
-	cursor_transition $10, $20, $00, $03, $03, $01, $02 ; Confirm
-	cursor_transition $48, $20, $00, $04, $04, $02, $00 ; Modify
-	cursor_transition $80, $20, $00, $05, $05, $00, $01 ; Name
-	cursor_transition $10, $30, $00, $00, $00, $04, $05 ; Save
-	cursor_transition $48, $30, $00, $01, $01, $05, $03 ; Dismantle
-	cursor_transition $80, $30, $00, $02, $02, $03, $04 ; Cancel
+	dw ViewDeckList            ; View Deck List
+	dw ChangeDeckName          ; Change Name
+	dw ResetDeckFromSaveData   ; Discard Changes
+	dw RemoveAllCardsFromDeck  ; Empty Deck
+	dw SaveDeckConfiguration   ; Save and Quit
+	dw DismantleDeck           ; Delete Deck
 
 
-; closes the sub menu and reloads the deck building screen
-ModifyDeckConfiguration:
-	add sp, $2
-	jr HandleDeckConfigurationMenu.close_menu
-
-
-ConfirmDeckConfiguration:
+ViewDeckList:
 	ld hl, wCardListVisibleOffset
 	ld a, [hl]
 	ld hl, wCardListVisibleOffsetBackup
 	ld [hl], a
 	call HandleDeckConfirmationMenu
+	call Set_OBJ_8x8
 	ld hl, wCardListVisibleOffsetBackup
 	ld a, [hl]
 	ld hl, wCardListVisibleOffset
 	ld [hl], a
-	call DrawCardTypeIconsAndPrintCardCounts
-	ld hl, FiltersCardSelectionParams
-	call InitCardSelectionParams
-	ld a, [wCurCardTypeFilter]
-	ld [wTempCardTypeFilter], a
-	call DrawHorizontalListCursor_Visible
-	ld a, [wCurCardTypeFilter]
-	call PrintFilteredCardList
-	ld a, [wced6]
-	ld [wCardListCursorPos], a
 	ret
 
 
-CancelDeckModifications:
-; if the deck wasn't changed, then allow immediate cancel
-	call CheckIfCurrentDeckWasChanged
-	jr nc, .cancel_modification
-; else prompt the player to confirm
-	ldtx hl, QuitModifyingTheDeckText
+ChangeDeckName:
+	call InputCurDeckName
+	call ZeroObjectPositionsAndToggleOAMCopy
+	jp LoadCursorTile
+
+
+ResetDeckFromSaveData:
+	ldtx hl, ReturnToOriginalConfigurationText
 	call YesOrNoMenuWithText
-	jr c, SaveDeckConfiguration.go_back
-.cancel_modification
-; cancel deck building and return to the deck selection screen
-	add sp, $2
-	or a
+	ret c ; return if "No" was selected
+	call GetPointerToDeckCards
+	ld e, l
+	ld d, h
+	ld hl, wCurDeckCards
+	call CopyDeckFromSRAM
+	; reset filter counts for the deck building screen header
+	call CountNumberOfCardsForEachCardType
+;	fallthrough
+
+; adds up all of the card type totals in wCardFilterCounts
+; and stores the sum in wTotalCardCount.
+; preserves de
+; output:
+;	a & b & [wTotalCardCount] = sum of all card filter counts
+GetTotalCardCount:
+	lb bc, 0, NUM_FILTERS
+	ld hl, wCardFilterCounts
+.loop
+	ld a, [hli]
+	add b
+	ld b, a
+	dec c
+	jr nz, .loop
+	ld a, b
+	ld [wTotalCardCount], a
+	ret
+
+
+RemoveAllCardsFromDeck:
+	ldtx hl, RemoveEveryCardFromTheDeckText
+	call YesOrNoMenuWithText
+	ret c ; return if "No" was selected
+; remove all of the card IDs in wCurDeckCards 
+	ld hl, wCurDeckCards
+	xor a
+	ld b, DECK_SIZE
+.loop_deck
+	ld [hli], a
+	dec b
+	jr nz, .loop_deck
+; reset all of the filter counts
+	ld hl, wCardFilterCounts
+	ld b, NUM_FILTERS
+.loop_filter_counts
+	ld [hli], a
+	dec b
+	jr nz, .loop_filter_counts
+	ld [wTotalCardCount], a
 	ret
 
 
 ; output:
 ;	carry = set:  if the Player decided to save the current deck configuration
+;	              (only relevant if using "add sp, $2" before the final return)
 SaveDeckConfiguration:
 ; handle deck configuration size
 	ld a, [wTotalCardCount]
@@ -730,34 +969,25 @@ SaveDeckConfiguration:
 	call DrawWideTextBox_WaitForInput
 	ldtx hl, ReturnToOriginalConfigurationText
 	call YesOrNoMenuWithText
-	jr c, .print_deck_size_warning
+	ldtx hl, TheDeckMustInclude60CardsText
+	jr c, .print_warning ; print notification text and return if "No" was selected
 ; cancel deck building and return to the deck selection screen
 	add sp, $2
 	or a
 	ret
-.print_deck_size_warning
-	ldtx hl, TheDeckMustInclude60CardsText
-	call DrawWideTextBox_WaitForInput
-	jr .go_back
 
 .ask_to_save_deck
 	ldtx hl, SaveThisDeckText
 	call YesOrNoMenuWithText
-	jr c, .go_back
+	ret c ; return if "No" was selected
 	ld hl, wCurDeckCards
 	call CheckCardListForBasicPokemonUsingCardID
 	jr c, .set_carry
 	ldtx hl, ThereAreNoBasicPokemonInThisDeckText
 	call DrawWideTextBox_WaitForInput
 	ldtx hl, YouMustIncludeABasicPokemonInTheDeckText
-	call DrawWideTextBox_WaitForInput
-
-.go_back
-	call DrawCardTypeIconsAndPrintCardCounts
-	call PrintDeckBuildingCardList
-	ld a, [wced6]
-	ld [wCardListCursorPos], a
-	ret
+.print_warning
+	jp DrawWideTextBox_WaitForInput
 
 .set_carry
 ; cancel deck building and return to the deck selection screen (after saving the deck)
@@ -765,32 +995,34 @@ SaveDeckConfiguration:
 	scf
 	ret
 
+
+;CancelDeckModifications:
+;; if the deck wasn't changed, then allow immediate cancel
+;	call CheckIfCurrentDeckWasChanged
+;	jr nc, .cancel_modification
+;; else prompt the player to confirm
+;	ldtx hl, QuitModifyingTheDeckText
+;	call YesOrNoMenuWithText
+;	ret c
+;.cancel_modification
+;; cancel deck building and return to the deck selection screen
+;	add sp, $2
+;	or a
+;	ret
+
+
 DismantleDeck:
 	ldtx hl, DismantleThisDeckText
 	call YesOrNoMenuWithText
-	jr c, SaveDeckConfiguration.go_back
+	ret c ; return if "No" was selected
 	call CheckIfHasOtherValidDecks
-	jr nc, .Dismantle
 	ldtx hl, ThereIsOnly1DeckSoCannotBeDismantledText
-	call DrawWideTextBox_WaitForInput
-	call EmptyScreen
-	ld hl, FiltersCardSelectionParams
-	call InitCardSelectionParams
-	ld a, [wCurCardTypeFilter]
-	ld [wTempCardTypeFilter], a
-	call DrawHorizontalListCursor_Visible
-	call PrintDeckBuildingCardList
-	call EnableLCD
-	ld a, [wced6]
-	ld [wCardListCursorPos], a
-	ret
-
-.Dismantle
+	jp c, DrawWideTextBox_WaitForInput
 	call EnableSRAM
 	call GetPointerToDeckName
 	ld a, [hl]
 	or a
-	jr z, .done_dismantle
+	jr z, .done_dismantle ; no need to clear save data for this deck if none exists
 	ld a, NAME_BUFFER_LENGTH ; number of bytes that will be cleared (16)
 	call ClearMemory_Bank2
 	call GetPointerToDeckCards
@@ -818,13 +1050,24 @@ CheckIfCurrentDeckWasChanged:
 	ld de, wCurDeckCardChanges
 	ld b, DECK_SIZE
 	call CopyNBytesFromHLToDEInSRAM
+	ld a, $ff ; terminator byte
+	ld [de], a
+
+; check if this deck was originally empty
+	ld de, wCurDeckCards
+	ld hl, wCurDeckCardChanges
+	ld a, [hl]
+	or a
+	jr nz, .loop_outer
+	; this is a new deck
+	ld a, [de]
+	or a
+	scf
+	ret nz ; return carry if at least one card was added
 
 ; loops through cards in wCurDeckCards
 ; then if that card is found in wCurDeckCardChanges
-; overwrite it by $0
-	ld a, $ff ; terminator byte
-	ld [de], a
-	ld de, wCurDeckCards
+; overwrite it with $00
 .loop_outer
 	ld a, [de]
 	or a
@@ -867,7 +1110,7 @@ CheckIfCurrentDeckWasChanged:
 	ld a, [de]
 	cp [hl]
 	jr nz, .set_carry
-	or a
+	or a ; cp TX_END
 	jr z, .done ; return no carry if the deck names were also identical
 	inc de
 	inc hl
@@ -1489,16 +1732,7 @@ CardTypeFilters:
 ; input:
 ;	de = screen coordinates for printing the count
 PrintTotalCardCount:
-	lb bc, 0, NUM_FILTERS
-	ld hl, wCardFilterCounts
-.loop
-	ld a, [hli]
-	add b
-	ld b, a
-	dec c
-	jr nz, .loop
-	ld a, b
-	ld [wTotalCardCount], a
+	call GetTotalCardCount
 	ld hl, wDefaultText
 	call ConvertToNumericalDigits
 	ld [hl], TX_END

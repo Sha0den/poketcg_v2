@@ -1,3 +1,25 @@
+; given a number between 0-255 in a, converts it to halfwidth text characters,
+; and writes it to wStringBuffer and to the BGMap0 address at bc.
+; any leading zeros are replaced with an empty space.
+; preserves bc and de
+; input:
+;	a = number that will be printed
+;	de = screen coordinates at which to begin printing the number
+WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros::
+	push bc
+	push de
+	ld l, a
+	ld h, $00
+	call TwoByteNumberToHalfwidthText_TrimLeadingZeros
+.print_number
+	ld hl, wStringBuffer + 1
+	ld [hl], TX_HALFWIDTH
+	pop de
+	call InitTextPrinting_ProcessText
+	pop bc
+	ret
+
+
 ; given a number between 0-255 in a, converts it to TX_SYMBOL format,
 ; and writes it to wStringBuffer + 2 and to the BGMap0 address at bc.
 ; any leading zeros are replaced with SYM_SPACE.
@@ -167,6 +189,9 @@ TwoByteNumberToText_TrimLeadingZeros::
 	ld a, [wFontWidth]
 	or a ; FULL_WIDTH
 	jr z, TwoByteNumberToFullwidthText_TrimLeadingZeros
+;	fallthrough
+
+TwoByteNumberToHalfwidthText_TrimLeadingZeros::
 	ld de, wStringBuffer
 	push de
 	call TwoByteNumberToHalfwidthText
@@ -176,7 +201,8 @@ TwoByteNumberToText_TrimLeadingZeros::
 	ld a, [hl]
 	cp "0"
 	ret nz
-	inc hl
+	ld a, " "
+	ld [hli], a
 	dec c
 	jr nz, .digit_loop
 	ret

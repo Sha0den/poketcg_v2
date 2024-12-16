@@ -1573,6 +1573,30 @@ wTempPrinterSRAM:: ; ce8f
 wPrinterHorizontalOffset:: ; ce90
 	ds $1
 
+UNION
+
+; if FALSE, return to selection of a card type filter after closing the deck building menu
+; if TRUE, return to card selection in the current filter after closing the deck building menu
+wReturnToCardListFromDeckBuildMenu:: ; ce91
+	ds $1
+
+wCurDeckBasicPokemonCardCount:: ; ce92
+	ds $1
+
+wCurDeckEvolutionCardCount:: ; ce93
+	ds $1
+
+wCurDeckTrainerCardCount:: ; ce94
+	ds $1
+
+wCurDeckEnergyCardCount:: ; ce95
+	ds $1
+
+; Unused wram byte
+	ds $1
+
+NEXTU
+
 ; the count of some card ID in the deck to be printed
 wPrinterCardCount:: ; ce91
 	ds $1
@@ -1587,6 +1611,8 @@ wCurPrinterCardType:: ; ce94
 ; total card count of the current card type in list to be printed
 wPrinterCurCardTypeCount:: ; ce95
 	ds $2
+
+ENDU
 
 wPrinterNumCardTypes:: ; ce97
 	ds $1

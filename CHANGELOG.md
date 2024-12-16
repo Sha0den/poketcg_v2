@@ -123,7 +123,7 @@
 
 
 ## Code Optimization
-- **December 10, 2024:** 12 Files Changed
+- **[December 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/6d0f71e8b91d3b31b79559f22a062e12b89dd522):** 12 Files Changed
     - Miscellaneous small optimizations throughout the AI logic files (plus more comments and a few fixes)
     - Move `AITryUseAttack` from engine/duel/ai/core.asm to engine/duel/ai/attacks.asm
     - Move `AISelectSpecialAttackParameters` from engine/duel/ai/core.asm to engine/duel/ai/special_attacks.asm
@@ -930,6 +930,18 @@
 
 
 ## Miscellaneous Changes
+- **December 15, 2024:** 14 Files Changed
+    - Major update to the deck building screen menu
+        - Input changes: Deck building menu is now opened via the START button (instead of B), but either button will close it. Pressing B button in the deck builder now asks the player whether they want to quit; if "Yes" is selected and the deck is both valid and different from the original configuration, then it will also ask the player whether they want to save the new version. Since START now opens the menu, the confirmation screen can only be accessed through the menu option.
+        - New menu options: "Cancel" and "Modify" are replaced by "Discard Changes", which resets the deck to the original configuration (but doesn't exit the deck builder), and "Empty Deck", which removes every card from the deck (but doesn't exit the deck builder or affect the actual save data). Also renamed "Confirm" to "View Deck List", "Name" to "Change Name", "Save" to "Save and Quit", and "Dismantle" to "Delete Deck".
+        - Add a Deck Statistics window below the window with the menu options. This displays the deck name along with the number of Basic Pokémon, Evolutions, Trainers, and Energy.
+    - Add a halfwidth overline character that can be used to underline text from the previous line (also updated fullwidth3 lowercase "k" character)
+    - Create `InitTextPrinting_ProcessCenteredText` function for printing center aligned text and use it in `YesOrNoMenuWithText` (also add SFX after choosing "Yes" or "No")
+    - Create `WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros` function and add it to home/write_number.asm
+    - Create some clear functions in home/tiles.asm to be used as alternatives to `EmptyScreen` for minor screen transitions
+
+<br/>
+
 - **[November 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/36efe66857cb965b1d7883a930afa9415766c032):** 4 Files Changed
     - Use the deck naming screen when naming the Player at the start of the game
         - *The Player's name now uses halfwidth font, so it can be up to 12 characters long*

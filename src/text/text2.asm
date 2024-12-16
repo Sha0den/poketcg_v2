@@ -730,20 +730,20 @@ DeckText:
 	text " Deck"
 	done
 
-UnusedText021a: ; Unused (Hiragana)
-	textfw "ひらがな"
+UnusedText021a: ; Unused
+	text "????"
 	done
 
-UnusedText021b: ; Unused (Katakana)
-	textfw "カタカナ"
+UnusedText021b: ; Unused
+	text "????"
 	done
 
 UnusedText021c: ; Unused
-	textfw "ABC"
+	text "????"
 	done
 
-EndText:
-	text "End"
+UnusedText021d: ; Unused
+	text "????"
 	done
 
 WhatIsYourNameText:
@@ -767,14 +767,34 @@ WhatIsYourNameText:
 ;	linefw "オ コ ソ ト ノ ホ モ ン ロ"
 ;	linefw "ャ ュ ョ ッ ヲ ゛ ゜ ー"
 ;	done
+;
+;HiraganaText:
+;	textfw "ひらがな"
+;	done
+;
+;KatakanaText:
+;	textfw "カタカナ"
+;	done
+;
+;ABCText:
+;	textfw "ABC"
+;	done
+;
+;EndText:
+;	text "End"
+;	done
+;
+;PlayerNameKeyboardText:
+;	textfw "A B C D E F G H I"
+;	linefw "J K L M N O P Q R"
+;	linefw "S T U V W X Y Z !"
+;	linefw "? & + - ・ 0 1 2 3"
+;	linefw "4 5 6 7 8 9 # ", "<Lv>", "  "
+;	linefw "                 "
+;	done
 
-PlayerNameKeyboardText:
-	textfw "A B C D E F G H I"
-	linefw "J K L M N O P Q R"
-	linefw "S T U V W X Y Z !"
-	linefw "? & + - ・ 0 1 2 3"
-	linefw "4 5 6 7 8 9 # ", "<Lv>", "  "
-	linefw "                 "
+WouldYouLikeToQuitText:
+	text "Would you like to quit?"
 	done
 
 UppercaseKeyboardText:
@@ -867,20 +887,30 @@ ConfirmText:
 	text "Confirm"
 	done
 
-DismantleText:
-	text "Dismantle"
+NewDeckStatisticsText:
+	text "New Deck Statistics"
 	done
 
-ModifyText:
-	text "Modify"
+;DeckBuildingMenuOptionsText:
+;	text "View Deck List      Change Name"
+;	line "Undo Changes        Empty Deck"
+;	line "Save and Quit       Delete Deck"
+;	done
+
+DeckBuildingMenuOptions1Text:
+	text "View Deck List"
+	line "Discard Changes"
+	line "Save and Quit"
 	done
 
-SaveText:
-	text "Save"
+DeckBuildingMenuOptions2Text:
+	text "Change Name"
+	line "Empty Deck"
+	line "Delete Deck"
 	done
 
-NameText:
-	text "Name"
+RemoveEveryCardFromTheDeckText:
+	text "Remove every card from the deck?"
 	done
 
 ThereIsOnly1DeckSoCannotBeDismantledText:

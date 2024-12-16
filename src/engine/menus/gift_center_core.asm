@@ -359,7 +359,6 @@ SendDeckConfigurationMenu_TransitionTable:
 	cursor_transition $48, $20, $00, $01, $01, $02, $00 ; Send
 	cursor_transition $80, $20, $00, $02, $02, $00, $01 ; Cancel
 
-
 SendDeckConfigurationMenuData:
 	textitem  2, 2, ConfirmText
 	textitem  9, 2, SendText
@@ -368,8 +367,6 @@ SendDeckConfigurationMenuData:
 
 ; this function is loaded to wDeckConfigurationMenuHandlerFunction
 ; during PrepareToBuildDeckConfigurationToSend.
-; output:
-;	carry = set:  if the Player decided to send a deck configuration
 HandleSendDeckConfigurationMenu:
 	lb de, 0, 0
 	lb bc, 20, 6
@@ -378,31 +375,61 @@ HandleSendDeckConfigurationMenu:
 	call PlaceTextItems
 	ld a, $ff
 	ld [wDuelInitialPrizesUpperBitsSet], a
-.loop_input
+.wait_input
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a
 	call DoFrame
+	ldh a, [hDPadHeld]
+	and START
+	ld a, -1
+	call nz, PlaySFXConfirmOrCancel_Bank2
+	jr nz, .close_menu
 	call YourOrOppPlayAreaScreen_HandleInput
-	jr nc, .loop_input
+	jr nc, .wait_input
 	ld [wced6], a
 	cp -1
-	jr nz, .pressed_a
-	; pressed B
+	jr nz, .selection_made
+	; B button was pressed
+.close_menu
 	call DrawCardTypeIconsAndPrintCardCounts
 	ld a, [wTempCardListCursorPos]
 	ld [wCardListCursorPos], a
 	ld a, [wCurCardTypeFilter]
 	call PrintFilteredCardList
-	jp HandleDeckBuildScreen.skip_draw
-.pressed_a
+	ld a, [wReturnToCardListFromDeckBuildMenu]
+	or a
+	ld a, [wCurCardTypeFilter]
+	jp z, HandleDeckBuildScreen.skip_draw
+	ld a, [wTempFilteredCardListNumCursorPositions]
+	jp HandleDeckBuildScreen.start_list_selection
+
+.selection_made
 	ld hl, .func_table
 	call JumpToFunctionInTable
 	jp OpenDeckConfigurationMenu.skip_init
 
 .func_table
-	dw ConfirmDeckConfiguration     ; Confirm
+	dw .ConfirmDeckConfiguration    ; Confirm
 	dw .SendDeckConfiguration       ; Send
 	dw .CancelSendDeckConfiguration ; Cancel
+
+.ConfirmDeckConfiguration:
+	ld hl, wCardListVisibleOffset
+	ld a, [hl]
+	ld hl, wCardListVisibleOffsetBackup
+	ld [hl], a
+	call HandleDeckConfirmationMenu
+	call ClearBackground
+	call Set_OBJ_8x8
+	ld hl, wCardListVisibleOffsetBackup
+	ld a, [hl]
+	ld hl, wCardListVisibleOffset
+	ld [hl], a
+	ld a, [wCurCardTypeFilter]
+	call PrintFilteredCardList
+	ld a, [wced6]
+	ld [wCardListCursorPos], a
+	ret
 
 .SendDeckConfiguration
 	ld a, [wCurDeckCards]
@@ -421,6 +448,7 @@ HandleSendDeckConfigurationMenu:
 	ldtx hl, SendTheseCardsText
 	call YesOrNoMenuWithText
 	jr nc, .send ; jump if the Player selected "Yes"
+	; Player selected "No"
 	add sp, $2
 	jp HandleDeckBuildScreen.skip_count
 .send

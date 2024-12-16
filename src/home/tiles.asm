@@ -74,6 +74,48 @@ FillRectangle::
 	ret
 
 
+; erases all object sprites and replaces the background with blank tiles.
+; on CGB, screen color will be the first color from CGB Background Palette 0.
+ClearScreen::
+	call ZeroObjectPositionsAndToggleOAMCopy
+;	fallthrough
+
+; replaces all background sprites currently on the screen with SYM_SPACE (blank 8x8 tile).
+; on CGB, screen color will be the first color from CGB Background Palette 0.
+ClearBackground::
+	lb bc, 20, 18
+	lb de, 0, 0
+;	fallthrough
+
+; replaces all background sprites in the area dictated by bc and de with SYM_SPACE (blank 8x8 tile).
+; on CGB, the cleared area's color will be the first color from CGB Background Palette 0.
+; input:
+;	bc = width and height of the area being cleared
+;	de = screen coordinates at which to start clearing background sprites
+ClearRectangle:
+	ld a, [wConsole]
+	cp CONSOLE_CGB
+	jr nz, .clear ; only clear sprites if not on a Game Boy Color
+	push bc
+	push de
+	call BankswitchVRAM1
+	call .clear ; replace all assigned palettes with CGB BG Palette 0 (monochrome)
+	call BankswitchVRAM0
+	pop de
+	pop bc
+.clear
+	xor a ; SYM_SPACE
+	ld h, a
+	ld l, a
+	jr FillRectangle
+
+; replaces a wide text box (and its contents) with blank tiles.
+ClearWideTextBox::
+	lb bc, 20, 6
+	lb de, 0, 12
+	jr ClearRectangle
+
+
 ; loads the four tiles of the card set 2 icon constant provided in register a
 ; input:
 ;	a = set 2 icon constant (JUNGLE, FOSSIL, GB, or PRO)

@@ -121,12 +121,16 @@ ColorlessPokemonText:
 	text "Colorless Pokémon"
 	done
 
+EvolutionCardsText:
+	text "Evolution cards"
+	done
+
 TrainerCardsText:
-	text "Trainer Cards"
+	text "Trainer cards"
 	done
 
 EnergyCardsText:
-	text "Energy Cards"
+	text "Energy cards"
 	done
 
 DeckPrinterText:
@@ -198,10 +202,6 @@ YesOrNoText:
 
 DiscardName:
 	text "Discard"
-	done
-
-IncompleteText: ; Unused
-	text "Incomplete"
 	done
 
 NumberSymbolText:
@@ -1457,10 +1457,6 @@ ProcedureForCurseText:
 	line "3. Press the B Button to cancel."
 	done
 
-UnusedText0132: ; Unused
-	text "????"
-	done
-
 Choose2EnergyCardsFromDiscardPileText:
 	text "Choose 2 Energy cards from"
 	line "your discard pile."
@@ -1582,6 +1578,10 @@ EvolutionCardText:
 
 TrainerCardText:
 	text "Trainer card"
+	done
+
+EnergyCardText:
+	text "Energy card"
 	done
 
 BasicEnergyCardText:

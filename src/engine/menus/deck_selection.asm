@@ -319,7 +319,7 @@ InputCurDeckName:
 	call TwoByteNumberToHalfwidthText
 
 	ld hl, wCurDeckName
-	ld [hl], $6
+	ld [hl], TX_HALFWIDTH
 	inc hl
 	ld [hl], "D"
 	inc hl

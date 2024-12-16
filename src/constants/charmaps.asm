@@ -105,7 +105,7 @@
 	charmap "’", $81 ; right single quotation mark
 	charmap "•", $82 ; bullet point
 	charmap "°", $83 ; degree symbol
-;	charmap "", $84
+	charmap "￣", $84
 ;	charmap "", $85
 	charmap "♀", $86 ; female symbol
 	charmap "♂", $87 ; male symbol

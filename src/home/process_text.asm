@@ -1,3 +1,21 @@
+; prints a text string aligned to the center of the screen
+; preserves e
+; input:
+;	e = y-coordinate at which to begin printing the text
+;	[hl] = first byte of a TX_END/null-terminated text string (usually wDefaultText)
+InitTextPrinting_ProcessCenteredText::
+	call GetTextLengthInTiles
+	ld a, SCREEN_WIDTH ; maximum text length = 20 tiles
+	sub b
+	srl a
+	; a = (max text length - actual text length) / 2
+	ld d, a ; got x-coordinate
+	bit 0, b
+	jr z, InitTextPrinting_ProcessText ; print with current coordinates if text uses an even number of tiles
+	; otherwise, shift everything one tile to the right before printing
+	inc d
+;	fallthrough
+
 ; like ProcessText, except it calls InitTextPrinting first
 ; preserves bc and de
 ; input:
