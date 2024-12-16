@@ -427,10 +427,8 @@ ClearScreenAndDrawDeckMachineScreen:
 	call Set_OBJ_8x8
 	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
 	call EmptyScreen
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
 	call SetDefaultConsolePalettes
@@ -1658,10 +1656,8 @@ HandleAutoDeckMenu:
 	call Set_OBJ_8x8
 	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
 	call EmptyScreen
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles
 	call SetDefaultConsolePalettes

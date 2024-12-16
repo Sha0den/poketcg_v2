@@ -456,7 +456,8 @@ PrintCardSetListEntries:
 	ret
 
 
-; handles opening card page, and inputs when inside Card Album
+; handles opening card page, and inputs when inside Card Album.
+; this function is very similar to OpenCardPageFromCardList.
 ; input:
 ;	[wCardListCursorPos] = which list position is currently selected
 ;	[wCardListVisibleOffset] = position in list of the first card that's currently shown on screen
@@ -568,7 +569,7 @@ HandleCardAlbumCardPage:
 	push de
 	bank1call OpenCardPage.input_loop
 	pop de
-	jp .handle_input
+	jr .handle_input
 
 .exit
 	ld a, $01
@@ -743,10 +744,8 @@ CardAlbum:
 	call Set_OBJ_8x8
 	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
 	call EmptyScreen
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadCursorTile
 	call LoadSymbolsFont
 	call LoadDuelCardSymbolTiles

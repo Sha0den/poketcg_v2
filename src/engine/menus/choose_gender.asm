@@ -1,11 +1,9 @@
 PlayerGenderSelection:
 	; setup the screen
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call EmptyScreen
-	call ZeroObjectPositions
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadSymbolsFont
 	lb de, $38, $bf
 	call SetupText

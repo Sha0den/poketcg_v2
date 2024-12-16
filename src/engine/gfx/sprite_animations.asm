@@ -31,9 +31,7 @@ _ClearSpriteAnimations::
 	jr nz, .loop_sprites
 
 	call ClearSpriteVRAMBuffer
-	call ZeroObjectPositions
-	ld hl, wVBlankOAMCopyToggle
-	inc [hl]
+	call ZeroObjectPositionsAndToggleOAMCopy
 	pop hl
 	pop bc
 	ret

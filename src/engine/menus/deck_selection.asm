@@ -69,10 +69,8 @@ DeckBoxGfx:
 EmptyScreenAndLoadFontDuelAndDeckIcons:
 	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
 	call EmptyScreen
-	ld a, $1
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadCursorTile
 	call LoadSymbolsFont
 	call LoadDeckIcon

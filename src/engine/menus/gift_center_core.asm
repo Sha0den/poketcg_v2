@@ -27,10 +27,8 @@ HandleGiftCenter::
 GiftCenter_SendCard:
 	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
-	call ZeroObjectPositions
 	call EmptyScreen
-	ld a, $1
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadSymbolsFont
 	call SetDefaultConsolePalettes
 

@@ -123,6 +123,12 @@
 
 
 ## Code Optimization
+- **December 16, 2024:** 9 Files Changed
+    - Add more calls to `ZeroObjectPositionsAndToggleOAMCopy` and revert to the original order of instructions for that function in home/objects.asm
+        - *having the fallthrough would be ideal, but I don't fully understand what the variable load does (something during vblank), so it's probably best to keep the orignal code*
+
+<br/>
+
 - **[December 10, 2024](https://github.com/Sha0den/poketcg_v2/commit/6d0f71e8b91d3b31b79559f22a062e12b89dd522):** 12 Files Changed
     - Miscellaneous small optimizations throughout the AI logic files (plus more comments and a few fixes)
     - Move `AITryUseAttack` from engine/duel/ai/core.asm to engine/duel/ai/attacks.asm
@@ -939,7 +945,7 @@
     - Create `InitTextPrinting_ProcessCenteredText` function for printing center aligned text and use it in `YesOrNoMenuWithText` (also add SFX after choosing "Yes" or "No")
     - Create `WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros` function and add it to home/write_number.asm
     - Create some clear functions in home/tiles.asm to be used as alternatives to `EmptyScreen` for minor screen transitions
-    - The following commit reverted the center alignment change to `YesOrNoMenuWithText` because it didn't account for ramtext or adjust the coordinates for background scrolling (I might revisit the idea later)
+    - [The following commit](https://github.com/Sha0den/poketcg_v2/commit/b9549e134b73b6189cc7b01f388529c54c840fea) reverted the center alignment change to `YesOrNoMenuWithText` because it didn't account for ramtext or adjust the coordinates for background scrolling (I might revisit the idea later)
 
 <br/>
 

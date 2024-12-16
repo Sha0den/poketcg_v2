@@ -34,9 +34,11 @@ SetOneObjectAttributes::
 
 
 ZeroObjectPositionsAndToggleOAMCopy::
+	call ZeroObjectPositions
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a
-;	fallthrough
+	ret
+
 
 ; sets the Y Position and X Position of all sprites in wOAM to $00
 ; preserves de

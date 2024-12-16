@@ -97,13 +97,10 @@ InputDeckName:
 	call InitializeInputName
 	call Set_OBJ_8x8
 
-	xor a
+	xor a ; SYM_SPACE
 	ld [wTileMapFill], a
 	call EmptyScreen
-	call ZeroObjectPositions
-
-	ld a, $01
-	ld [wVBlankOAMCopyToggle], a
+	call ZeroObjectPositionsAndToggleOAMCopy
 	call LoadSymbolsFont
 
 	lb de, $38, $bf
@@ -898,12 +895,10 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	lb bc, 12, 1
 ;	call InitializeInputName
 ;	call Set_OBJ_8x8
-;	xor a
+;	xor a ; SYM_SPACE
 ;	ld [wTileMapFill], a
 ;	call EmptyScreen
-;	call ZeroObjectPositions
-;	ld a, $01
-;	ld [wVBlankOAMCopyToggle], a
+;	call ZeroObjectPositionsAndToggleOAMCopy
 ;	call LoadSymbolsFont
 ;	lb de, $38, $bf
 ;	call SetupText
