@@ -473,14 +473,7 @@ YesOrNoMenuWithText_SetCursorToYes::
 ; output:
 ;	carry = set:  if "No" was selected
 YesOrNoMenuWithText::
-; print the question centered in a wide text box
-	ld de, wDefaultText
-	push de
-	call CopyText
-	call DrawWideTextBox
-	pop hl ; wDefaultText
-	ld e, 14
-	call InitTextPrinting_ProcessCenteredText
+	call DrawWideTextBox_PrintText
 ;	fallthrough
 
 ; prints the YES / NO menu items at coordinates x,y = 7,16 and handles input.
