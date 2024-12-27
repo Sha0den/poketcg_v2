@@ -123,7 +123,7 @@
 
 
 ## Code Optimization
-- **December 16, 2024:** 9 Files Changed
+- **[December 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/ca27fe4c88d57894a7acdd136314d07ae7f3cda0):** 9 Files Changed
     - Add more calls to `ZeroObjectPositionsAndToggleOAMCopy` and revert to the original order of instructions for that function in home/objects.asm
         - *having the fallthrough would be ideal, but I don't fully understand what the variable load does (something during vblank), so it's probably best to keep the orignal code*
 
@@ -153,6 +153,7 @@
 
 - **[December 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/a88234c5bf7b12580d6f788b6e72599b09af66a5):** 1 File Changed
     - Make a wide variety of small optimizations throughout engine/duel/core.asm (plus some label and comment changes)
+    - This commit caused a small glitch which allowed continued scrolling in card lists past the final list entry.
 
 <br/>
 
@@ -1197,6 +1198,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **December 27, 2024:** 1 File Changed
+    - Revert a small change to `CardListMenuFunction` in engine/duel/core.asm. The secondary down input check was not redundant; it's needed after exiting from a card page.
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/a88234c5bf7b12580d6f788b6e72599b09af66a5)*
+
+<br/>
+
 - **[November 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/e489039247565544d26dc6339812820cb3708bf6):** 1 File Changed
     - Revert a small change to engine/duel/ai/energy.asm (because Rain Dance was causing the game to freeze)
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37)*

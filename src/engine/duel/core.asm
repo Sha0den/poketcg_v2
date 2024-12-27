@@ -3828,7 +3828,7 @@ CardListMenuFunction:
 	bit D_DOWN_F, b
 	jr z, .check_d_left
 	or a ; check if wCurMenuItem is the first visible item (because cursor wrapped around)
-	jp nz, .continue ; ignore down input if no scrolling occurred
+	jr nz, .secondary_end_of_list_check
 	; we're at the bottom of the page
 	ld a, c
 	ld [wCurMenuItem], a ; set to last item
@@ -3840,7 +3840,16 @@ CardListMenuFunction:
 	jr z, .no_more_items
 	ld hl, wListScrollOffset
 	inc [hl] ; scroll page down
-	jr .reload_list_and_continue
+	jp .reload_list_and_continue
+.secondary_end_of_list_check
+	ld hl, wListScrollOffset
+	add [hl]
+	ld hl, wNumListItems
+	cp [hl]
+	jp c, .continue
+	; already on final list item
+	ld hl, wCurMenuItem
+	dec [hl]
 .no_more_items
 	xor a
 	ld [wRefreshMenuCursorSFX], a
