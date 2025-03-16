@@ -153,7 +153,7 @@
 
 - **[December 1, 2024](https://github.com/Sha0den/poketcg_v2/commit/a88234c5bf7b12580d6f788b6e72599b09af66a5):** 1 File Changed
     - Make a wide variety of small optimizations throughout engine/duel/core.asm (plus some label and comment changes)
-    - This commit caused a small glitch which allowed continued scrolling in card lists past the final list entry.
+    - *This commit caused a small glitch which allowed continued scrolling in card lists past the final list entry. ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/d902160229dcf3737e14f7ab5d1bd8d67219adec))*
 
 <br/>
 
@@ -1198,7 +1198,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **December 27, 2024:** 1 File Changed
+- **[December 27, 2024](https://github.com/Sha0den/poketcg_v2/commit/d902160229dcf3737e14f7ab5d1bd8d67219adec):** 1 File Changed
     - Revert a small change to `CardListMenuFunction` in engine/duel/core.asm. The secondary down input check was not redundant; it's needed after exiting from a card page.
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/a88234c5bf7b12580d6f788b6e72599b09af66a5)*
 
