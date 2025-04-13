@@ -1268,7 +1268,7 @@ SelectNewDefendingPokemonText:
 	line "with your opponent's Active Pokémon."
 	done
 
-SelectNewActivePokemonText :
+SelectNewActivePokemonText:
 	text "Select 1 of your Benched Pokémon to"
 	line "become your new Active Pokémon."
 	done
