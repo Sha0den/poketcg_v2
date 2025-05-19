@@ -123,6 +123,11 @@
 
 
 ## Code Optimization
+- **May 19, 2025:** 1 File Changed
+    - Refactor `DealDamageToAllBenchedPokemon` function in engine/duel/effect_functions.asm
+
+<br/>
+
 - **[December 16, 2024](https://github.com/Sha0den/poketcg_v2/commit/ca27fe4c88d57894a7acdd136314d07ae7f3cda0):** 9 Files Changed
     - Add more calls to `ZeroObjectPositionsAndToggleOAMCopy` and revert to the original order of instructions for that function in home/objects.asm
         - *having the fallthrough would be ideal, but I don't fully understand what the variable load does (something during vblank), so it's probably best to keep the orignal code*

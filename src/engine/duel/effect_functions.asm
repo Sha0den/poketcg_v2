@@ -4783,14 +4783,12 @@ DealDamageToAllBenchedPokemon:
 	get_turn_duelist_var
 	ld c, a
 	ld b, PLAY_AREA_ARENA
-	jr .skip_to_bench
 .loop
-	call DealDamageToPlayAreaPokemon_RegularAnim
-.skip_to_bench
 	inc b
 	dec c
-	jr nz, .loop
-	ret
+	ret z
+	call DealDamageToPlayAreaPokemon_RegularAnim
+	jr .loop
 
 
 ; flips a coin and stores the result
