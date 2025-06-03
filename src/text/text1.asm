@@ -1250,12 +1250,12 @@ UnableToUseAttackDueToNShieldText:
 
 NoDamageOrEffectDueToNShieldText:
 	text "The Neutralizing Shield power"
-	line "protected Mew from the atack."
+	line "protected Mew from the attack."
 	done
 
 NoDamageOrEffectDueToTransparencyText:
 	text "The Transparency power"
-	line "protected Haunter from the atack."
+	line "protected Haunter from the attack."
 	done
 
 MetamorphsToText:
