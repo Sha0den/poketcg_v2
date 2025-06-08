@@ -1203,7 +1203,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **June 8, 2025:** 5 Files Changed
+- **[June 8, 2025](https://github.com/Sha0den/poketcg_v2/commit/f17fcbab1f162220e3cccd2dbdf6eb217a534831):** 5 Files Changed
     - Fix numerous small typos (a couple more were fixed in [the previous commit](https://github.com/Sha0den/poketcg_v2/commit/05c1fd87d04213dffac0ad4b3f742d8ef6df7783))
     - Reverse order of male & female symbols in halfwidth fonts to match src/constants/charmaps.asm (also edit halfwidth comma)
 
