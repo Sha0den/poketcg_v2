@@ -592,7 +592,7 @@ BallName:
 
 VoltorbDescription:
 	text "Usually found in power plants."
-	line "Easily mistaken for a Poke Ball,"
+	line "Easily mistaken for a Poké Ball,"
 	line "it has zapped many people."
 	done
 
@@ -926,7 +926,7 @@ TantrumDescription:
 	done
 
 PrimeapeDescription:
-	text "Always furious and tenacious to boot."
+	text "Always furious and tenacious to"
 	line "boot. It will not abandon chasing"
 	line "its quarry until its quarry is"
 	line "caught."

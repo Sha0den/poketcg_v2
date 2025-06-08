@@ -330,7 +330,7 @@ RetreatingDescriptionText:
 	line ""
 	line " A Pokémon will recover from all"
 	line " Special Conditions when it moves to"
-	line " the Bench,  but Pokémon that are"
+	line " the Bench, but Pokémon that are"
 	line " Asleep or Paralyzed cannot retreat."
 	done
 

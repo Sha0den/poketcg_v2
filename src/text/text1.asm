@@ -336,7 +336,7 @@ BenchText:
 	done
 
 KnockOutText:
-	text "Knock Out"
+	text "Knocked Out"
 	done
 
 DamageToSelfDueToConfusionText:
@@ -1864,7 +1864,7 @@ ThereWasNoEffectFromPoisonText:
 	done
 
 ThereWasNoEffectFromSleepText:
-	text "The Pokémon could be put to Sleep."
+	text "The Pokémon could not fall Asleep."
 	done
 
 ThereWasNoEffectFromParalysisText:
