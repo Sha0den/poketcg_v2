@@ -195,7 +195,7 @@ Text05f0:
 	done
 
 Text05f1:
-	text "<RAMNAME> handed his cards to"
+	text "You give all of your cards to"
 	line "Dr. Mason."
 	done
 
@@ -218,8 +218,7 @@ Text05f4:
 Text05f5:
 	text "<RAMNAME> received"
 	line "a <RAMTEXT>!"
-	line ""
-	text "<RAMNAME> received"
+	line "<RAMNAME> received"
 	line "30 cards!"
 	done
 
@@ -545,7 +544,7 @@ Text062a:
 	done
 
 Text062b:
-	text "What? a Pokémon card duel?"
+	text "What? A Pokémon card duel?"
 	line "I'll be glad to duel any time!"
 	done
 
@@ -837,6 +836,12 @@ Text0657:
 	line "Let's make his Pokémon disappear!"
 	done
 
+Text0657_Mint:
+	text "A single match with 4 prizes!"
+	line "Come on, my precious ghosts!"
+	line "Let's make her Pokémon disappear!"
+	done
+
 Text0658:
 	text "How could my Ghost deck lose!?!"
 	done
@@ -1022,7 +1027,7 @@ Text0673:
 
 Text0674:
 	text "You've won quite a few medals."
-	line "OK...Let's duel."
+	line "OK... Let's duel."
 	line "But I see the future..."
 	line "You will lose..."
 	done

@@ -110,7 +110,7 @@ Text074c:
 
 Text074d:
 	text "If I use <RAMTEXT> now,"
-	line "This will happen..."
+	line "this will happen..."
 	done
 
 Text074e:
@@ -236,7 +236,7 @@ Text0762:
 
 Text0763:
 	text "And let me give you this."
-	line "Please add this to your collection."
+	line "Please add these to your collection."
 	done
 
 Text0764:
@@ -255,7 +255,7 @@ Text0765:
 
 Text0766:
 	text "Hello! It's you again!"
-	line "Do you wish to duel me!"
+	line "Do you wish to duel me?"
 	done
 
 Text0767:
@@ -693,7 +693,7 @@ Text07ad:
 	done
 
 Text07ae:
-	text "Yes! You are an worthy opponent!"
+	text "Yes! You are a worthy opponent!"
 	line "Here, take this booster pack."
 	done
 
@@ -1037,7 +1037,7 @@ WouldYouLikeToBeginTheDuelText:
 
 IfYouQuitTheDuelText:
 	text "If you quit the duel,"
-	line "Your Consecutive Wins will end."
+	line "your consecutive wins will end."
 	done
 
 WouldYouLikeToQuitTheDuelText:
@@ -1049,8 +1049,7 @@ PlayTheChallengeMachineText:
 	done
 
 LetUsChooseYourOpponentText:
-	text "OK,"
-	line "Let us choose your opponent."
+	text "OK, let us choose your opponent."
 	done
 
 LostToTheNthOpponentText:

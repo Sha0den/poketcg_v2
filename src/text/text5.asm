@@ -464,8 +464,8 @@ WaterPokemonAttacksBookText:
 	text "Water Gun and Hydro Pump are"
 	line "attacks which have variable damage."
 	line "The more Water Energy you attach,"
-	line "the more powerful the attack will be"
-	line "The attack can do up to 20 more"
+	line "the stronger the attack will become!"
+	line "These attacks can do up to 20 more"
 	line "damage in this way."
 	done
 
@@ -697,7 +697,7 @@ ColorlessPokemonBookText:
 	line "any type of Energy card, so"
 	line "you can include them in any type"
 	line "of deck. There are many Colorless"
-	line "Pokémon, so check them all out!"
+	line "Pokémon, so check all of them out!"
 	done
 
 DragonPokemonBookName:
@@ -822,9 +822,9 @@ PlateOfLegendsText:
 	line " Defeat the Masters of the 8 Clubs"
 	line " and attain the 8 Master Medals."
 	line " Once attained, defeat the Grand"
-	line " Master here at Pokémon Dome..."
-	line " Then you shall inherit"
-	line " the Legendary Pokémon Cards.”"
+	line " Masters here at the Pokémon Dome..."
+	line " Then you shall inherit the"
+	line " Legendary Pokémon Cards.”"
 	done
 
 MysteriousVoiceDoorName:

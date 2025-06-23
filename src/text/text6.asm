@@ -112,8 +112,7 @@ Clerk12ChallengeCupRound1DuelStartText:
 
 Clerk12ChallengeCupRound2PlayerLostText:
 	text "The winner is <RAMTEXT>!!"
-	line ""
-	text "<RAMTEXT> has defeated 2 opponents!"
+	line "<RAMTEXT> has defeated 2 opponents!"
 	line "Just 1 more opponent to go"
 	line "before winning the prize!"
 	done
@@ -125,8 +124,7 @@ Clerk12ChallengeCupLostContinuedText:
 
 Clerk12ChallengeCupRound1PlayerLostText:
 	text "The Winner is <RAMTEXT>!!!"
-	line ""
-	text "<RAMTEXT> has defeated 1 opponent!"
+	line "<RAMTEXT> has defeated 1 opponent!"
 	line "2 more opponents to go"
 	line "before winning the prize!"
 	done
@@ -154,8 +152,7 @@ RonaldChallengeCup1PlayerLostText:
 Clerk12ChallengeCupRound1PlayerWonText:
 	text "Congratulations!"
 	line "The Winner is <RAMNAME>!"
-	line ""
-	text "<RAMNAME> has defeated"
+	line "<RAMNAME> has defeated"
 	line "1 opponent!!!"
 	done
 
@@ -177,14 +174,12 @@ Clerk12ChallengeCupNextChallengerText:
 
 Clerk12ChallengeCupRound2ChallengerText:
 	text "Our new challenger is..."
-	line ""
-	text "<RAMTEXT>!"
+	line "<RAMTEXT>!"
 	done
 
 Clerk12ChallengeCupRound3ChallengerText:
 	text "The third opponent is"
-	line ""
-	text "<RAMTEXT>!"
+	line "<RAMTEXT>!"
 	done
 
 RonaldChallengeCup2BeforeDuelText:
@@ -365,7 +360,7 @@ Text0561:
 	done
 
 Text0562:
-	text "<RAMNAME>, That is not the way"
+	text "<RAMNAME>, that is not the way"
 	line "to the Hall of Honor."
 	line "Hurry, <RAMNAME>! Go through to"
 	line "the Hall of Honor!"
@@ -707,8 +702,8 @@ Text059e:
 	done
 
 Text059f:
-	text "Wha-what on earth?  Even"
-	line "I, Rod, have been defeated?!?"
+	text "Wha-what on earth?"
+	line "Even I, Rod, have been defeated?!?"
 	line "Wonderful! This is wonderful!!"
 	line "Congratulations, <RAMNAME>."
 	line "You have proven yourself worthy"
@@ -754,8 +749,8 @@ Text05a5:
 	done
 
 Text05a6:
-	text "No, Ronald! That cannot be"
-	line "allowed! He, too, has earned"
+	text "No, Ronald! That cannot be allowed!"
+	line "<RAMNAME>, too, has earned"
 	line "the right to inherit the"
 	line "Legendary Pokémon Cards!"
 	line "Ronald! <RAMNAME>!"
@@ -784,7 +779,7 @@ UnusedText05aa: ; Unused
 	done
 
 Text05ab:
-	text "OK, Then let's begin this"
+	text "OK, then let's begin this"
 	line "ultimate duel!"
 	done
 
@@ -796,7 +791,7 @@ Text05ac:
 	done
 
 Text05ad:
-	text "It's a 1-match duel with 6-prizes!"
+	text "It's a 1-match duel with 6 prizes!"
 	line "Let it begin!"
 	done
 

@@ -1860,7 +1860,7 @@ _DrawPlayAreaToPlacePrizeCards::
 	jp SwapTurn
 
 .player_icon_coordinates
-	db 15, 11
+	db 15, 10
 	db 15,  6
 	db 15,  8
 

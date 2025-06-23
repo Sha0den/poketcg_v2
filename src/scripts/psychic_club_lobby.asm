@@ -25,7 +25,8 @@ Script_Robert:
 	quit_script_fully
 
 .ows_e98d
-	print_npc_text Text0657
+	test_if_event_false EVENT_PLAYER_GENDER
+	print_variable_npc_text Text0657, Text0657_Mint
 	start_duel PRIZES_4, GHOST_DECK_ID, MUSIC_DUEL_THEME_1
 	quit_script_fully
 

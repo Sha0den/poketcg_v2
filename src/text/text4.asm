@@ -260,7 +260,7 @@ Mail14Part1Text:
 	line "2 more Grand Masters to go!"
 	line "Grand Master Jack uses"
 	line "the Legendary Articuno."
-	line "He will use its QuickFreeze to"
+	line "He will use its Quickfreeze to"
 	line "paralyze your Active Pokémon."
 	line "You should also be wary of his"
 	line "other Articuno's Freeze Dry."
@@ -360,7 +360,6 @@ Gal1CardInDeckText:
 	line "is included in your deck."
 	line "I'd feel guilty taking a card"
 	line "from your deck. Maybe next time."
-	line ""
 	done
 
 Gal1LetsTradeText:
