@@ -236,7 +236,7 @@ Text06a6:
 	done
 
 Text06a7:
-	text "If you're a real man, you gotta"
+	text "If you're a real duelist, you gotta"
 	line "compete in a heated duel!"
 	done
 
@@ -539,7 +539,7 @@ Text06d8:
 	line "Huh? You must be <RAMNAME>."
 	line "Mitch told me all about you."
 	line "Beating you will be much better"
-	line "than losing to the girls!"
+	line "than losing to these girls!"
 	done
 
 Text06d9:
@@ -797,7 +797,7 @@ Text0702:
 
 Text0703:
 	text "Only girls are allowed to join"
-	line "the Grass Club,"
+	line "the Grass Club."
 	line "But we're not accepting"
 	line "applications now, anyway. Sorry!"
 	done
@@ -1028,7 +1028,7 @@ Text0727:
 	line "I love collecting cards."
 	line "I see you also love Pokémon cards."
 	line "Please come see me again."
-	line "We must trade sometime.  OH!"
+	line "We must trade sometime. OH!"
 	line "If you're playing with the cards,"
 	line "please read some of the books here."
 	line "I believe they will be helpful."

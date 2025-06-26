@@ -11,7 +11,7 @@ Text073f:
 	line "was important to me was winning."
 	line "But now I understand!"
 	line "What's important..."
-	line "Is to love each card, to use all"
+	line "is to love each card, to use all"
 	line "the different cards to build"
 	line "different types of decks, and"
 	line "to play against different people!"
@@ -1053,7 +1053,7 @@ LetUsChooseYourOpponentText:
 	done
 
 LostToTheNthOpponentText:
-	text "You lost to the <RAMNUM> opponent,"
+	text "You lost to opponent <RAMNUM>,"
 	line "<RAMTEXT>!"
 	done
 

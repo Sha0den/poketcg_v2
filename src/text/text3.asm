@@ -470,7 +470,7 @@ OverworldMapMasonLaboratoryText:
 	done
 
 OverworldMapIshiharasHouseText:
-	text "  ISHIHARA's House  "
+	text "  Ishihara's House  "
 	done
 
 OverworldMapFightingClubText:

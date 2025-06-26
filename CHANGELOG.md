@@ -1118,7 +1118,7 @@
 
 - **[April 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/180ea5c9b6e0965a32b3cdc37b474b8b8a97c8ef):** 1 File Changed
     - Replace the word "Hand" with the hand icon from the duel graphics in the play area screens
-    - Note that the "11" in the first line of `_DrawPlayAreaToPlacePrizeCards.player_icon_coordinates` should also be changed to "10"
+    - *Note that the "11" in the first line of `_DrawPlayAreaToPlacePrizeCards.player_icon_coordinates` should also be changed to "10" (applied in [this commit](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8))*
 
 <br/>
 
@@ -1154,7 +1154,7 @@
 
 - **[August 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/f621d292bce067b1f346896554dde4f944a1949d):** 22 Files Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Add-female-player-character) to add the option to play as Mint, the female protagonist from the sequel
-    - Some texts with gender-specific pronouns were eventually fixed in a later commit.
+    - *Some texts with gender-specific pronouns were eventually fixed in [this commit](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8)*
 
 <br/>
 
@@ -1205,15 +1205,15 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **June 23, 2025:** 9 Files Changed
-    - Fix a lot more typos and text issues, several of which were related to the player character possibly being female
+- **[June 23, 2025](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8):** 9 Files Changed
+    - Fix a lot more typos and text issues, several of which were related to the player character possibly being female *(A few more were fixed in the following commit.)*
     - Adjust the player's hand icon on the duel setup screen so that it isn't partially covered up by the text box
     - *Thanks to JappaWakka for pointing out most of the errors that were fixed in this and the previous typo commits.*
 
 <br/>
 
 - **[June 8, 2025](https://github.com/Sha0den/poketcg_v2/commit/f17fcbab1f162220e3cccd2dbdf6eb217a534831):** 5 Files Changed
-    - Fix numerous small typos (a couple more were fixed in [the previous commit](https://github.com/Sha0den/poketcg_v2/commit/05c1fd87d04213dffac0ad4b3f742d8ef6df7783))
+    - Fix numerous small typos *(A couple more were fixed in [the previous commit](https://github.com/Sha0den/poketcg_v2/commit/05c1fd87d04213dffac0ad4b3f742d8ef6df7783).)*
     - Reverse order of male & female symbols in halfwidth fonts to match src/constants/charmaps.asm (also edit halfwidth comma)
 
 <br/>
