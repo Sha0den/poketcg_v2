@@ -942,6 +942,12 @@
 
 
 ## Miscellaneous Changes
+- **June 27, 2025:** 5 Files Changed
+    - Add tiles for a START button to the fullwidth3 fonts
+    - Add a notification to the deck building screen explaining that the menu can be opened by pressing START
+
+<br/>
+
 - **[December 15, 2024](https://github.com/Sha0den/poketcg_v2/commit/4dd1d90c9d5908ce6522bd3407af88b68fddbd4d):** 14 Files Changed
     - Major update to the deck building screen menu
         - Input changes: Deck building menu is now opened via the START button (instead of B), but either button will close it. Pressing B button in the deck builder now asks the player whether they want to quit; if "Yes" is selected and the deck is both valid and different from the original configuration, then it will also ask the player whether they want to save the new version. Since START now opens the menu, the confirmation screen can only be accessed through the menu option.
@@ -1206,7 +1212,7 @@
 
 ## Other Bug Fixes And Commit Reversions
 - **[June 23, 2025](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8):** 9 Files Changed
-    - Fix a lot more typos and text issues, several of which were related to the player character possibly being female *(A few more were fixed in the following commit.)*
+    - Fix a lot more typos and text issues, several of which were related to the player character possibly being female *(A few more were fixed in [the following commit](https://github.com/Sha0den/poketcg_v2/commit/7bba92a147bf110ca356f0b7685ae155cf653c50).)*
     - Adjust the player's hand icon on the duel setup screen so that it isn't partially covered up by the text box
     - *Thanks to JappaWakka for pointing out most of the errors that were fixed in this and the previous typo commits.*
 

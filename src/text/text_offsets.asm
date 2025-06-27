@@ -542,26 +542,26 @@ TextOffsets::
 	textpointer UnusedText021a                                     ; 0x021a
 	textpointer UnusedText021b                                     ; 0x021b
 	textpointer UnusedText021c                                     ; 0x021c
-	textpointer UnusedText021d                                     ; 0x021d
-	textpointer WhatIsYourNameText                                 ; 0x021e
-	textpointer WouldYouLikeToQuitText                             ; 0x021f
-	textpointer UppercaseKeyboardText                              ; 0x0220
-	textpointer LowercaseKeyboardText                              ; 0x0221
-	textpointer AccentsKeyboardText                                ; 0x0222
-	textpointer NewDeckText                                        ; 0x0223
-	textpointer PleaseSelectDeckText                               ; 0x0224
-	textpointer ModifyDeckText                                     ; 0x0225
-	textpointer ChangeNameText                                     ; 0x0226
-	textpointer SelectDeckText                                     ; 0x0227
-	textpointer CancelText                                         ; 0x0228
-	textpointer NoDeckText                                         ; 0x0229
-	textpointer ChosenAsDuelingDeckText                            ; 0x022a
-	textpointer Deck1Text                                          ; 0x022b
-	textpointer Deck2Text                                          ; 0x022c
-	textpointer Deck3Text                                          ; 0x022d
-	textpointer Deck4Text                                          ; 0x022e
-	textpointer ThereIsNoDeckHereText                              ; 0x022f
-	textpointer ConfirmText                                        ; 0x0230
+	textpointer WhatIsYourNameText                                 ; 0x021d
+	textpointer WouldYouLikeToQuitText                             ; 0x021e
+	textpointer UppercaseKeyboardText                              ; 0x021f
+	textpointer LowercaseKeyboardText                              ; 0x0220
+	textpointer AccentsKeyboardText                                ; 0x0221
+	textpointer NewDeckText                                        ; 0x0222
+	textpointer PleaseSelectDeckText                               ; 0x0223
+	textpointer ModifyDeckText                                     ; 0x0224
+	textpointer ChangeNameText                                     ; 0x0225
+	textpointer SelectDeckText                                     ; 0x0226
+	textpointer CancelText                                         ; 0x0227
+	textpointer NoDeckText                                         ; 0x0228
+	textpointer ChosenAsDuelingDeckText                            ; 0x0229
+	textpointer Deck1Text                                          ; 0x022a
+	textpointer Deck2Text                                          ; 0x022b
+	textpointer Deck3Text                                          ; 0x022c
+	textpointer Deck4Text                                          ; 0x022d
+	textpointer ThereIsNoDeckHereText                              ; 0x022e
+	textpointer ConfirmText                                        ; 0x022f
+	textpointer PressSTARTToViewMenuText                           ; 0x0230
 	textpointer DeckBuildingMenuOptions1Text                       ; 0x0231
 	textpointer DeckBuildingMenuOptions2Text                       ; 0x0232
 	textpointer NewDeckStatisticsText                              ; 0x0233

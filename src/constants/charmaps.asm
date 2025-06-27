@@ -386,9 +386,9 @@ ENDM
 ;	fwcharmap TX_FULLWIDTH3, "", $b5
 ;	fwcharmap TX_FULLWIDTH3, "", $b6
 ;	fwcharmap TX_FULLWIDTH3, "", $b7
-;	fwcharmap TX_FULLWIDTH3, "", $b8
-;	fwcharmap TX_FULLWIDTH3, "", $b9
-;	fwcharmap TX_FULLWIDTH3, "", $ba
+	fwcharmap TX_FULLWIDTH3, "⅓", $b8 ; START button tile 1
+	fwcharmap TX_FULLWIDTH3, "⅔", $b9 ; START button tile 2
+	fwcharmap TX_FULLWIDTH3, "⅜", $ba ; START button tile 3
 	fwcharmap TX_FULLWIDTH3, "【", $bb ; open square bracket
 	fwcharmap TX_FULLWIDTH3, "】", $bc ; close square bracket
 	fwcharmap TX_FULLWIDTH3, "゛", $bd ; dakuten/ten-ten (Japanese)

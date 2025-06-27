@@ -742,10 +742,6 @@ UnusedText021c: ; Unused
 	text "????"
 	done
 
-UnusedText021d: ; Unused
-	text "????"
-	done
-
 WhatIsYourNameText:
 	text "What is your name?"
 	done
@@ -887,8 +883,11 @@ ConfirmText:
 	text "Confirm"
 	done
 
-NewDeckStatisticsText:
-	text "New Deck Statistics"
+PressSTARTToViewMenuText:
+	text "Press "
+	half2full
+	textfw "⅓⅔⅜" ; START button
+	text " to View Menu"
 	done
 
 ;DeckBuildingMenuOptionsText:
@@ -907,6 +906,10 @@ DeckBuildingMenuOptions2Text:
 	text "Change Name"
 	line "Empty Deck"
 	line "Delete Deck"
+	done
+
+NewDeckStatisticsText:
+	text "New Deck Statistics"
 	done
 
 RemoveEveryCardFromTheDeckText:

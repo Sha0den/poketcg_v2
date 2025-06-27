@@ -1746,6 +1746,9 @@ PrintTotalCardCount:
 ; preserves bc
 PrintDeckBuildingCardList:
 	push bc
+	lb de, 1, 0
+	ldtx hl, PressSTARTToViewMenuText
+	call InitTextPrinting_ProcessTextFromID
 	ld hl, wCardListCoords
 	ld e, [hl]
 	inc hl
