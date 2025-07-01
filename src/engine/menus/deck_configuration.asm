@@ -860,6 +860,11 @@ HandleDeckConfigurationMenu:
 	or a
 	ld a, [wCurCardTypeFilter]
 	jp z, HandleDeckBuildScreen.skip_draw
+	ld hl, FiltersCardSelectionParams
+	call InitCardSelectionParams
+	ld a, [wCurCardTypeFilter]
+	ld [wTempCardTypeFilter], a
+	call DrawHorizontalListCursor_Visible
 	ld a, [wTempFilteredCardListNumCursorPositions]
 	jp HandleDeckBuildScreen.start_list_selection
 

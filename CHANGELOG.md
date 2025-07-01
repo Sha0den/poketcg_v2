@@ -942,7 +942,7 @@
 
 
 ## Miscellaneous Changes
-- **June 27, 2025:** 5 Files Changed
+- **[June 27, 2025](https://github.com/Sha0den/poketcg_v2/commit/9a1f7284738512a1c7d2796726956483133b82f4):** 5 Files Changed
     - Add tiles for a START button to the fullwidth3 fonts
     - Add a notification to the deck building screen explaining that the menu can be opened by pressing START
 
@@ -1211,6 +1211,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **July 1 2025:** 1 File Changed
+    - Fix a small issue with the deck building screen where the static card type cursor at the top of the screen wasn't always being redrawn after exiting the menu
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/4dd1d90c9d5908ce6522bd3407af88b68fddbd4d)*
+
+<br/>
+
 - **[June 23, 2025](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8):** 9 Files Changed
     - Fix a lot more typos and text issues, several of which were related to the player character possibly being female *(A few more were fixed in [the following commit](https://github.com/Sha0den/poketcg_v2/commit/7bba92a147bf110ca356f0b7685ae155cf653c50).)*
     - Adjust the player's hand icon on the duel setup screen so that it isn't partially covered up by the text box
