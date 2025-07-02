@@ -942,6 +942,12 @@
 
 
 ## Miscellaneous Changes
+- **July 2, 2025:** 1 File Changed
+    - The SELECT button can now be used in the deck select screen to make the currently selected deck the player's active deck
+    - Adjust the sound effect that is played when an empty deck slot is chosen
+
+<br/>
+
 - **[June 27, 2025](https://github.com/Sha0den/poketcg_v2/commit/9a1f7284738512a1c7d2796726956483133b82f4):** 5 Files Changed
     - Add tiles for a START button to the fullwidth3 fonts
     - Add a notification to the deck building screen explaining that the menu can be opened by pressing START

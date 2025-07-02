@@ -125,8 +125,27 @@ DeckSelectionMenu:
 .loop_input
 	call DoFrame
 	jr c, .start_selection ; reinitialize menu parameters
-	call HandleStartButtonInDeckSelectionMenu
-	jr c, .start_selection
+; first check if either the START or the SELECT button was pressed
+	ldh a, [hDPadHeld]
+	and SELECT | START
+	jr z, .else
+	ld a, [wCurMenuItem]
+	ld [wCurDeck], a
+	call CheckIfCurDeckIsValid
+	jr nc, .valid_deck
+	; no deck is saved in the current slot
+	call PrintThereIsNoDeckHereText
+	jr .start_selection
+.valid_deck
+	ld a, SFX_CONFIRM
+	call PlaySFX
+	ldh a, [hDPadHeld]
+	and SELECT
+	jp nz, DeckSelectionSubMenu_SelectOrCancel.SelectDeck ; make this the active deck if SELECT was pressed
+	; START button must have been pressed, so open the deck list/confirmation screen instead
+	call HandleStartButtonInDeckSelectionMenu.skip_sfx
+	jr .start_selection
+.else
 	call HandleMenuInput
 	jr nc, .loop_input
 	cp -1
@@ -251,8 +270,6 @@ HandleStartButtonInDeckSelectionMenu:
 	jr nc, .valid_deck
 
 ; not a valid deck, cancel
-	ld a, SFX_CANCEL
-	call PlaySFX
 	call PrintThereIsNoDeckHereText
 	scf
 	ret
@@ -260,6 +277,7 @@ HandleStartButtonInDeckSelectionMenu:
 .valid_deck
 	ld a, SFX_CONFIRM
 	call PlaySFX
+.skip_sfx
 	call GetPointerToDeckCards
 	push hl
 	call GetPointerToDeckName
@@ -422,6 +440,7 @@ DeckSelectionSubMenu_SelectOrCancel:
 
 
 PrintThereIsNoDeckHereText:
+	call PlaySFX_InvalidChoice
 	ldtx hl, ThereIsNoDeckHereText
 	call DrawWideTextBox_WaitForInput
 	ld a, [wCurDeck]
