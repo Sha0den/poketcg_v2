@@ -101,7 +101,8 @@ DrawCheckMenuCursor:
 	push af
 	ld a, [wCheckMenuCursorXPosition]
 	ld h, a
-	ld l, 10
+	ld a, [wCheckMenuCursorXPositionOffset]
+	ld l, a
 	call HtimesL
 	ld b, l
 	inc b

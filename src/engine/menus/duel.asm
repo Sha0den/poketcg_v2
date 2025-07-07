@@ -1,4 +1,6 @@
 _OpenDuelCheckMenu::
+	ld a, 9
+	ld [wCheckMenuCursorXPositionOffset], a
 	call ResetCheckMenuCursorPositionAndBlink
 	ld [wce5e], a ; 0
 	call DrawWideTextBox
@@ -45,6 +47,8 @@ DuelCheckMenu_Glossary:
 
 ; opens the Your Play Area submenu
 DuelCheckMenu_YourPlayArea:
+	ld a, 10
+	ld [wCheckMenuCursorXPositionOffset], a
 	call ResetCheckMenuCursorPositionAndBlink
 	ld [wce5e], a ; 0
 	ldh a, [hWhoseTurn]
@@ -161,6 +165,8 @@ OpenYourOrOppPlayAreaScreen_NonTurnHolderDiscardPile:
 ; if the Clairvoyance Pokemon Power is active,
 ; then add the option to check the opponent's hand.
 DuelCheckMenu_OppPlayArea:
+	ld a, 13
+	ld [wCheckMenuCursorXPositionOffset], a
 	call ResetCheckMenuCursorPositionAndBlink
 	call IsClairvoyanceActive
 	ld a, %10000000
@@ -240,8 +246,8 @@ DuelCheckMenu_OppPlayArea:
 CheckMenuData:
 	textitem  2, 14, InPlayAreaText
 	textitem  2, 16, YourPlayAreaText
-	textitem 12, 14, GlossaryText
-	textitem 12, 16, OppPlayAreaText
+	textitem 11, 14, GlossaryText
+	textitem 11, 16, OppPlayAreaText
 	db $ff
 
 
@@ -258,9 +264,10 @@ OppPlayAreaMenuData:
 	db $ff
 
 
+; HandText is used in place of OpponentsHandText because of the limited space
 OppPlayAreaMenuData_WithClairvoyance:
 	textitem  2, 14, OpponentsPokemonText
-	textitem 12, 14, OpponentsHandText
+	textitem 15, 14, HandText
 	textitem  2, 16, OpponentsDiscardPileText
 	db $ff
 

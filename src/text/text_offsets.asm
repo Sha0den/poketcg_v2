@@ -541,17 +541,17 @@ TextOffsets::
 	textpointer DeckText                                           ; 0x0219
 	textpointer UnusedText021a                                     ; 0x021a
 	textpointer UnusedText021b                                     ; 0x021b
-	textpointer UnusedText021c                                     ; 0x021c
-	textpointer WhatIsYourNameText                                 ; 0x021d
-	textpointer WouldYouLikeToQuitText                             ; 0x021e
-	textpointer UppercaseKeyboardText                              ; 0x021f
-	textpointer LowercaseKeyboardText                              ; 0x0220
-	textpointer AccentsKeyboardText                                ; 0x0221
-	textpointer NewDeckText                                        ; 0x0222
-	textpointer PleaseSelectDeckText                               ; 0x0223
-	textpointer ModifyDeckText                                     ; 0x0224
-	textpointer ChangeNameText                                     ; 0x0225
-	textpointer SelectDeckText                                     ; 0x0226
+	textpointer WhatIsYourNameText                                 ; 0x021c
+	textpointer WouldYouLikeToQuitText                             ; 0x021d
+	textpointer UppercaseKeyboardText                              ; 0x021e
+	textpointer LowercaseKeyboardText                              ; 0x021f
+	textpointer AccentsKeyboardText                                ; 0x0220
+	textpointer NewDeckText                                        ; 0x0221
+	textpointer PleaseSelectDeckText                               ; 0x0222
+	textpointer ModifyDeckText                                     ; 0x0223
+	textpointer RenameDeckText                                     ; 0x0224
+	textpointer UseThisDeckText                                    ; 0x0225
+	textpointer DismantleDeckText                                  ; 0x0226
 	textpointer CancelText                                         ; 0x0227
 	textpointer NoDeckText                                         ; 0x0228
 	textpointer ChosenAsDuelingDeckText                            ; 0x0229
@@ -610,9 +610,9 @@ TextOffsets::
 	textpointer SCardsText                                         ; 0x025e
 	textpointer EmptyDeckNameText                                  ; 0x025f
 	textpointer DeckSaveMachineText                                ; 0x0260
-	textpointer SaveADeckText                                      ; 0x0261
-	textpointer DeleteADeckText                                    ; 0x0262
-	textpointer BuildADeckText                                     ; 0x0263
+	textpointer SaveNewDeckText                                    ; 0x0261
+	textpointer DeleteThisDeckText                                 ; 0x0262
+	textpointer BuildThisDeckText                                  ; 0x0263
 	textpointer ChooseADeckToSaveText                              ; 0x0264
 	textpointer SavedTheConfigurationForText                       ; 0x0265
 	textpointer NoDeckIsSavedText                                  ; 0x0266

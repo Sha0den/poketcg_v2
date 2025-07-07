@@ -738,10 +738,6 @@ UnusedText021b: ; Unused
 	text "????"
 	done
 
-UnusedText021c: ; Unused
-	text "????"
-	done
-
 WhatIsYourNameText:
 	text "What is your name?"
 	done
@@ -835,15 +831,19 @@ PleaseSelectDeckText:
 	done
 
 ModifyDeckText:
-	text "Modify deck"
+	text "Modify Deck"
 	done
 
-ChangeNameText:
-	text "Change name"
+RenameDeckText:
+	text "Rename Deck"
 	done
 
-SelectDeckText:
-	text "Select deck"
+UseThisDeckText:
+	text "Use This Deck"
+	done
+
+DismantleDeckText:
+	text "Dismantle Deck"
 	done
 
 CancelText:
@@ -891,7 +891,7 @@ PressSTARTToViewMenuText:
 	done
 
 ;DeckBuildingMenuOptionsText:
-;	text "View Deck List      Change Name"
+;	text "View Deck List      Rename Deck"
 ;	line "Undo Changes        Empty Deck"
 ;	line "Save and Quit       Delete Deck"
 ;	done
@@ -903,7 +903,7 @@ DeckBuildingMenuOptions1Text:
 	done
 
 DeckBuildingMenuOptions2Text:
-	text "Change Name"
+	text "Rename Deck"
 	line "Empty Deck"
 	line "Delete Deck"
 	done
@@ -952,7 +952,7 @@ QuitModifyingTheDeckText:
 	done
 
 DismantleThisDeckText:
-	text "Dismantle this deck?"
+	text "Completely dismantle this deck?"
 	done
 
 NoCardsChosenText: ; Unused
@@ -971,8 +971,9 @@ OpponentsPokemonText:
 	text "Opponent's Pokémon"
 	done
 
+; Unused
 OpponentsHandText:
-	text "Opponent Hand"
+	text "Opponent's Hand"
 	done
 
 DuelistsPlayAreaText:
@@ -1103,16 +1104,16 @@ DeckSaveMachineText:
 	text "  Deck Save Machine   "
 	done
 
-SaveADeckText:
-	text "Save a Deck"
+SaveNewDeckText:
+	text "Save New Deck"
 	done
 
-DeleteADeckText:
-	text "Delete a Deck"
+DeleteThisDeckText:
+	text "Delete This Deck"
 	done
 
-BuildADeckText:
-	text "Build a Deck"
+BuildThisDeckText:
+	text "Build This Deck"
 	done
 
 ChooseADeckToSaveText:
@@ -1186,7 +1187,7 @@ OKIfFileDeletedText:
 	done
 
 ReadTheInstructionsText:
-	text "Read the Instructions"
+	text "Read Instructions"
 	done
 
 PrintThisCardYesNoText:
@@ -1235,14 +1236,17 @@ ProceduresForSendingCardsText:
 	done
 
 CardSendingProceduresText:
-	text "1. Choose the card you wish to send."
-	line "   Press left/right to choose more."
+	text "1. Find a card you wish to send and"
+	line "   use left/right to choose the"
+	line "   correct quantity."
 	line ""
-	line "2. Choose all the cards. Then press"
-	line "   the B Button to open the menu."
+	line "2. Pressing "
+	half2full
+	textfw "⅓⅔⅜" ; START button
+	text " will open a menu."
 	line ""
-	line "3. Choose Send to finish"
-	line "   the process."
+	line "3. Select ”Send” from that menu to"
+	line "   finish the process."
 	done
 
 PleaseReadTheProceduresForSendingCardsText:

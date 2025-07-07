@@ -942,6 +942,15 @@
 
 
 ## Miscellaneous Changes
+- **July 7, 2025:** 7 Files Changed
+    - Adjust horizontal spacing between entries in each of the check menu screens (deck select, deck machines, and in-duel)
+        - the offset is now variable (uses wCheckMenuCursorXPositionOffset instead of always adding 10)
+    - Edit some of the text labels used for the various check menu options
+    - Replace "Cancel" in deck select submenu with "Dismantle This Deck" and reorder options in deck save machine submenu
+    - Rewrite the instructions for sending cards to another player to account for the changes to the deck building menu (now opened with START instead of B)
+
+<br/>
+
 - **July 2, 2025:** 1 File Changed
     - The SELECT button can now be used in the deck select screen to make the currently selected deck the player's active deck
     - Adjust the sound effect that is played when an empty deck slot is chosen

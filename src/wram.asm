@@ -1656,7 +1656,9 @@ wCardPopCardObtainSong:: ; cea0
 wCardListVisibleOffset:: ; cea1
 	ds $1
 
-; Unused wram byte?
+; number of tiles between two entries in the check menus that are used
+; during duels, when selecting a deck, and for the various deck machines
+wCheckMenuCursorXPositionOffset::
 	ds $1
 
 ; it's used when the player enters the check menu or one of its sub-menus.

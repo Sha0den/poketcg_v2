@@ -155,11 +155,13 @@ DeckSelectionMenu:
 ;	fallthrough
 
 ; handles the submenu when selecting a deck
-; (Modify Deck, Select Deck, Change Name and Cancel)
+; (Modify Deck, Use This Deck, Rename Deck and Dismantle Deck)
 DeckSelectionSubMenu:
 	call DrawWideTextBox
 	ld hl, DeckSelectionData
 	call PlaceTextItems
+	ld a, 9
+	ld [wCheckMenuCursorXPositionOffset], a
 	call ResetCheckMenuCursorPositionAndBlink
 .loop_input
 	call DoFrame
@@ -247,9 +249,9 @@ DeckSelectionSubMenu:
 
 DeckSelectionData:
 	textitem  2, 14, ModifyDeckText
-	textitem 12, 14, SelectDeckText
-	textitem  2, 16, ChangeNameText
-	textitem 12, 16, CancelText
+	textitem 11, 14, UseThisDeckText
+	textitem  2, 16, RenameDeckText
+	textitem 11, 16, DismantleDeckText
 	db $ff
 
 
@@ -382,20 +384,20 @@ InputCurDeckName:
 	jp DisableSRAM
 
 
-; handles the deck selection sub-menu.
-; the choices are either "Select Deck" or "Cancel",
+; handles the options on the right side of the deck selection sub-menu.
+; the choices are either "Use This Deck" or "Dismantle This Deck",
 ; depending on the cursor's Y position.
 DeckSelectionSubMenu_SelectOrCancel:
-	ld a, [wCheckMenuCursorYPosition]
-	or a
-	ret nz
-
-; select deck
 	call CheckIfCurDeckIsValid
-	jr nc, .SelectDeck
+	jr nc, .check_which_was_selected
 	; invalid deck
 	call PrintThereIsNoDeckHereText
 	jp DeckSelectionMenu.start_selection
+
+.check_which_was_selected
+	ld a, [wCheckMenuCursorYPosition]
+	or a
+	jr nz, .DismantleDeck
 
 .SelectDeck
 	call EnableSRAM
@@ -434,9 +436,29 @@ DeckSelectionSubMenu_SelectOrCancel:
 	ld [hli], a
 	ld [hl], a
 	ldtx hl, ChosenAsDuelingDeckText
+.print_message_and_restart_selection
 	call DrawWideTextBox_WaitForInput
+.restart_selection
 	ld a, [wCurDeck]
 	jp DeckSelectionMenu.start_selection
+
+.DismantleDeck
+	ldtx hl, DismantleThisDeckText
+	call YesOrNoMenuWithText
+	jr c, .restart_selection ; close sub-menu if "No" was selected
+	call CheckIfHasOtherValidDecks
+	ldtx hl, ThereIsOnly1DeckSoCannotBeDismantledText
+	jr c, .print_message_and_restart_selection
+	call EnableSRAM
+	call GetPointerToDeckName
+	ld a, NAME_BUFFER_LENGTH ; number of bytes that will be cleared (16)
+	call ClearMemory_Bank2
+	call GetPointerToDeckCards
+	call AddDeckToCollection
+	ld a, DECK_SIZE ; number of bytes that will be cleared (60)
+	call ClearMemory_Bank2
+	call DisableSRAM
+	jp DeckSelectionSubMenu.return_to_deck_selection
 
 
 PrintThereIsNoDeckHereText:
