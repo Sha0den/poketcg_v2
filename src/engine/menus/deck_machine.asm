@@ -122,7 +122,7 @@ HandleDeckMissingCardsList:
 	call ConvertToNumericalDigits
 	ld a, TX_FULLWIDTH3
 	ld [hli], a
-	ld [hl], "FW3_." ; period punctuation mark
+	ld [hl], CHARVAL(".", 0) ; period punctuation mark
 	inc hl
 	ld [hl], TX_END
 	ld hl, wDefaultText
@@ -545,7 +545,7 @@ PrintDeckMachineEntry:
 	call ConvertToNumericalDigits
 	ld a, TX_FULLWIDTH3
 	ld [hli], a
-	ld a, "FW3_." ; period punctuation mark
+	ld a, CHARVAL(".", 0) ; period punctuation mark
 	ld [hli], a
 	ld [hl], TX_END
 	ld hl, wDefaultText
@@ -596,7 +596,7 @@ PrintDeckMachineEntry:
 	pop bc
 	ld hl, wDefaultText
 	jr c, .cannot_build
-	lb de, TX_FULLWIDTH3, "FW3_○" ; can build
+	ldfw de, "○" ; can build
 	; fallthrough
 
 .print_build_status_symbol
@@ -615,11 +615,11 @@ PrintDeckMachineEntry:
 	call CheckIfCanBuildSavedDeck
 	jr c, .cannot_build_at_all
 	pop bc
-	lb de, TX_FULLWIDTH3, "FW3_※" ; can build by dismantling
+	ldfw de, "※" ; can build by dismantling
 	jr .print_build_status_symbol
 
 .cannot_build_at_all
-	lb de, TX_FULLWIDTH0, "FW0_×" ; cannot build even by dismantling
+	ldfw de, "×" ; cannot build even by dismantling
 	call Func_22ca
 	pop bc
 	pop de

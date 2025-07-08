@@ -1031,10 +1031,8 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	jp ProcessText
 ;
 ;.underbar_data
-;REPT MAX_PLAYER_NAME_LENGTH / 2
-;	db TX_FULLWIDTH3, "FW3__"
-;ENDR
-;	db TX_END
+;	textfw "______"
+;	done
 ;
 ;
 ;; checks if any buttons were pressed and handles the input.
@@ -1370,7 +1368,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	cp $02
 ;	jr z, .read_char
 ;; check dakuten
-;	lb bc, TX_FULLWIDTH3, "FW3_゛"
+;	ldfw bc, "゛"
 ;	ld a, d
 ;	cp b
 ;	jr nz, .check_handakuten
@@ -1387,7 +1385,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	ret
 ;
 ;.check_handakuten
-;	lb bc, TX_FULLWIDTH3, "FW3_゜"
+;	ldfw bc, "゜"
 ;	ld a, d
 ;	cp b
 ;	jr nz, .check_font_type
@@ -1577,81 +1575,86 @@ DeckNamingScreen_AccentsKeyboardData:
 ;; unused data contains its character code as zero.
 ;MACRO kbitem
 ;	db \1, \2, \3, \4
-;	IF (_NARG == 5)
-;		dw \5
-;	ELIF (\5 == TX_FULLWIDTH0)
-;		dw (\5 << 8) | STRCAT("FW0_", \6)
-;	ELIF (\5 == TX_FULLWIDTH3)
-;		dw (\5 << 8) | STRCAT("FW3_", \6)
+;	PUSHC fullwidth
+;	IF (_NARG > 4)
+;		dwfw \5
 ;	ELSE
-;		dw (\5 << 8) | \6
+;		dw 0
 ;	ENDC
+;	POPC
 ;ENDM
 ;
 ;PlayerNamingScreen_KeyboardData:
-;	kbitem  4,  2, $11, $00, TX_FULLWIDTH3,   "A"
-;	kbitem  6,  2, $12, $00, TX_FULLWIDTH3,   "J"
-;	kbitem  8,  2, $13, $00, TX_FULLWIDTH3,   "S"
-;	kbitem 10,  2, $14, $00, TX_FULLWIDTH0,   "?"
-;	kbitem 12,  2, $15, $00, TX_FULLWIDTH0,   "4"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $02, $11, $00, "A"
+;	kbitem $06, $02, $12, $00, "J"
+;	kbitem $08, $02, $13, $00, "S"
+;	kbitem $0a, $02, $14, $00, "?"
+;	kbitem $0c, $02, $15, $00, "4"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4,  4, $16, $00, TX_FULLWIDTH3,   "B"
-;	kbitem  6,  4, $17, $00, TX_FULLWIDTH3,   "K"
-;	kbitem  8,  4, $18, $00, TX_FULLWIDTH3,   "T"
-;	kbitem 10,  4, $19, $00, TX_FULLWIDTH3,   "&"
-;	kbitem 12,  4, $1a, $00, TX_FULLWIDTH0,   "5"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $04, $16, $00, "B"
+;	kbitem $06, $04, $17, $00, "K"
+;	kbitem $08, $04, $18, $00, "T"
+;	kbitem $0a, $04, $19, $00, "&"
+;	kbitem $0c, $04, $1a, $00, "5"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4,  6, $1b, $00, TX_FULLWIDTH3,   "C"
-;	kbitem  6,  6, $1c, $00, TX_FULLWIDTH3,   "L"
-;	kbitem  8,  6, $1d, $00, TX_FULLWIDTH3,   "U"
-;	kbitem 10,  6, $1e, $00, TX_FULLWIDTH0,   "+"
-;	kbitem 12,  6, $1f, $00, TX_FULLWIDTH0,   "6"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $06, $1b, $00, "C"
+;	kbitem $06, $06, $1c, $00, "L"
+;	kbitem $08, $06, $1d, $00, "U"
+;	kbitem $0a, $06, $1e, $00, "+"
+;	kbitem $0c, $06, $1f, $00, "6"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4,  8, $20, $00, TX_FULLWIDTH3,   "D"
-;	kbitem  6,  8, $21, $00, TX_FULLWIDTH3,   "M"
-;	kbitem  8,  8, $22, $00, TX_FULLWIDTH3,   "V"
-;	kbitem 10,  8, $23, $00, TX_FULLWIDTH0,   "-"
-;	kbitem 12,  8, $24, $00, TX_FULLWIDTH0,   "7"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $08, $20, $00, "D"
+;	kbitem $06, $08, $21, $00, "M"
+;	kbitem $08, $08, $22, $00, "V"
+;	kbitem $0a, $08, $23, $00, "-"
+;	kbitem $0c, $08, $24, $00, "7"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4, 10, $25, $00, TX_FULLWIDTH3,   "E"
-;	kbitem  6, 10, $26, $00, TX_FULLWIDTH3,   "N"
-;	kbitem  8, 10, $27, $00, TX_FULLWIDTH3,   "W"
-;	kbitem 10, 10, $28, $00, TX_FULLWIDTH0,   "・"
-;	kbitem 12, 10, $29, $00, TX_FULLWIDTH0,   "8"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $0a, $25, $00, "E"
+;	kbitem $06, $0a, $26, $00, "N"
+;	kbitem $08, $0a, $27, $00, "W"
+;	kbitem $0a, $0a, $28, $00, "・"
+;	kbitem $0c, $0a, $29, $00, "8"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4, 12, $2a, $00, TX_FULLWIDTH3,   "F"
-;	kbitem  6, 12, $2b, $00, TX_FULLWIDTH3,   "O"
-;	kbitem  8, 12, $2c, $00, TX_FULLWIDTH3,   "X"
-;	kbitem 10, 12, $2d, $00, TX_FULLWIDTH0,   "0"
-;	kbitem 12, 12, $2e, $00, TX_FULLWIDTH0,   "9"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $0c, $2a, $00, "F"
+;	kbitem $06, $0c, $2b, $00, "O"
+;	kbitem $08, $0c, $2c, $00, "X"
+;	kbitem $0a, $0c, $2d, $00, "0"
+;	kbitem $0c, $0c, $2e, $00, "9"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4, 14, $2f, $00, TX_FULLWIDTH3,   "G"
-;	kbitem  6, 14, $30, $00, TX_FULLWIDTH3,   "P"
-;	kbitem  8, 14, $31, $00, TX_FULLWIDTH3,   "Y"
-;	kbitem 10, 14, $32, $00, TX_FULLWIDTH0,   "1"
-;	kbitem 12, 14, $33, $00, TX_FULLWIDTH3,   "#"
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $0e, $2f, $00, "G"
+;	kbitem $06, $0e, $30, $00, "P"
+;	kbitem $08, $0e, $31, $00, "Y"
+;	kbitem $0a, $0e, $32, $00, "1"
+;	kbitem $0c, $0e, $33, $00, "#"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4, 16, $34, $00, TX_FULLWIDTH3,   "H"
-;	kbitem  6, 16, $35, $00, TX_FULLWIDTH3,   "Q"
-;	kbitem  8, 16, $36, $00, TX_FULLWIDTH3,   "Z"
-;	kbitem 10, 16, $3c, $00, TX_FULLWIDTH0,   "2"
-;	kbitem 12, 16, $3d, $00, TX_SYMBOL,       SYM_Lv
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
+;	kbitem $04, $10, $34, $00, "H"
+;	kbitem $06, $10, $35, $00, "Q"
+;	kbitem $08, $10, $36, $00, "Z"
+;	kbitem $0a, $10, $3c, $00, "2"
+;	kbitem $0c, $10, $3d, $00, "<Lv>"
+;	kbitem $10, $0f, $01, $09
 ;
-;	kbitem  4, 18, $37, $00, TX_FULLWIDTH3,   "I"
-;	kbitem  6, 18, $38, $00, TX_FULLWIDTH3,   "R"
-;	kbitem  8, 18, $39, $00, TX_FULLWIDTH0,   "!"
-;	kbitem 10, 18, $3a, $00, TX_FULLWIDTH0,   "3"
-;	kbitem 12, 18, $3b, $00, TX_FULLWIDTH0,   " "
-;	kbitem 16, 15, $01, $09, $0000          ; "End"
-;	kbitem $00, $00, $00, $00, $0000
+;	kbitem $04, $12, $37, $00, "I"
+;	kbitem $06, $12, $38, $00, "R"
+;	kbitem $08, $12, $39, $00, "!"
+;	kbitem $0a, $12, $3a, $00, "3"
+;	kbitem $0c, $12, $3b, $00, " "
+;	kbitem $10, $0f, $01, $09
+;	kbitem $00, $00, $00, $00
+;
+;MACRO diacritic
+;	PUSHC hiragana
+;	db \1, TX_HIRAGANA
+;	db \2, 0
+;	POPC
+;ENDM
 ;
 ;
 ;; a set of transition datum use to apply dakuten to katakana characters.
@@ -1661,45 +1664,45 @@ DeckNamingScreen_AccentsKeyboardData:
 ;; - the former char. code contains 0x0e in high byte.
 ;; - the latter char. code contains only low byte.
 ;TransitionTable1:
-;	dw $0e16, $003e ; ka -> ga
-;	dw $0e17, $003f ; ki -> gi
-;	dw $0e18, $0040 ; ku -> gu
-;	dw $0e19, $0041 ; ke -> ge
-;	dw $0e1a, $0042 ; ko -> go
-;	dw $0e1b, $0043 ; sa -> za
-;	dw $0e1c, $0044 ; shi -> ji
-;	dw $0e1d, $0045 ; su -> zu
-;	dw $0e1e, $0046 ; se -> ze
-;	dw $0e1f, $0047 ; so -> zo
-;	dw $0e20, $0048 ; ta -> da
-;	dw $0e21, $0049 ; chi -> dji
-;	dw $0e22, $004a ; tsu -> dzu
-;	dw $0e23, $004b ; te -> de
-;	dw $0e24, $004c ; to -> do
-;	dw $0e2a, $004d ; ha -> ba
-;	dw $0e2b, $004e ; hi -> bi
-;	dw $0e2c, $004f ; fu -> bu
-;	dw $0e2d, $0050 ; he -> be
-;	dw $0e2e, $0051 ; ho -> bo
-;	dw $0e52, $004d ; pa -> ba
-;	dw $0e53, $004e ; pi -> bi
-;	dw $0e54, $004f ; pu -> bu
-;	dw $0e55, $0050 ; pe -> be
-;	dw $0e56, $0051 ; po -> bo
-;	dw $0000
+;	diacritic "か", "が" ; katakana カ, ガ
+;	diacritic "き", "ぎ" ; katakana キ, ギ
+;	diacritic "く", "ぐ" ; katakana ク, グ
+;	diacritic "け", "げ" ; katakana ケ, ゲ
+;	diacritic "こ", "ご" ; katakana コ, ゴ
+;	diacritic "さ", "ざ" ; katakana サ, ザ
+;	diacritic "し", "じ" ; katakana シ, ジ
+;	diacritic "す", "ず" ; katakana ス, ズ
+;	diacritic "せ", "ぜ" ; katakana セ, ゼ
+;	diacritic "そ", "ぞ" ; katakana ソ, ゾ
+;	diacritic "た", "だ" ; katakana タ, ダ
+;	diacritic "ち", "ぢ" ; katakana チ, ヂ
+;	diacritic "つ", "づ" ; katakana ツ, ヅ
+;	diacritic "て", "で" ; katakana テ, デ
+;	diacritic "と", "ど" ; katakana ト, ド
+;	diacritic "は", "ば" ; katakana ハ, バ
+;	diacritic "ひ", "び" ; katakana ヒ, ビ
+;	diacritic "ふ", "ぶ" ; katakana フ, ブ
+;	diacritic "へ", "べ" ; katakana ヘ, ベ
+;	diacritic "ほ", "ぼ" ; katakana ホ, ボ
+;	diacritic "ぱ", "ば" ; katakana パ, バ
+;	diacritic "ぴ", "び" ; katakana ピ, ビ
+;	diacritic "ぷ", "ぶ" ; katakana プ, ブ
+;	diacritic "ぺ", "べ" ; katakana ペ, ベ
+;	diacritic "ぽ", "ぼ" ; katakana ポ, ボ
+;	dw 0 ; end
 ;
 ;
 ;; a set of transition datum use to apply handakuten to katakana characters.
 ;; it has the same unit size and structure as TransitionTable1.
 ;TransitionTable2:
-;	dw $0e2a, $0052 ; ha -> pa
-;	dw $0e2b, $0053 ; hi -> pi
-;	dw $0e2c, $0054 ; fu -> pu
-;	dw $0e2d, $0055 ; he -> pe
-;	dw $0e2e, $0056 ; ho -> po
-;	dw $0e4d, $0052 ; ba -> pa
-;	dw $0e4e, $0053 ; bi -> pi
-;	dw $0e4f, $0054 ; bu -> pu
-;	dw $0e50, $0055 ; be -> pe
-;	dw $0e51, $0056 ; bo -> po
-;	dw $0000
+;	diacritic "は", "ぱ" ; katakana ハ, パ
+;	diacritic "ひ", "ぴ" ; katakana ヒ, ピ
+;	diacritic "ふ", "ぷ" ; katakana フ, プ
+;	diacritic "へ", "ぺ" ; katakana ヘ, ペ
+;	diacritic "ほ", "ぽ" ; katakana ホ, ポ
+;	diacritic "ば", "ぱ" ; katakana バ, パ
+;	diacritic "び", "ぴ" ; katakana ビ, ピ
+;	diacritic "ぶ", "ぷ" ; katakana ブ, プ
+;	diacritic "べ", "ぺ" ; katakana ベ, ペ
+;	diacritic "ぼ", "ぽ" ; katakana ボ, ポ
+;	dw 0 ; end

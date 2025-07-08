@@ -36,7 +36,7 @@ _CopyCardNameAndLevel::
 	ld a, [wLoadedCard1Level]
 	or a
 	jr z, .level_done
-	ld a, FW_SPACE
+	ldfw a, " "
 	ld [hli], a
 	dec b
 	ld a, TX_SYMBOL
@@ -68,7 +68,7 @@ _CopyCardNameAndLevel::
 	dec b
 .level_done
 	push hl
-	ld a, FW_SPACE
+	ldfw a, " "
 .fill_spaces_loop
 	ld [hli], a
 	dec b

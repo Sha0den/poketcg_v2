@@ -712,7 +712,7 @@ PrintCardList::
 	jr z, .asm_1a2c2
 	ld a, TX_HALF2FULL
 	call ProcessSpecialTextCharacter
-	lb de, TX_FULLWIDTH3, "FW3_★"
+	ldfw de, "★"
 	call Func_22ca
 .asm_1a2c2
 	ld a, $ff

@@ -229,234 +229,31 @@
 	charmap "ý", $fd ; y with acute accent
 	charmap "ÿ", $fe ; y with diaeresis/umlaut
 
-MACRO fwcharmap
-	charmap STRCAT("FW{x:\1}_", \2), \3
-ENDM
+NEWCHARMAP katakana
+NEWCHARMAP hiragana
+NEWCHARMAP fullwidth
 
-; TX_FULLWIDTH3 ($20-$7e is ascii)
-	fwcharmap TX_FULLWIDTH3, " ", $20 ; space
-	fwcharmap TX_FULLWIDTH3, "!", $21 ; exclamation mark
-	fwcharmap TX_FULLWIDTH3, "”", $22 ; right double quotation mark
-	fwcharmap TX_FULLWIDTH3, "#", $23 ; number sign
-	fwcharmap TX_FULLWIDTH3, "$", $24 ; dollar sign
-	fwcharmap TX_FULLWIDTH3, "%", $25 ; percent sign
-	fwcharmap TX_FULLWIDTH3, "&", $26 ; ampersand
-	fwcharmap TX_FULLWIDTH3, "'", $27 ; apostrophe/right single quotation mark
-	fwcharmap TX_FULLWIDTH3, "(", $28 ; open parenthesis
-	fwcharmap TX_FULLWIDTH3, ")", $29 ; close parenthesis
-	fwcharmap TX_FULLWIDTH3, "*", $2a ; asterisk
-	fwcharmap TX_FULLWIDTH3, "+", $2b ; plus
-	fwcharmap TX_FULLWIDTH3, ",", $2c ; comma
-	fwcharmap TX_FULLWIDTH3, "-", $2d ; hyphen/minus (5 pixels long)
-	fwcharmap TX_FULLWIDTH3, ".", $2e ; period
-	fwcharmap TX_FULLWIDTH3, "/", $2f ; slash/divide
-	fwcharmap TX_FULLWIDTH3, "0", $30
-	fwcharmap TX_FULLWIDTH3, "1", $31
-	fwcharmap TX_FULLWIDTH3, "2", $32
-	fwcharmap TX_FULLWIDTH3, "3", $33
-	fwcharmap TX_FULLWIDTH3, "4", $34
-	fwcharmap TX_FULLWIDTH3, "5", $35
-	fwcharmap TX_FULLWIDTH3, "6", $36
-	fwcharmap TX_FULLWIDTH3, "7", $37
-	fwcharmap TX_FULLWIDTH3, "8", $38
-	fwcharmap TX_FULLWIDTH3, "9", $39
-	fwcharmap TX_FULLWIDTH3, ":", $3a ; colon
-	fwcharmap TX_FULLWIDTH3, ";", $3b ; semicolon
-	fwcharmap TX_FULLWIDTH3, "<", $3c ; less than/open angled bracket
-	fwcharmap TX_FULLWIDTH3, "=", $3d ; equals
-	fwcharmap TX_FULLWIDTH3, ">", $3e ; greater than/close angled bracket
-	fwcharmap TX_FULLWIDTH3, "?", $3f ; question mark
-	fwcharmap TX_FULLWIDTH3, "@", $40 ; at sign
-	fwcharmap TX_FULLWIDTH3, "A", $41
-	fwcharmap TX_FULLWIDTH3, "B", $42
-	fwcharmap TX_FULLWIDTH3, "C", $43
-	fwcharmap TX_FULLWIDTH3, "D", $44
-	fwcharmap TX_FULLWIDTH3, "E", $45
-	fwcharmap TX_FULLWIDTH3, "F", $46
-	fwcharmap TX_FULLWIDTH3, "G", $47
-	fwcharmap TX_FULLWIDTH3, "H", $48
-	fwcharmap TX_FULLWIDTH3, "I", $49
-	fwcharmap TX_FULLWIDTH3, "J", $4a
-	fwcharmap TX_FULLWIDTH3, "K", $4b
-	fwcharmap TX_FULLWIDTH3, "L", $4c
-	fwcharmap TX_FULLWIDTH3, "M", $4d
-	fwcharmap TX_FULLWIDTH3, "N", $4e
-	fwcharmap TX_FULLWIDTH3, "O", $4f
-	fwcharmap TX_FULLWIDTH3, "P", $50
-	fwcharmap TX_FULLWIDTH3, "Q", $51
-	fwcharmap TX_FULLWIDTH3, "R", $52
-	fwcharmap TX_FULLWIDTH3, "S", $53
-	fwcharmap TX_FULLWIDTH3, "T", $54
-	fwcharmap TX_FULLWIDTH3, "U", $55
-	fwcharmap TX_FULLWIDTH3, "V", $56
-	fwcharmap TX_FULLWIDTH3, "W", $57
-	fwcharmap TX_FULLWIDTH3, "X", $58
-	fwcharmap TX_FULLWIDTH3, "Y", $59
-	fwcharmap TX_FULLWIDTH3, "Z", $5a
-	fwcharmap TX_FULLWIDTH3, "[", $5b ; opening bracket
-	fwcharmap TX_FULLWIDTH3, "\\", $5c ; backslash
-	fwcharmap TX_FULLWIDTH3, "]", $5d ; closing bracket
-	fwcharmap TX_FULLWIDTH3, "^", $5e ; caret
-	fwcharmap TX_FULLWIDTH3, "_", $5f ; underscore
-	fwcharmap TX_FULLWIDTH3, "`", $60 ; backtick
-	fwcharmap TX_FULLWIDTH3, "a", $61
-	fwcharmap TX_FULLWIDTH3, "b", $62
-	fwcharmap TX_FULLWIDTH3, "c", $63
-	fwcharmap TX_FULLWIDTH3, "d", $64
-	fwcharmap TX_FULLWIDTH3, "e", $65
-	fwcharmap TX_FULLWIDTH3, "f", $66
-	fwcharmap TX_FULLWIDTH3, "g", $67
-	fwcharmap TX_FULLWIDTH3, "h", $68
-	fwcharmap TX_FULLWIDTH3, "i", $69
-	fwcharmap TX_FULLWIDTH3, "j", $6a
-	fwcharmap TX_FULLWIDTH3, "k", $6b
-	fwcharmap TX_FULLWIDTH3, "l", $6c
-	fwcharmap TX_FULLWIDTH3, "m", $6d
-	fwcharmap TX_FULLWIDTH3, "n", $6e
-	fwcharmap TX_FULLWIDTH3, "o", $6f
-	fwcharmap TX_FULLWIDTH3, "p", $70
-	fwcharmap TX_FULLWIDTH3, "q", $71
-	fwcharmap TX_FULLWIDTH3, "r", $72
-	fwcharmap TX_FULLWIDTH3, "s", $73
-	fwcharmap TX_FULLWIDTH3, "t", $74
-	fwcharmap TX_FULLWIDTH3, "u", $75
-	fwcharmap TX_FULLWIDTH3, "v", $76
-	fwcharmap TX_FULLWIDTH3, "w", $77
-	fwcharmap TX_FULLWIDTH3, "x", $78
-	fwcharmap TX_FULLWIDTH3, "y", $79
-	fwcharmap TX_FULLWIDTH3, "z", $7a
-	fwcharmap TX_FULLWIDTH3, "\{", $7b ; opening brace
-	fwcharmap TX_FULLWIDTH3, "|", $7c ; vertical bar
-	fwcharmap TX_FULLWIDTH3, "}", $7d ; closing brace
-	fwcharmap TX_FULLWIDTH3, "~", $7e ; equivalency sign/tilde
-	fwcharmap TX_FULLWIDTH3, "■", $7f ; black square (8x8 pixels)
-	fwcharmap TX_FULLWIDTH3, "‘", $80 ; left single quotation mark
-	fwcharmap TX_FULLWIDTH3, "“", $81 ; left double quotation Mark
-	fwcharmap TX_FULLWIDTH3, "•", $82 ; bullet point
-	fwcharmap TX_FULLWIDTH3, "꞉", $83 ; centered colon
-	fwcharmap TX_FULLWIDTH3, "—", $84 ; em dash (8 pixels long)
-	fwcharmap TX_FULLWIDTH3, "※", $85 ; reference mark
-	fwcharmap TX_FULLWIDTH3, "○", $86 ; white circle (7x7 pixels)
-;	fwcharmap TX_FULLWIDTH3, "", $87
-	fwcharmap TX_FULLWIDTH3, "ḋ", $88 ; 'd
-	fwcharmap TX_FULLWIDTH3, "ś", $89 ; 's
-	fwcharmap TX_FULLWIDTH3, "ṫ", $8a ; 't
-	fwcharmap TX_FULLWIDTH3, "ṛ", $8b ; r.
-	fwcharmap TX_FULLWIDTH3, "℃", $8c ; °C (degrees Celcius)
-;	fwcharmap TX_FULLWIDTH3, "", $8d
-	fwcharmap TX_FULLWIDTH3, "Ƕ", $8e ; HP
-	fwcharmap TX_FULLWIDTH3, "Ľ", $8f ; LV
-	fwcharmap TX_FULLWIDTH3, "●", $90 ; common rarity symbol
-	fwcharmap TX_FULLWIDTH3, "◆", $91 ; uncommon rarity symbol
-	fwcharmap TX_FULLWIDTH3, "★", $92 ; rare rarity symbol
-	fwcharmap TX_FULLWIDTH3, "☆", $93 ; promo rarity symbol
-	fwcharmap TX_FULLWIDTH3, "♪", $94 ; musical note
-	fwcharmap TX_FULLWIDTH3, "♀", $95 ; female symbol
-	fwcharmap TX_FULLWIDTH3, "♂", $96 ; male symbol
-	fwcharmap TX_FULLWIDTH3, "₽", $97 ; pokédollar sign
-	fwcharmap TX_FULLWIDTH3, "═", $98 ; centered horizontal thick line (8 pixels long, 2 pixels wide)
-	fwcharmap TX_FULLWIDTH3, "║", $99 ; left-aligned vertical thick line (8 pixels long, 2 pixels wide)
-	fwcharmap TX_FULLWIDTH3, "╚", $9a ; merged lines ($98/$99)
-	fwcharmap TX_FULLWIDTH3, "╔", $9b ; merged lines ($98/$99)
-;	fwcharmap TX_FULLWIDTH3, "", $9c
-;	fwcharmap TX_FULLWIDTH3, "", $9d
-;	fwcharmap TX_FULLWIDTH3, "", $9e
-;	fwcharmap TX_FULLWIDTH3, "", $9f
-;	fwcharmap TX_FULLWIDTH3, "", $a0
-;	fwcharmap TX_FULLWIDTH3, "", $a1
-;	fwcharmap TX_FULLWIDTH3, "", $a2
-;	fwcharmap TX_FULLWIDTH3, "", $a3
-;	fwcharmap TX_FULLWIDTH3, "", $a4
-;	fwcharmap TX_FULLWIDTH3, "", $a5
-;	fwcharmap TX_FULLWIDTH3, "", $a6
-;	fwcharmap TX_FULLWIDTH3, "", $a7
-;	fwcharmap TX_FULLWIDTH3, "", $a8
-;	fwcharmap TX_FULLWIDTH3, "", $a9
-;	fwcharmap TX_FULLWIDTH3, "", $aa
-;	fwcharmap TX_FULLWIDTH3, "", $ab
-;	fwcharmap TX_FULLWIDTH3, "", $ac
-;	fwcharmap TX_FULLWIDTH3, "", $ad
-;	fwcharmap TX_FULLWIDTH3, "", $ae
-;	fwcharmap TX_FULLWIDTH3, "", $af
-;	fwcharmap TX_FULLWIDTH3, "", $b0
-;	fwcharmap TX_FULLWIDTH3, "", $b1
-;	fwcharmap TX_FULLWIDTH3, "", $b2
-;	fwcharmap TX_FULLWIDTH3, "", $b3
-;	fwcharmap TX_FULLWIDTH3, "", $b4
-;	fwcharmap TX_FULLWIDTH3, "", $b5
-;	fwcharmap TX_FULLWIDTH3, "", $b6
-;	fwcharmap TX_FULLWIDTH3, "", $b7
-	fwcharmap TX_FULLWIDTH3, "⅓", $b8 ; START button tile 1
-	fwcharmap TX_FULLWIDTH3, "⅔", $b9 ; START button tile 2
-	fwcharmap TX_FULLWIDTH3, "⅜", $ba ; START button tile 3
-	fwcharmap TX_FULLWIDTH3, "【", $bb ; open square bracket
-	fwcharmap TX_FULLWIDTH3, "】", $bc ; close square bracket
-	fwcharmap TX_FULLWIDTH3, "゛", $bd ; dakuten/ten-ten (Japanese)
-	fwcharmap TX_FULLWIDTH3, "゜", $be ; handakuten/maru (Japanese)
-	fwcharmap TX_FULLWIDTH3, "¿", $bf ; inverted question mark
-	fwcharmap TX_FULLWIDTH3, "À", $c0 ; A with grave accent
-	fwcharmap TX_FULLWIDTH3, "Á", $c1 ; A with acute accent
-	fwcharmap TX_FULLWIDTH3, "Â", $c2 ; A with circumflex
-	fwcharmap TX_FULLWIDTH3, "Ã", $c3 ; A with tilde
-	fwcharmap TX_FULLWIDTH3, "Ä", $c4 ; A with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "Å", $c5 ; A with overring
-	fwcharmap TX_FULLWIDTH3, "Æ", $c6 ; AE
-	fwcharmap TX_FULLWIDTH3, "Ç", $c7 ; C with cedilla accent
-	fwcharmap TX_FULLWIDTH3, "È", $c8 ; E with grave accent
-	fwcharmap TX_FULLWIDTH3, "É", $c9 ; E with acute accent
-	fwcharmap TX_FULLWIDTH3, "Ê", $ca ; E with circumflex 
-	fwcharmap TX_FULLWIDTH3, "Ë", $cb ; E with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "Ì", $cc ; I with grave accent
-	fwcharmap TX_FULLWIDTH3, "Í", $cd ; I with acute accent
-	fwcharmap TX_FULLWIDTH3, "Î", $ce ; I with circumflex
-	fwcharmap TX_FULLWIDTH3, "Ï", $cf ; I with diaeresis/umlaut
-;	fwcharmap TX_FULLWIDTH3, "", $d0
-	fwcharmap TX_FULLWIDTH3, "Ñ", $d1 ; N with tilde
-	fwcharmap TX_FULLWIDTH3, "Ò", $d2 ; O with grave accent
-	fwcharmap TX_FULLWIDTH3, "Ó", $d3 ; O with acute accent
-	fwcharmap TX_FULLWIDTH3, "Ô", $d4 ; O with circumflex
-	fwcharmap TX_FULLWIDTH3, "Õ", $d5 ; O with tilde
-	fwcharmap TX_FULLWIDTH3, "Ö", $d6 ; O with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "Ø", $d7 ; O with slash
-	fwcharmap TX_FULLWIDTH3, "Œ", $d8 ; OE
-	fwcharmap TX_FULLWIDTH3, "Ù", $d9 ; U with grave accent
-	fwcharmap TX_FULLWIDTH3, "Ú", $da ; U with acute accent
-	fwcharmap TX_FULLWIDTH3, "Û", $db ; U with circumflex
-	fwcharmap TX_FULLWIDTH3, "Ü", $dc ; U with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "Ý", $dd ; Y with acute accent
-	fwcharmap TX_FULLWIDTH3, "Ÿ", $de ; Y with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "ß", $df ; sharp s
-	fwcharmap TX_FULLWIDTH3, "à", $e0 ; a with grave accent
-	fwcharmap TX_FULLWIDTH3, "á", $e1 ; a with acute accent
-	fwcharmap TX_FULLWIDTH3, "â", $e2 ; a with circumflex
-	fwcharmap TX_FULLWIDTH3, "ã", $e3 ; a with tilde
-	fwcharmap TX_FULLWIDTH3, "ä", $e4 ; a with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "å", $e5 ; a with overring
-	fwcharmap TX_FULLWIDTH3, "æ", $e6 ; ae
-	fwcharmap TX_FULLWIDTH3, "ç", $e7 ; c with cedilla
-	fwcharmap TX_FULLWIDTH3, "è", $e8 ; e with grave accent
-	fwcharmap TX_FULLWIDTH3, "é", $e9 ; e with acute accent
-	fwcharmap TX_FULLWIDTH3, "ê", $ea ; e with circumflex
-	fwcharmap TX_FULLWIDTH3, "ë", $eb ; e with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "ì", $ec ; i with grave accent
-	fwcharmap TX_FULLWIDTH3, "í", $ed ; i with acute accent
-	fwcharmap TX_FULLWIDTH3, "î", $ee ; i with circumflex
-	fwcharmap TX_FULLWIDTH3, "ï", $ef ; i with diaeresis/umlaut
-;	fwcharmap TX_FULLWIDTH3, "", $f0
-	fwcharmap TX_FULLWIDTH3, "ñ", $f1 ; n with tilde
-	fwcharmap TX_FULLWIDTH3, "ò", $f2 ; o with grave accent
-	fwcharmap TX_FULLWIDTH3, "ó", $f3 ; o with acute accent
-	fwcharmap TX_FULLWIDTH3, "ô", $f4 ; o with circumflex
-	fwcharmap TX_FULLWIDTH3, "õ", $f5 ; o with tilde
-	fwcharmap TX_FULLWIDTH3, "ö", $f6 ; o with diaeresis/umlautt
-	fwcharmap TX_FULLWIDTH3, "ø", $f7 ; o with slash
-	fwcharmap TX_FULLWIDTH3, "œ", $f8 ; oe
-	fwcharmap TX_FULLWIDTH3, "ù", $f9 ; u with grave accent
-	fwcharmap TX_FULLWIDTH3, "ú", $fa ; u with acute accent
-	fwcharmap TX_FULLWIDTH3, "û", $fb ; u with circumflex
-	fwcharmap TX_FULLWIDTH3, "ü", $fc ; u with diaeresis/umlaut
-	fwcharmap TX_FULLWIDTH3, "ý", $fd ; y with acute accent
-	fwcharmap TX_FULLWIDTH3, "ÿ", $fe ; y with diaeresis/umlaut
+	charmap "<RAMNAME>", TX_RAM1
+	charmap "<RAMTEXT>", TX_RAM2
+	charmap "<RAMNUM>",  TX_RAM3
+
+MACRO fwcharmap
+	IF \1 == TX_KATAKANA
+		charmap \2, \3
+		PUSHC katakana
+		charmap \2, \3
+		POPC
+	ELIF \1 == TX_HIRAGANA
+		charmap \2, \3
+		PUSHC hiragana
+		charmap \2, \3
+		POPC
+	ELIF \1 == TX_FULLWIDTH0
+		charmap \2, \3
+	ELSE
+		charmap \2, \1, \3
+	ENDC
+ENDM
 
 ; TX_KATAKANA
 	fwcharmap TX_KATAKANA, "ヲ", $10
@@ -622,7 +419,7 @@ ENDM
 	fwcharmap TX_HIRAGANA, "ょ", $5e
 	fwcharmap TX_HIRAGANA, "っ", $5f
 
-; TX_KATAKANA, TX_HIRAGANA, and default font
+; TX_KATAKANA, TX_HIRAGANA, and TX_FULLWIDTH0
 	fwcharmap TX_FULLWIDTH0, "0", $60
 	fwcharmap TX_FULLWIDTH0, "1", $61
 	fwcharmap TX_FULLWIDTH0, "2", $62
@@ -650,64 +447,292 @@ ENDM
 	fwcharmap TX_FULLWIDTH0, "ー", $78
 	fwcharmap TX_FULLWIDTH0, "~", $79
 
-DEF FW_SPACE EQU $70
+
+; TX_FULLWIDTH3 ($20-$7e is ascii)
+;	fwcharmap TX_FULLWIDTH3, " ", $20 ; space
+;	fwcharmap TX_FULLWIDTH3, "!", $21 ; exclamation mark
+	fwcharmap TX_FULLWIDTH3, "”", $22 ; right double quotation mark
+	fwcharmap TX_FULLWIDTH3, "#", $23 ; number sign
+	fwcharmap TX_FULLWIDTH3, "$", $24 ; dollar sign
+	fwcharmap TX_FULLWIDTH3, "%", $25 ; percent sign
+	fwcharmap TX_FULLWIDTH3, "&", $26 ; ampersand
+	fwcharmap TX_FULLWIDTH3, "'", $27 ; apostrophe/right single quotation mark
+;	fwcharmap TX_FULLWIDTH3, "(", $28 ; open parenthesis
+;	fwcharmap TX_FULLWIDTH3, ")", $29 ; close parenthesis
+	fwcharmap TX_FULLWIDTH3, "*", $2a ; asterisk
+;	fwcharmap TX_FULLWIDTH3, "+", $2b ; plus
+	fwcharmap TX_FULLWIDTH3, ",", $2c ; comma
+;	fwcharmap TX_FULLWIDTH3, "-", $2d ; hyphen/minus (5 pixels long)
+	fwcharmap TX_FULLWIDTH3, ".", $2e ; period
+;	fwcharmap TX_FULLWIDTH3, "/", $2f ; slash/divide
+;	fwcharmap TX_FULLWIDTH3, "0", $30
+;	fwcharmap TX_FULLWIDTH3, "1", $31
+;	fwcharmap TX_FULLWIDTH3, "2", $32
+;	fwcharmap TX_FULLWIDTH3, "3", $33
+;	fwcharmap TX_FULLWIDTH3, "4", $34
+;	fwcharmap TX_FULLWIDTH3, "5", $35
+;	fwcharmap TX_FULLWIDTH3, "6", $36
+;	fwcharmap TX_FULLWIDTH3, "7", $37
+;	fwcharmap TX_FULLWIDTH3, "8", $38
+;	fwcharmap TX_FULLWIDTH3, "9", $39
+	fwcharmap TX_FULLWIDTH3, ":", $3a ; colon
+	fwcharmap TX_FULLWIDTH3, ";", $3b ; semicolon
+	fwcharmap TX_FULLWIDTH3, "<", $3c ; less than/open angled bracket
+	fwcharmap TX_FULLWIDTH3, "=", $3d ; equals
+	fwcharmap TX_FULLWIDTH3, ">", $3e ; greater than/close angled bracket
+;	fwcharmap TX_FULLWIDTH3, "?", $3f ; question mark
+	fwcharmap TX_FULLWIDTH3, "@", $40 ; at sign
+	fwcharmap TX_FULLWIDTH3, "A", $41
+	fwcharmap TX_FULLWIDTH3, "B", $42
+	fwcharmap TX_FULLWIDTH3, "C", $43
+	fwcharmap TX_FULLWIDTH3, "D", $44
+	fwcharmap TX_FULLWIDTH3, "E", $45
+	fwcharmap TX_FULLWIDTH3, "F", $46
+	fwcharmap TX_FULLWIDTH3, "G", $47
+	fwcharmap TX_FULLWIDTH3, "H", $48
+	fwcharmap TX_FULLWIDTH3, "I", $49
+	fwcharmap TX_FULLWIDTH3, "J", $4a
+	fwcharmap TX_FULLWIDTH3, "K", $4b
+	fwcharmap TX_FULLWIDTH3, "L", $4c
+	fwcharmap TX_FULLWIDTH3, "M", $4d
+	fwcharmap TX_FULLWIDTH3, "N", $4e
+	fwcharmap TX_FULLWIDTH3, "O", $4f
+	fwcharmap TX_FULLWIDTH3, "P", $50
+	fwcharmap TX_FULLWIDTH3, "Q", $51
+	fwcharmap TX_FULLWIDTH3, "R", $52
+	fwcharmap TX_FULLWIDTH3, "S", $53
+	fwcharmap TX_FULLWIDTH3, "T", $54
+	fwcharmap TX_FULLWIDTH3, "U", $55
+	fwcharmap TX_FULLWIDTH3, "V", $56
+	fwcharmap TX_FULLWIDTH3, "W", $57
+	fwcharmap TX_FULLWIDTH3, "X", $58
+	fwcharmap TX_FULLWIDTH3, "Y", $59
+	fwcharmap TX_FULLWIDTH3, "Z", $5a
+	fwcharmap TX_FULLWIDTH3, "[", $5b ; opening bracket
+	fwcharmap TX_FULLWIDTH3, "\\", $5c ; backslash
+	fwcharmap TX_FULLWIDTH3, "]", $5d ; closing bracket
+	fwcharmap TX_FULLWIDTH3, "^", $5e ; caret
+	fwcharmap TX_FULLWIDTH3, "_", $5f ; underscore
+	fwcharmap TX_FULLWIDTH3, "`", $60 ; backtick
+	fwcharmap TX_FULLWIDTH3, "a", $61
+	fwcharmap TX_FULLWIDTH3, "b", $62
+	fwcharmap TX_FULLWIDTH3, "c", $63
+	fwcharmap TX_FULLWIDTH3, "d", $64
+	fwcharmap TX_FULLWIDTH3, "e", $65
+	fwcharmap TX_FULLWIDTH3, "f", $66
+	fwcharmap TX_FULLWIDTH3, "g", $67
+	fwcharmap TX_FULLWIDTH3, "h", $68
+	fwcharmap TX_FULLWIDTH3, "i", $69
+	fwcharmap TX_FULLWIDTH3, "j", $6a
+	fwcharmap TX_FULLWIDTH3, "k", $6b
+	fwcharmap TX_FULLWIDTH3, "l", $6c
+	fwcharmap TX_FULLWIDTH3, "m", $6d
+	fwcharmap TX_FULLWIDTH3, "n", $6e
+	fwcharmap TX_FULLWIDTH3, "o", $6f
+	fwcharmap TX_FULLWIDTH3, "p", $70
+	fwcharmap TX_FULLWIDTH3, "q", $71
+	fwcharmap TX_FULLWIDTH3, "r", $72
+	fwcharmap TX_FULLWIDTH3, "s", $73
+	fwcharmap TX_FULLWIDTH3, "t", $74
+	fwcharmap TX_FULLWIDTH3, "u", $75
+	fwcharmap TX_FULLWIDTH3, "v", $76
+	fwcharmap TX_FULLWIDTH3, "w", $77
+	fwcharmap TX_FULLWIDTH3, "x", $78
+	fwcharmap TX_FULLWIDTH3, "y", $79
+	fwcharmap TX_FULLWIDTH3, "z", $7a
+	fwcharmap TX_FULLWIDTH3, "\{", $7b ; opening brace
+	fwcharmap TX_FULLWIDTH3, "|", $7c ; vertical bar
+	fwcharmap TX_FULLWIDTH3, "}", $7d ; closing brace
+;	fwcharmap TX_FULLWIDTH3, "~", $7e ; equivalency sign/tilde
+	fwcharmap TX_FULLWIDTH3, "■", $7f ; black square (8x8 pixels)
+	fwcharmap TX_FULLWIDTH3, "‘", $80 ; left single quotation mark
+	fwcharmap TX_FULLWIDTH3, "“", $81 ; left double quotation Mark
+	fwcharmap TX_FULLWIDTH3, "•", $82 ; bullet point
+	fwcharmap TX_FULLWIDTH3, "꞉", $83 ; centered colon
+	fwcharmap TX_FULLWIDTH3, "—", $84 ; em dash (8 pixels long)
+	fwcharmap TX_FULLWIDTH3, "※", $85 ; reference mark
+	fwcharmap TX_FULLWIDTH3, "○", $86 ; white circle (7x7 pixels)
+;	fwcharmap TX_FULLWIDTH3, "", $87
+	fwcharmap TX_FULLWIDTH3, "ḋ", $88 ; 'd
+	fwcharmap TX_FULLWIDTH3, "ś", $89 ; 's
+	fwcharmap TX_FULLWIDTH3, "ṫ", $8a ; 't
+	fwcharmap TX_FULLWIDTH3, "ṛ", $8b ; r.
+	fwcharmap TX_FULLWIDTH3, "℃", $8c ; °C (degrees Celcius)
+;	fwcharmap TX_FULLWIDTH3, "", $8d
+	fwcharmap TX_FULLWIDTH3, "Ƕ", $8e ; HP
+	fwcharmap TX_FULLWIDTH3, "Ľ", $8f ; LV
+	fwcharmap TX_FULLWIDTH3, "●", $90 ; common rarity symbol
+	fwcharmap TX_FULLWIDTH3, "◆", $91 ; uncommon rarity symbol
+	fwcharmap TX_FULLWIDTH3, "★", $92 ; rare rarity symbol
+	fwcharmap TX_FULLWIDTH3, "☆", $93 ; promo rarity symbol
+	fwcharmap TX_FULLWIDTH3, "♪", $94 ; musical note
+	fwcharmap TX_FULLWIDTH3, "♀", $95 ; female symbol
+	fwcharmap TX_FULLWIDTH3, "♂", $96 ; male symbol
+	fwcharmap TX_FULLWIDTH3, "₽", $97 ; pokédollar sign
+	fwcharmap TX_FULLWIDTH3, "═", $98 ; centered horizontal thick line (8 pixels long, 2 pixels wide)
+	fwcharmap TX_FULLWIDTH3, "║", $99 ; left-aligned vertical thick line (8 pixels long, 2 pixels wide)
+	fwcharmap TX_FULLWIDTH3, "╚", $9a ; merged lines ($98/$99)
+	fwcharmap TX_FULLWIDTH3, "╔", $9b ; merged lines ($98/$99)
+;	fwcharmap TX_FULLWIDTH3, "", $9c
+;	fwcharmap TX_FULLWIDTH3, "", $9d
+;	fwcharmap TX_FULLWIDTH3, "", $9e
+;	fwcharmap TX_FULLWIDTH3, "", $9f
+;	fwcharmap TX_FULLWIDTH3, "", $a0
+;	fwcharmap TX_FULLWIDTH3, "", $a1
+;	fwcharmap TX_FULLWIDTH3, "", $a2
+;	fwcharmap TX_FULLWIDTH3, "", $a3
+;	fwcharmap TX_FULLWIDTH3, "", $a4
+;	fwcharmap TX_FULLWIDTH3, "", $a5
+;	fwcharmap TX_FULLWIDTH3, "", $a6
+;	fwcharmap TX_FULLWIDTH3, "", $a7
+;	fwcharmap TX_FULLWIDTH3, "", $a8
+;	fwcharmap TX_FULLWIDTH3, "", $a9
+;	fwcharmap TX_FULLWIDTH3, "", $aa
+;	fwcharmap TX_FULLWIDTH3, "", $ab
+;	fwcharmap TX_FULLWIDTH3, "", $ac
+;	fwcharmap TX_FULLWIDTH3, "", $ad
+;	fwcharmap TX_FULLWIDTH3, "", $ae
+;	fwcharmap TX_FULLWIDTH3, "", $af
+;	fwcharmap TX_FULLWIDTH3, "", $b0
+;	fwcharmap TX_FULLWIDTH3, "", $b1
+;	fwcharmap TX_FULLWIDTH3, "", $b2
+;	fwcharmap TX_FULLWIDTH3, "", $b3
+;	fwcharmap TX_FULLWIDTH3, "", $b4
+;	fwcharmap TX_FULLWIDTH3, "", $b5
+;	fwcharmap TX_FULLWIDTH3, "", $b6
+;	fwcharmap TX_FULLWIDTH3, "", $b7
+	fwcharmap TX_FULLWIDTH3, "⅓", $b8 ; START button tile 1
+	fwcharmap TX_FULLWIDTH3, "⅔", $b9 ; START button tile 2
+	fwcharmap TX_FULLWIDTH3, "⅜", $ba ; START button tile 3
+	fwcharmap TX_FULLWIDTH3, "【", $bb ; open square bracket
+	fwcharmap TX_FULLWIDTH3, "】", $bc ; close square bracket
+	fwcharmap TX_FULLWIDTH3, "゛", $bd ; dakuten/ten-ten (Japanese)
+	fwcharmap TX_FULLWIDTH3, "゜", $be ; handakuten/maru (Japanese)
+	fwcharmap TX_FULLWIDTH3, "¿", $bf ; inverted question mark
+	fwcharmap TX_FULLWIDTH3, "À", $c0 ; A with grave accent
+	fwcharmap TX_FULLWIDTH3, "Á", $c1 ; A with acute accent
+	fwcharmap TX_FULLWIDTH3, "Â", $c2 ; A with circumflex
+	fwcharmap TX_FULLWIDTH3, "Ã", $c3 ; A with tilde
+	fwcharmap TX_FULLWIDTH3, "Ä", $c4 ; A with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "Å", $c5 ; A with overring
+	fwcharmap TX_FULLWIDTH3, "Æ", $c6 ; AE
+	fwcharmap TX_FULLWIDTH3, "Ç", $c7 ; C with cedilla accent
+	fwcharmap TX_FULLWIDTH3, "È", $c8 ; E with grave accent
+	fwcharmap TX_FULLWIDTH3, "É", $c9 ; E with acute accent
+	fwcharmap TX_FULLWIDTH3, "Ê", $ca ; E with circumflex 
+	fwcharmap TX_FULLWIDTH3, "Ë", $cb ; E with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "Ì", $cc ; I with grave accent
+	fwcharmap TX_FULLWIDTH3, "Í", $cd ; I with acute accent
+	fwcharmap TX_FULLWIDTH3, "Î", $ce ; I with circumflex
+	fwcharmap TX_FULLWIDTH3, "Ï", $cf ; I with diaeresis/umlaut
+;	fwcharmap TX_FULLWIDTH3, "", $d0
+	fwcharmap TX_FULLWIDTH3, "Ñ", $d1 ; N with tilde
+	fwcharmap TX_FULLWIDTH3, "Ò", $d2 ; O with grave accent
+	fwcharmap TX_FULLWIDTH3, "Ó", $d3 ; O with acute accent
+	fwcharmap TX_FULLWIDTH3, "Ô", $d4 ; O with circumflex
+	fwcharmap TX_FULLWIDTH3, "Õ", $d5 ; O with tilde
+	fwcharmap TX_FULLWIDTH3, "Ö", $d6 ; O with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "Ø", $d7 ; O with slash
+	fwcharmap TX_FULLWIDTH3, "Œ", $d8 ; OE
+	fwcharmap TX_FULLWIDTH3, "Ù", $d9 ; U with grave accent
+	fwcharmap TX_FULLWIDTH3, "Ú", $da ; U with acute accent
+	fwcharmap TX_FULLWIDTH3, "Û", $db ; U with circumflex
+	fwcharmap TX_FULLWIDTH3, "Ü", $dc ; U with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "Ý", $dd ; Y with acute accent
+	fwcharmap TX_FULLWIDTH3, "Ÿ", $de ; Y with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "ß", $df ; sharp s
+	fwcharmap TX_FULLWIDTH3, "à", $e0 ; a with grave accent
+	fwcharmap TX_FULLWIDTH3, "á", $e1 ; a with acute accent
+	fwcharmap TX_FULLWIDTH3, "â", $e2 ; a with circumflex
+	fwcharmap TX_FULLWIDTH3, "ã", $e3 ; a with tilde
+	fwcharmap TX_FULLWIDTH3, "ä", $e4 ; a with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "å", $e5 ; a with overring
+	fwcharmap TX_FULLWIDTH3, "æ", $e6 ; ae
+	fwcharmap TX_FULLWIDTH3, "ç", $e7 ; c with cedilla
+	fwcharmap TX_FULLWIDTH3, "è", $e8 ; e with grave accent
+	fwcharmap TX_FULLWIDTH3, "é", $e9 ; e with acute accent
+	fwcharmap TX_FULLWIDTH3, "ê", $ea ; e with circumflex
+	fwcharmap TX_FULLWIDTH3, "ë", $eb ; e with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "ì", $ec ; i with grave accent
+	fwcharmap TX_FULLWIDTH3, "í", $ed ; i with acute accent
+	fwcharmap TX_FULLWIDTH3, "î", $ee ; i with circumflex
+	fwcharmap TX_FULLWIDTH3, "ï", $ef ; i with diaeresis/umlaut
+;	fwcharmap TX_FULLWIDTH3, "", $f0
+	fwcharmap TX_FULLWIDTH3, "ñ", $f1 ; n with tilde
+	fwcharmap TX_FULLWIDTH3, "ò", $f2 ; o with grave accent
+	fwcharmap TX_FULLWIDTH3, "ó", $f3 ; o with acute accent
+	fwcharmap TX_FULLWIDTH3, "ô", $f4 ; o with circumflex
+	fwcharmap TX_FULLWIDTH3, "õ", $f5 ; o with tilde
+	fwcharmap TX_FULLWIDTH3, "ö", $f6 ; o with diaeresis/umlautt
+	fwcharmap TX_FULLWIDTH3, "ø", $f7 ; o with slash
+	fwcharmap TX_FULLWIDTH3, "œ", $f8 ; oe
+	fwcharmap TX_FULLWIDTH3, "ù", $f9 ; u with grave accent
+	fwcharmap TX_FULLWIDTH3, "ú", $fa ; u with acute accent
+	fwcharmap TX_FULLWIDTH3, "û", $fb ; u with circumflex
+	fwcharmap TX_FULLWIDTH3, "ü", $fc ; u with diaeresis/umlaut
+	fwcharmap TX_FULLWIDTH3, "ý", $fd ; y with acute accent
+	fwcharmap TX_FULLWIDTH3, "ÿ", $fe ; y with diaeresis/umlaut
+
 
 MACRO txsymbol
-	const SYM_\1
-	charmap "\1>", const_value - 1
+	REDEF symbol EQUS \1
+	charmap "<{symbol}>", TX_SYMBOL, const_value
+	PUSHC main
+	charmap "<{symbol}>", TX_SYMBOL, const_value
+	POPC
+	const SYM_{symbol}
 ENDM
 
 ; TX_SYMBOL
-; TODO: If user-defined functions ever become a thing a symbol(*) syntax
-;       would probably be preferred over SYM_*
-	charmap "<", TX_SYMBOL
 	const_def
-	txsymbol SPACE          ; $00
-	txsymbol FIRE           ; $01
-	txsymbol GRASS          ; $02
-	txsymbol LIGHTNING      ; $03
-	txsymbol WATER          ; $04
-	txsymbol FIGHTING       ; $05
-	txsymbol PSYCHIC        ; $06
-	txsymbol COLORLESS      ; $07
-	txsymbol POISONED       ; $08
-	txsymbol ASLEEP         ; $09
-	txsymbol CONFUSED       ; $0a
-	txsymbol PARALYZED      ; $0b
-	txsymbol CURSOR_U       ; $0c
-	txsymbol POKEMON        ; $0d
-	txsymbol ATK_DESCR      ; $0e
-	txsymbol CURSOR_R       ; $0f
-	txsymbol HP             ; $10
-	txsymbol Lv             ; $11
-	txsymbol E              ; $12
-	txsymbol DAMAGE_COUNTER ; $13
-	txsymbol PLUSPOWER      ; $14
-	txsymbol DEFENDER       ; $15
-	txsymbol BOX_HEADER_L   ; $16
-	txsymbol BOX_HEADER_R   ; $17
-	txsymbol BOX_TOP_L      ; $18
-	txsymbol BOX_TOP_R      ; $19
-	txsymbol BOX_BTM_L      ; $1a
-	txsymbol BOX_BTM_R      ; $1b
-	txsymbol BOX_TOP        ; $1c
-	txsymbol BOX_BOTTOM     ; $1d
-	txsymbol BOX_LEFT       ; $1e
-	txsymbol BOX_RIGHT      ; $1f
-	txsymbol 0              ; $20
-	txsymbol 1              ; $21
-	txsymbol 2              ; $22
-	txsymbol 3              ; $23
-	txsymbol 4              ; $24
-	txsymbol 5              ; $25
-	txsymbol 6              ; $26
-	txsymbol 7              ; $27
-	txsymbol 8              ; $28
-	txsymbol 9              ; $29
-	txsymbol DOT            ; $2a
-	txsymbol PLUS           ; $2b
-	txsymbol MINUS          ; $2c
-	txsymbol CROSS          ; $2d
-	txsymbol SLASH          ; $2e
-	txsymbol CURSOR_D       ; $2f
-	txsymbol PRIZE          ; $30
+	txsymbol "SPACE"          ; $00
+	txsymbol "FIRE"           ; $01
+	txsymbol "GRASS"          ; $02
+	txsymbol "LIGHTNING"      ; $03
+	txsymbol "WATER"          ; $04
+	txsymbol "FIGHTING"       ; $05
+	txsymbol "PSYCHIC"        ; $06
+	txsymbol "COLORLESS"      ; $07
+	txsymbol "POISONED"       ; $08
+	txsymbol "ASLEEP"         ; $09
+	txsymbol "CONFUSED"       ; $0a
+	txsymbol "PARALYZED"      ; $0b
+	txsymbol "CURSOR_U"       ; $0c
+	txsymbol "POKEMON"        ; $0d
+	txsymbol "ATK_DESCR"      ; $0e
+	txsymbol "CURSOR_R"       ; $0f
+	txsymbol "HP"             ; $10
+	txsymbol "Lv"             ; $11
+	txsymbol "E"              ; $12
+	txsymbol "DAMAGE_COUNTER" ; $13
+	txsymbol "PLUSPOWER"      ; $14
+	txsymbol "DEFENDER"       ; $15
+	txsymbol "BOX_HEADER_L"   ; $16
+	txsymbol "BOX_HEADER_R"   ; $17
+	txsymbol "BOX_TOP_L"      ; $18
+	txsymbol "BOX_TOP_R"      ; $19
+	txsymbol "BOX_BTM_L"      ; $1a
+	txsymbol "BOX_BTM_R"      ; $1b
+	txsymbol "BOX_TOP"        ; $1c
+	txsymbol "BOX_BOTTOM"     ; $1d
+	txsymbol "BOX_LEFT"       ; $1e
+	txsymbol "BOX_RIGHT"      ; $1f
+	txsymbol "0"              ; $20
+	txsymbol "1"              ; $21
+	txsymbol "2"              ; $22
+	txsymbol "3"              ; $23
+	txsymbol "4"              ; $24
+	txsymbol "5"              ; $25
+	txsymbol "6"              ; $26
+	txsymbol "7"              ; $27
+	txsymbol "8"              ; $28
+	txsymbol "9"              ; $29
+	txsymbol "DOT"            ; $2a
+	txsymbol "PLUS"           ; $2b
+	txsymbol "MINUS"          ; $2c
+	txsymbol "CROSS"          ; $2d
+	txsymbol "SLASH"          ; $2e
+	txsymbol "CURSOR_D"       ; $2f
+	txsymbol "PRIZE"          ; $30
+
+SETCHARMAP main
