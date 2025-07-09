@@ -2747,7 +2747,7 @@ PrintCurDeckNumberAndName:
 ;	call ConvertToNumericalDigits
 ;	ld a, TX_FULLWIDTH3
 ;	ld [hli], a
-;	ld a, CHARVAL(".", 0) ; period punctuation mark
+;	ldfw [hl], "." ; period punctuation mark
 ;	ld [hli], a
 ;	ld [hl], TX_END
 ;	lb de, 3, 2

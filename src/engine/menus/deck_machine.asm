@@ -122,7 +122,7 @@ HandleDeckMissingCardsList:
 	call ConvertToNumericalDigits
 	ld a, TX_FULLWIDTH3
 	ld [hli], a
-	ld [hl], CHARVAL(".", 0) ; period punctuation mark
+	ldfw [hl], "." ; period punctuation mark
 	inc hl
 	ld [hl], TX_END
 	ld hl, wDefaultText
@@ -545,7 +545,7 @@ PrintDeckMachineEntry:
 	call ConvertToNumericalDigits
 	ld a, TX_FULLWIDTH3
 	ld [hli], a
-	ld a, CHARVAL(".", 0) ; period punctuation mark
+	ldfw [hl], "." ; period punctuation mark
 	ld [hli], a
 	ld [hl], TX_END
 	ld hl, wDefaultText

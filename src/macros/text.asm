@@ -71,7 +71,11 @@ ENDM
 MACRO ldfw
 	PUSHC fullwidth
 	IF CHARSIZE(\2) > 1
-		ld \1, CHARVAL(\2, 0) << 8 + CHARVAL(\2, 1)
+		IF !STRCMP("\1", "bc") || !STRCMP("\1", "de") || !STRCMP("\1", "hl")
+			ld \1, CHARVAL(\2, 0) << 8 + CHARVAL(\2, 1)
+		ELSE
+			ld \1, CHARVAL(\2, 1)
+		ENDC
 	ELSE
 		ld \1, \2
 	ENDC
