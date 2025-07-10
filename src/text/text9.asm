@@ -717,7 +717,7 @@ PokemonTradingCardGameStaffText:
 
 ProducersText:
 	text ""
-	line "                Producers"
+	line "                PRODUCERS"
 	line ""
 	line ""
 	line "           Tsunekazu Ishihara"
@@ -727,7 +727,7 @@ ProducersText:
 
 DirectorText:
 	text ""
-	line "                Director"
+	line "                DIRECTOR"
 	line ""
 	line ""
 	line "                Koji Arai"
@@ -735,7 +735,7 @@ DirectorText:
 
 ProgrammersText:
 	text ""
-	line "               Programmers"
+	line "               PROGRAMMERS"
 	line ""
 	line ""
 	line "             Masahiro Tobita"
@@ -745,11 +745,11 @@ ProgrammersText:
 
 GBGraphicDesigners1Text:
 	text ""
-	line "           GB Graphic Designers"
+	line "          GB GRAPHIC DESIGNERS"
 	line ""
 	line ""
-	line "             Kazuhiko Nonaka"
-	line "             Yasuhiro Fujii"
+	line "            Kazuhiko Nonaka"
+	line "            Yasuhiro Fujii"
 	line "           Tsuguyuki Yamamoto"
 	done
 
@@ -767,7 +767,7 @@ GBGraphicDesigners3Text:
 
 MusicText:
 	text ""
-	line "                  Music"
+	line "                  MUSIC"
 	line ""
 	line ""
 	line "            Ichiro Shimakura"
@@ -775,7 +775,7 @@ MusicText:
 
 SoundEffectsText:
 	text ""
-	line "              Sound Effects"
+	line "              SOUND EFFECTS"
 	line ""
 	line ""
 	line "              Masato Aihara"
@@ -783,7 +783,7 @@ SoundEffectsText:
 
 SoundDirectorText:
 	text ""
-	line "             Sound Director"
+	line "             SOUND DIRECTOR"
 	line ""
 	line ""
 	line "            Toshiaki Takimoto"
@@ -791,7 +791,7 @@ SoundDirectorText:
 
 SoundSystemSupportText:
 	text ""
-	line "          Sound System Support"
+	line "          SOUND SYSTEM SUPPORT"
 	line ""
 	line ""
 	line "           Katsunori Takahashi"
@@ -800,7 +800,7 @@ SoundSystemSupportText:
 
 CardGameCreator1Text:
 	text ""
-	line "            Card Game Creator"
+	line "            CARD GAME CREATOR"
 	line ""
 	line ""
 	line "             Takumi Akabane"
@@ -808,15 +808,15 @@ CardGameCreator1Text:
 
 CardGameCreator2Text:
 	text ""
-	line "            Card Game Creator"
+	line "            CARD GAME CREATOR"
 	line ""
 	line ""
-	line "             Kouichi Oyama"
+	line "              Kouichi Oyama"
 	done
 
 CardGameCreator3Text:
 	text ""
-	line "            Card Game Creator"
+	line "            CARD GAME CREATOR"
 	line ""
 	line ""
 	line "              Akihiko Miura"
@@ -824,7 +824,7 @@ CardGameCreator3Text:
 
 CardIllustrators1Text:
 	text ""
-	line "            Card Illustrators"
+	line "            CARD ILLUSTRATORS"
 	line ""
 	line ""
 	line "              Ken Sugimori"
@@ -842,7 +842,7 @@ CardIllustrators2Text:
 
 SpecialAppearances1Text:
 	text ""
-	line "         Special Appearances by"
+	line "         SPECIAL APPEARANCES BY"
 	line ""
 	line ""
 	line "             Hiroko Ohashi"
@@ -860,20 +860,20 @@ USCoordination1Text:
 	line "           NINTENDO OF AMERICA"
 	line ""
 	line ""
-	line "               GAIL TILDEN"
-	line "              HIRO NAKAMURA"
+	line "               Gail Tilden"
+	line "              Hiro Nakamura"
 	done
 
 USCoordination2Text:
-	text "              KENJI OKUBO"
-	line "             WILLIAM TRINEN"
+	text "              Kenji Okubo"
+	line "             William Trinen"
 	done
 
 USCoordination3Text:
 	text ""
 	line "             US COORDINATION"
-	line "           Wizards of the Coast"
-	line "          Pokémon Templating Team"
+	line "          WIZARDS OF THE COAST"
+	line "         POKÉMON TEMPLATING TEAM"
 	line ""
 	line ""
 	line "            Robert Gutschera"
@@ -891,12 +891,12 @@ TranslationDraftText:
 	line "            TRANSLATION/DRAFT"
 	line ""
 	line ""
-	line "               BILL RITCH"
+	line "               Bill Ritch"
 	done
 
 MasteringText:
 	text ""
-	line "                Mastering"
+	line "                MASTERING"
 	line ""
 	line ""
 	line "             Tetsuya Komatsu"
@@ -904,7 +904,7 @@ MasteringText:
 
 ManualCreationText:
 	text ""
-	line "             Manual Creation"
+	line "             MANUAL CREATION"
 	line ""
 	line ""
 	line "              Haruki Mitani"
@@ -912,7 +912,7 @@ ManualCreationText:
 
 ManualIllustrationsText:
 	text ""
-	line "           Manual Illustrations"
+	line "           MANUAL ILLUSTRATIONS"
 	line ""
 	line ""
 	line "             Kagemaru Himeno"
@@ -920,7 +920,7 @@ ManualIllustrationsText:
 
 PokemonOriginalStoryText:
 	text ""
-	line "          Pokémon Original Story"
+	line "          POKÉMON ORIGINAL STORY"
 	line ""
 	line ""
 	line "             Satoshi Tajiri"
@@ -929,7 +929,7 @@ PokemonOriginalStoryText:
 
 CreatedInCooperationWithText:
 	text ""
-	line "       Created In Cooperation With"
+	line "       CREATED IN COOPERATION WITH"
 	line ""
 	line ""
 	line "              Shinji Hatano"
@@ -939,7 +939,7 @@ CreatedInCooperationWithText:
 
 WithCooperation1Text:
 	text ""
-	line "          With Cooperation from"
+	line "          WITH COOPERATION FROM"
 	line ""
 	line ""
 	line "             Yoshio Motosako"
@@ -963,7 +963,7 @@ WithCooperation3Text:
 
 ProjectManagerText:
 	text ""
-	line "             Project Manager"
+	line "             PROJECT MANAGER"
 	line ""
 	line ""
 	line "            Yasutaka Kakiseko"
@@ -971,7 +971,7 @@ ProjectManagerText:
 
 SupervisorText:
 	text ""
-	line "               Supervisor"
+	line "               SUPERVISOR"
 	line ""
 	line ""
 	line ""
@@ -980,7 +980,7 @@ SupervisorText:
 
 ExecutiveProducerText:
 	text ""
-	line "           Executive Producer"
+	line "           EXECUTIVE PRODUCER"
 	line ""
 	line ""
 	line ""
@@ -989,7 +989,7 @@ ExecutiveProducerText:
 
 CreatedByText:
 	text ""
-	line "               Created by"
+	line "               CREATED BY"
 	line ""
 	line ""
 	line ""

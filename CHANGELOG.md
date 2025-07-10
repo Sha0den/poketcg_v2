@@ -942,6 +942,11 @@
 
 
 ## Miscellaneous Changes
+- **July 10, 2025:** 1 File Changed
+    - Make text capitalization more consistent in the Credits sequence (Titles are all caps, but names use standard casing)
+
+<br/>
+
 - **[July 7, 2025](https://github.com/Sha0den/poketcg_v2/commit/4505d0e1db565f7c8f3e4be9bd6b78b0268d2559):** 7 Files Changed
     - Adjust horizontal spacing between entries in each of the check menu screens (deck select, deck machines, and in-duel)
         - the offset is now variable (uses wCheckMenuCursorXPositionOffset instead of always adding 10)
