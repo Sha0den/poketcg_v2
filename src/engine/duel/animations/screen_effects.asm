@@ -12,7 +12,7 @@ InitScreenAnimation:
 	add a
 	ld c, a
 	ld b, $00
-	ld hl, Data_1cc9f
+	ld hl, ScreenAnimationFunctions
 	add hl, bc
 	ld a, [hli]
 	ld [wScreenAnimUpdatePtr], a
@@ -37,7 +37,7 @@ MACRO screen_effect
 ENDM
 
 
-Data_1cc9f:
+ScreenAnimationFunctions:
 ; function pointer, duration
 	screen_effect ShakeScreenX_Small, 24 ; DUEL_ANIM_SMALL_SHAKE_X
 	screen_effect ShakeScreenX_Big,   32 ; DUEL_ANIM_BIG_SHAKE_X
@@ -103,12 +103,12 @@ ShakeScreenX:
 	ld a, h
 	ld [wScreenShakeOffsetsPtr + 1], a
 	ld hl, wScreenAnimUpdatePtr
-	ld [hl], LOW(.Update)
+	ld [hl], LOW(.UpdateFunc)
 	inc hl
-	ld [hl], HIGH(.Update)
+	ld [hl], HIGH(.UpdateFunc)
 	ret
 
-.Update
+.UpdateFunc
 	ld hl, wScreenAnimDuration
 	dec [hl]
 	call UpdateShakeOffset
@@ -137,12 +137,12 @@ ShakeScreenY:
 	ld a, h
 	ld [wScreenShakeOffsetsPtr + 1], a
 	ld hl, wScreenAnimUpdatePtr
-	ld [hl], LOW(.Update)
+	ld [hl], LOW(.UpdateFunc)
 	inc hl
-	ld [hl], HIGH(.Update)
+	ld [hl], HIGH(.UpdateFunc)
 	ret
 
-.Update
+.UpdateFunc
 	ld hl, wScreenAnimDuration
 	dec [hl]
 	call UpdateShakeOffset
@@ -201,9 +201,9 @@ BigShakeOffsets:
 
 WhiteFlashScreen:
 	ld hl, wScreenAnimUpdatePtr
-	ld [hl], LOW(.Update)
+	ld [hl], LOW(.UpdateFunc)
 	inc hl
-	ld [hl], HIGH(.Update)
+	ld [hl], HIGH(.UpdateFunc)
 	ld a, [wBGP]
 	ld [wTempWhiteFlashBGP], a
 	; backup the current background palettes
@@ -219,7 +219,7 @@ WhiteFlashScreen:
 	call SetBGP
 	call FlushAllPalettes
 
-.Update
+.UpdateFunc
 	ld hl, wScreenAnimDuration
 	dec [hl]
 	ld a, [wScreenAnimDuration]
@@ -239,9 +239,9 @@ WhiteFlashScreen:
 ; preserves de
 DistortScreen:
 	ld hl, wScreenAnimUpdatePtr
-	ld [hl], LOW(.Update)
+	ld [hl], LOW(.UpdateFunc)
 	inc hl
-	ld [hl], HIGH(.Update)
+	ld [hl], HIGH(.UpdateFunc)
 	xor a
 	ld [wApplyBGScroll], a
 	ld hl, wLCDCFunctionTrampoline + 1
@@ -252,7 +252,7 @@ DistortScreen:
 	ld [wBGScrollMod], a
 	call EnableInt_LYCoincidence
 
-.Update
+.UpdateFunc
 	ld a, [wScreenAnimDuration]
 	srl a
 	srl a
@@ -270,5 +270,5 @@ DistortScreen:
 
 ; each value is applied for 8 "ticks" of wScreenAnimDuration
 ; starting from the last and running backwards
-.BGScrollModData
+.BGScrollModData:
 	db 4, 3, 2, 1, 1, 1, 1, 2

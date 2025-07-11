@@ -434,8 +434,8 @@ DrawPlayAreaScreenToShowChanges:
 ;	a = attack animation to play
 PlayTrainerEffectAnimation:
 	ld [wLoadedAttackAnimation], a
-	xor a
-	ld [wce7e], a
+	xor a ; FALSE
+	ld [wAttackAnimationIsPlaying], a
 	lb bc, PLAY_AREA_ARENA, $00 ; neither WEAKNESS nor RESISTANCE
 	ldh a, [hWhoseTurn]
 	ld h, a
@@ -1725,6 +1725,7 @@ ApplyAndAnimateHPRecovery:
 	ld a, ATK_ANIM_HEAL
 	ld [wLoadedAttackAnimation], a
 	lb bc, PLAY_AREA_ARENA, $01 ; WEAKNESS
+	; bug, h needs to be set to hWhoseTurn
 	call PlayAttackAnimation
 
 ; compare HP to be restored with max HP.
@@ -6259,8 +6260,8 @@ SolarPowerCheck:
 SolarPower_RemoveStatusEffect:
 	ld a, ATK_ANIM_HEAL_BOTH_SIDES
 	ld [wLoadedAttackAnimation], a
-	xor a
-	ld [wce7e], a
+	xor a ; FALSE
+	ld [wAttackAnimationIsPlaying], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld b, a
 	ld c, $00 ; neither WEAKNESS nor RESISTANCE
@@ -8833,8 +8834,8 @@ HealPlayAreaCardHP:
 
 ; play the heal animation
 	push de
-	xor a
-	ld [wce7e], a
+	xor a ; FALSE
+	ld [wAttackAnimationIsPlaying], a
 	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
 	ld [wLoadedAttackAnimation], a
 	ldh a, [hTempPlayAreaLocation_ff9d]

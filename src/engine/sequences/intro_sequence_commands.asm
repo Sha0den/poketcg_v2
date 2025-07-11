@@ -405,7 +405,7 @@ AnimateRandomTitleScreenOrb:
 	ld a, [wConsole]
 	cp CONSOLE_CGB
 	jr nz, .set_coords
-	set SPRITE_ANIM_FLAG_UNSKIPPABLE, [hl]
+	set SPRITE_ANIM_FLAG_UNSKIPPABLE_F, [hl]
 
 .set_coords
 	inc hl
@@ -434,7 +434,7 @@ AnimateRandomTitleScreenOrb:
 	ld a, [hld]
 	cp 152
 	jr nz, .skip
-	res SPRITE_ANIM_FLAG_UNSKIPPABLE, [hl]
+	res SPRITE_ANIM_FLAG_UNSKIPPABLE_F, [hl]
 .skip
 	pop bc
 	inc de

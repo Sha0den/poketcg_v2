@@ -54,7 +54,7 @@ Func_18661:
 
 ; B button
 	ld a, -1
-	call Func_190fb
+	call PlaySFXConfirmOrCancel_Bank6
 	scf
 	ret
 
@@ -62,7 +62,7 @@ Func_18661:
 .a_button
 	call .draw_cursor
 	ld a, 1
-	call Func_190fb
+	call PlaySFXConfirmOrCancel_Bank6
 	scf
 	ret
 

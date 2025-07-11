@@ -334,7 +334,7 @@ Func_3e31::
 ;	push bc
 ;	ld c, SPRITE_ANIM_FLAGS
 ;	call GetSpriteAnimBufferProperty_SpriteInA
-;	res 2, [hl]
+;	res SPRITE_ANIM_FLAG_CENTERED_F, [hl]
 ;	pop bc
 ;	pop hl
 ;	ret
@@ -345,7 +345,7 @@ Func_3e31::
 ;	push bc
 ;	ld c, SPRITE_ANIM_FLAGS
 ;	call GetSpriteAnimBufferProperty_SpriteInA
-;	set 2, [hl]
+;	set SPRITE_ANIM_FLAG_CENTERED_F, [hl]
 ;	pop bc
 ;	pop hl
 ;	ret

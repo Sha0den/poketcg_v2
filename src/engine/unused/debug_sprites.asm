@@ -63,10 +63,10 @@ Func_1c890:
 	ld c, SPRITE_ANIM_FLAGS
 	call GetSpriteAnimBufferProperty
 	call UpdateRNGSources
-	and (1 << SPRITE_ANIM_FLAG_X_SUBTRACT)
+	and SPRITE_ANIM_FLAG_X_INVERTED
 	jr nz, .asm_1c8b9
-	res SPRITE_ANIM_FLAG_SPEED, [hl]
+	res SPRITE_ANIM_FLAG_CENTERED_F, [hl]
 	ret
 .asm_1c8b9
-	set SPRITE_ANIM_FLAG_SPEED, [hl]
+	set SPRITE_ANIM_FLAG_CENTERED_F, [hl]
 	ret

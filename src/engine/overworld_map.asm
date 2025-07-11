@@ -115,7 +115,7 @@ OverworldMap_BeginPlayerMovement:
 	ld [wWhichSprite], a
 	ld c, SPRITE_ANIM_FLAGS
 	call GetSpriteAnimBufferProperty
-	set SPRITE_ANIM_FLAG_SPEED, [hl]
+	set SPRITE_ANIM_FLAG_CENTERED_F, [hl]
 
 ; get pointer table for starting map
 	ld hl, OverworldMap_PlayerMovementPaths
@@ -290,7 +290,7 @@ OverworldMap_InitCursorSprite:
 	ret nz ; visited lab
 	ld c, SPRITE_ANIM_FLAGS
 	call GetSpriteAnimBufferProperty
-	set SPRITE_ANIM_FLAG_UNSKIPPABLE, [hl]
+	set SPRITE_ANIM_FLAG_UNSKIPPABLE_F, [hl]
 	ret
 
 

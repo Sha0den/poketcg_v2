@@ -55,7 +55,7 @@ PlayLoadedDuelAnimation::
 	add hl, bc
 	ld a, [hl]
 	; if flag is set, play animation anyway
-	and (1 << SPRITE_ANIM_FLAG_UNSKIPPABLE)
+	and SPRITE_ANIM_FLAG_UNSKIPPABLE
 	pop hl
 	jr z, .return
 
@@ -153,7 +153,7 @@ LoadAnimCoordsAndFlags:
 	call GetAnimCoordsAndFlags
 
 	push af
-	and (1 << SPRITE_ANIM_FLAG_6) | (1 << SPRITE_ANIM_FLAG_5)
+	and SPRITE_ANIM_FLAG_Y_FLIP | SPRITE_ANIM_FLAG_X_FLIP
 	or [hl]
 	ld [hli], a
 	ld a, b
@@ -163,7 +163,7 @@ LoadAnimCoordsAndFlags:
 
 	ld bc, SPRITE_ANIM_FLAGS - SPRITE_ANIM_COORD_Y
 	add hl, bc
-	and (1 << SPRITE_ANIM_FLAG_Y_SUBTRACT) | (1 << SPRITE_ANIM_FLAG_X_SUBTRACT)
+	and SPRITE_ANIM_FLAG_Y_INVERTED | SPRITE_ANIM_FLAG_X_INVERTED
 	or [hl]
 	ld [hl], a
 	pop bc
@@ -184,7 +184,7 @@ GetAnimCoordsAndFlags:
 	push hl
 	ld c, 0
 	ld a, [wAnimFlags]
-	and (1 << SPRITE_ANIM_FLAG_SPEED)
+	and SPRITE_ANIM_FLAG_CENTERED
 	jr nz, .calc_addr
 
 	ld a, [wDuelAnimationScreen]
@@ -243,35 +243,29 @@ AnimationCoordinatesIndex:
 	db $09, $0a, $0b, $0c, $0d, $0e ; opponent
 
 
-MACRO anim_coords
-	db \1
-	db \2
-	db \3
-ENDM
-
 AnimationCoordinates:
 ; x coord, y coord, animation flags
-	anim_coords 88,  88, (1 << SPRITE_ANIM_FLAG_3)
+	db  88, 88, SPRITE_ANIM_FLAG_3
 
 ; animations in the Duel Main Scene
-	anim_coords 40,  80, $00
-	anim_coords 136, 48, (1 << SPRITE_ANIM_FLAG_6) | (1 << SPRITE_ANIM_FLAG_5) | (1 << SPRITE_ANIM_FLAG_Y_SUBTRACT) | (1 << SPRITE_ANIM_FLAG_X_SUBTRACT)
+	db  40, 80, NONE
+	db 136, 48, SPRITE_ANIM_FLAG_Y_FLIP | SPRITE_ANIM_FLAG_X_FLIP | SPRITE_ANIM_FLAG_Y_INVERTED | SPRITE_ANIM_FLAG_X_INVERTED
 
 ; animations in the Player's Play Area, for each Play Area Pokemon
-	anim_coords 88,  72, $00
-	anim_coords 24,  96, $00
-	anim_coords 56,  96, $00
-	anim_coords 88,  96, $00
-	anim_coords 120, 96, $00
-	anim_coords 152, 96, $00
+	db  88, 72, NONE
+	db  24, 96, NONE
+	db  56, 96, NONE
+	db  88, 96, NONE
+	db 120, 96, NONE
+	db 152, 96, NONE
 
 ; animations in the Opponent's Play Area, for each Play Area Pokemon
-	anim_coords 88,  80, $00
-	anim_coords 152, 40, $00
-	anim_coords 120, 40, $00
-	anim_coords 88,  40, $00
-	anim_coords 56,  40, $00
-	anim_coords 24,  40, $00
+	db  88, 80, NONE
+	db 152, 40, NONE
+	db 120, 40, NONE
+	db  88, 40, NONE
+	db  56, 40, NONE
+	db  24, 40, NONE
 
 
 ; appends the current duel animation to the end of wDuelAnimBuffer
@@ -502,7 +496,7 @@ ClearAndDisableQueuedAnimations::
 ; input:
 ;	a = DUEL_ANIM_* constant
 Func_1ce03:
-	cp DUEL_ANIM_158
+	cp DUEL_ANIM_158_UNUSED
 	jr z, .asm_1ce17
 	sub $96
 	add a
@@ -523,14 +517,14 @@ Func_1ce03:
 	jp Func_3bb5
 
 .pointer_table
-	dw Func_190f4         ; DUEL_ANIM_150
-	dw PrintDamageText    ; DUEL_ANIM_PRINT_DAMAGE
-	dw UpdateMainSceneHUD ; DUEL_ANIM_UPDATE_HUD
-	dw Func_191a3         ; DUEL_ANIM_153
-	dw Func_191a3         ; DUEL_ANIM_154
-	dw Func_191a3         ; DUEL_ANIM_155
-	dw Func_191a3         ; DUEL_ANIM_156
-	dw Func_191a3         ; DUEL_ANIM_157
+	dw SetScreenForDuelAnimation ; DUEL_ANIM_SET_SCREEN
+	dw PrintDamageText           ; DUEL_ANIM_PRINT_DAMAGE
+	dw UpdateMainSceneHUD        ; DUEL_ANIM_UPDATE_HUD
+	dw DuelAnim153               ; DUEL_ANIM_153_UNUSED
+	dw DuelAnim154               ; DUEL_ANIM_154_UNUSED
+	dw DuelAnim155               ; DUEL_ANIM_155_UNUSED
+	dw DuelAnim156               ; DUEL_ANIM_156_UNUSED
+	dw DuelAnim157               ; DUEL_ANIM_157_UNUSED
 
 
 ; input:
@@ -538,7 +532,7 @@ Func_1ce03:
 Func_1cb5e:
 	cp $96
 	jr nc, Func_1ce03
-	cp $8c
+	cp DUEL_ANIM_DAMAGE_HUD
 	jp nz, InitScreenAnimation
 .damage
 	ld a, [wDuelAnimDamage + 1]
@@ -613,7 +607,7 @@ CreateDamageCharSprite:
 	farcall CreateSpriteAndAnimBufferEntry
 	ld a, [wWhichSprite]
 	ld [de], a
-	ld a, (1 << SPRITE_ANIM_FLAG_UNSKIPPABLE)
+	ld a, SPRITE_ANIM_FLAG_UNSKIPPABLE
 	ld [wAnimFlags], a
 	ld c, SPRITE_ANIM_COORD_X
 	call GetSpriteAnimBufferProperty

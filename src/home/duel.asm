@@ -1484,9 +1484,9 @@ DealConfusionDamageToSelf::
 	ld [hl], 0
 	ld a, [wNoDamageOrEffect]
 	push af
-	xor a
+	xor a ; FALSE
 	ld [wNoDamageOrEffect], a
-	ld [wce7e], a
+	ld [wAttackAnimationIsPlaying], a
 	ld a, [wTempNonTurnDuelistCardID]
 	push af
 	ld a, [wTempTurnDuelistCardID]
@@ -1875,6 +1875,7 @@ PlayAttackAnimation::
 	ldh [hWhoseTurn], a
 	cp h
 	jr z, .got_location
+	; on the non-turn duelist's side
 	set 7, b
 .got_location
 	ld a, b

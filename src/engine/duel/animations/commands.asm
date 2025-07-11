@@ -17,11 +17,11 @@ PlayAttackAnimationCommands::
 	ld d, [hl]
 
 	push de
-	ld hl, wce7e
+	ld hl, wAttackAnimationIsPlaying
 	ld a, [hl]
 	or a
 	jr nz, .read_command
-	ld [hl], $01 ; wce7e
+	ld [hl], TRUE ; wAttackAnimationIsPlaying
 	call ResetAnimationQueue
 	pop de
 	push de
@@ -32,9 +32,9 @@ PlayAttackAnimationCommands::
 	xor a
 	ld [wDuelAnimLocationParam], a
 	ld a, [de]
-	cp $04
+	cp ANIMCMD_SET_SCREEN
 	jr z, .read_command
-	ld a, DUEL_ANIM_150
+	ld a, DUEL_ANIM_SET_SCREEN
 	call PlayDuelAnimation
 .read_command
 	pop de
@@ -49,13 +49,15 @@ PlayAttackAnimationCommands_NextCommand:
 	jp JumpToFunctionInTable
 
 AnimationCommandPointerTable:
-	dw AnimationCommand_AnimEnd      ; anim_end
-	dw AnimationCommand_AnimNormal   ; anim_normal
-	dw AnimationCommand_AnimPlayer   ; anim_player
-	dw AnimationCommand_AnimOpponent ; anim_opponent
-	dw AnimationCommand_AnimScreen   ; anim_screen
-	dw AnimationCommand_AnimPlayArea ; anim_play_area
-	dw AnimationCommand_AnimEnd2     ; anim_end2 (unused)
+	table_width 2, AnimationCommandPointerTable
+	dw AnimationCommand_AnimEnd      ; ANIMCMD_END
+	dw AnimationCommand_AnimNormal   ; ANIMCMD_NORMAL
+	dw AnimationCommand_AnimPlayer   ; ANIMCMD_PLAYER_SIDE
+	dw AnimationCommand_AnimOpponent ; ANIMCMD_OPP_SIDE
+	dw AnimationCommand_AnimScreen   ; ANIMCMD_SET_SCREEN
+	dw AnimationCommand_AnimPlayArea ; ANIMCMD_PLAY_AREA
+	dw AnimationCommand_AnimEnd2     ; ANIMCMD_END_UNUSED
+	assert_table_length NUM_ANIM_COMMANDS
 
 
 AnimationCommand_AnimEnd:
@@ -132,7 +134,7 @@ AnimationCommand_AnimNormal:
 	ld [de], a
 	pop de
 
-	ld a, $8c
+	ld a, DUEL_ANIM_DAMAGE_HUD
 	call PlayDuelAnimation
 	ld a, [wDuelDisplayedScreen]
 	cp DUEL_MAIN_SCENE
@@ -177,8 +179,8 @@ AnimationCommand_AnimScreen:
 	ld [wDuelAnimSetScreen], a
 	ld a, [wDamageAnimPlayAreaLocation]
 	ld [wDuelAnimLocationParam], a
-	call SetDuelAnimationScreen
-	ld a, DUEL_ANIM_150
+	call UpdateDuelAnimationScreen
+	ld a, DUEL_ANIM_SET_SCREEN
 	call PlayDuelAnimation
 	jp PlayAttackAnimationCommands_NextCommand
 
@@ -193,7 +195,7 @@ AnimationCommand_AnimEnd2:
 ;	[wDuelAnimSetScreen] = SET_ANIM_SCREEN_MAIN:      use DUEL_ANIM_SCREEN_MAIN_SCENE
 ;	[wDuelAnimSetScreen] = SET_ANIM_SCREEN_PLAY_AREA: use DUEL_ANIM_SCREEN_PLAYER_PLAY_AREA
 ;	                                                   or DUEL_ANIM_SCREEN_OPP_PLAY_AREA
-SetDuelAnimationScreen:
+UpdateDuelAnimationScreen:
 	ld a, [wDuelAnimSetScreen]
 	cp SET_ANIM_SCREEN_PLAY_AREA
 	jr z, .set_play_area_screen
@@ -209,24 +211,22 @@ SetDuelAnimationScreen:
 	ld a, [wWhoseTurn]
 	ld h, a
 	cp PLAYER_TURN
-	jr z, .player
+	jr z, .players_turn
 
-; opponent
+; opponent's turn
 	ld a, [wDuelType]
 	cp $00
 	jr z, .asm_50c6
-
 ; link duel or vs. AI
 	bit 7, l
 	jr z, .asm_50e2
 	jr .asm_50d2
-
 .asm_50c6
 	bit 7, l
 	jr z, .asm_50da
 	jr .asm_50ea
 
-.player
+.players_turn
 	bit 7, l
 	jr z, .asm_50d2
 	jr .asm_50e2
@@ -253,28 +253,23 @@ SetDuelAnimationScreen:
 	ret
 
 
-Func_190f4:
+SetScreenForDuelAnimation:
 	ld a, [wDuelAnimSetScreen]
 	cp SET_ANIM_SCREEN_PLAY_AREA
-	jr z, Func_1910f
-;	fallthrough
-
-; input:
-;	a = SET_ANIM_SCREEN_* constant
-Func_190fb:
+	jr z, .set_play_area_screen
 	cp SET_ANIM_SCREEN_MAIN
 	ret nz
+; set duel main screen
 	ld a, DUEL_ANIM_SCREEN_MAIN_SCENE
 	ld [wDuelAnimationScreen], a
 	ld a, [wDuelDisplayedScreen]
-	cp $01
+	cp DUEL_MAIN_SCENE
 	ret z
 	bank1call DrawDuelMainScene
 	ret
 
-
-Func_1910f:
-	call SetDuelAnimationScreen
+.set_play_area_screen
+	call UpdateDuelAnimationScreen
 	ld a, [wDuelDisplayedScreen]
 	cp l
 	jp z, DrawWideTextBox ; skip change screen
@@ -374,7 +369,11 @@ UpdateMainSceneHUD:
 	cp DUEL_MAIN_SCENE
 	ret nz
 	bank1call DrawDuelHUDs
-Func_191a3:
+DuelAnim153:
+DuelAnim154:
+DuelAnim155:
+DuelAnim156:
+DuelAnim157:
 	ret
 
 
