@@ -123,7 +123,12 @@
 
 
 ## Code Optimization
-- **May 19, 2025:** 1 File Changed
+- **July 11, 2025:** 2 Files Changed
+    - Edit `ApplyAndAnimateHPRecovery` function in engine/duel/effect_functions.asm (mostly corrections, but 2 more wram bytes are now unused)
+
+<br/>
+
+- **[May 19, 2025](https://github.com/Sha0den/poketcg_v2/commit/731d69bcb53a1ddda793f35eabe0e7467335c5e6):** 1 File Changed
     - Refactor `DealDamageToAllBenchedPokemon` function in engine/duel/effect_functions.asm
 
 <br/>
@@ -942,7 +947,7 @@
 
 
 ## Miscellaneous Changes
-- **July 10, 2025:** 1 File Changed
+- **[July 10, 2025](https://github.com/Sha0den/poketcg_v2/commit/1e8542517507c7fade1863725401a36ee39eac13):** 1 File Changed
     - Make text capitalization more consistent in the Credits sequence (Titles are all caps, but names use standard casing)
 
 <br/>
@@ -956,7 +961,7 @@
 
 <br/>
 
-- **July 2, 2025:** 1 File Changed
+- **[July 2, 2025](https://github.com/Sha0den/poketcg_v2/commit/6e569c4b3253dee0df3109a8d85100411e888fc3):** 1 File Changed
     - The SELECT button can now be used in the deck select screen to make the currently selected deck the player's active deck
     - Adjust the sound effect that is played when an empty deck slot is chosen
 
@@ -1231,7 +1236,7 @@
 
 
 ## Other Bug Fixes And Commit Reversions
-- **July 1 2025:** 1 File Changed
+- **[July 1 2025](https://github.com/Sha0den/poketcg_v2/commit/c0d1e2dbe78107ac2feaea493df94e5ef96c3bfc):** 1 File Changed
     - Fix a small issue with the deck building screen where the static card type cursor at the top of the screen wasn't always being redrawn after exiting the menu
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/4dd1d90c9d5908ce6522bd3407af88b68fddbd4d)*
 

@@ -1697,22 +1697,16 @@ DrainHalfEffect:
 DrainAllEffect:
 	ld hl, wDealtDamage
 	ld e, [hl]
-	inc hl ; wDamageEffectiveness
+	inc hl
 	ld d, [hl]
 ;	fallthrough
 
 ; applies HP recovery on Pokemon after an attack
 ; with HP recovery effect, and handles its animation.
 ; input:
-;	d = damage effectiveness
-;	e = HP amount to recover
+;	de = HP amount to recover
 ApplyAndAnimateHPRecovery:
 	push de
-	ld hl, wccbd
-	ld [hl], e
-	inc hl
-	ld [hl], d
-
 ; gets the Active Pokemon's damage
 	ld e, PLAY_AREA_ARENA
 	call GetCardDamageAndMaxHP
@@ -1725,7 +1719,8 @@ ApplyAndAnimateHPRecovery:
 	ld a, ATK_ANIM_HEAL
 	ld [wLoadedAttackAnimation], a
 	lb bc, PLAY_AREA_ARENA, $01 ; WEAKNESS
-	; bug, h needs to be set to hWhoseTurn
+	ldh a, [hWhoseTurn]
+	ld h, a
 	call PlayAttackAnimation
 
 ; compare HP to be restored with max HP.
@@ -1749,7 +1744,6 @@ ApplyAndAnimateHPRecovery:
 	; cap de to value in bc
 	ld e, c
 	ld d, b
-
 .skip_cap
 	ld [hl], e ; apply new HP to the Active Pokemon
 	jp WaitAttackAnimation

@@ -735,8 +735,7 @@ wAIMinDamage:: ; ccbb
 wAIMaxDamage:: ; ccbc
 	ds $1
 
-; only written, never read
-wccbd:: ; ccbd
+; Unused wram bytes?
 	ds $2
 
 ; damage dealt by an attack to a target
