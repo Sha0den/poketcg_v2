@@ -1,5 +1,8 @@
 MACRO dn
+REPT _NARG / 2
 	db ((\1) << 4) | (\2)
+	SHIFT 2
+ENDR
 ENDM
 
 MACRO dbw
@@ -95,5 +98,5 @@ ENDM
 ; idx-[direction] means the index to get when the input is in the direction.
 ; its attribute is used for drawing a flipped cursor.
 MACRO cursor_transition
-db \1, \2, \3, \4, \5, \6, \7
+	db \1, \2, \3, \4, \5, \6, \7
 ENDM
