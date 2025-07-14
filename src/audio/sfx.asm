@@ -1,10 +1,4 @@
 SFX_PlaySFX:
-	jr SFX_Play
-
-SFX_UpdateSFX:
-	jr SFX_Update
-
-SFX_Play:
 	ld hl, NumberOfSFX
 	cp [hl]
 	ret nc ; invalid ID
@@ -56,12 +50,11 @@ SFX_Play:
 	jr nz, .loop_cmd_ptrs
 	ret
 
-SFX_Update:
+
+SFX_UpdateSFX:
 	ld a, [wdd8c]
 	or a
-	jr nz, .asm_fc063
-	jp Func_fc26c
-.asm_fc063
+	jr z, Func_fc26c
 	xor a
 	ld b, a
 	ld c, a
@@ -95,6 +88,15 @@ SFX_Update:
 	cp $4
 	jr nz, .asm_fc06c
 	ret
+
+Func_fc26c:
+	xor a
+	ld [wSFXIsPlaying], a
+	ld [wSfxPriority], a
+	ld a, $80
+	ld [wCurSfxID], a
+	ret
+
 
 SFX_CommandTable:
 	dw SFX_frequency
@@ -462,14 +464,6 @@ SFX_end:
 	swap a
 	ld [hl], a
 	pop hl
-	ret
-
-Func_fc26c:
-	xor a
-	ld [wSFXIsPlaying], a
-	ld [wSfxPriority], a
-	ld a, $80
-	ld [wCurSfxID], a
 	ret
 
 Func_fc279:

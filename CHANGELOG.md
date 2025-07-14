@@ -123,7 +123,13 @@
 
 
 ## Code Optimization
-- **July 11, 2025:** 2 Files Changed
+- **July 14, 2025:** 3 Files Changed
+    - Implement various optimizations in src/audio/music1.asm, src/audio/music2.asm, and src/audio/sfx.asm
+    - Several unreferenced functions in those files were also commented out and placed at the end of its respective file
+
+<br/>
+
+- **[July 11, 2025](https://github.com/Sha0den/poketcg_v2/commit/b2ca4ba2a42015e3cdadf7cc784886afa1b5dd96):** 2 Files Changed
     - Edit `ApplyAndAnimateHPRecovery` function in engine/duel/effect_functions.asm (mostly corrections, but 2 more wram bytes are now unused)
 
 <br/>
