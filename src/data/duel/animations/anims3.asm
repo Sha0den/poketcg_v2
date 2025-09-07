@@ -4182,86 +4182,86 @@ AnimFrameTable78::
 
 AnimData159::
 	frame_table AnimFrameTable78
-	frame_data 6, 3, 0, 0
-	frame_data 7, 3, 0, 0
-	frame_data 8, 3, 0, 0
-	frame_data 9, 4, 0, 0
-	frame_data 10, 3, 0, 0
-	frame_data 11, 3, 0, 0
-	frame_data 6, 3, 0, 0
+	frame_data 6, 2, 0, 0
+	frame_data 7, 2, 0, 0
+	frame_data 8, 2, 0, 0
+	frame_data 9, 2, 0, 0
+	frame_data 10, 2, 0, 0
+	frame_data 11, 2, 0, 0
+	frame_data 6, 2, 0, 0
 	frame_data 0, 1, 0, 0
 	frame_data 0, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData160::
 	frame_table AnimFrameTable78
-	frame_data 12, 3, 0, 0
-	frame_data 13, 3, 0, 0
-	frame_data 14, 3, 0, 0
-	frame_data 15, 3, 0, 0
-	frame_data 16, 3, 0, 0
-	frame_data 17, 3, 0, 0
-	frame_data 12, 3, 0, 0
+	frame_data 12, 2, 0, 0
+	frame_data 13, 2, 0, 0
+	frame_data 14, 2, 0, 0
+	frame_data 15, 2, 0, 0
+	frame_data 16, 2, 0, 0
+	frame_data 17, 2, 0, 0
+	frame_data 12, 2, 0, 0
 	frame_data 0, 1, 0, 0
 	frame_data 0, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData161::
 	frame_table AnimFrameTable78
-	frame_data 1, 3, 0, 0
-	frame_data 18, 3, 0, 0
-	frame_data 19, 3, 0, 0
-	frame_data 20, 3, 0, 0
-	frame_data 21, 3, 0, 0
-	frame_data 22, 3, 0, 0
-	frame_data 1, 3, 0, 0
+	frame_data 1, 2, 0, 0
+	frame_data 18, 2, 0, 0
+	frame_data 19, 2, 0, 0
+	frame_data 20, 2, 0, 0
+	frame_data 21, 2, 0, 0
+	frame_data 22, 2, 0, 0
+	frame_data 1, 2, 0, 0
 	frame_data 0, 1, 0, 0
 	frame_data 0, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData163::
 	frame_table AnimFrameTable78
-	frame_data 25, 6, 0, 0
-	frame_data 26, 6, 0, 0
-	frame_data 27, 6, 0, 0
-	frame_data 28, 6, 0, 0
-	frame_data 29, 6, 0, 0
-	frame_data 30, 6, 0, 0
+	frame_data 25, 4, 0, 0
+	frame_data 26, 4, 0, 0
+	frame_data 27, 4, 0, 0
+	frame_data 28, 4, 0, 0
+	frame_data 29, 4, 0, 0
+	frame_data 30, 4, 0, 0
 	frame_data 30, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData164::
 	frame_table AnimFrameTable78
-	frame_data 31, 6, 0, 0
-	frame_data 32, 6, 0, 0
-	frame_data 33, 6, 0, 0
-	frame_data 34, 6, 0, 0
-	frame_data 35, 6, 0, 0
-	frame_data 36, 6, 0, 0
+	frame_data 31, 4, 0, 0
+	frame_data 32, 4, 0, 0
+	frame_data 33, 4, 0, 0
+	frame_data 34, 4, 0, 0
+	frame_data 35, 4, 0, 0
+	frame_data 36, 4, 0, 0
 	frame_data 36, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData165::
 	frame_table AnimFrameTable78
-	frame_data 37, 6, 0, 0
-	frame_data 38, 6, 0, 0
-	frame_data 39, 6, 0, 0
-	frame_data 40, 6, 0, 0
-	frame_data 41, 6, 0, 0
-	frame_data 42, 6, 0, 0
+	frame_data 37, 4, 0, 0
+	frame_data 38, 4, 0, 0
+	frame_data 39, 4, 0, 0
+	frame_data 40, 4, 0, 0
+	frame_data 41, 4, 0, 0
+	frame_data 42, 4, 0, 0
 	frame_data 42, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData167::
 	frame_table AnimFrameTable79
-	frame_data 0, 4, 0, 0
-	frame_data 1, 4, 0, 0
-	frame_data 2, 4, 0, 0
-	frame_data 3, 4, 0, 0
-	frame_data 4, 4, 0, 0
-	frame_data 5, 4, 0, 0
-	frame_data 2, 4, 0, 0
-	frame_data 6, 4, 0, 0
+	frame_data 0, 3, 0, 0
+	frame_data 1, 3, 0, 0
+	frame_data 2, 3, 0, 0
+	frame_data 3, 3, 0, 0
+	frame_data 4, 3, 0, 0
+	frame_data 5, 3, 0, 0
+	frame_data 2, 3, 0, 0
+	frame_data 6, 3, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimFrameTable79::
@@ -4341,77 +4341,77 @@ AnimFrameTable79::
 
 AnimData168::
 	frame_table AnimFrameTable79
-	frame_data 0, 2, 0, -7
-	frame_data 1, 2, 0, -7
-	frame_data 2, 2, 0, -6
-	frame_data 3, 2, 0, -6
-	frame_data 4, 2, 0, -5
-	frame_data 5, 2, 0, -5
-	frame_data 2, 2, 0, -4
-	frame_data 6, 2, 0, -4
-	frame_data 0, 2, 0, -3
-	frame_data 1, 2, 0, -2
-	frame_data 2, 2, 0, -1
-	frame_data 3, 2, 0, 0
-	frame_data 4, 2, 0, 1
-	frame_data 5, 2, 0, 2
-	frame_data 2, 2, 0, 3
-	frame_data 6, 2, 0, 4
-	frame_data 0, 2, 0, 4
-	frame_data 1, 2, 0, 5
-	frame_data 2, 2, 0, 5
-	frame_data 3, 2, 0, 6
-	frame_data 4, 2, 0, 6
-	frame_data 5, 2, 0, 7
-	frame_data 2, 2, 0, 7
-	frame_data 6, 2, 0, -5
-	frame_data 0, 2, 0, -3
-	frame_data 1, 2, 0, -2
-	frame_data 2, 2, 0, -1
-	frame_data 3, 2, 0, 0
-	frame_data 4, 2, 0, 0
-	frame_data 5, 2, 0, 1
-	frame_data 2, 2, 0, 2
-	frame_data 6, 2, 0, 3
-	frame_data 0, 2, 0, 5
+	frame_data 0, 1, 0, -7
+	frame_data 1, 1, 0, -7
+	frame_data 2, 1, 0, -6
+	frame_data 3, 1, 0, -6
+	frame_data 4, 1, 0, -5
+	frame_data 5, 1, 0, -5
+	frame_data 2, 1, 0, -4
+	frame_data 6, 1, 0, -4
+	frame_data 0, 1, 0, -3
+	frame_data 1, 1, 0, -2
+	frame_data 2, 1, 0, -1
+	frame_data 3, 1, 0, 0
+	frame_data 4, 1, 0, 1
+	frame_data 5, 1, 0, 2
+	frame_data 2, 1, 0, 3
+	frame_data 6, 1, 0, 4
+	frame_data 0, 1, 0, 4
+	frame_data 1, 1, 0, 5
+	frame_data 2, 1, 0, 5
+	frame_data 3, 1, 0, 6
+	frame_data 4, 1, 0, 6
+	frame_data 5, 1, 0, 7
+	frame_data 2, 1, 0, 7
+	frame_data 6, 1, 0, -5
+	frame_data 0, 1, 0, -3
+	frame_data 1, 1, 0, -2
+	frame_data 2, 1, 0, -1
+	frame_data 3, 1, 0, 0
+	frame_data 4, 1, 0, 0
+	frame_data 5, 1, 0, 1
+	frame_data 2, 1, 0, 2
+	frame_data 6, 1, 0, 3
+	frame_data 0, 1, 0, 5
 	frame_data 0, -1, 0, 0
 	frame_data 0, 0, 0, 0
 
 AnimData169::
 	frame_table AnimFrameTable79
-	frame_data 0, 2, 0, -7
-	frame_data 1, 2, 0, -7
-	frame_data 2, 2, 0, -6
-	frame_data 3, 2, 0, -6
-	frame_data 4, 2, 0, -5
-	frame_data 5, 2, 0, -5
-	frame_data 2, 2, 0, -4
-	frame_data 6, 2, 0, -4
-	frame_data 0, 2, 0, -3
-	frame_data 1, 2, 0, -2
-	frame_data 2, 2, 0, -1
-	frame_data 3, 2, 0, 0
-	frame_data 4, 2, 0, 1
-	frame_data 5, 2, 0, 2
-	frame_data 2, 2, 0, 3
-	frame_data 6, 2, 0, 4
-	frame_data 0, 2, 0, 4
-	frame_data 1, 2, 0, 5
-	frame_data 2, 2, 0, 5
-	frame_data 3, 2, 0, 6
-	frame_data 4, 2, 0, 6
-	frame_data 5, 2, 0, 7
-	frame_data 2, 2, 0, 7
-	frame_data 5, 2, 0, -5
-	frame_data 4, 2, 0, -3
-	frame_data 3, 2, 0, -2
-	frame_data 2, 2, 0, -1
-	frame_data 1, 2, 0, 0
-	frame_data 0, 2, 0, 0
-	frame_data 6, 2, 0, 1
-	frame_data 2, 2, 0, 2
-	frame_data 5, 2, 0, 3
-	frame_data 4, 2, 0, 5
+	frame_data 0, 1, 0, -7
+	frame_data 1, 1, 0, -7
+	frame_data 2, 1, 0, -6
+	frame_data 3, 1, 0, -6
+	frame_data 4, 1, 0, -5
+	frame_data 5, 1, 0, -5
+	frame_data 2, 1, 0, -4
+	frame_data 6, 1, 0, -4
+	frame_data 0, 1, 0, -3
+	frame_data 1, 1, 0, -2
+	frame_data 2, 1, 0, -1
+	frame_data 3, 1, 0, 0
+	frame_data 4, 1, 0, 1
+	frame_data 5, 1, 0, 2
+	frame_data 2, 1, 0, 3
+	frame_data 6, 1, 0, 4
+	frame_data 0, 1, 0, 4
+	frame_data 1, 1, 0, 5
+	frame_data 2, 1, 0, 5
+	frame_data 3, 1, 0, 6
+	frame_data 4, 1, 0, 6
+	frame_data 5, 1, 0, 7
+	frame_data 2, 1, 0, 7
+	frame_data 5, 1, 0, -5
+	frame_data 4, 1, 0, -3
+	frame_data 3, 1, 0, -2
+	frame_data 2, 1, 0, -1
+	frame_data 1, 1, 0, 0
+	frame_data 0, 1, 0, 0
+	frame_data 6, 1, 0, 1
+	frame_data 2, 1, 0, 2
+	frame_data 5, 1, 0, 3
+	frame_data 4, 1, 0, 5
 	frame_data 4, -1, 0, 0
 	frame_data 0, 0, 0, 0
 

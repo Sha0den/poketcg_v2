@@ -123,7 +123,7 @@
 
 
 ## Code Optimization
-- **July 14, 2025:** 3 Files Changed
+- **[July 14, 2025](https://github.com/Sha0den/poketcg_v2/commit/c2f366cd0edbe88e7695d1d0ce77c8a29faf1c6a):** 3 Files Changed
     - Implement various optimizations in src/audio/music1.asm, src/audio/music2.asm, and src/audio/sfx.asm
     - Several unreferenced functions in those files were also commented out and placed at the end of its respective file
 
@@ -953,6 +953,11 @@
 
 
 ## Miscellaneous Changes
+- **September 7, 2025:** 2 Files Changed
+    - Speed up animations for shuffling decks, drawing cards, flipping coins, and the Firegiver Pokémon Power (credit to JappaWakka/Paperfire88)
+
+<br/>
+
 - **[July 10, 2025](https://github.com/Sha0den/poketcg_v2/commit/1e8542517507c7fade1863725401a36ee39eac13):** 1 File Changed
     - Make text capitalization more consistent in the Credits sequence (Titles are all caps, but names use standard casing)
 
