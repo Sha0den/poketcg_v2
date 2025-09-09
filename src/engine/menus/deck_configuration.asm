@@ -2745,10 +2745,8 @@ PrintCurDeckNumberAndName:
 	; print the deck number in the menu in the form "#."
 ;	ld hl, wDefaultText
 ;	call ConvertToNumericalDigits
-;	ld a, TX_FULLWIDTH3
-;	ld [hli], a
 ;	ldfw [hl], "." ; period punctuation mark
-;	ld [hli], a
+;	inc hl
 ;	ld [hl], TX_END
 ;	lb de, 3, 2
 ;	ld hl, wDefaultText

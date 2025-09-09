@@ -123,6 +123,12 @@
 
 
 ## Code Optimization
+- **September 9, 2025:** 3 Files Changed
+    - Replace kanji in Fullwidth0 fonts (0_2_digits_kanji1.png) with main ascii characters ($20-$7e) and prioritize those over the ones in Fullwidth3
+        - *FW0 fonts only need 1 byte per character, whereas FW3 fonts need 2*
+
+<br/>
+
 - **[July 14, 2025](https://github.com/Sha0den/poketcg_v2/commit/c2f366cd0edbe88e7695d1d0ce77c8a29faf1c6a):** 3 Files Changed
     - Implement various optimizations in src/audio/music1.asm, src/audio/music2.asm, and src/audio/sfx.asm
     - Several unreferenced functions in those files were also commented out and placed at the end of its respective file
@@ -953,7 +959,7 @@
 
 
 ## Miscellaneous Changes
-- **September 7, 2025:** 2 Files Changed
+- **[September 7, 2025](https://github.com/Sha0den/poketcg_v2/commit/40ff8b442ae20d9fa2cb7228b94b713088d13110):** 2 Files Changed
     - Speed up animations for shuffling decks, drawing cards, flipping coins, and the Firegiver Pokémon Power (credit to JappaWakka/Paperfire88)
 
 <br/>

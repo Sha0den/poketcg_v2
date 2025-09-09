@@ -595,7 +595,7 @@ PlayerStatusNameText:
 PlayerStatusAlbumText:
 	text "Album           "
 	half2full
-	textfw "/"
+	textfw "⁄"
 	done
 
 PlayerStatusPlayTimeText:
@@ -818,7 +818,7 @@ ContinueFromDiarySummaryText:
 	text ""
 	line "      Album           "
 	half2full
-	textfw "/"
+	textfw "⁄"
 	text ""
 	line "      Play time         "
 	half2full

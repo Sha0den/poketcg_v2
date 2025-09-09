@@ -240,32 +240,29 @@ CreateCardSetListAndInitListCoords:
 	push af
 	cp CARD_SET_PROMOTIONAL
 	jr nz, .laboratory
-	ldfw de, "P"
+	ldfw a, "P"
 	jr .got_prefix
 .laboratory
 	cp CARD_SET_LABORATORY
 	jr nz, .mystery
-	ldfw de, "L"
+	ldfw a, "L"
 	jr .got_prefix
 .mystery
 	cp CARD_SET_MYSTERY
 	jr nz, .evolution
-	ldfw de, "M"
+	ldfw a, "M"
 	jr .got_prefix
 .evolution
 	cp CARD_SET_EVOLUTION
 	jr nz, .colosseum
-	ldfw de, "E"
+	ldfw a, "E"
 	jr .got_prefix
 .colosseum
-	ldfw de, "C"
+	ldfw a, "C"
 	; fallthrough
 
 .got_prefix
-	ld hl, wCurDeckName
-	ld [hl], d
-	inc hl
-	ld [hl], e
+	ld [wCurDeckName], a
 	pop af
 	ret
 
@@ -420,7 +417,7 @@ PrintCardSetListEntries:
 	jr nz, .got_index
 	ld a, SYM_0
 .got_index
-	ld hl, wCurDeckName + 2 ; skip prefix
+	ld hl, wCurDeckName + 1 ; skip prefix
 	ld [hl], TX_SYMBOL
 	inc hl
 	ld [hli], a ; tens place
@@ -439,14 +436,13 @@ PrintCardSetListEntries:
 	ret
 
 .phantom_card
-; phantom cards get only "××" in their index number
-	ld hl, wCurDeckName + 2
-	ldfw [hl], "?"
-	inc hl
-	ldfw [hl], "?"
-	inc hl
-	ld [hl], TX_SYMBOL
-	inc hl
+; phantom cards get only "??" in their index number
+	ld hl, wCurDeckName + 1 ; skip prefix
+	ldfw a, "?"
+	ld [hli], a
+	ld [hli], a
+	ld a, TX_SYMBOL
+	ld [hli], a
 	xor a ; SYM_SPACE
 	ld [hli], a
 	ld [hl], a ; TX_END
