@@ -109,8 +109,7 @@
 ;	charmap "", $85
 	charmap "♀", $86 ; female symbol
 	charmap "♂", $87 ; male symbol
-;	charmap "", $88
-;	charmap "", $89
+	charmap "[Lv.]", $88, $89 ; Lv. symbol
 ;	charmap "", $8a
 ;	charmap "", $8b
 ;	charmap "", $8c
@@ -468,9 +467,9 @@ ENDM
 ;	fwcharmap TX_FULLWIDTH0, "", $8d
 ;	fwcharmap TX_FULLWIDTH0, "", $8e
 ;	fwcharmap TX_FULLWIDTH0, "", $8f
-;	fwcharmap TX_FULLWIDTH0, "", $90
-;	fwcharmap TX_FULLWIDTH0, "", $91
-;	fwcharmap TX_FULLWIDTH0, "", $92
+	fwcharmap TX_FULLWIDTH0, "[Lv.]", $90 ; Lv. symbol
+	fwcharmap TX_FULLWIDTH0, "[HP]", $91 ; HP symbol
+	fwcharmap TX_FULLWIDTH0, "[E]", $92 ; E (Energy) symbol
 ;	fwcharmap TX_FULLWIDTH0, "", $93
 ;	fwcharmap TX_FULLWIDTH0, "", $94
 ;	fwcharmap TX_FULLWIDTH0, "", $95
@@ -680,10 +679,10 @@ ENDM
 ;	fwcharmap TX_FULLWIDTH3, "~", $7e ; equivalency sign/tilde
 ; $7f-$bf ARE MISCELLANEOUS SYMBOLS
 	fwcharmap TX_FULLWIDTH3, "■", $7f ; black square (8x8 pixels)
-;	fwcharmap TX_FULLWIDTH3, "‘", $80 ; duplicate left single quotation mark
-;	fwcharmap TX_FULLWIDTH3, "“", $81 ; duplicate left double quotation Mark
-;	fwcharmap TX_FULLWIDTH3, "•", $82 ; duplicate bullet point
-;	fwcharmap TX_FULLWIDTH3, "꞉", $83 ; duplicate centered colon
+;	fwcharmap TX_FULLWIDTH3, "", $80
+;	fwcharmap TX_FULLWIDTH3, "", $81
+;	fwcharmap TX_FULLWIDTH3, "", $82
+;	fwcharmap TX_FULLWIDTH3, "", $83
 	fwcharmap TX_FULLWIDTH3, "—", $84 ; em dash (8 pixels long)
 	fwcharmap TX_FULLWIDTH3, "※", $85 ; reference mark
 	fwcharmap TX_FULLWIDTH3, "○", $86 ; white circle (7x7 pixels)
@@ -694,8 +693,8 @@ ENDM
 	fwcharmap TX_FULLWIDTH3, "ṛ", $8b ; r.
 	fwcharmap TX_FULLWIDTH3, "℃", $8c ; °C (degrees Celcius)
 ;	fwcharmap TX_FULLWIDTH3, "", $8d
-	fwcharmap TX_FULLWIDTH3, "Ƕ", $8e ; HP
-	fwcharmap TX_FULLWIDTH3, "Ľ", $8f ; LV
+;	fwcharmap TX_FULLWIDTH3, "", $8e
+;	fwcharmap TX_FULLWIDTH3, "", $8f
 	fwcharmap TX_FULLWIDTH3, "●", $90 ; common rarity symbol
 	fwcharmap TX_FULLWIDTH3, "◆", $91 ; uncommon rarity symbol
 	fwcharmap TX_FULLWIDTH3, "★", $92 ; rare rarity symbol
@@ -837,9 +836,9 @@ ENDM
 	txsymbol "POKEMON"        ; $0d
 	txsymbol "ATK_DESCR"      ; $0e
 	txsymbol "CURSOR_R"       ; $0f
-	txsymbol "HP"             ; $10
-	txsymbol "Lv"             ; $11
-	txsymbol "E"              ; $12
+	txsymbol "UNUSED_1"       ; $10
+	txsymbol "UNUSED_2"       ; $11
+	txsymbol "UNUSED_3"       ; $12
 	txsymbol "DAMAGE_COUNTER" ; $13
 	txsymbol "PLUSPOWER"      ; $14
 	txsymbol "DEFENDER"       ; $15

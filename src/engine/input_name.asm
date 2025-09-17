@@ -1638,7 +1638,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	kbitem $06, $10, $35, $00, "Q"
 ;	kbitem $08, $10, $36, $00, "Z"
 ;	kbitem $0a, $10, $3c, $00, "2"
-;	kbitem $0c, $10, $3d, $00, "<Lv>"
+;	kbitem $0c, $10, $3d, $00, "[Lv.]"
 ;	kbitem $10, $0f, $01, $09
 ;
 ;	kbitem $04, $12, $37, $00, "I"

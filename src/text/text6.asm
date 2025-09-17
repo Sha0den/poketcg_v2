@@ -1,7 +1,7 @@
 RonaldChallengeCup2Missed2Text:
 	text "The Challenge Cup is already over!"
 	line "Too bad you couldn't enter!"
-	line "The <Lv>8 Mew prize belongs to me!"
+	line "The [Lv.]8 Mew prize belongs to me!"
 	line "You really should enter the next"
 	line "Challenge Cup! But then again,"
 	line "why bother, since I'll also win"
@@ -54,14 +54,14 @@ Clerk12ChallengeCup1ActiveText:
 	text "The first Challenge Cup is"
 	line "now underway!"
 	line "Defeat 3 opponents to win the"
-	line "wonderful prize, a <Lv>60 Mewtwo!"
+	line "wonderful prize, a [Lv.]60 Mewtwo!"
 	done
 
 Clerk12ChallengeCup2ActiveText:
 	text "The second Challenge Cup is"
 	line "now under way!"
 	line "Defeat 3 opponents to win the"
-	line "wonderful prize, a <Lv>8 Mew!"
+	line "wonderful prize, a [Lv.]8 Mew!"
 	done
 
 Clerk12ChallengeCup3ActiveText:
@@ -146,7 +146,7 @@ RonaldChallengeCup1PlayerLostText:
 	text "Ha ha ha! How about that!?!"
 	line "I win!!"
 	line "2 more opponents to go and"
-	line "the <Lv>8 Mew belongs to me!"
+	line "the [Lv.]8 Mew belongs to me!"
 	done
 
 Clerk12ChallengeCupRound1PlayerWonText:
@@ -185,13 +185,13 @@ Clerk12ChallengeCupRound3ChallengerText:
 RonaldChallengeCup2BeforeDuelText:
 	text "Hey, <RAMNAME>!"
 	line "I'm not gonna lose to you!"
-	line "The <Lv>60 Mewtwo belongs to me!!!"
+	line "The [Lv.]60 Mewtwo belongs to me!!!"
 	done
 
 RonaldChallengeCup1BeforeDuelText:
 	text "<RAMNAME>!"
 	line "I'm going to defeat you!"
-	line "The <Lv>8 Mew belongs to me!!!"
+	line "The [Lv.]8 Mew belongs to me!!!"
 	done
 
 Clerk12ChallengeCupRound3DuelReadyText:

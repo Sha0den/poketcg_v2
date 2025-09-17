@@ -681,7 +681,7 @@ OriginalGameBoyCardsBookName:
 OriginalGameBoyCardsBookText:
 	text "The Pokémon Trading Card Game for"
 	line "the Game Boy includes many original"
-	line "cards, like the <Lv>14 Meowth card"
+	line "cards, like the [Lv.]14 Meowth card"
 	line "that uses the Cat Punch attack."
 	line "There are many new cards to"
 	line "discover, so go search them out!"
@@ -732,7 +732,7 @@ LegendaryPokemonCardsVol1BookName:
 
 LegendaryPokemonCardsVol1BookText:
 	text "The first of the Legendary Pokémon"
-	line "Cards is the <Lv>37 Moltres."
+	line "Cards is the [Lv.]37 Moltres."
 	line "When played, Firegiver will add Fire"
 	line "Energy cards to the player's hand!"
 	line "It can also attack with Dive Bomb,"
@@ -747,7 +747,7 @@ LegendaryPokemonCardsVol2BookName:
 
 LegendaryPokemonCardsVol2BookText:
 	text "The second Legendary Pokémon Card"
-	line "is the <Lv>68 Zapdos."
+	line "is the [Lv.]68 Zapdos."
 	line "With Peal of Thunder, simply putting"
 	line "this card on the Bench will deal"
 	line "damage to another Pokémon, and its"
@@ -762,7 +762,7 @@ LegendaryPokemonCardsVol3BookName:
 
 LegendaryPokemonCardsVol3BookText:
 	text "The third Legendary Pokémon Card"
-	line "is the <Lv>37 Articuno."
+	line "is the [Lv.]37 Articuno."
 	line "Its Quickfreeze can disable the"
 	line "opponent's Pokémon for one turn"
 	line "after the card is put into play!"
@@ -777,7 +777,7 @@ LegendaryPokemonCardsVol4BookName:
 
 LegendaryPokemonCardsVol4BookText:
 	text "The fourth Legendary Pokémon Card"
-	line "is the <Lv>41 Dragonite."
+	line "is the [Lv.]41 Dragonite."
 	line "When played, its Healing Wind power"
 	line "will remove 2 damage counters from"
 	line "each of the player's Pokémon!"
@@ -919,7 +919,7 @@ RonaldChallengeCup1NotStarted1Text:
 RonaldChallengeCup1NotStarted2Text:
 	text "I'm the one who's going to"
 	line "defeat all 3 opponents!"
-	line "The prized <Lv>60 Mewtwo card"
+	line "The prized [Lv.]60 Mewtwo card"
 	line "belongs to me! You just sit tight"
 	line "and watch me win! See Ya!"
 	line "Ha ha ha ha ha ha!"
@@ -947,7 +947,7 @@ RonaldChallengeCup1LostInactive1Text:
 RonaldChallengeCup1LostInactive2Text:
 	text "The Challenge Cup is over!"
 	line "I defeated 3 opponents and won"
-	line "the prize - a <Lv>60 Mewtwo!"
+	line "the prize - a [Lv.]60 Mewtwo!"
 	line "See ya! Ha ha ha ha ha ha!"
 	done
 
@@ -959,7 +959,7 @@ RonaldChallengeCup1Missed1Text:
 RonaldChallengeCup1Missed2Text:
 	text "The Challenge Cup is over!"
 	line "I defeated 3 opponents and won"
-	line "the prize - a <Lv>60 Mewtwo!"
+	line "the prize - a [Lv.]60 Mewtwo!"
 	line "I guess you could try entering"
 	line "the next Challenge Cup, but"
 	line "you won't have a chance since"
@@ -975,7 +975,7 @@ RonaldChallengeCup2NotStarted1Text:
 RonaldChallengeCup2NotStarted2Text:
 	text "No matter who enters the Challenge"
 	line "Cup, I'll be the winner!"
-	line "This Cup's prize, the <Lv>8 Mew,"
+	line "This Cup's prize, the [Lv.]8 Mew,"
 	line "will belong to me! Why don't you"
 	line "just give up and go home!"
 	line "See ya! Ha ha ha ha ha ha!"
@@ -1004,7 +1004,7 @@ RonaldChallengeCup2LostInactive2Text:
 	line "over! What? Who won?"
 	line "Who do you expect!?! Me, of"
 	line "course! The prize belongs to"
-	line "me! <Lv>8 Mew! See ya!"
+	line "me! [Lv.]8 Mew! See ya!"
 	line "Ha ha ha ha ha ha!"
 	done
 

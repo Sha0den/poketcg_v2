@@ -620,16 +620,16 @@ NumberOfPrizesText:
 	text "Number of Prizes"
 	done
 
-UnusedText008c: ; Unused
-	text "Random 1"
+LvSymbolText:
+	textfw "[Lv.]"
 	done
 
-UnusedText008d: ; Unused
-	text "Random 2"
+HPSymbolText:
+	textfw "[HP]"
 	done
 
-UnusedText008e: ; Unused
-	text "Random 3"
+ESymbolText:
+	textfw "[E]"
 	done
 
 UnusedText008f: ; Unused

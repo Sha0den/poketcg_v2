@@ -2640,8 +2640,8 @@ DrawDuelMainScene::
 	call FillRectangle
 	call ApplyBGP6OrSGB3ToCardImage
 .place_other_elements
-	ld hl, DuelEAndHPTileData
-	call WriteDataBlocksToBGMap0
+	ld hl, DuelEAndHPSymbolsTextData
+	call PlaceTextItems
 	call DrawDuelHorizontalSeparator
 	call DrawDuelHUDs
 	call DrawWideTextBox
@@ -2832,12 +2832,11 @@ DrawDuelHUD:
 	jp WriteByteToBGMap0
 
 
-DuelEAndHPTileData:
-; x, y, tiles[], 0
-	db 1, 1, SYM_E,  0
-	db 1, 2, SYM_HP, 0
-	db 9, 8, SYM_E,  0
-	db 9, 9, SYM_HP, 0
+DuelEAndHPSymbolsTextData:
+	textitem 1, 1, ESymbolText
+	textitem 1, 2, HPSymbolText
+	textitem 9, 8, ESymbolText
+	textitem 9, 9, HPSymbolText
 	db $ff
 
 
@@ -4726,8 +4725,8 @@ DisplayCardPage_PokemonOverview:
 	; print fixed text and draw the card symbol associated to its TYPE_*
 	ld hl, CardPageRetreatWRTextData
 	call PlaceTextItems
-	ld hl, CardPageLvHPTextTileData
-	call WriteDataBlocksToBGMap0
+	ld hl, CardPageLvHPTextData
+	call PlaceTextItems
 	lb de, 3, 2
 	call DrawCardSymbol
 	; print pre-evolution's name (if any)
@@ -5048,9 +5047,9 @@ CardPageRetreatWRTextData:
 	db $ff
 
 
-CardPageLvHPTextTileData:
-	db 11,  2, SYM_Lv, 0
-	db 15,  2, SYM_HP, 0
+CardPageLvHPTextData:
+	textitem 11, 2, LvSymbolText
+	textitem 15, 2, HPSymbolText
 	db $ff
 
 
@@ -5150,8 +5149,8 @@ DisplayCardPage_PokemonDescription:
 	; print "LENGTH", "WEIGHT", "Lv", and "HP" where it corresponds in the page
 	ld hl, CardPageLengthWeightTextData
 	call PlaceTextItems
-	ld hl, CardPageLvHPTextTileData
-	call WriteDataBlocksToBGMap0
+	ld hl, CardPageLvHPTextData
+	call PlaceTextItems
 	; draw the card symbol associated to its TYPE_* at 3,2
 	lb de, 3, 2
 	call DrawCardSymbol
@@ -5840,15 +5839,17 @@ PrintPlayAreaCardInformation:
 	call PrintPlayAreaCardAttachedEnergies
 	ld a, [wCurPlayAreaY]
 	inc a
-	ld c, a
-	ld b, 5
-	ld a, SYM_E
-	call WriteByteToBGMap0
+	ld e, a
+	ld d, 5
+	ldtx hl, ESymbolText
+	call InitTextPrinting_ProcessTextFromID
 	; print HP as #/# (current HP/max HP)
-	inc c
-	ld a, SYM_HP
-	call WriteByteToBGMap0
-	inc b
+	inc e
+	ldtx hl, HPSymbolText
+	call InitTextPrinting_ProcessTextFromID
+	inc d
+	ld b, d
+	ld c, e
 	ld a, [wCurPlayAreaSlot]
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
@@ -5928,12 +5929,13 @@ PrintPlayAreaCardHeader:
 	call GetPlayAreaCardColor
 	inc a ; Energy text symbol tiles start at 1, not 0
 	call WriteByteToBGMap0
-	ld b, 14
-	ld a, SYM_Lv
-	call WriteByteToBGMap0
 	ld b, 15
 	ld a, [wLoadedCard1Level]
 	call WriteTwoDigitNumberInTxSymbolFormat_TrimLeadingZero
+	ld d, 14
+	ld e, c
+	ldtx hl, LvSymbolText
+	call InitTextPrinting_ProcessTextFromID
 
 	; print the 2x2 face down card image depending on the Pokemon's evolution stage
 	ld a, [wCurPlayAreaSlot]

@@ -440,7 +440,7 @@ SpecialConditions2DescriptionText:
 ;	linefw " PQRSTUVWXYZ[\\]^_"
 ;	linefw " `abcdefghijklmno"
 ;	linefw " pqrstuvwxyz\{|}~■"
-;	linefw " ‘“•꞉—※○ ḋśṫṛ℃ ǶĽ"
+;	linefw "     —※○ ḋśṫṛ℃   "
 ;	linefw " ●◆★☆♪♀♂₽═║╚╔"
 ;	linefw "            【】゛゜¿"
 ;	linefw " ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"
@@ -1002,11 +1002,11 @@ WonTheMedalText:
 	done
 
 VenusaurLv64TradeCardName:
-	text "<Lv>64 Venusaur"
+	text "[Lv.]64 Venusaur"
 	done
 
 MewLv15TradeCardName:
-	text "<Lv>15 Mew"
+	text "[Lv.]15 Mew"
 	done
 
 UnusedText038e: ; Unused
@@ -1370,51 +1370,51 @@ AaronNPCName:
 	done
 
 MewtwoTradeCardName:
-	text "<Lv>60 Mewtwo"
+	text "[Lv.]60 Mewtwo"
 	done
 
 MewTradeCardName:
-	text "<Lv>8 Mew"
+	text "[Lv.]8 Mew"
 	done
 
 ArcanineTradeCardName:
-	text "<Lv>34 Arcanine"
+	text "[Lv.]34 Arcanine"
 	done
 
 PikachuTradeCardName:
-	text "<Lv>16 Pikachu"
+	text "[Lv.]16 Pikachu"
 	done
 
 SurfingPikachuTradeCardName:
-	text "<Lv>13 Surfing Pikachu"
+	text "[Lv.]13 Surfing Pikachu"
 	done
 
 ElectabuzzTradeCardName:
-	text "<Lv>20 Electabuzz"
+	text "[Lv.]20 Electabuzz"
 	done
 
 SlowpokeTradeCardName:
-	text "<Lv>9 Slowpoke"
+	text "[Lv.]9 Slowpoke"
 	done
 
 JigglypuffTradeCardName:
-	text "<Lv>12 Jigglypuff"
+	text "[Lv.]12 Jigglypuff"
 	done
 
 ZapdosLegendaryCardName:
-	text "<Lv>68 Zapdos"
+	text "[Lv.]68 Zapdos"
 	done
 
 MoltresLegendaryCardName:
-	text "<Lv>37 Moltres"
+	text "[Lv.]37 Moltres"
 	done
 
 ArticunoLegendaryCardName:
-	text "<Lv>37 Articuno"
+	text "[Lv.]37 Articuno"
 	done
 
 DragoniteLegendaryCardName:
-	text "<Lv>41 Dragonite"
+	text "[Lv.]41 Dragonite"
 	done
 
 SuperEnergyRetrievalTradeCardName:
@@ -1422,7 +1422,7 @@ SuperEnergyRetrievalTradeCardName:
 	done
 
 FlyingPikachuTradeCardName:
-	text "<Lv>12 Flying Pikachu"
+	text "[Lv.]12 Flying Pikachu"
 	done
 
 LightningAndFireDeckChoiceText:

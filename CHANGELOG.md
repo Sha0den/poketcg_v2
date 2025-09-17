@@ -123,9 +123,9 @@
 
 
 ## Code Optimization
-- **September 9, 2025:** 3 Files Changed
+- **[September 9, 2025](https://github.com/Sha0den/poketcg_v2/commit/f04e024524167326b82ecd11c6009363915ff69c):** 6 Files Changed
     - Replace kanji in Fullwidth0 fonts (0_2_digits_kanji1.png) with main ascii characters ($20-$7e) and prioritize those over the ones in Fullwidth3
-        - *FW0 fonts only need 1 byte per character, whereas FW3 fonts need 2*
+        - *FW0 fonts only need 1 byte per character for text data, whereas FW3 fonts need 2*
 
 <br/>
 
@@ -959,6 +959,12 @@
 
 
 ## Miscellaneous Changes
+- **September 17, 2025:** 17 Files Changed
+    - Free up 3 text symbols by using traditional fullwidth/halfwidth fonts for the Lv, HP, and E symbols
+    - Redesign the Lv and E symbols
+
+<br/>
+
 - **[September 7, 2025](https://github.com/Sha0den/poketcg_v2/commit/40ff8b442ae20d9fa2cb7228b94b713088d13110):** 2 Files Changed
     - Speed up animations for shuffling decks, drawing cards, flipping coins, and the Firegiver Pokémon Power (credit to JappaWakka/Paperfire88)
 

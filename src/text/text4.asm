@@ -765,7 +765,7 @@ Man1PlayerReceivePikachuAltLv16Text:
 	line "me so many cards,"
 	line "please accept this card as a gift"
 	line "from me to you."
-	line "It's a <Lv>16 Pikachu."
+	line "It's a [Lv.]16 Pikachu."
 	line "Please take good care of it!"
 	done
 

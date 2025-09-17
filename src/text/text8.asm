@@ -203,7 +203,7 @@ FoundLv9SlowpokeText:
 	text "<RAMNAME>"
 	line "checked the wall!"
 	line "<RAMNAME>"
-	line "found a <Lv>9 Slowpoke!"
+	line "found a [Lv.]9 Slowpoke!"
 	done
 
 Text06a3:

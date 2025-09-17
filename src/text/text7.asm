@@ -376,22 +376,22 @@ Text060e:
 
 Text060f:
 	text "Hey! Kid!"
-	line "I've got a <Lv>20 Electabuzz,"
+	line "I've got a [Lv.]20 Electabuzz,"
 	line "but what I really want is"
-	line "a <Lv>35 Electabuzz!"
+	line "a [Lv.]35 Electabuzz!"
 	line "Hey! Kid! Do you have a"
-	line "<Lv>35 Electabuzz?"
+	line "[Lv.]35 Electabuzz?"
 	done
 
 Text0610:
 	text "Hey! Kid! We meet again!"
-	line "Do you have a <Lv>35 Electabuzz?"
+	line "Do you have a [Lv.]35 Electabuzz?"
 	line "Come on! Trade it for my"
-	line "<Lv>20 Electabuzz!"
+	line "[Lv.]20 Electabuzz!"
 	done
 
 Text0611:
-	text "Trade your <Lv>35 Electabuzz?"
+	text "Trade your [Lv.]35 Electabuzz?"
 	done
 
 Text0612:
@@ -403,13 +403,13 @@ Text0612:
 
 Text0613:
 	text "Hey, kid, it's not cool to lie!"
-	line "You don't own a <Lv>35 Electabuzz!"
+	line "You don't own a [Lv.]35 Electabuzz!"
 	line "You could get hurt lying to me, kid!"
 	done
 
 Text0614:
 	text "You're gonna trade me your"
-	line "<Lv>35 Electabuzz?"
+	line "[Lv.]35 Electabuzz?"
 	line "Way cool!...Hey! Wait, kid!"
 	line "That card's in your deck!"
 	line "It isn't cool to take that card!"
@@ -420,9 +420,9 @@ Text0614:
 
 Text0615:
 	text "You're gonna trade me your"
-	line "<Lv>35 Electabuzz? Way cool, kid!"
+	line "[Lv.]35 Electabuzz? Way cool, kid!"
 	line "OK, I'll trade you my"
-	line "<Lv>20 Electabuzz for it!"
+	line "[Lv.]20 Electabuzz for it!"
 	done
 
 Text0616:
@@ -432,8 +432,8 @@ Text0616:
 
 Text0617:
 	text "Whoa! Cool, kid! Thanks for"
-	line "that <Lv>35 Electabuzz!"
-	line "My <Lv>20 Electabuzz is a cool card!"
+	line "that [Lv.]35 Electabuzz!"
+	line "My [Lv.]20 Electabuzz is a cool card!"
 	line "Charge it up with Electabuzz!"
 	done
 

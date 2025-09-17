@@ -175,18 +175,18 @@ RequestToPrintCard::
 	inc a ; symbol corresponding to card's type (color)
 	lb bc, 18, 65
 	call WriteByteToBGMap0
-	ld a, SYM_Lv
-	lb bc, 11, 66
-	call WriteByteToBGMap0
 	ld a, [wLoadedCard1Level]
-	inc b ; (bc = 12, 66)
+	lb bc, 12, 66
 	call WriteTwoDigitNumberInTxSymbolFormat_TrimLeadingZero
-	ld a, SYM_HP
-	lb bc, 15, 66
-	call WriteByteToBGMap0
 	ld a, [wLoadedCard1HP]
-	inc b ; (bc = 16, 66)
-	jp WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
+	ld b, 16 ; c = 66
+	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
+	lb de, 11, 66
+	ldtx hl, LvSymbolText
+	call InitTextPrinting_ProcessTextFromID
+	ld d, 15 ; e = 66
+	ldtx hl, HPSymbolText
+	jp InitTextPrinting_ProcessTextFromID
 
 
 ; writes the tiles necessary to draw the card's information in sGfxBuffer0.

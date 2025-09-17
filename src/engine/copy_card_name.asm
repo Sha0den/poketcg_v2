@@ -39,9 +39,7 @@ _CopyCardNameAndLevel::
 	ldfw a, " "
 	ld [hli], a
 	dec b
-	ld a, TX_SYMBOL
-	ld [hli], a
-	ld a, SYM_Lv
+	ldfw a, "[Lv.]"
 	ld [hli], a
 	dec b
 	ld a, [wLoadedCard1Level]
@@ -102,10 +100,10 @@ _CopyCardNameAndLevel_HalfwidthText:
 	ld a, " "
 	ld [hli], a
 	dec b
-	ld a, "L"
+	ld a, HIGH("[Lv.]")
 	ld [hli], a
 	dec b
-	ld a, "v"
+	ld a, LOW("[Lv.]")
 	ld [hli], a
 	dec b
 	ld a, [wLoadedCard1Level]
