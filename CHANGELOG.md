@@ -959,9 +959,10 @@
 
 
 ## Miscellaneous Changes
-- **September 17, 2025:** 17 Files Changed
+- **[September 17, 2025](https://github.com/Sha0den/poketcg_v2/commit/4ba7e23c1410e359a15fbad803037c3e83880125):** 17 Files Changed
     - Free up 3 text symbols by using traditional fullwidth/halfwidth fonts for the Lv, HP, and E symbols
     - Redesign the Lv and E symbols
+    - *The following commit added the changes to `0_2_digits_kanji1.png` (I somehow forgot to include the file.)*
 
 <br/>
 
