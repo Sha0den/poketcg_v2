@@ -100,10 +100,10 @@ _CopyCardNameAndLevel_HalfwidthText:
 	ld a, " "
 	ld [hli], a
 	dec b
-	ld a, HIGH("[Lv.]")
+	ld a, CHARVAL("[Lv.]", 0)
 	ld [hli], a
 	dec b
-	ld a, LOW("[Lv.]")
+	ld a, CHARVAL("[Lv.]", 1)
 	ld [hli], a
 	dec b
 	ld a, [wLoadedCard1Level]

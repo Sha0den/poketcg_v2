@@ -959,10 +959,11 @@
 
 
 ## Miscellaneous Changes
-- **[September 17, 2025](https://github.com/Sha0den/poketcg_v2/commit/4ba7e23c1410e359a15fbad803037c3e83880125):** 17 Files Changed
+- **[September 17, 2025](https://github.com/Sha0den/poketcg_v2/commit/4ba7e23c1410e359a15fbad803037c3e83880125):** 18 Files Changed
     - Free up 3 text symbols by using traditional fullwidth/halfwidth fonts for the Lv, HP, and E symbols
     - Redesign the Lv and E symbols
-    - *The following commit added the changes to `0_2_digits_kanji1.png` (I somehow forgot to include the file.)*
+    - *[The following commit](https://github.com/Sha0den/poketcg_v2/commit/f119425f4f051891b2868fb3745ef57de419612e) added the changes to `0_2_digits_kanji1.png` (I somehow forgot to include the file.)*
+    - *And the commit after that fixed the warning message that was shown after compiling the rom*
 
 <br/>
 
