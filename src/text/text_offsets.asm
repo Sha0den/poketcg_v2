@@ -142,9 +142,9 @@ TextOffsets::
 	textpointer SelectComputerOpponentText                         ; 0x008a
 	textpointer NumberOfPrizesText                                 ; 0x008b
 	textpointer LvSymbolText                                       ; 0x008c
-	textpointer HPSymbolText                                       ; 0x008d
-	textpointer ESymbolText                                        ; 0x008e
-	textpointer UnusedText008f                                     ; 0x008f
+	textpointer HPText                                             ; 0x008d
+	textpointer HPSymbolText                                       ; 0x008e
+	textpointer ESymbolText                                        ; 0x008f
 	textpointer UnusedText0090                                     ; 0x0090
 	textpointer UnusedText0091                                     ; 0x0091
 	textpointer Player2Text                                        ; 0x0092

@@ -624,16 +624,16 @@ LvSymbolText:
 	textfw "[Lv.]"
 	done
 
+HPText:
+	text "HP"
+	done
+
 HPSymbolText:
 	textfw "[HP]"
 	done
 
 ESymbolText:
 	textfw "[E]"
-	done
-
-UnusedText008f: ; Unused
-	text "Random 4"
 	done
 
 UnusedText0090: ; Unused

@@ -468,8 +468,8 @@ ENDM
 ;	fwcharmap TX_FULLWIDTH0, "", $8e
 ;	fwcharmap TX_FULLWIDTH0, "", $8f
 	fwcharmap TX_FULLWIDTH0, "[Lv.]", $90 ; Lv. symbol
-	fwcharmap TX_FULLWIDTH0, "[HP]", $91 ; HP symbol
-	fwcharmap TX_FULLWIDTH0, "[E]", $92 ; E (Energy) symbol
+;	fwcharmap TX_FULLWIDTH0, "", $91
+;	fwcharmap TX_FULLWIDTH0, "", $92
 ;	fwcharmap TX_FULLWIDTH0, "", $93
 ;	fwcharmap TX_FULLWIDTH0, "", $94
 ;	fwcharmap TX_FULLWIDTH0, "", $95
@@ -707,10 +707,8 @@ ENDM
 	fwcharmap TX_FULLWIDTH3, "║", $99 ; left-aligned vertical thick line (8 pixels long, 2 pixels wide)
 	fwcharmap TX_FULLWIDTH3, "╚", $9a ; merged lines ($98/$99)
 	fwcharmap TX_FULLWIDTH3, "╔", $9b ; merged lines ($98/$99)
-;	fwcharmap TX_FULLWIDTH3, "", $9c
-;	fwcharmap TX_FULLWIDTH3, "", $9d
-;	fwcharmap TX_FULLWIDTH3, "", $9e
-;	fwcharmap TX_FULLWIDTH3, "", $9f
+	charmap "[HP]", TX_FULLWIDTH3, $9c, TX_FULLWIDTH3, $9d ; HP symbol
+	charmap "[E]",  TX_FULLWIDTH3, $9e, TX_FULLWIDTH3, $9f ; E (Energy) symbol
 ;	fwcharmap TX_FULLWIDTH3, "", $a0
 ;	fwcharmap TX_FULLWIDTH3, "", $a1
 ;	fwcharmap TX_FULLWIDTH3, "", $a2

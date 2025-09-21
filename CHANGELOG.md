@@ -959,11 +959,22 @@
 
 
 ## Miscellaneous Changes
+- **September 20, 2025:** 6 Files Changed
+    - Create a 16x8 (technically 13x7) HP symbol for the duel screens and update the previous E symbol I made to match it
+    - Rearrange the PlusPower/Defender symbols on the various duel screens
+        - They're stacked vertically on the right side of the play area and card page screens (PlusPower after Energy and Defender after HP)
+        - They're listed directly below the Pokémon's HP on the main duel screen (Defender is placed several tiles to the right if PlusPower is also attached)
+    - Rewrite `PrintPlayAreaCardAttachedEnergies` to make the maximum amount of symbols that are printed an input variable (rather than always capping at 8)
+        - The main duel screen still uses the original limit, but as many as 10 symbols can now be shown on the play area and card page screens
+    - Create `PrintCurrentAndMaxHP` function to remove some duplicate code
+
+<br/>
+
 - **[September 17, 2025](https://github.com/Sha0den/poketcg_v2/commit/4ba7e23c1410e359a15fbad803037c3e83880125):** 18 Files Changed
     - Free up 3 text symbols by using traditional fullwidth/halfwidth fonts for the Lv, HP, and E symbols
     - Redesign the Lv and E symbols
     - *[The following commit](https://github.com/Sha0den/poketcg_v2/commit/f119425f4f051891b2868fb3745ef57de419612e) added the changes to `0_2_digits_kanji1.png` (I somehow forgot to include the file.)*
-    - *And the commit after that fixed the warning message that was shown after compiling the rom*
+    - *And [the commit after that](https://github.com/Sha0den/poketcg_v2/commit/d293c1a9d0c0bc9d4d06592f54ec138868cae35d) fixed the warning message that was shown after compiling the rom*
 
 <br/>
 
@@ -1246,7 +1257,7 @@
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49):** 1 File Changed
     - Replace damage counter display with "current HP/max HP"
     - The maximum HP value of a Pokémon is now 250 (was 120)
-    - Reference the engine/duel/core.asm from the current version of poketcg_v2 if attempting to copy this change to another repository (some optimizations were made)
+        - *Please reference [the tutorial I made](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
 
 <br/>
 
