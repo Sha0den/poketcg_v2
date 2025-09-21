@@ -115,8 +115,8 @@ DEF DUELIST_TYPE_AI_OPP   EQU $80 ; $80 + [wOpponentDeckID]
 ; status conditions (DUELVARS_ARENA_CARD_STATUS)
 ; two statuses can be combined if they are identified by a different nybble
 DEF NO_STATUS       EQU $00
-DEF CONFUSED        EQU $01
-DEF ASLEEP          EQU $02
+DEF ASLEEP          EQU $01
+DEF CONFUSED        EQU $02
 DEF PARALYZED       EQU $03
 DEF POISONED        EQU $80
 DEF DOUBLE_POISONED EQU $c0

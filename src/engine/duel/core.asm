@@ -6055,23 +6055,13 @@ CheckPrintDoublePoisoned:
 ;	bc = screen coordinates for printing any symbols
 CheckPrintCnfSlpPrz:
 	push af
-	push hl
-	push de
 	and CNF_SLP_PRZ
-	ld e, a
-	ld d, $00
-	ld hl, .status_symbols
-	add hl, de
-	ld a, [hl]
+	jr z, .print ; use SYM_SPACE if Active Pokémon isn't Asleep, Confused, or Paralyzed
+	add SYM_POISONED
+.print
 	call WriteByteToBGMap0
-	pop de
-	pop hl
 	pop af
 	ret
-
-.status_symbols
-	;  NO_STATUS, CONFUSED,     ASLEEP,     PARALYZED
-	db SYM_SPACE, SYM_CONFUSED, SYM_ASLEEP, SYM_PARALYZED
 
 
 ; prints the symbols of any Energy attached to a turn holder's Pokémon in the play area.
@@ -7412,7 +7402,7 @@ HandleBetweenTurnsEvents:
 	ld [wTempNonTurnDuelistCardID], a
 	ld l, DUELVARS_ARENA_CARD_STATUS
 	ld a, [hl]
-	or a
+	or a ; cp NO_STATUS
 	jr z, .discard_pluspower
 	; has at least 1 Special Condition
 	call HandlePoisonDamage
@@ -7442,7 +7432,7 @@ HandleBetweenTurnsEvents:
 	ld [wTempNonTurnDuelistCardID], a
 	ld l, DUELVARS_ARENA_CARD_STATUS
 	ld a, [hl]
-	or a
+	or a ; cp NO_STATUS
 	jr z, .discard_defender
 	call HandlePoisonDamage
 	call nc, HandleSleepCheck ; only check Asleep status if the Pokémon wasn't KO'd
@@ -7516,7 +7506,7 @@ MoveCardToDiscardPileIfInPlayArea:
 IsArenaPokemonAsleepOrPoisoned:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
-	or a
+	or a ; cp NO_STATUS
 	ret z ; return if the Active Pokémon isn't affected by any Special Conditions
 	; note that POISONED | DOUBLE_POISONED is the same as just DOUBLE_POISONED ($c0)
 	; poison status masking is normally done with PSN_DBLPSN ($f0)

@@ -123,6 +123,13 @@
 
 
 ## Code Optimization
+- **September 21, 2025:** 3 Files Changed
+    - Reverse ASLEEP/CONFUSED constants to match the text symbol order
+    - Refactor `CheckPrintCnfSlpPrz` in src/engine/duel/core.asm
+    - Add a few comments related to checking duel variables for NO_STATUS
+
+<br/>
+
 - **[September 9, 2025](https://github.com/Sha0den/poketcg_v2/commit/f04e024524167326b82ecd11c6009363915ff69c):** 6 Files Changed
     - Replace kanji in Fullwidth0 fonts (0_2_digits_kanji1.png) with main ascii characters ($20-$7e) and prioritize those over the ones in Fullwidth3
         - *FW0 fonts only need 1 byte per character for text data, whereas FW3 fonts need 2*
@@ -967,7 +974,7 @@
     - Rewrite `PrintPlayAreaCardAttachedEnergies` to make the maximum amount of symbols that are printed an input variable (rather than always capping at 8)
         - The main duel screen still uses the original limit, but as many as 10 symbols can now be shown on the play area and card page screens
     - Create `PrintCurrentAndMaxHP` function to remove some duplicate code
-    - *The following commit included the changes made to src/engine/duel/core.asm (I somehow managed to exclude yet another file)*
+    - *[The following commit](https://github.com/Sha0den/poketcg_v2/commit/af4a9239f21365c4b45ed81f0376857af6597476) included the changes made to src/engine/duel/core.asm (I somehow managed to exclude yet another file)*
 
 <br/>
 

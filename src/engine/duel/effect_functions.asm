@@ -182,7 +182,7 @@ ActivePokemon_DamageCheck:
 ActivePokemon_StatusCheck:
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
-	or a
+	or a ; cp NO_STATUS
 	ret nz ; return nc if the Active Pokemon has a Special Condition
 	ldtx hl, NotAffectedBySpecialConditionsText
 	scf
@@ -6236,11 +6236,11 @@ SolarPowerCheck:
 
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
-	or a
+	or a ; cp NO_STATUS
 	ret nz ; return no carry if the turn holder's Active Pokémon has a Special Condition
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
-	or a
+	or a ; cp NO_STATUS
 	ret nz ; return no carry if the non-turn holder's Active Pokémon has a Special Condition
 	; neither Active Pokemon are affected by any Special Conditions
 	ldtx hl, NotAffectedBySpecialConditionsText
