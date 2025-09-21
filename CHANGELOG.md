@@ -959,7 +959,7 @@
 
 
 ## Miscellaneous Changes
-- **September 20, 2025:** 6 Files Changed
+- **[September 20, 2025](https://github.com/Sha0den/poketcg_v2/commit/51165185bfb986bb2992500a00ff3fb4d61858c4):** 6 Files Changed
     - Create a 16x8 (technically 13x7) HP symbol for the duel screens and update the previous E symbol I made to match it
     - Rearrange the PlusPower/Defender symbols on the various duel screens
         - They're stacked vertically on the right side of the play area and card page screens (PlusPower after Energy and Defender after HP)
@@ -967,6 +967,7 @@
     - Rewrite `PrintPlayAreaCardAttachedEnergies` to make the maximum amount of symbols that are printed an input variable (rather than always capping at 8)
         - The main duel screen still uses the original limit, but as many as 10 symbols can now be shown on the play area and card page screens
     - Create `PrintCurrentAndMaxHP` function to remove some duplicate code
+    - *The following commit included the changes made to src/engine/duel/core.asm (I somehow managed to exclude yet another file)*
 
 <br/>
 
@@ -1257,7 +1258,7 @@
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49):** 1 File Changed
     - Replace damage counter display with "current HP/max HP"
     - The maximum HP value of a Pokémon is now 250 (was 120)
-        - *Please reference [the tutorial I made](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
+        - *Please reference [this tutorial](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
 
 <br/>
 

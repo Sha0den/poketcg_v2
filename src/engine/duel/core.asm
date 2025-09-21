@@ -2759,54 +2759,19 @@ DrawDuelHUD:
 	ld c, [hl] ; wHUDEnergyAndHPBarsY
 	push bc
 	ld e, PLAY_AREA_ARENA
+	ld a, 8 ; maximum number of symbols to print
 	call PrintPlayAreaCardAttachedEnergies
-
-	; print HP as #/# (current HP/max HP)
-	ld a, DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
 	pop bc
 	inc c ; [wHUDEnergyAndHPBarsY] + 1
-	ld a, DUELVARS_ARENA_CARD_HP
-	get_turn_duelist_var
-	cp 100
-	jr nc, .threedigits
-	dec b
-.threedigits
-	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	inc b
-	inc b
-	inc b
-	ld a, [wLoadedCard1HP]
-	cp 100
-	jr c, .twodigits
-	ld e, a
-	ld a, SYM_SLASH
-	call WriteByteToBGMap0
-	inc b
-	ld a, e    
-	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	; might need to erase the last number from the previous printing,
-	; in case the Active Pokémon's current HP went from 3 digits to 2.
-	inc b
-	inc b
-	inc b
-	xor a ; SYM_SPACE
-	call WriteByteToBGMap0
-	jr .check_pluspower
-.twodigits 
-	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	ld a, SYM_SLASH
-	call WriteByteToBGMap0
+	; print HP as #/# (current HP/max HP)
+	ld a, PLAY_AREA_ARENA
+	call PrintCurrentAndMaxHP
 
 ; print number of attached Pluspower and Defender with respective icon, if any
-.check_pluspower
-	ld hl, wHUDEnergyAndHPBarsX
-	ld a, [hli]
-	add 7
+; check pluspower
+	ld a, [wHUDEnergyAndHPBarsX]
 	ld b, a
-	ld c, [hl] ; wHUDEnergyAndHPBarsY
-	inc c
+	inc c ; [wHUDEnergyAndHPBarsY] + 2
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
 	get_turn_duelist_var
 	or a
@@ -2817,13 +2782,14 @@ DrawDuelHUD:
 	ld a, [hl] ; number of attached Pluspower
 	add SYM_0
 	call WriteByteToBGMap0
-	dec b
+	inc b
+	inc b
+	inc b
 .check_defender
 	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
 	get_turn_duelist_var
 	or a
 	ret z
-	inc c
 	ld a, SYM_DEFENDER
 	call WriteByteToBGMap0
 	inc b
@@ -5049,7 +5015,7 @@ CardPageRetreatWRTextData:
 
 CardPageLvHPTextData:
 	textitem 11, 2, LvSymbolText
-	textitem 15, 2, HPSymbolText
+	textitem 15, 2, HPText
 	db $ff
 
 
@@ -5836,6 +5802,7 @@ PrintPlayAreaCardInformation:
 	inc a
 	ld c, a
 	ld b, 7
+	ld a, 10 ; maximum number of symbols to print
 	call PrintPlayAreaCardAttachedEnergies
 	ld a, [wCurPlayAreaY]
 	inc a
@@ -5847,49 +5814,71 @@ PrintPlayAreaCardInformation:
 	inc e
 	ldtx hl, HPSymbolText
 	call InitTextPrinting_ProcessTextFromID
-	inc d
-	ld b, d
+	ld b, 7
 	ld c, e
 	ld a, [wCurPlayAreaSlot]
+;	fallthrough
+
+; prints a Pokémon's HP as "#/#" (current HP value/maximum HP value).
+; adjusts printing to account for either 2- or 3-digit HP values.
+; if Pokémon has 0 HP, then prints "Knocked Out" instead.
+; preserves c
+; input:
+;	a  = Pokémon's play area location offset (PLAY_AREA_* constant)
+;	bc = screen coordinates at which to begin printing the given Pokémon's HP
+; output:
+;	[wLoadedCard1] = all of the Pokémon's card data (card_data_struct)
+PrintCurrentAndMaxHP:
+	ld e, a
+	add DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld a, e
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
 	or a
 	jr z, .zero_hp
 	cp 100
-	jr c, .twodigits
-	inc b
-.twodigits
+	push af
+	jr nc, .current_hp_is_three_digits
+	; current hp is 2 digits
+	call WriteTwoDigitNumberInTxSymbolFormat_TrimLeadingZero
+	jr .next
+.current_hp_is_three_digits
 	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 	inc b
+.next
 	inc b
 	inc b
 	ld a, [wLoadedCard1HP]
 	cp 100
-	jr nc, .threedigits
-	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	ld a, SYM_SLASH
-	jp WriteByteToBGMap0
-.threedigits
-	ld e, a
+	jr c, .max_hp_is_two_digits
+	; max hp is 3 digits
+	ld d, a
 	ld a, SYM_SLASH
 	call WriteByteToBGMap0
 	inc b
-	ld a, e    
+	ld a, d    
 	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
-	; might need to erase the last number from the previous printing,
-	; in case the Active Pokémon's current HP went from 3 digits to 2.
+	pop af
+	ret nc ; return if the current HP value still uses 3 digits
+	; Pokémon's current HP is now only 2 digits,
+	; so make sure any previously printed final digit gets erased.
 	inc b
 	inc b
 	inc b
-	ld a, SYM_SPACE
+	xor a ; SYM_SPACE
 	jp WriteByteToBGMap0
+.max_hp_is_two_digits
+	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
+	pop af ; discard the stored current HP value before returning
+	ld a, SYM_SLASH
+	jp WriteByteToBGMap0
+
+; print "Knocked Out" instead of HP numbers if the Pokémon's current HP = 0
 .zero_hp
-	; if fainted, print "Knock Out" in place of the HP bar
-	ld a, [wCurPlayAreaY]
-	inc a
-	inc a
-	ld e, a
-	ld d, 7
+	ld d, b
+	ld e, c
 	ldtx hl, KnockOutText
 	jp InitTextPrinting_ProcessTextFromID
 
@@ -5996,7 +5985,7 @@ PrintPlayAreaCardHeader:
 	ld a, [wCurPlayAreaY]
 	inc a
 	ld c, a
-	ld b, 15
+	ld b, 17
 	ld a, SYM_PLUSPOWER
 	call WriteByteToBGMap0
 	inc b
@@ -6010,6 +5999,7 @@ PrintPlayAreaCardHeader:
 	or a
 	ret z ; return if there are no attached Defender cards
 	ld a, [wCurPlayAreaY]
+	inc a
 	inc a
 	ld c, a
 	ld b, 17
@@ -6084,50 +6074,62 @@ CheckPrintCnfSlpPrz:
 	db SYM_SPACE, SYM_CONFUSED, SYM_ASLEEP, SYM_PARALYZED
 
 
-; prints the symbols of any Energy attached to a turn holder's Pokemon in the play area
+; prints the symbols of any Energy attached to a turn holder's Pokémon in the play area.
+; always prints a number of symbols equal to the maximum value from a input.
+; if amount of Energy is less than this maximum, then the remaining tiles are blank.
+; if amount of Energy is more than this maximum, then the final symbol is replaced with a "+".
 ; input:
-;	e = Pokemon's play area location offset (PLAY_AREA_* constant)
+;	a  = maximum number of symbols to print (ath symbol is replaced with "+" if max is exceeded)
 ;	bc = screen coordinates at which to begin printing the Energy symbols
+;	e  = Pokémon's play area location offset (PLAY_AREA_* constant)
 PrintPlayAreaCardAttachedEnergies:
 	push bc
-	call GetPlayAreaCardAttachedEnergies
 	ld hl, wDefaultText
+	ld [hli], a ; store maximum in wDefaultText
 	push hl
-	; clear 8 bytes from wDefaultText
-	ld c, 8
-	xor a
+	ld c, a
+	call GetPlayAreaCardAttachedEnergies
+	ld b, a ; wTotalAttachedEnergies
+	; clear bytes from wDefaultText + 1 equal to the maximum value from a input
+	xor a ; SYM_SPACE
 .empty_loop
 	ld [hli], a
 	dec c
 	jr nz, .empty_loop
-	pop hl ; wDefaultText
-	ld de, wAttachedEnergies
+	ld a, [wDefaultText]
+	cp b
+	jr nc, .get_symbols ; skip adding "+" if amount of Energy doesn't exceed max value from a input
+	dec hl
+	ld [hl], SYM_PLUS ; replace the last symbol with a "+"
+.get_symbols
+	pop hl ; wDefaultText + 1
+	ld e, LOW(wAttachedEnergies)
 	lb bc, SYM_FIRE, NUM_TYPES - 1
 .next_color
+	ld d, HIGH(wAttachedEnergies)
 	ld a, [de] ; Energy count for the current type/color
-	inc de
-	inc a
+	ld d, a
+	inc e
+	inc d
 	jr .check_amount
 .has_energy
 	ld [hl], b
 	inc hl
+	ld a, SYM_PLUS
+	cp [hl]
+	jr z, .place_tiles
 .check_amount
-	dec a
+	dec d
 	jr nz, .has_energy
 	inc b
 	dec c
 	jr nz, .next_color
-	ld a, [wTotalAttachedEnergies]
-	cp 9
-	jr c, .place_tiles
-	; if there are more than 8 symbols, then replace the 8th symbol with SYM_PLUS
-	ld a, SYM_PLUS
-	ld [wDefaultText + 7], a
 .place_tiles
 	pop bc
 	call BCCoordToBGMap0Address
 	ld hl, wDefaultText
-	ld b, 8 ; only print the first 8 symbols
+	ld a, [hli]
+	ld b, a ; print a number of symbols equal to the original input in a
 	jp SafeCopyDataHLtoDE
 
 
