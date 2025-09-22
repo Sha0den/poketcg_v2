@@ -453,7 +453,7 @@ CaterpieCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -503,7 +503,7 @@ MetapodCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw WithdrawEffectCommands ; effect commands
+	dw FlipToPreventAllDamageEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -517,7 +517,7 @@ MetapodCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -603,7 +603,7 @@ WeedleCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -653,7 +653,7 @@ KakunaCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw WithdrawEffectCommands ; effect commands
+	dw FlipToPreventAllDamageEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -667,7 +667,7 @@ KakunaCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -717,7 +717,7 @@ BeedrillCard:
 	dw NONE ; description (cont)
 	db 40 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -767,7 +767,7 @@ EkansCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -803,7 +803,7 @@ ArbokCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw OpponentSwitchesActive50PercentEffectCommands ; effect commands
+	dw FlipToMakeOpponentSwitchActiveEffectCommands ; effect commands
 	db NONE ; flags 1
 	db SWITCH_OPPONENT_POKEMON ; flags 2
 	db NONE ; flags 3
@@ -903,7 +903,7 @@ NidorinaCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
+	dw FlipToInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1103,7 +1103,7 @@ NidokingCard:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_PLUS ; category
-	dw Plus10OrRecoilEffectCommands ; effect commands
+	dw FlipForPlus10Or10DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1153,7 +1153,7 @@ ZubatCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
+	dw FlipToInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1253,7 +1253,7 @@ OddishCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1317,7 +1317,7 @@ GloomCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw DoubleConfusionEffectCommands ; effect commands
+	dw BothActiveAreConfusedEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db DISCOURAGE_THIS_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -1503,7 +1503,7 @@ VenonatCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1567,7 +1567,7 @@ VenomothCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw VenomPowderEffectCommands ; effect commands
+	dw FlipToInflictPoisonAndConfusionEffectCommands ; effect commands
 	db INFLICT_POISON | INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1653,7 +1653,7 @@ WeepinbellCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1717,7 +1717,7 @@ VictreebelCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayPreventRetreatEffectCommands ; effect commands
+	dw FlipToPreventRetreatEffectCommands ; effect commands
 	db NONE ; flags 1
 	db ENCOURAGE_THIS_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -1753,7 +1753,7 @@ GrimerCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1817,7 +1817,7 @@ MukCard:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -1953,7 +1953,7 @@ KoffingCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw FoulGasEffectCommands ; effect commands
+	dw FlipToInflictPoisonOrConfusionEffectCommands ; effect commands
 	db INFLICT_POISON | INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2003,7 +2003,7 @@ WeezingCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2053,7 +2053,7 @@ TangelaLv8Card:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2103,7 +2103,7 @@ TangelaLv12Card:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2203,7 +2203,7 @@ PinsirCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2403,7 +2403,7 @@ VulpixCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw FlipToInflictConfusionEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2667,7 +2667,7 @@ ArcanineLv45Card:
 	dw NONE ; description (cont)
 	db 80 ; damage
 	db DAMAGE_NORMAL ; category
-	dw Recoil30EffectCommands ; effect commands
+	dw Also30DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -2867,7 +2867,7 @@ MagmarLv31Card:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictPoisonEffectCommands ; effect commands
+	dw FlipToInflictPoisonEffectCommands ; effect commands
 	db INFLICT_POISON ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3103,7 +3103,7 @@ SquirtleCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3117,7 +3117,7 @@ SquirtleCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw WithdrawEffectCommands ; effect commands
+	dw FlipToPreventAllDamageEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -3153,7 +3153,7 @@ WartortleCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw WithdrawEffectCommands ; effect commands
+	dw FlipToPreventAllDamageEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -3253,7 +3253,7 @@ PsyduckCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw HeadacheEffectCommands ; effect commands
+	dw PreventTrainersNextTurnEffectCommands ; effect commands
 	db NONE ; flags 1
 	db ENCOURAGE_THIS_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -3303,7 +3303,7 @@ GolduckCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3553,7 +3553,7 @@ TentacruelCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
+	dw FlipToInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3667,7 +3667,7 @@ DewgongCard:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3703,7 +3703,7 @@ ShellderCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
+	dw FlipToInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -3717,7 +3717,7 @@ ShellderCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw WithdrawEffectCommands ; effect commands
+	dw FlipToPreventAllDamageEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -4167,7 +4167,7 @@ StarmieCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4267,7 +4267,7 @@ GyaradosCard:
 	dw NONE ; description (cont)
 	db 40 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4317,7 +4317,7 @@ LaprasCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw FlipToInflictConfusionEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4553,7 +4553,7 @@ ArticunoLv35Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4667,7 +4667,7 @@ PikachuLv12Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayRecoil10EffectCommands ; effect commands
+	dw FlipFor10DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4767,7 +4767,7 @@ PikachuLv16Card:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4817,7 +4817,7 @@ PikachuAltLv16Card:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -4853,7 +4853,7 @@ FlyingPikachuCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5017,7 +5017,7 @@ RaichuLv40Card:
 	dw NONE ; description (cont)
 	db 60 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayRecoil30EffectCommands ; effect commands
+	dw FlipFor30DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5103,7 +5103,7 @@ MagnemiteLv13Card:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5203,7 +5203,7 @@ MagnetonLv28Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5253,7 +5253,7 @@ MagnetonLv35Card:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw DamageUnaffectedByColorEffectCommands ; effect commands
+	dw DamageUnaffectedByWeaknessOrResistanceEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5353,7 +5353,7 @@ ElectrodeLv35Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw DamageUnaffectedByColorEffectCommands ; effect commands
+	dw DamageUnaffectedByWeaknessOrResistanceEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5367,7 +5367,7 @@ ElectrodeLv35Card:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw EnergySpikeEffectCommands ; effect commands
+	dw AttachBasicEnergyFromDeckEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NONE ; flags 2
 	db SPECIAL_AI_HANDLING ; flags 3
@@ -5503,7 +5503,7 @@ ElectabuzzLv35Card:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5517,7 +5517,7 @@ ElectabuzzLv35Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_PLUS ; category
-	dw Plus10OrRecoilEffectCommands ; effect commands
+	dw FlipForPlus10Or10DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5567,7 +5567,7 @@ JolteonLv24Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -5703,7 +5703,7 @@ ZapdosLv64Card:
 	dw NONE ; description (cont)
 	db 60 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayRecoil30EffectCommands ; effect commands
+	dw FlipFor30DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -6067,7 +6067,7 @@ PrimeapeCard:
 	dw NONE ; description (cont)
 	db 50 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayConfuseSelfEffectCommands ; effect commands
+	dw FlipForSelfConfusionEffectCommands ; effect commands
 	db NONE ; flags 1
 	db DISCOURAGE_THIS_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -6167,7 +6167,7 @@ MachokeCard:
 	dw NONE ; description (cont)
 	db 60 ; damage
 	db DAMAGE_NORMAL ; category
-	dw Recoil20EffectCommands ; effect commands
+	dw Also20DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -6703,7 +6703,7 @@ RhyhornCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw LeerEffectCommands ; effect commands
+	dw FlipToPreventAttackingThisPokemonEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -6767,7 +6767,7 @@ RhydonCard:
 	tx RamDescriptionCont ; description (cont)
 	db 50 ; damage
 	db DAMAGE_NORMAL ; category
-	dw Recoil20OpponentSwitchesActiveEffectCommands ; effect commands
+	dw OpponentSwitchesActiveAnd20DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db SWITCH_OPPONENT_POKEMON ; flags 2
 	db NONE ; flags 3
@@ -6953,7 +6953,7 @@ AbraCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -7067,7 +7067,7 @@ AlakazamCard:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw FlipToInflictConfusionEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -7217,7 +7217,7 @@ SlowbroCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -7253,7 +7253,7 @@ GastlyLv8Card:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictSleepNoDamageEffectCommands ; effect commands
+	dw FlipToInflictSleepNoDamageEffectCommands ; effect commands
 	db INFLICT_SLEEP ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -7303,7 +7303,7 @@ GastlyLv17Card:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -7517,7 +7517,7 @@ DrowzeeCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionEffectCommands ; effect commands
+	dw FlipToInflictConfusionEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -7867,7 +7867,7 @@ MewLv8Card:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -8167,7 +8167,7 @@ PidgeotLv40Card:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw HurricaneEffectCommands ; effect commands
+	dw ReturnDefendingPokemonToTheHandEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -8403,7 +8403,7 @@ ClefairyCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictSleepNoDamageEffectCommands ; effect commands
+	dw FlipToInflictSleepNoDamageEffectCommands ; effect commands
 	db INFLICT_SLEEP ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -8517,7 +8517,7 @@ JigglypuffLv12Card:
 	dw NONE ; description (cont)
 	db 40 ; damage
 	db DAMAGE_NORMAL ; category
-	dw Recoil20EffectCommands ; effect commands
+	dw Also20DamageToSelfEffectCommands ; effect commands
 	db LOW_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -8753,7 +8753,7 @@ MeowthLv15Card:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayDrawCardEffectCommands ; effect commands
+	dw FlipToDrawCardEffectCommands ; effect commands
 	db NONE ; flags 1
 	db ENCOURAGE_THIS_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -9003,7 +9003,7 @@ LickitungCard:
 	dw NONE ; description (cont)
 	db 10 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -9017,7 +9017,7 @@ LickitungCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictConfusionNoDamageEffectCommands ; effect commands
+	dw FlipToInflictConfusionNoDamageEffectCommands ; effect commands
 	db INFLICT_CONFUSION ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -9053,7 +9053,7 @@ ChanseyCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db RESIDUAL ; category
-	dw WithdrawEffectCommands ; effect commands
+	dw FlipToPreventAllDamageEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -9067,7 +9067,7 @@ ChanseyCard:
 	dw NONE ; description (cont)
 	db 80 ; damage
 	db DAMAGE_NORMAL ; category
-	dw Recoil80EffectCommands ; effect commands
+	dw Also80DamageToSelfEffectCommands ; effect commands
 	db HIGH_RECOIL ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3
@@ -9167,7 +9167,7 @@ TaurosCard:
 	dw NONE ; description (cont)
 	db 20 ; damage
 	db DAMAGE_PLUS ; category
-	dw RageAndMayConfuseSelfEffectCommands ; effect commands
+	dw RageAndFlipForSelfConfusionEffectCommands ; effect commands
 	db NONE ; flags 1
 	db DISCOURAGE_THIS_ATTACK ; flags 2
 	db BOOST_IF_TAKEN_DAMAGE ; flags 3
@@ -9253,7 +9253,7 @@ EeveeCard:
 	dw NONE ; description (cont)
 	db 0 ; damage
 	db DAMAGE_NORMAL ; category
-	dw TailWagEffectCommands ; effect commands
+	dw FlipToPreventAttackingThisPokemonEffectCommands ; effect commands
 	db NONE ; flags 1
 	db NULLIFY_OR_WEAKEN_ATTACK ; flags 2
 	db NONE ; flags 3
@@ -9367,7 +9367,7 @@ SnorlaxCard:
 	dw NONE ; description (cont)
 	db 30 ; damage
 	db DAMAGE_NORMAL ; category
-	dw MayInflictParalysisEffectCommands ; effect commands
+	dw FlipToInflictParalysisEffectCommands ; effect commands
 	db INFLICT_PARALYSIS ; flags 1
 	db NONE ; flags 2
 	db NONE ; flags 3

@@ -45,7 +45,7 @@ ProphecyEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Prophecy_ReorderEffect
 	db  $00
 
-MayDrawCardEffectCommands:
+FlipToDrawCardEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DrawCard50PercentEffect
 	db  $00
 
@@ -57,7 +57,7 @@ Draw2EffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Draw2CardsEffect
 	db  $00
 
-EnergySpikeEffectCommands:
+AttachBasicEnergyFromDeckEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DeckCheck
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AttachBasicEnergyFromDeck_PlayerSelection
 	dbw EFFECTCMDTYPE_AI_SELECTION, AttachBasicEnergyFromDeck_AISelection
@@ -215,11 +215,11 @@ PsychicRecoverEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recover_HealEffect
 	db  $00
 
-MayInflictSleepNoDamageEffectCommands:
+FlipToInflictSleepNoDamageEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Sleep50PercentWithoutDamageEffect
 	db  $00
 
-MayInflictSleepEffectCommands:
+FlipToInflictSleepEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Sleep50PercentEffect
 	db  $00
 
@@ -231,11 +231,11 @@ DreamEaterEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, DefendingPokemon_SleepCheck
 	db  $00
 
-MayInflictConfusionNoDamageEffectCommands:
+FlipToInflictConfusionNoDamageEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentWithoutDamageEffect
 	db  $00
 
-MayInflictConfusionEffectCommands:
+FlipToInflictConfusionEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Confusion50PercentEffect
 	db  $00
 
@@ -243,11 +243,11 @@ InflictConfusionEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ConfusionEffect
 	db  $00
 
-DoubleConfusionEffectCommands:
+BothActiveAreConfusedEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ConfuseBothActivePokemonEffect
 	db  $00
 
-MayInflictParalysisEffectCommands:
+FlipToInflictParalysisEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Paralysis50PercentEffect
 	db  $00
 
@@ -255,7 +255,7 @@ ClampEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, AllOrNothingParalysisEffect
 	db  $00
 
-MayInflictPoisonEffectCommands:
+FlipToInflictPoisonEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Poison50PercentEffect
 	dbw EFFECTCMDTYPE_AI, MayInflictPoison_AIEffect
 	db  $00
@@ -275,12 +275,12 @@ ToxicEffectCommands:
 	dbw EFFECTCMDTYPE_AI, Toxic_AIEffect
 	db  $00
 
-FoulGasEffectCommands:
+FlipToInflictPoisonOrConfusionEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonOrConfusionEffect
 	dbw EFFECTCMDTYPE_AI, InflictPoison_AIEffect
 	db  $00
 
-VenomPowderEffectCommands:
+FlipToInflictPoisonAndConfusionEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PoisonConfusion50PercentEffect
 	dbw EFFECTCMDTYPE_AI, MayInflictPoison_AIEffect
 	db  $00
@@ -310,7 +310,7 @@ FlyEffectCommands:
 	dbw EFFECTCMDTYPE_AI, FlipFor30_AIEffect
 	db  $00
 
-WithdrawEffectCommands:
+FlipToPreventAllDamageEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageProtection50PercentEffect
 	db  $00
 
@@ -342,11 +342,7 @@ CannotAttackEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttack50PercentEffect
 	db  $00
 
-LeerEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentEffect
-	db  $00
-
-TailWagEffectCommands:
+FlipToPreventAttackingThisPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, CannotAttackThis50PercentEffect
 	db  $00
 
@@ -369,7 +365,7 @@ ReduceBy20EffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ReduceBy20Effect
 	db  $00
 
-MayPreventRetreatEffectCommands:
+FlipToPreventRetreatEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoRetreat50PercentEffect
 	db  $00
 
@@ -391,7 +387,7 @@ Conversion2EffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Conversion2_ChangeResistanceEffect
 	db  $00
 
-HeadacheEffectCommands:
+PreventTrainersNextTurnEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, PreventTrainersEffect
 	db  $00
 
@@ -401,13 +397,13 @@ DiscardEnergyDefendingPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DefendingPokemonEnergy_DiscardEffect
 	db  $00
 
-OpponentSwitchesActive50PercentEffectCommands:
+FlipToMakeOpponentSwitchActiveEffectCommands:
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive50Percent_SelectEffect
 	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive50Percent_SelectEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentSwitchesActive_SwitchEffect
 	db  $00
 
-Recoil20OpponentSwitchesActiveEffectCommands:
+OpponentSwitchesActiveAnd20DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_BenchCheck
 	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_BenchCheck
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil20OpponentSwitchesActiveEffect
@@ -434,11 +430,11 @@ DevolutionBeamEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DevolutionBeam_DevolveEffect
 	db  $00
 
-HurricaneEffectCommands:
+ReturnDefendingPokemonToTheHandEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, ReturnDefendingPokemonToTheHandEffect
 	db  $00
 
-DamageUnaffectedByColorEffectCommands:
+DamageUnaffectedByWeaknessOrResistanceEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, NoColorEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NullEffect
 	dbw EFFECTCMDTYPE_AI, NoColorEffect
@@ -464,12 +460,12 @@ RageEffectCommands:
 	dbw EFFECTCMDTYPE_AI, Rage_DamageBoostEffect
 	db  $00
 
-RageAndMayConfuseSelfEffectCommands:
+RageAndFlipForSelfConfusionEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, RageAndSelfConfusion50PercentEffect
 	dbw EFFECTCMDTYPE_AI, Rage_DamageBoostEffect
 	db  $00
 
-MayConfuseSelfEffectCommands:
+FlipForSelfConfusionEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SelfConfusion_50PercentEffect
 	db  $00
 
@@ -605,31 +601,31 @@ FlipForPlus20Base10EffectCommands:
 	dbw EFFECTCMDTYPE_AI, Plus20From10_AIEffect
 	db  $00
 
-Plus10OrRecoilEffectCommands:
+FlipForPlus10Or10DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Plus10OrRecoil_ModifierEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Plus10OrRecoil_RecoilEffect
 	dbw EFFECTCMDTYPE_AI, Plus10OrRecoil_AIEffect
 	db  $00
 
-MayRecoil10EffectCommands:
+FlipFor10DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Recoil10_50PercentEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil10_RecoilEffect
 	db  $00
 
-MayRecoil30EffectCommands:
+FlipFor30DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, FlipToRecoil30_50PercentEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, FlipToRecoil30_RecoilEffect
 	db  $00
 
-Recoil20EffectCommands:
+Also20DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil20Effect
 	db  $00
 
-Recoil30EffectCommands:
+Also30DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil30Effect
 	db  $00
 
-Recoil80EffectCommands:
+Also80DamageToSelfEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil80Effect
 	db  $00
 

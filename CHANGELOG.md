@@ -123,7 +123,13 @@
 
 
 ## Code Optimization
-- **September 21, 2025:** 3 Files Changed
+- **September 22, 2025:** 2 Files Changed
+    - Merge effect commands for Leer and Tail Wag
+    - Rename various effect commands to make them more obvious (e.g. "MayDrawCard" -> "FlipToDrawCard")
+
+<br/>
+
+- **[September 21, 2025](https://github.com/Sha0den/poketcg_v2/commit/919888a50c83f6ed11df09f61972550b5334f328):** 3 Files Changed
     - Reverse ASLEEP/CONFUSED constants to match the text symbol order
     - Refactor `CheckPrintCnfSlpPrz` in src/engine/duel/core.asm
     - Add a few comments related to checking duel variables for NO_STATUS
