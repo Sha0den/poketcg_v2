@@ -127,11 +127,11 @@ FlushPalettesIfRequested::
 
 FlushAllCGBPalettes::
 	; flush 8 BGP palettes
-	xor a
+	xor a ; start with BGP0 (wBackgroundPalettesCGB)
 	ld b, 8 palettes
 	call CopyCGBPalettes
 	; flush 8 OBP palettes
-	ld a, CGB_PAL_SIZE
+	ld a, NUM_BACKGROUND_PALETTES ; skip all background palettes and start with OBP0 (wObjectPalettesCGB)
 	ld b, 8 palettes
 	call CopyCGBPalettes
 	jr FlushPalettesIfRequested.done
@@ -143,9 +143,9 @@ FlushAllCGBPalettes::
 ;	a = offset for wBackgroundPalettesCGB
 ;	b = number of bytes to copy
 CopyCGBPalettes::
-	add a
-	add a
-	add a
+	add a ; *2
+	add a ; *4
+	add a ; *8 (CGB_PAL_SIZE)
 	ld e, a
 	ld d, $0
 	ld hl, wBackgroundPalettesCGB

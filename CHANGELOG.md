@@ -123,14 +123,14 @@
 
 
 ## Code Optimization
-- **September 22, 2025:** 2 Files Changed
+- **[September 22, 2025](https://github.com/Sha0den/poketcg_v2/commit/6fc7f1ef380ed7c2e525f9ec133f483a3e7be361):** 2 Files Changed
     - Merge effect commands for Leer and Tail Wag
     - Rename various effect commands to make them more obvious (e.g. "MayDrawCard" -> "FlipToDrawCard")
 
 <br/>
 
 - **[September 21, 2025](https://github.com/Sha0den/poketcg_v2/commit/919888a50c83f6ed11df09f61972550b5334f328):** 3 Files Changed
-    - Reverse ASLEEP/CONFUSED constants to match the text symbol order
+    - Swap ASLEEP/CONFUSED constants to match the text symbol order
     - Refactor `CheckPrintCnfSlpPrz` in src/engine/duel/core.asm
     - Add a few comments related to checking duel variables for NO_STATUS
 
@@ -428,14 +428,14 @@
 
 - **[October 19, 2024](https://github.com/Sha0den/poketcg_v2/commit/1926adefc60d7ab79ab845eca4308e801035f9ba):** 1 File Changed
     - Condense the Pokémon Power checks being performed during `HandleStrikesBack_AgainstDamagingAttack`
-    - The changes were spread out over two commits because I mistakenly thought that the developers overlooked something. [SECOND COMMIT](https://github.com/Sha0den/poketcg_v2/commit/012e2841921122bdf43c6cdd115436ef9f90a076)
+    - *The changes were spread out over two commits because I mistakenly thought that the developers overlooked something. [SECOND COMMIT](https://github.com/Sha0den/poketcg_v2/commit/012e2841921122bdf43c6cdd115436ef9f90a076)*
 
 <br/>
 
 - **[October 18, 2024](https://github.com/Sha0den/poketcg_v2/commit/eaecc5cb00bca6f7489955f6980cf0151712fb1f):** 13 Files Changed
     - Try to standardize the function comments that are used in the engine/duel/ai files (excluding the decks folder)
     - Plus several more code changes in said files (only big change was to `_AIProcessHandTrainerCards`)
-    - A small (but very important) mistake in `_AIProcessHandTrainerCards` was fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/bacaa181c7e2fc484b038c37ee17a5f345540796) and [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f5567f7a3860ed5dc502bcf75458002735427448)
+    - *A small (but very important) mistake in `_AIProcessHandTrainerCards` was fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/bacaa181c7e2fc484b038c37ee17a5f345540796) and [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f5567f7a3860ed5dc502bcf75458002735427448)*
 
 <br/>
 
@@ -443,7 +443,7 @@
     - Countless optimizations and refactoring in engine/duel/ai files
     - Several functions in said files were relocated and a few others were completely removed
     - Numerous corrections were also made and some of the functions were even expanded
-    - Small AI Energy reversion to fix Rain Dance in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/e489039247565544d26dc6339812820cb3708bf6)
+    - *Small AI Energy reversion to fix Rain Dance in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/e489039247565544d26dc6339812820cb3708bf6)*
 
 <br/>
 
@@ -500,7 +500,7 @@
 
 - **[September 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/623ad9e66c831b60fb67885debddb175175639cd):** 3 Files Changed
     - Make some changes to the effect functions files pertaining to hram labels and eliminate some unnecessary functions in the process.
-    - A missing `ret` was added in [this commit](https://github.com/Sha0den/poketcg_v2/commit/b009fbaf8dc9aceeb71fbfa9fbbd1ae14c7826b0).
+    - *A missing `ret` was added in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/b009fbaf8dc9aceeb71fbfa9fbbd1ae14c7826b0).*
 
 <br/>
 
@@ -647,7 +647,7 @@
 
 - **[August 11, 2024](https://github.com/Sha0den/poketcg_v2/commit/edc9a809d7096e625af1e26e41cea6bc2b79693f):** 11 Files Changed
     - Refactor and better organize all functions associated with writing numbers
-    - [This commit](https://github.com/Sha0den/poketcg_v2/commit/c1249198e62a2e53fecb4c4feabf0c1097870614) swapped the FULLWIDTH3 fonts for TX_SYMBOL fonts in the fullwidth text functions, to avoid overwriting the numbers on screen with other font tiles once VRAM runs out of space for new font tiles
+    - *[This Commit](https://github.com/Sha0den/poketcg_v2/commit/c1249198e62a2e53fecb4c4feabf0c1097870614) swapped the FULLWIDTH3 fonts for TX_SYMBOL fonts in the fullwidth text functions, to avoid overwriting the numbers on screen with other font tiles once VRAM runs out of space for new font tiles*
 
 <br/>
 
@@ -664,7 +664,7 @@
 
 - **[August 5, 2024](https://github.com/Sha0den/poketcg_v2/commit/6f6424caf4c5ad4e6853d33f379a3188d97d7483):** 1 File Changed
     - Review and clean up engine/menus/deck_machine.asm
-    - This file also had a small bug which was fixed in [this commit](https://github.com/Sha0den/poketcg_v2/commit/a75667fb625f0a177c98922351a605e7ee6356b4)
+    - *This file also had a small bug which was fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/a75667fb625f0a177c98922351a605e7ee6356b4)*
 
 <br/>
 
@@ -770,7 +770,7 @@
 
 - **[June 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/fbbd4f3f7422ba5a9abcd6878e842c0aec178e02):** 19 Files Changed
     - Delete `Func_7415`, `SetNoLineSeparation`, and `SetOneLineSeparation` from engine/duel.core.asm, replacing any calls with the 2 lines of code from the deleted function
-    - Move `Func_61a1` to engine/duel/effect_functions.asm
+    - Move `SetupPlayAreaScreen` to engine/duel/effect_functions.asm
     - Move `ZeroObjectPositionsAndToggleOAMCopy` to home/objects.asm
     - Move `WaitAttackAnimation` to home/duel.asm
     - Move `SetCardListHeader` and `SetCardListInfoBoxText` to home/menus.asm
@@ -837,7 +837,7 @@
 - **[June 17, 2024](https://github.com/Sha0den/poketcg_v2/commit/2b8bfd555bbb4076890d0f962847224401c8e90d):** 51 Files Changed
     - Try to standardize the function comments that are used in the home bank files
     - Also eliminate some redundant code and swap out a few more `ld` instructions with `ldh`
-    - Further adjustments made in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/acf60372628574a3e4c5d03c47c1ee058f1fe5ec)
+    - *Further adjustments made in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/acf60372628574a3e4c5d03c47c1ee058f1fe5ec)*
 
 <br/>
 
@@ -1032,7 +1032,7 @@
     - Create `InitTextPrinting_ProcessCenteredText` function for printing center aligned text and use it in `YesOrNoMenuWithText` (also add SFX after choosing "Yes" or "No")
     - Create `WriteOneByteNumberInHalfwidthTextFormat_TrimLeadingZeros` function and add it to home/write_number.asm
     - Create some clear functions in home/tiles.asm to be used as alternatives to `EmptyScreen` for minor screen transitions
-    - [The following commit](https://github.com/Sha0den/poketcg_v2/commit/b9549e134b73b6189cc7b01f388529c54c840fea) reverted the center alignment change to `YesOrNoMenuWithText` because it didn't account for ramtext or adjust the coordinates for background scrolling (I might revisit the idea later)
+    - *[The following commit](https://github.com/Sha0den/poketcg_v2/commit/b9549e134b73b6189cc7b01f388529c54c840fea) reverted the center alignment change to `YesOrNoMenuWithText` because it didn't account for ramtext or adjust the coordinates for background scrolling (I might revisit the idea later)*
 
 <br/>
 
@@ -1048,7 +1048,7 @@
     - Officially add Double Colorless Energy to the Mystery set and remove the code that allows any Energy card to be included in a booster, regardless of set
         - *Energy cards are still treated differently in the card album to ensure they appear at the end of the set list*
     - Optimize many of the functions in engine/booster_packs.asm
-    - Further changes were made to the card album Energy code in the [following commit](https://github.com/Sha0den/poketcg_v2/commit/973dac5db8b51079e527d73bd80d9a7960146a44), to more easily adapt to possible changes to the card pool
+    - *Further changes were made to the card album Energy code in the [following commit](https://github.com/Sha0den/poketcg_v2/commit/973dac5db8b51079e527d73bd80d9a7960146a44), to more easily adapt to possible changes to the card pool*
 
 <br/>
 
@@ -1132,7 +1132,7 @@
     - Move a lot of texts from text3.asm to text2.asm (Needed more space for Glossary)
     - Move a lot of texts from text2.asm to text1.asm
     - Make some minor adjustments to several of the title menu texts in text3.asm
-    - The newly added `DrawTextBoxSeparator` function was later fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/1125a231a37aa3217d2684badcbfff5776fad9bc).
+    - *The newly added `DrawTextBoxSeparator` function was later fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/1125a231a37aa3217d2684badcbfff5776fad9bc).*
 
 <br/>
 
@@ -1157,7 +1157,7 @@
 
 - **[May 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/9901b4b04b2df70f8eb4918b05c20da6bc281efc):** 2 Files Changed
     - Give Text Offsets its own bank (instead of sharing one with Text 1)
-    - Text pointers were later adjusted in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/09f3400366b809053a31210ddc368f6273896608)
+    - *Text pointers were later adjusted in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/09f3400366b809053a31210ddc368f6273896608)*
 
 <br/>
 
@@ -1193,13 +1193,13 @@
 
 - **[April 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/31a2cf426dfcccbd4d25b5af3d18a77845a01dc2):** 3 Files Changed
     - Update fullwidth and halfwidth font graphics and some of the box messages
-    - Further Adjustments to box_messages.png in [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/673f4965565af76c3ff95c26988b2b024d04e380)
+    - *Further Adjustments to box_messages.png in [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/673f4965565af76c3ff95c26988b2b024d04e380)*
 
 <br/>
 
 - **[April 16, 2024](https://github.com/Sha0den/improvedpoketcg/commit/180ea5c9b6e0965a32b3cdc37b474b8b8a97c8ef):** 1 File Changed
     - Replace the word "Hand" with the hand icon from the duel graphics in the play area screens
-    - *Note that the "11" in the first line of `_DrawPlayAreaToPlacePrizeCards.player_icon_coordinates` should also be changed to "10" (applied in [this commit](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8))*
+    - *Note that the "11" in the first line of `_DrawPlayAreaToPlacePrizeCards.player_icon_coordinates` should also be changed to "10" (applied in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8))*
 
 <br/>
 
@@ -1222,7 +1222,7 @@
     - Redesign the deck naming screen to allow more variety when naming
         - *Keyboard now has 3 layouts (switch between them by pressing SELECT or the Uppercase/Lowercase/Accents buttons)*
     - Update and reformat the halfwidth/fullwidth3 font graphics and redistribute the graphics data to account for the larger size
-    - [The following commit](https://github.com/Sha0den/poketcg_v2/commit/36efe66857cb965b1d7883a930afa9415766c032) replaces the original player naming screen with the new deck naming screen (also makes the player name use halfwidth font)
+    - *[The following commit](https://github.com/Sha0den/poketcg_v2/commit/36efe66857cb965b1d7883a930afa9415766c032) replaces the original player naming screen with the new deck naming screen (also makes the player name use halfwidth font)*
 
 <br/>
 
@@ -1235,7 +1235,7 @@
 
 - **[August 22, 2024](https://github.com/Sha0den/poketcg_v2/commit/f621d292bce067b1f346896554dde4f944a1949d):** 22 Files Changed
     - Use [Electro's tutorial](https://github.com/pret/poketcg/wiki/Add-female-player-character) to add the option to play as Mint, the female protagonist from the sequel
-    - *Some texts with gender-specific pronouns were eventually fixed in [this commit](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8)*
+    - *Some texts with gender-specific pronouns were eventually fixed in [This Commit](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8)*
 
 <br/>
 
@@ -1249,7 +1249,7 @@
     - Add support for common accented characters (halfwidth and fullwidth)
     - Expand the halfwidth font graphics (at the cost of some kanji)
     - *This commit caused a major text display glitch ([Link to Bug Fix](https://github.com/Sha0den/improvedpoketcg/commit/dbe0431ed7e5492ea5fed6cfe99c48872abe4698))*
-    - [The deck naming screen update](https://github.com/Sha0den/poketcg_v2/commit/1ddbd58ad2236e388cd5cfc7c7d2b50ad42de644) includes more edits to halfwidth and fullwidth font data (also redistributed data in src/gfx.asm and updated pointers in home/tiles.asm as a more sensible alternative to commenting out some of the Japanese font data)
+    - *[The deck naming screen update](https://github.com/Sha0den/poketcg_v2/commit/1ddbd58ad2236e388cd5cfc7c7d2b50ad42de644) includes more edits to halfwidth and fullwidth font data (also redistributed data in src/gfx.asm and updated pointers in home/tiles.asm as a more sensible alternative to commenting out some of the Japanese font data)*
 
 <br/>
 
@@ -1271,7 +1271,7 @@
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49):** 1 File Changed
     - Replace damage counter display with "current HP/max HP"
     - The maximum HP value of a Pokémon is now 250 (was 120)
-        - *Please reference [this tutorial](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
+        - *Please reference [This Tutorial](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
 
 <br/>
 
