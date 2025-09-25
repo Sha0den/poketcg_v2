@@ -2426,9 +2426,11 @@ GetAttackName:
 ;	hl = ID for notification text:  if the below condition is true
 ;	carry = set:  if the Defending Pokemon has no Weakness
 Conversion1_WeaknessCheck:
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
+	get_turn_duelist_var
 	call LoadCardDataToBuffer2_FromDeckIndex
+	rst SwapTurn
 	ld a, [wLoadedCard2Weakness]
 	or a
 	ret nz ; return if the Defending Pokemon has a Weakness
@@ -2508,9 +2510,11 @@ Conversion2_PlayerSelection:
 ; output:
 ;	[hTemp_ffa0] & a = selected type/color (TYPE_PKMN_* constant)
 Conversion2_AISelection:
+	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
-	call GetNonTurnDuelistVariable
+	get_turn_duelist_var
 	call GetCardTypeFromDeckIndex_SaveDE
+	rst SwapTurn
 	cp COLORLESS
 	jr z, .is_colorless
 	ldh [hTemp_ffa0], a

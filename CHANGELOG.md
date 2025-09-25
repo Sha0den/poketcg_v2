@@ -462,6 +462,7 @@
     - Thoroughly review the effect functions files, optimizing and occasionally correcting miscellaneous code
     - Update various comments in the effect functions files (also correct `RemoveCardFromDuelTempList`'s output comments in home/duel.asm)
     - Reorder a lot of the individual effect commands (EFFECTCMDTYPE_*) to reflect the actual order of execution
+    - *This commit made it impossible for the AI to properly use Porygon's Conversion 2 attack (See [**Other Bug Fixes And Commit Reversions**](#other-bug-fixes-and-commit-reversions))*
 
 <br/>
 
@@ -1286,6 +1287,13 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+- **September 25 2025:** 2 Files Changed
+    - Implement a few fixes related to loading opponent's card data without first calling `SwapTurn` (AI will now correctly use Conversion 2 once more)
+        - The instance in src/engine/duel/ai/retreat.asm was actually present in the base game
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/3fe70f141410ba19fc361755f4e83b2beeb99f0f)*
+
+<br/>
+
 - **[July 1 2025](https://github.com/Sha0den/poketcg_v2/commit/c0d1e2dbe78107ac2feaea493df94e5ef96c3bfc):** 1 File Changed
     - Fix a small issue with the deck building screen where the static card type cursor at the top of the screen wasn't always being redrawn after exiting the menu
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/4dd1d90c9d5908ce6522bd3407af88b68fddbd4d)*
