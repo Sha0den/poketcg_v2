@@ -666,7 +666,7 @@ UnusedText0096: ; Unused
 	text "Other"
 	line "Poison"
 	line "Sleep"
-	line "Payalysis"
+	line "Paralysis"
 	line "Confusion"
 	line "Double Poison"
 	line "Clear"
@@ -991,7 +991,7 @@ UnableDueToToxicGasText:
 	done
 
 UnusedText00d5: ; Unused
-	text "A Transmission Error occured."
+	text "A Transmission Error occurred."
 	done
 
 BackUpIsBrokenText:
@@ -1104,7 +1104,7 @@ IfHeadsHealIsSuccessfulText:
 
 IfTailsDamageToYourselfTooText:
 	text "If tails, this Pokémon deals"
-	line "<RAMNUM> damage to self."
+	line "<RAMNUM> damage to itself."
 	done
 
 AttackSuccessCheckText:
@@ -1422,7 +1422,7 @@ ProcedureForEnergyTransferText:
 	line "   Energy from.  Press the A Button."
 	line ""
 	line "2. Choose the Pokémon to move the"
-	line "   energy to and press the A Button."
+	line "   Energy to and press the A Button."
 	line ""
 	line "3. Repeat steps 1 and 2."
 	line ""

@@ -403,8 +403,8 @@ TextOffsets::
 	textpointer ReceivedCardText                                   ; 0x018f
 	textpointer ReceivedPromotionalCardText                        ; 0x0190
 	textpointer ReceivedLegendaryCardText                          ; 0x0191
-	textpointer ReceivedPromotionalFlyingPikachuText               ; 0x0192
-	textpointer ReceivedPromotionalSurfingPikachuText              ; 0x0193
+	textpointer UnusedText0192                                     ; 0x0192
+	textpointer UnusedText0193                                     ; 0x0193
 	textpointer UnusedText0194                                     ; 0x0194
 	textpointer UnusedText0195                                     ; 0x0195
 	textpointer NowPrintingPleaseWaitText                          ; 0x0196

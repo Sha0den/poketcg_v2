@@ -495,7 +495,7 @@ Text0578:
 
 Text0579:
 	text "Hmm-hmm-hmm...I lose. But that's"
-	line "no suprise, seeing as how you've"
+	line "no surprise, seeing as how you've"
 	line "come this far. Your next opponent"
 	line "is waiting for you!"
 	done
@@ -829,7 +829,7 @@ Text05b2:
 
 Text05b3:
 	text "Congratulations, <RAMNAME>!"
-	line "You are a card Master"
+	line "You are a Card Master"
 	line "worthy of inheriting"
 	line "the Legendary Pokémon Cards!"
 	line "The Legendary Pokémon Cards"
@@ -867,8 +867,8 @@ Text05b9:
 	line "  Great Card Master!"
 	line "  Our owner must not forget:"
 	line "  Inheriting us does not make you"
-	line "  a Pokémon card Master!"
-	line "  A true Pokémon card Master is"
+	line "  a Pokémon Card Master!"
+	line "  A true Pokémon Card Master is"
 	line "  one who has the skill to use"
 	line "  the abilities of the different"
 	line "  cards and the courage to duel"
@@ -897,8 +897,8 @@ Text05bc:
 	line "  There are no cards left for us"
 	line "  to give you, but do not forget:"
 	line "  Inheriting us does not make you"
-	line "  a Pokémon card Master!"
-	line "  A true Pokémon card Master"
+	line "  a Pokémon Card Master!"
+	line "  A true Pokémon Card Master"
 	line "  is one who has the skill to use"
 	line "  the abilities of the different"
 	line "  cards and the courage to duel"

@@ -935,7 +935,7 @@ RonaldChallengeCup1LostActive2Text:
 	line "I lost to the third opponent!"
 	line "I just lost my concentration. But"
 	line "I'll win the next Challenge Cup!"
-	line "Of course I'll puverize you!"
+	line "Of course I'll pulverize you!"
 	line "See ya! Ha ha ha ha ha ha!"
 	done
 

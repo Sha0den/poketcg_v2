@@ -65,7 +65,7 @@ Text05e0:
 	line "deck depends only on how you play!"
 	line "In other words, it all depends on"
 	line "the skill of the player! You must"
-	line "become a skilled card Master!"
+	line "become a skilled Card Master!"
 	done
 
 Text05e1:
@@ -78,7 +78,7 @@ Text05e1:
 	line "to use that card. The power of"
 	line "the Legendary Pokémon Cards"
 	line "depends on you! You must become a"
-	line "skilled card Master!"
+	line "skilled Card Master!"
 	done
 
 Text05e2:

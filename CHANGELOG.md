@@ -462,7 +462,7 @@
     - Thoroughly review the effect functions files, optimizing and occasionally correcting miscellaneous code
     - Update various comments in the effect functions files (also correct `RemoveCardFromDuelTempList`'s output comments in home/duel.asm)
     - Reorder a lot of the individual effect commands (EFFECTCMDTYPE_*) to reflect the actual order of execution
-    - *This commit made it impossible for the AI to properly use Porygon's Conversion 2 attack (See [**Other Bug Fixes And Commit Reversions**](#other-bug-fixes-and-commit-reversions))*
+    - *This commit made it impossible for the AI to properly use Porygon's Conversion 2 attack ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/ed452d2ef754469d53ba8d608803cf620e90524f))*
 
 <br/>
 
@@ -973,6 +973,15 @@
 
 
 ## Miscellaneous Changes
+- **September 26, 2025:** 7 Files Changed
+    - Print the default `ReceivedPromotionalCardText` upon receiving a Flying/Surfing Pikachu and delete their custom text entries
+        - This effectively just replaces "Flyin' Pikachu" with "Flying Pikachu Lv12" and "Surfin' Pikachu" with "Surfing Pikachu Lv13!"
+    - Undo changes to one of the lines of text in the practice duel and recapitalize various instances of the phrase "Card Master"
+    - Also fix a lot more typos from the original game
+
+
+<br/>
+
 - **[September 20, 2025](https://github.com/Sha0den/poketcg_v2/commit/51165185bfb986bb2992500a00ff3fb4d61858c4):** 6 Files Changed
     - Create a 16x8 (technically 13x7) HP symbol for the duel screens and update the previous E symbol I made to match it
     - Rearrange the PlusPower/Defender symbols on the various duel screens

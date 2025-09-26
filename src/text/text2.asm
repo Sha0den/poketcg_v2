@@ -62,14 +62,12 @@ ReceivedLegendaryCardText:
 	line "<RAMTEXT>!"
 	done
 
-ReceivedPromotionalFlyingPikachuText:
-	text "<RAMNAME> received a Promotinal"
-	line "card Flyin' Pikachu!"
+UnusedText0192: ; Unused
+	text "????"
 	done
 
-ReceivedPromotionalSurfingPikachuText:
-	text "<RAMNAME> received a Promotional"
-	line "card Surfin' Pikachu!"
+UnusedText0193: ; Unused
+	text "????"
 	done
 
 UnusedText0194: ; Unused
@@ -432,7 +430,7 @@ Turn7DrMason2PracticeDuelText:
 	done
 
 Turn8DrMason1PracticeDuelText:
-	text "Machop has just 10 HP remaining."
+	text "Now Machop has only 10 HP left."
 	line "Let's finish the battle!"
 	line "Attack using Starmie's Star Freeze."
 	line ""
@@ -1765,7 +1763,7 @@ LegendaryMoltresDescriptionText:
 
 LegendaryZapdosDescriptionText:
 	text "Zap opponents with the"
-	line "Legandary Zapdos!"
+	line "Legendary Zapdos!"
 	done
 
 LegendaryArticunoDescriptionText:
