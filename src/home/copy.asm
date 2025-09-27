@@ -111,12 +111,12 @@ HblankCopyDataHLtoDE::
 	ei
 	di
 	ldh a, [rSTAT]       ;
-	and STAT_LCDC_STATUS ;
+	and STAT_MODE        ;
 	jr nz, .loop         ; assert hblank
 	ld a, [hl]
 	ld [de], a
 	ldh a, [rSTAT]       ;
-	and STAT_LCDC_STATUS ;
+	and STAT_MODE        ;
 	jr nz, .loop         ; assert still in hblank
 	ei
 	inc hl
@@ -135,7 +135,7 @@ HblankCopyDataHLtoDE::
 ;	hl = where to copy the data
 SafeCopyDataDEtoHL::
 	ld a, [wLCDC]
-	bit LCDC_ENABLE_F, a
+	bit B_LCDC_ENABLE, a
 	jr nz, HblankCopyDataDEtoHL  ; LCD is on
 ;	fallthrough
 
@@ -165,12 +165,12 @@ HblankCopyDataDEtoHL::
 	ei
 	di
 	ldh a, [rSTAT]       ;
-	and STAT_LCDC_STATUS ;
+	and STAT_MODE        ;
 	jr nz, .loop         ; assert hblank
 	ld a, [de]
 	ld [hl], a
 	ldh a, [rSTAT]       ;
-	and STAT_LCDC_STATUS ;
+	and STAT_MODE        ;
 	jr nz, .loop         ; assert still in hblank
 	ei
 	inc hl

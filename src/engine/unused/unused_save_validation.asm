@@ -52,7 +52,7 @@ UnusedSaveDataValidation:
 	ld a, [wConsole]
 	cp CONSOLE_SGB
 	jr nz, .not_sgb
-	ld a, %11100100
+	ldgbpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
 	ld [wOBP0], a
 	ld [wBGP], a
 	ld a, $01
@@ -62,13 +62,13 @@ UnusedSaveDataValidation:
 	call SetupText
 	ldtx hl, YourDataWasDestroyedSomehowText
 	call DrawWholeScreenTextBox
-	ld a, SRAM_ENABLE
-	ld [MBC3SRamEnable], a
+	ld a, RAMG_SRAM_ENABLE
+	ld [rRAMG], a
 	xor a
 	ldh [hBankSRAM], a
-	ld [MBC3SRamBank], a
-	ld [MBC3RTC], a
-	ld [MBC3SRamEnable], a
+	ld [rRAMB], a
+	ld [rRTCREG], a
+	ld [rRAMG], a
 	jp Reset
 
 
@@ -90,8 +90,8 @@ UnusedCalculateSaveDataValidationByte:
 	ld a, c
 	or b
 	jr nz, .loop_xor
-	ld a, SRAM_ENABLE
-	ld [MBC3SRamEnable], a
+	ld a, RAMG_SRAM_ENABLE
+	ld [rRAMG], a
 	ld a, e
 	ld [sUnusedSaveDataValidationByte], a
 	pop bc

@@ -68,7 +68,7 @@ HandleDeckMissingCardsList:
 	call HandleLeftRightInCardList
 	jr c, .loop_input
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	jr z, .loop_input
 	; START button was pressed
 
@@ -289,7 +289,7 @@ HandleDeckMachineSelection:
 	call .HandleListJumps
 	jr c, .start
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	jr z, .start
 
 ; START button
@@ -357,9 +357,9 @@ HandleDeckMachineSelection:
 	ld a, [wCardListVisibleOffset]
 	ld c, a
 	ldh a, [hDPadHeld]
-	cp D_RIGHT
+	cp PAD_RIGHT
 	jr z, .d_right
-	cp D_LEFT
+	cp PAD_LEFT
 	jr z, .d_left
 	or a
 	ret
@@ -1478,7 +1478,7 @@ HandleAutoDeckMenu:
 
 ; check whether to show deck confirmation list
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	jr z, .wait_input
 
 	ld a, [wCardListVisibleOffset]

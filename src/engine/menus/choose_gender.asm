@@ -41,10 +41,10 @@ PlayerGenderSelection:
 	call DoFrame
 	call RefreshMenuCursor
 	ldh a, [hKeysPressed]
-	bit A_BUTTON_F, a
+	bit B_PAD_A, a
 	jr nz, .selection_made
 	ldh a, [hDPadHeld]
-	and D_RIGHT | D_LEFT
+	and PAD_RIGHT | PAD_LEFT
 	jr z, .loop_input
 	ld a, SFX_CURSOR
 	call PlaySFX

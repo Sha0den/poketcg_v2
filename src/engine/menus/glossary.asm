@@ -18,7 +18,7 @@ OpenGlossaryScreen:
 	ld [wVBlankOAMCopyToggle], a
 	call DoFrame
 	ldh a, [hKeysPressed]
-	and SELECT
+	and PAD_SELECT
 	jr nz, .on_select
 
 	farcall YourOrOppPlayAreaScreen_HandleInput
@@ -180,7 +180,7 @@ OpenGlossaryScreen:
 .loop
 	call DoFrame
 	ldh a, [hKeysPressed]
-	and B_BUTTON
+	and PAD_B
 	jr z, .loop
 
 	ld a, -1

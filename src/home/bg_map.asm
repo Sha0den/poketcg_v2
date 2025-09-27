@@ -52,7 +52,7 @@ WriteDataBlockToBGMap0::
 	ret
 
 
-; writes a to [v*BGMap0 + BG_MAP_WIDTH * c + b]
+; writes a to [v*BGMap0 + TILEMAP_WIDTH * c + b]
 ; preserves all registers except af
 ; input:
 ;	a = byte to draw
@@ -76,7 +76,7 @@ WriteByteToBGMap0::
 	pop af
 ;	fallthrough
 
-; writes a to [v*BGMap0 + BG_MAP_WIDTH * c + b] during hblank
+; writes a to [v*BGMap0 + TILEMAP_WIDTH * c + b] during hblank
 ; preserves all registers except af
 ; input:
 ;	a = byte to draw
@@ -120,7 +120,7 @@ CopyDataToBGMap0::
 ; input:
 ;	bc = screen coordinates
 ; output:
-;	de = v*BGMap0 + BG_MAP_WIDTH * c + b
+;	de = v*BGMap0 + TILEMAP_WIDTH * c + b in de.
 BCCoordToBGMap0Address::
 	ld l, c
 	ld h, $0
@@ -142,7 +142,7 @@ BCCoordToBGMap0Address::
 ; input:
 ;	de = screen coordinates
 ; output:
-;	hl = v*BGMap0 + BG_MAP_WIDTH * e + d
+;	hl = v*BGMap0 + TILEMAP_WIDTH * e + d
 DECoordToBGMap0Address::
 	ld l, e
 	ld h, $0

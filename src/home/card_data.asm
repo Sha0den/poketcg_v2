@@ -223,7 +223,7 @@ LoadCardGfx::
 	res 7, h
 	set 6, h ; $4000 ≤ hl ≤ $7fff
 	call CopyGfxData
-	ld b, CGB_PAL_SIZE
+	ld b, PAL_SIZE
 	ld de, wCardPalette
 	call CopyNBytesFromHLToDE
 	pop af

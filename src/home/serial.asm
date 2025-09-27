@@ -376,7 +376,7 @@ DuelTransmissionError::
 ; preserves de
 ResetSerial::
 	ldh a, [rIE]
-	and ~(1 << INT_SERIAL)
+	and ~IE_SERIAL
 	ldh [rIE], a
 	xor a
 	ldh [rSB], a

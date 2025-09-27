@@ -33,7 +33,7 @@ HandleMenuInput::
 	ld a, [wNumMenuItems]
 	ld c, a
 	ld a, [wCurMenuItem]
-	bit D_UP_F, b
+	bit B_PAD_UP, b
 	jr z, .not_up
 	dec a
 	bit 7, a
@@ -42,7 +42,7 @@ HandleMenuInput::
 	dec a ; wrapping around, so load the bottommost item
 	jr .handle_up_or_down
 .not_up
-	bit D_DOWN_F, b
+	bit B_PAD_DOWN, b
 	jr z, .up_down_done
 	inc a
 	cp c
@@ -80,9 +80,9 @@ HandleMenuInput::
 	ret
 .check_A_or_B
 	ldh a, [hKeysPressed]
-	and A_BUTTON | B_BUTTON
+	and PAD_A | PAD_B
 	jr z, RefreshMenuCursor_CheckPlaySFX
-	and A_BUTTON
+	and PAD_A
 	jr nz, .A_pressed_draw_cursor
 	; B button pressed
 	ld a, [wCurMenuItem]
@@ -290,9 +290,9 @@ WaitForButtonAorB::
 	call DoFrame
 	call RefreshMenuCursor
 	ldh a, [hKeysPressed]
-	bit A_BUTTON_F, a
+	bit B_PAD_A, a
 	jp nz, EraseCursor ; erase cursor and return if A button was pressed
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr z, WaitForButtonAorB
 	call EraseCursor
 	scf
@@ -388,7 +388,7 @@ DrawNarrowTextBox_WaitForInput::
 	call DoFrame
 	call RefreshMenuCursor
 	ldh a, [hKeysPressed]
-	and A_BUTTON | B_BUTTON
+	and PAD_A | PAD_B
 	jr z, .wait_A_or_B_loop
 	ret
 
@@ -501,10 +501,10 @@ HandleYesOrNoMenu::
 	call DoFrame
 	call RefreshMenuCursor
 	ldh a, [hKeysPressed]
-	bit A_BUTTON_F, a
+	bit B_PAD_A, a
 	jr nz, .a_pressed
 	ldh a, [hDPadHeld]
-	and D_RIGHT | D_LEFT
+	and PAD_RIGHT | PAD_LEFT
 	jr z, .wait_button_loop
 	; left or right pressed, so switch to the other menu item
 	ld a, SFX_CURSOR

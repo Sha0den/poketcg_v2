@@ -23,12 +23,12 @@ SetupRegisters::
 	ld [hl], LOW(NoOp)   ;
 	inc hl               ; load `jp NoOp`
 	ld [hl], HIGH(NoOp)  ;
-	ld a, LCDC_BGON | LCDC_OBJON | LCDC_OBJ16 | LCDC_WIN9C00
+	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_OBJ_16 | LCDC_WIN_9C00
 	ld [wLCDC], a
 	ld a, $1
-	ld [MBC3LatchClock], a
-	ld a, SRAM_ENABLE
-	ld [MBC3SRamEnable], a
+	ld [rRTCLATCH], a
+	ld a, RAMG_SRAM_ENABLE
+	ld [rRAMG], a
 NoOp::
 	ret
 
@@ -36,7 +36,7 @@ NoOp::
 ; sets wConsole and, if CGB, selects WRAM bank 1 and switches to double speed mode
 DetectConsole::
 	ld b, CONSOLE_CGB
-	cp GBC
+	cp BOOTUP_A_CGB
 	jr z, .got_console
 	call DetectSGB
 	ld b, CONSOLE_DMG
@@ -49,14 +49,14 @@ DetectConsole::
 	cp CONSOLE_CGB
 	ret nz
 	ld a, $01
-	ldh [rSVBK], a
+	ldh [rWBK], a
 	jp SwitchToCGBDoubleSpeed
 
 
 ; initializes the palettes (both monochrome and color)
 SetupPalettes::
 	ld hl, wBGP
-	ld a, %11100100
+	ldgbpal a, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK
 	ldh [rBGP], a
 	ld [hli], a ; wBGP
 	ldh [rOBP0], a
@@ -72,7 +72,7 @@ SetupPalettes::
 	ld c, 16
 .copy_pals_loop
 	ld hl, InitialPalette
-	ld b, CGB_PAL_SIZE
+	ld b, PAL_SIZE
 	call CopyNBytesFromHLToDE
 	dec c
 	jr nz, .copy_pals_loop

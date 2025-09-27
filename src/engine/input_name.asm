@@ -138,9 +138,9 @@ InputDeckName:
 	call UpdateRNGSources
 
 	ldh a, [hDPadHeld]
-	and SELECT | START
+	and PAD_SELECT | PAD_START
 	jr z, .else
-	and START
+	and PAD_START
 	jr nz, .pressed_start
 
 ; pressed SELECT
@@ -427,7 +427,7 @@ DeckNamingScreen_CheckButtonState:
 	ld h, a
 	ld a, [wNamingScreenCursorY]
 	ld l, a
-	bit D_UP_F, b
+	bit B_PAD_UP, b
 	jr z, .check_d_down
 	; up
 	dec a
@@ -437,7 +437,7 @@ DeckNamingScreen_CheckButtonState:
 	dec a
 	jr .adjust_y_position
 .check_d_down
-	bit D_DOWN_F, b
+	bit B_PAD_DOWN, b
 	jr z, .check_d_left
 	; down
 	inc a
@@ -451,7 +451,7 @@ DeckNamingScreen_CheckButtonState:
 	ld a, [wNamingScreenNumColumns]
 	ld c, a
 	ld a, l
-	bit D_LEFT_F, b
+	bit B_PAD_LEFT, b
 	jr z, .check_d_right
 	cp $06 ; cursor y = final keyboard row
 	ld a, h
@@ -467,7 +467,7 @@ DeckNamingScreen_CheckButtonState:
 	dec a
 	jr .adjust_x_position
 .check_d_right
-	bit D_RIGHT_F, b
+	bit B_PAD_RIGHT, b
 	jr z, .check_A_or_B
 	cp $06 ; cursor y = final keyboard row
 	ld a, h
@@ -496,9 +496,9 @@ DeckNamingScreen_CheckButtonState:
 	ld [wMenuInputSFX], a
 .check_A_or_B
 	ldh a, [hKeysPressed]
-	and A_BUTTON | B_BUTTON
+	and PAD_A | PAD_B
 	jr z, .check_sfx_and_cursor_blink
-	and A_BUTTON
+	and PAD_A
 	jr nz, .pressed_a
 	; pressed B
 	ld a, -1
@@ -922,7 +922,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	call DoFrame
 ;	call UpdateRNGSources
 ;	ldh a, [hDPadHeld]
-;	and START
+;	and PAD_START
 ;	jr z, .else
 ;	; the Start button was pressed.
 ;	ld a, SFX_CONFIRM
@@ -1053,7 +1053,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	ld h, a
 ;	ld a, [wNamingScreenCursorY]
 ;	ld l, a
-;	bit D_UP_F, b
+;	bit B_PAD_UP, b
 ;	jr z, .check_d_down
 ;	; up
 ;	dec a
@@ -1063,7 +1063,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	dec a
 ;	jr .adjust_y_position
 ;.check_d_down
-;	bit D_DOWN_F, b
+;	bit B_PAD_DOWN, b
 ;	jr z, .check_d_left
 ;	; down
 ;	inc a
@@ -1077,7 +1077,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	ld a, [wNamingScreenNumColumns]
 ;	ld c, a
 ;	ld a, h
-;	bit D_LEFT_F, b
+;	bit B_PAD_LEFT, b
 ;	jr z, .check_d_right
 ;	; left
 ;	ld d, a
@@ -1121,7 +1121,7 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	dec a
 ;	jr .adjust_x_position
 ;.check_d_right
-;	bit D_RIGHT_F, b
+;	bit B_PAD_RIGHT, b
 ;	jr z, .check_A_or_B
 ;	ld d, a
 ;	ld a, $06 ; cursor y = final keyboard row
@@ -1189,9 +1189,9 @@ DeckNamingScreen_AccentsKeyboardData:
 ;	ld [wMenuInputSFX], a
 ;.check_A_or_B
 ;	ldh a, [hKeysPressed]
-;	and A_BUTTON | B_BUTTON
+;	and PAD_A | PAD_B
 ;	jr z, .check_sfx_and_cursor_blink
-;	and A_BUTTON
+;	and PAD_A
 ;	jr nz, .pressed_a
 ;	; pressed B
 ;	ld a, -1

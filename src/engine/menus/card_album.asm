@@ -490,14 +490,14 @@ HandleCardAlbumCardPage:
 .handle_input
 	ldh a, [hDPadHeld]
 	ld b, a
-	and BUTTONS
+	and PAD_BUTTONS
 	jr nz, .exit
 	xor a ; FALSE
 	ld [wMenuInputSFX], a
 	ld a, [wCardListNumCursorPositions]
 	ld c, a
 	ld a, [wCardListCursorPos]
-	bit D_UP_F, b
+	bit B_PAD_UP, b
 	jr z, .check_d_down
 
 	push af
@@ -523,7 +523,7 @@ HandleCardAlbumCardPage:
 	jr .got_new_pos
 
 .check_d_down
-	bit D_DOWN_F, b
+	bit B_PAD_DOWN, b
 	jr z, .open_card_page
 	ld hl, wMenuInputSFX
 	ld [hl], SFX_CURSOR
@@ -623,7 +623,7 @@ CardAlbum:
 .loop_input_2
 	call DoFrame
 	ldh a, [hKeysPressed]
-	and B_BUTTON
+	and PAD_B
 	jr z, .loop_input_2
 	ld a, SFX_CANCEL
 	call PlaySFX
@@ -665,7 +665,7 @@ CardAlbum:
 	call HandleLeftRightInCardList
 	jr c, .loop_input_3
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	jr z, .loop_input_3
 	; START button was pressed
 .open_card_page
@@ -822,9 +822,9 @@ CardAlbum:
 
 .OnlySelectSetIfListIsNotEmpty
 	ldh a, [hKeysPressed]
-	and A_BUTTON | B_BUTTON
+	and PAD_A | PAD_B
 	ret z
-	and A_BUTTON
+	and PAD_A
 	jr nz, .a_pressed
 	; B button pressed
 	ld a, -1

@@ -87,10 +87,10 @@ PrepareSendCardOrDeckConfigurationThroughIR:
 .loop_frame
 	call DoFrame
 	ldh a, [hKeysPressed]
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr nz, .b_btn
 	ldh a, [hKeysHeld]
-	bit A_BUTTON_F, a
+	bit B_PAD_A, a
 	jr z, .loop_frame
 ; A button
 	call TrySendIRRequest

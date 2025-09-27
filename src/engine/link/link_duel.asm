@@ -151,7 +151,7 @@ SetUpAndStartLinkDuel::
 	ldh a, [hDPadHeld]
 	ld b, a
 	ld a, [wNPCDuelPrizes]
-	bit D_LEFT_F, b
+	bit B_PAD_LEFT, b
 	jr z, .check_d_right
 	dec a
 	cp PRIZES_2
@@ -160,7 +160,7 @@ SetUpAndStartLinkDuel::
 	jr .got_prize_count
 
 .check_d_right
-	bit D_RIGHT_F, b
+	bit B_PAD_RIGHT, b
 	jr z, .check_a_btn
 	inc a
 	cp PRIZES_6 + 1
@@ -172,7 +172,7 @@ SetUpAndStartLinkDuel::
 	ld [wPrizeCardSelectionFrameCounter], a
 
 .check_a_btn
-	bit A_BUTTON_F, b
+	bit B_PAD_A, b
 	jr z, .loop_input
 	ret
 
@@ -190,9 +190,9 @@ DecideLinkDuelVariables:
 .input_loop
 	call DoFrame
 	ldh a, [hKeysPressed]
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr nz, .link_cancel
-	and START
+	and PAD_START
 	call Func_0cc5
 	jr nc, .input_loop
 	ld hl, wPlayerDuelVariables
@@ -284,9 +284,9 @@ Func_0e8e::
 	ld a, SC_START | SC_EXTERNAL
 	ldh [rSC], a         ; use external clock, set transfer start flag
 	ldh a, [rIF]
-	and ~(1 << INT_SERIAL)
+	and ~IE_SERIAL
 	ldh [rIF], a         ; clear serial interrupt flag
 	ldh a, [rIE]
-	or 1 << INT_SERIAL   ; enable serial interrupt
+	or IE_SERIAL         ; enable serial interrupt
 	ldh [rIE], a
 	ret

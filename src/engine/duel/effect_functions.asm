@@ -2354,9 +2354,9 @@ HandleDefendingPokemonAttackSelection:
 .loop_input
 	call DoFrame
 	ldh a, [hKeysPressed]
-	bit B_BUTTON_F, a
+	bit B_PAD_B, a
 	jr nz, .set_carry ; exit if the B button was pressed
-	and START
+	and PAD_START
 	jr nz, .open_atk_page
 	call HandleMenuInput
 	jr nc, .loop_input
@@ -3229,7 +3229,7 @@ DevolutionBeam_PlayerSelection:
 	ldtx hl, PleaseSelectThePlayAreaText
 	call TwoItemHorizontalMenu
 	ldh a, [hKeysHeld]
-	and B_BUTTON
+	and PAD_B
 	scf
 	ret nz ; return carry if the B button was pressed
 
@@ -4971,7 +4971,7 @@ AlsoDamageTo3Benched_PlayerSelection:
 	inc a ; ignore the Active Pokémon
 	call DrawPlayAreaScreenToShowChanges
 	ldh a, [hKeysPressed]
-	and B_BUTTON
+	and PAD_B
 	jr nz, .try_cancel
 	call GetNextPositionInTempList
 	ld [hl], $ff ; terminating byte
@@ -8173,7 +8173,7 @@ LassEffect:
 	ldtx hl, ChooseTheCardYouWishToExamineText
 	ldtx de, DuelistHandText
 	call SetCardListHeaderText
-	ld a, A_BUTTON | START
+	ld a, PAD_A | PAD_START
 	ld [wNoItemSelectionMenuKeys], a
 	bank1call DisplayCardList
 	ret

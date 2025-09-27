@@ -172,15 +172,15 @@ ContinueDrawingTextBoxDMGorSGB::
 	lb de, SYM_BOX_BTM_L, SYM_BOX_BTM_R
 ;	fallthrough
 
-; copies b bytes of data to sp-$1f and to hl, and returns hl += BG_MAP_WIDTH
-; b is supposed to be BG_MAP_WIDTH or smaller, else the stack would get corrupted
+; copies b bytes of data to sp-$1f and to hl, and returns hl += TILEMAP_WIDTH
+; b is supposed to be TILEMAP_WIDTH or smaller, else the stack would get corrupted
 ; preserves bc
 ; input:
 ;	d = ID of leftmost tile in the line
 ;	e = ID of rightmost tile in the line
 ;	a = ID of every other tile in the line
 CopyLine::
-	add sp, -BG_MAP_WIDTH
+	add sp, -TILEMAP_WIDTH
 	push hl
 	push bc
 	ld hl, sp+$4
@@ -204,10 +204,10 @@ CopyLine::
 	call SafeCopyDataDEtoHL
 	pop bc
 	pop de
-	; advance pointer BG_MAP_WIDTH positions and restore stack pointer
-	ld hl, BG_MAP_WIDTH
+	; advance pointer TILEMAP_WIDTH positions and restore stack pointer
+	ld hl, TILEMAP_WIDTH
 	add hl, de
-	add sp, BG_MAP_WIDTH
+	add sp, TILEMAP_WIDTH
 	ret
 
 

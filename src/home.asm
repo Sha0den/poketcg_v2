@@ -27,7 +27,7 @@ SECTION "rst10", ROM0
 ;	a = ROM bank to use
 BankswitchROM::
 	ldh [hBankROM], a
-	ld [MBC3RomBank], a
+	ld [rROMB], a
 	ret
 	ds 2
 

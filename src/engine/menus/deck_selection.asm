@@ -127,7 +127,7 @@ DeckSelectionMenu:
 	jr c, .start_selection ; reinitialize menu parameters
 ; first check if either the START or the SELECT button was pressed
 	ldh a, [hDPadHeld]
-	and SELECT | START
+	and PAD_SELECT | PAD_START
 	jr z, .else
 	ld a, [wCurMenuItem]
 	ld [wCurDeck], a
@@ -140,7 +140,7 @@ DeckSelectionMenu:
 	ld a, SFX_CONFIRM
 	call PlaySFX
 	ldh a, [hDPadHeld]
-	and SELECT
+	and PAD_SELECT
 	jp nz, DeckSelectionSubMenu_SelectOrCancel.SelectDeck ; make this the active deck if SELECT was pressed
 	; START button must have been pressed, so open the deck list/confirmation screen instead
 	call HandleStartButtonInDeckSelectionMenu.skip_sfx
@@ -262,7 +262,7 @@ DeckSelectionData:
 ;	carry = set:  if button press was handled
 HandleStartButtonInDeckSelectionMenu:
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	ret z ; skip
 
 ; set menu item as current deck

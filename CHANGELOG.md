@@ -973,7 +973,7 @@
 
 
 ## Miscellaneous Changes
-- **September 26, 2025:** 7 Files Changed
+- **[September 26, 2025](https://github.com/Sha0den/poketcg_v2/commit/97f5158c992b3dba198991775d77959f665fd599):** 7 Files Changed
     - Print the default `ReceivedPromotionalCardText` upon receiving a Flying/Surfing Pikachu and delete their custom text entries
         - This effectively just replaces "Flyin' Pikachu" with "Flying Pikachu Lv12" and "Surfin' Pikachu" with "Surfing Pikachu Lv13!"
     - Undo changes to one of the lines of text in the practice duel and recapitalize various instances of the phrase "Card Master"

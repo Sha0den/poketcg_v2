@@ -38,7 +38,7 @@ OpenBoosterPack::
 	call SetCardListHeaderText
 	ld a, USE_BOOSTER_PACK_DISPLAY
 	ld [wCardListDisplayFormat], a
-	ld a, A_BUTTON | START
+	ld a, PAD_A | PAD_START
 	ld [wNoItemSelectionMenuKeys], a
 	bank1call DisplayCardList
 	xor a ; DEFAULT_CARD_LIST_DISPLAY

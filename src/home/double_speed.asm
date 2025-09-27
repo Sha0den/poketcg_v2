@@ -3,8 +3,8 @@
 SwitchToCGBNormalSpeed::
 	call CheckForCGB
 	ret c
-	ld hl, rKEY1
-	bit 7, [hl]
+	ld hl, rSPD
+	bit B_SPD_DOUBLE, [hl]
 	ret z
 	jr CGBSpeedSwitch
 
@@ -13,8 +13,8 @@ SwitchToCGBNormalSpeed::
 SwitchToCGBDoubleSpeed::
 	call CheckForCGB
 	ret c
-	ld hl, rKEY1
-	bit 7, [hl]
+	ld hl, rSPD
+	bit B_SPD_DOUBLE, [hl]
 	ret nz
 ;	fallthrough
 
@@ -25,11 +25,11 @@ CGBSpeedSwitch::
 	push af
 	xor a
 	ldh [rIE], a
-	set 0, [hl]
+	set B_SPD_PREPARE, [hl]
 	xor a
 	ldh [rIF], a
 	ldh [rIE], a
-	ld a, $30
+	ld a, JOYP_GET_NONE
 	ldh [rJOYP], a
 	stop
 	call SetupTimer

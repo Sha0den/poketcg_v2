@@ -3,7 +3,7 @@
 WaitForVBlank::
 	push hl
 	ld a, [wLCDC]
-	bit LCDC_ENABLE_F, a
+	bit B_LCDC_ENABLE, a
 	jr z, .lcd_off
 	ld hl, wVBlankCounter
 	ld a, [hl]
@@ -21,7 +21,7 @@ WaitForVBlank::
 ; preserves all registers except af
 EnableLCD::
 	ld a, [wLCDC]        ;
-	bit LCDC_ENABLE_F, a ;
+	bit B_LCDC_ENABLE, a ;
 	ret nz               ; assert that LCD is off
 	or LCDC_ON           ;
 	ld [wLCDC], a        ;
@@ -35,23 +35,23 @@ EnableLCD::
 ; preserves all registers except af
 DisableLCD::
 	ldh a, [rLCDC]       ;
-	bit LCDC_ENABLE_F, a ;
+	bit B_LCDC_ENABLE, a ;
 	ret z                ; assert that LCD is on
 	ldh a, [rIE]
 	ld [wIE], a
-	res INT_VBLANK, a    ;
+	res B_IE_VBLANK, a   ;
 	ldh [rIE], a         ; disable vblank interrupt
 .wait_vblank
 	ldh a, [rLY]         ;
-	cp LY_VBLANK         ;
+	cp LY_VBLANK + 1     ;
 	jr nz, .wait_vblank  ; wait for vblank
 	ldh a, [rLCDC]       ;
-	and LCDC_OFF         ;
+	and LOW(~LCDC_ON)    ;
 	ldh [rLCDC], a       ;
 	ld a, [wLCDC]        ;
-	and LCDC_OFF         ;
+	and LOW(~LCDC_ON)    ;
 	ld [wLCDC], a        ; turn LCD off
-	xor a
+	xor a                ; set all white palettes
 	ldh [rBGP], a
 	ldh [rOBP0], a
 	ldh [rOBP1], a
@@ -64,7 +64,7 @@ DisableLCD::
 ; preserves all registers except af
 Set_OBJ_8x8::
 	ld a, [wLCDC]
-	and LCDC_OBJ8
+	and ~LCDC_OBJ_16
 	ld [wLCDC], a
 	ret
 
@@ -73,7 +73,7 @@ Set_OBJ_8x8::
 ; preserves all registers except af
 Set_OBJ_8x16::
 	ld a, [wLCDC]
-	or LCDC_OBJ16
+	or LCDC_OBJ_16
 	ld [wLCDC], a
 	ret
 
@@ -82,7 +82,7 @@ Set_OBJ_8x16::
 ; preserves all registers except af
 SetWindowOn::
 	ld a, [wLCDC]
-	or LCDC_WINON
+	or LCDC_WIN_ON
 	ld [wLCDC], a
 	ret
 
@@ -91,6 +91,6 @@ SetWindowOn::
 ; preserves all registers except af
 SetWindowOff::
 	ld a, [wLCDC]
-	and LCDC_WINOFF
+	and ~LCDC_WIN_ON
 	ld [wLCDC], a
 	ret

@@ -1063,7 +1063,7 @@ HandleProphecyPlayerSelection:
 	ldtx hl, PleaseSelectTheDeckText
 	call TwoItemHorizontalMenu
 	ldh a, [hKeysHeld]
-	and B_BUTTON
+	and PAD_B
 	jr nz, HandleProphecyPlayerSelection ; loop back to start
 
 	ldh a, [hCurMenuItem]

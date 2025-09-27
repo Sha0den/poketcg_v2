@@ -118,7 +118,7 @@ GiftCenter_ReceiveCard:
 	call HandleLeftRightInCardList
 	jr c, .wait_input
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	jr z, .wait_input
 	; START button was pressed
 
@@ -378,7 +378,7 @@ HandleSendDeckConfigurationMenu:
 	ld [wVBlankOAMCopyToggle], a
 	call DoFrame
 	ldh a, [hDPadHeld]
-	and START
+	and PAD_START
 	ld a, -1
 	call nz, PlaySFXConfirmOrCancel_Bank2
 	jr nz, .close_menu

@@ -222,7 +222,7 @@ LoadTilemap:
 
 .next_row
 	pop de
-	ld hl, BG_MAP_WIDTH
+	ld hl, TILEMAP_WIDTH
 	add hl, de
 	ld e, l
 	ld d, h
@@ -1437,7 +1437,7 @@ SpriteNullAnimationFrame:
 ;	call .HandleInput
 ;	call HandleAllSpriteAnimations
 ;	ldh a, [hKeysPressed]
-;	and SELECT ; if select is pressed, exit
+;	and PAD_SELECT ; if select is pressed, exit
 ;	jr z, .loop
 ;	ret
 ;
@@ -1447,7 +1447,7 @@ SpriteNullAnimationFrame:
 ; these are not aligned with the regular NPC indices
 ;.HandleInput
 ;	ldh a, [hKeysPressed]
-;	and A_BUTTON
+;	and PAD_A
 ;	jr z, .no_a_button
 ;	ld a, [wLoadNPCDirection]
 ;	inc a ; rotate NPC
@@ -1457,17 +1457,17 @@ SpriteNullAnimationFrame:
 ;	call .DrawNPCSprite
 ;.no_a_button
 ;	ldh a, [hKeysPressed]
-;	and D_PAD
+;	and PAD_CTRL_PAD
 ;	ret z
 ;	farcall GetDirectionFromDPad
 ;	ld hl, .func_table
 ;	jp JumpToFunctionInTable
 ;
 ;.func_table
-;	dw .up ; D_UP
-;	dw .right ; D_RIGHT
-;	dw .down ; D_DOWN
-;	dw .left ; D_LEFT
+;	dw .up ; PAD_UP
+;	dw .right ; PAD_RIGHT
+;	dw .down ; PAD_DOWN
+;	dw .left ; PAD_LEFT
 ;.up
 ;	ld a, 10
 ;	jr .decr_npc_id

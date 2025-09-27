@@ -71,7 +71,7 @@ OverworldMap_LoadSelectedMap:
 ; preserves de
 OverworldMap_HandleKeyPress:
 	ldh a, [hKeysPressed]
-	and D_PAD
+	and PAD_CTRL_PAD
 	jr z, .no_d_pad
 	farcall GetDirectionFromDPad
 	ld [wPlayerDirection], a
@@ -98,7 +98,7 @@ OverworldMap_HandleKeyPress:
 
 .no_d_pad
 	ldh a, [hKeysPressed]
-	and A_BUTTON
+	and PAD_A
 	ret z
 	ld a, SFX_CONFIRM
 	call PlaySFX

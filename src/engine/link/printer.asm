@@ -389,7 +389,7 @@ TryInitPrinterCommunications:
 .wait_input
 	call DoFrame
 	ldh a, [hKeysHeld]
-	and B_BUTTON
+	and PAD_B
 	jr nz, .b_button
 	ld bc, 0
 	lb de, PRINTERPKT_NUL, FALSE
@@ -682,7 +682,7 @@ PrintCardList::
 ; even if it's not marked as seen in the collection
 	ld e, FALSE
 	ldh a, [hKeysHeld]
-	and SELECT
+	and PAD_SELECT
 	jr z, .no_select
 	inc e ; TRUE
 .no_select

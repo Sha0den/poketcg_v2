@@ -34,32 +34,32 @@ SendSGB::
 	ld c, LOW(rJOYP)
 .send_packets_loop
 	push bc
-	ld a, $0
+	ld a, JOYP_SGB_START
 	ld [$ff00+c], a
-	ld a, P15 | P14
+	ld a, JOYP_SGB_FINISH
 	ld [$ff00+c], a
 	ld b, SGB_PACKET_SIZE
 .send_packet_loop
-	ld e, $8
+	ld e, 8
 	ld a, [hli]
 	ld d, a
 .read_byte_loop
 	bit 0, d
-	ld a, P14 ; '1' bit
+	ld a, JOYP_SGB_ONE
 	jr nz, .transfer_bit
-	ld a, P15 ; '0' bit
+	ld a, JOYP_SGB_ZERO
 .transfer_bit
 	ld [$ff00+c], a
-	ld a, P15 | P14
+	ld a, JOYP_SGB_FINISH
 	ld [$ff00+c], a
 	rr d
 	dec e
 	jr nz, .read_byte_loop
 	dec b
 	jr nz, .send_packet_loop
-	ld a, P15 ; stop bit
+	ld a, JOYP_SGB_ZERO
 	ld [$ff00+c], a
-	ld a, P15 | P14
+	ld a, JOYP_SGB_FINISH
 	ld [$ff00+c], a
 	pop bc
 	dec b
@@ -163,31 +163,31 @@ DetectSGB::
 	ld hl, MltReq2Packet
 	call SendSGB
 	ldh a, [rJOYP]
-	and %11
-	cp SNES_JOYPAD1
+	and JOYP_SGB_MLT_REQ
+	cp JOYP_SGB_MLT_REQ
 	jr nz, .sgb
-	ld a, P15
+	ld a, JOYP_SGB_ZERO
 	ldh [rJOYP], a
 	ldh a, [rJOYP]
 	ldh a, [rJOYP]
-	ld a, P15 | P14
+	ld a, JOYP_SGB_FINISH
 	ldh [rJOYP], a
-	ld a, P14
-	ldh [rJOYP], a
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
-	ldh a, [rJOYP]
-	ld a, P15 | P14
+	ld a, JOYP_SGB_ONE
 	ldh [rJOYP], a
 	ldh a, [rJOYP]
 	ldh a, [rJOYP]
 	ldh a, [rJOYP]
 	ldh a, [rJOYP]
-	and %11
-	cp SNES_JOYPAD1
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ld a, JOYP_SGB_FINISH
+	ldh [rJOYP], a
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	ldh a, [rJOYP]
+	and JOYP_SGB_MLT_REQ
+	cp JOYP_SGB_MLT_REQ
 	jr nz, .sgb
 	ld hl, MltReq1Packet
 	call SendSGB
@@ -222,11 +222,11 @@ MltReq2Packet::
 ;	push de
 ;.wait_vblank
 ;	ldh a, [rLY]
-;	cp LY_VBLANK + 3
+;	cp LY_VBLANK + 4
 ;	jr nz, .wait_vblank
-;	ld a, LCDC_BGON | LCDC_OBJON | LCDC_WIN9C00
+;	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_WIN_9C00
 ;	ldh [rLCDC], a
-;	ld a, %11100100
+;	ld a, BGP_SGB_TRANSFER
 ;	ldh [rBGP], a
 ;	ld de, v0Tiles1
 ;	ld bc, v0BGMap0 - v0Tiles1
@@ -252,7 +252,7 @@ MltReq2Packet::
 ;	add hl, de
 ;	dec c
 ;	jr nz, .bgmap_outer_loop
-;	ld a, LCDC_BGON | LCDC_OBJON | LCDC_WIN9C00 | LCDC_ON
+;	ld a, LCDC_BG_ON | LCDC_OBJ_ON | LCDC_WIN_9C00 | LCDC_ON
 ;	ldh [rLCDC], a
 ;	pop hl
 ;	call SendSGB

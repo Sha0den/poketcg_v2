@@ -167,7 +167,7 @@ wc900:: ; c900
 SECTION "WRAM0 1", WRAM0
 
 wOAM:: ; ca00
-	ds $a0
+	ds OAM_SIZE
 
 ; 16-byte buffer to store text, usually a name or a number
 ; used by TX_RAM1 but not exclusively
@@ -1342,7 +1342,7 @@ wEffectFunctionsBank:: ; ce22
 
 ; LoadCardGfx loads the card's palette here
 wCardPalette:: ; ce23
-	ds CGB_PAL_SIZE ; ds $8
+	ds PAL_SIZE ; ds $8
 
 ; information about the text being currently processed, including font width,
 ; the rom bank, and the memory address of the next character to be printed.

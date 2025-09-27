@@ -10,7 +10,9 @@
 
 ; initial palettes that are used for all of the maps
 Palette0::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 8
 
 	rgb 28, 28, 24
@@ -1344,7 +1346,10 @@ Palette28::
 
 ; palettes that are used for the NPC sprites?
 Palette29::
-	db 2, %11010011, %11100011
+	db 2
+	gbpal SHADE_BLACK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+	gbpal SHADE_BLACK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP1
+
 	db 8
 
 	rgb  6, 14, 11
@@ -1390,7 +1395,10 @@ Palette29::
 
 ; palettes that are used for the title screen sprites
 Palette30::
-	db 2, %11010010, %11111111
+	db 2
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+	gbpal SHADE_BLACK, SHADE_BLACK, SHADE_BLACK, SHADE_BLACK ; OBP1
+
 	db 8
 
 	rgb  0,  0,  0
@@ -1436,7 +1444,9 @@ Palette30::
 
 ; applied to the Glow duel animation
 Palette31::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1447,7 +1457,9 @@ Palette31::
 
 ; applied to the Paralysis duel animation
 Palette32::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1458,7 +1470,9 @@ Palette32::
 
 ; applied to the Sleep duel animation
 Palette33::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1469,7 +1483,9 @@ Palette33::
 
 ; applied to the Confusion duel animation
 Palette34::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1480,7 +1496,9 @@ Palette34::
 
 ; applied to the Poison duel animation
 Palette35::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1491,7 +1509,9 @@ Palette35::
 
 ; applied to the Hit duel animations
 Palette36::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1502,7 +1522,9 @@ Palette36::
 
 ; applied to the Show Damage duel animation
 Palette37::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1513,7 +1535,9 @@ Palette37::
 
 ; applied to the Thunder Shock duel animations
 Palette38::
-	db 1, %11000010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_WHITE, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1524,7 +1548,9 @@ Palette38::
 
 ; applied to the Lightning duel animation
 Palette39::
-	db 1, %11000010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_WHITE, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1535,7 +1561,9 @@ Palette39::
 
 ; applied to the Border Spark duel animation
 Palette40::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1546,7 +1574,9 @@ Palette40::
 
 ; applied to the Big Lightning duel animation
 Palette41::
-	db 1, %11000010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_WHITE, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1557,7 +1587,9 @@ Palette41::
 
 ; applied to the Flame duel animations
 Palette42::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1568,7 +1600,9 @@ Palette42::
 
 ; applied to the Fire Spin duel animation
 Palette43::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1579,7 +1613,9 @@ Palette43::
 
 ; applied to the Dive Bomb/Firegiver duel animations
 Palette44::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1590,7 +1626,9 @@ Palette44::
 
 ; applied to the Water Jets duel animation
 Palette45::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 16, 23, 20
@@ -1601,7 +1639,9 @@ Palette45::
 
 ; applied to the Water Gun duel animation
 Palette46::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1612,7 +1652,9 @@ Palette46::
 
 ; applied to the Whirlpool duel animation
 Palette47::
-	db 1, %10010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_DARK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1623,7 +1665,9 @@ Palette47::
 
 ; applied to the Hydro Pump duel animation
 Palette48::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1634,7 +1678,9 @@ Palette48::
 
 ; applied to the Blizzard/Quick Freeze duel animations
 Palette49::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1645,7 +1691,9 @@ Palette49::
 
 ; applied to the Psychic duel animation
 Palette50::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1656,7 +1704,9 @@ Palette50::
 
 ; applied to the Leer duel animation
 Palette51::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 28, 28, 24
@@ -1667,7 +1717,9 @@ Palette51::
 
 ; applied to the Beam duel animation
 Palette52::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1678,7 +1730,9 @@ Palette52::
 
 ; applied to the Hyper Beam duel animation
 Palette53::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1689,7 +1743,9 @@ Palette53::
 
 ; applied to the Rock Throw/Stone Barrage duel animations
 Palette54::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 28, 28, 24
@@ -1700,7 +1756,9 @@ Palette54::
 
 ; applied to the punching duel animations
 Palette55::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 28, 28, 24
@@ -1711,7 +1769,9 @@ Palette55::
 
 ; applied to the Stretch Kick duel animation
 Palette56::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1722,7 +1782,9 @@ Palette56::
 
 ; applied to the Slash/Fury Swipes duel animations
 Palette57::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1733,7 +1795,9 @@ Palette57::
 
 ; applied to the Whip duel animation
 Palette58::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1744,7 +1808,9 @@ Palette58::
 
 ; applied to the Sonicboom duel animation
 Palette59::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1755,7 +1821,9 @@ Palette59::
 
 ; applied to the Drill duel animation
 Palette60::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1766,7 +1834,9 @@ Palette60::
 
 ; applied to the Pot Smash duel animation
 Palette61::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 16, 23, 20
@@ -1777,7 +1847,9 @@ Palette61::
 
 ; applied to the Bonemerang duel animation
 Palette62::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1788,7 +1860,9 @@ Palette62::
 
 ; applied to the Seismic Toss duel animation
 Palette63::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1799,7 +1873,9 @@ Palette63::
 
 ; applied to the Needles duel animation
 Palette64::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1810,7 +1886,9 @@ Palette64::
 
 ; applied to the White Gas duel animation
 Palette65::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1821,7 +1899,9 @@ Palette65::
 
 ; applied to the Powder duel animation
 Palette66::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1832,7 +1912,9 @@ Palette66::
 
 ; applied to the Goo duel animation
 Palette67::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1843,7 +1925,9 @@ Palette67::
 
 ; applied to the Bubble duel animation
 Palette68::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1854,7 +1938,9 @@ Palette68::
 
 ; applied to the String Shot duel animation
 Palette69::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1865,7 +1951,9 @@ Palette69::
 
 ; applied to the Boyfriends duel animation
 Palette70::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1876,7 +1964,9 @@ Palette70::
 
 ; applied to the Lure duel animation
 Palette71::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1887,7 +1977,9 @@ Palette71::
 
 ; applied to the Toxic duel animation
 Palette72::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1898,7 +1990,9 @@ Palette72::
 
 ; applied to the Confuse Ray duel animation
 Palette73::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1909,7 +2003,9 @@ Palette73::
 
 ; applied to the Sing duel animation
 Palette74::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1920,7 +2016,9 @@ Palette74::
 
 ; applied to the Supersonic duel animation
 Palette75::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1931,7 +2029,9 @@ Palette75::
 
 ; applied to the Petal Dance duel animation
 Palette76::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1942,7 +2042,9 @@ Palette76::
 
 ; applied to the Protect duel animation
 Palette77::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -1953,7 +2055,9 @@ Palette77::
 
 ; applied to the Barrier duel animation
 Palette78::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1964,7 +2068,9 @@ Palette78::
 
 ; applied to the Speed duel animation
 Palette79::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1975,7 +2081,9 @@ Palette79::
 
 ; applied to the Whirlwind duel animations
 Palette80::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1986,7 +2094,9 @@ Palette80::
 
 ; applied to the Cry duel animation
 Palette81::
-	db 1, %11000010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_WHITE, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -1997,7 +2107,9 @@ Palette81::
 
 ; applied to the Question Mark duel animation
 Palette82::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -2008,7 +2120,9 @@ Palette82::
 
 ; applied to the Selfdestruct/Explosion duel animations
 Palette83::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -2019,7 +2133,9 @@ Palette83::
 
 ; applied to the Heal duel animations
 Palette84::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -2030,7 +2146,9 @@ Palette84::
 
 ; applied to the Drain duel animation
 Palette85::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -2041,7 +2159,9 @@ Palette85::
 
 ; applied to the Dark Gas duel animation
 Palette86::
-	db 1, %11100110
+	db 1
+	gbpal SHADE_DARK, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 11, 11, 11
@@ -2052,7 +2172,9 @@ Palette86::
 
 ; applied to the Bench Glow duel animation
 Palette87::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -2063,7 +2185,9 @@ Palette87::
 
 ; applied to the Expand duel animation
 Palette88::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -2074,7 +2198,9 @@ Palette88::
 
 ; applied to the Cat Punch duel animation
 Palette89::
-	db 1, %11100010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 28, 28, 24
@@ -2085,7 +2211,9 @@ Palette89::
 
 ; applied to the Thunder Wave duel animation
 Palette90::
-	db 1, %11010010
+	db 1
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb  0,  0,  0
@@ -2096,7 +2224,9 @@ Palette90::
 
 ; applied to the deck animations (e.g. drawing a card, shuffling)
 Palette91::
-	db 1, %11100110
+	db 1
+	gbpal SHADE_DARK, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 16, 16, 20
@@ -2107,7 +2237,9 @@ Palette91::
 
 ; applied to the coin toss animations
 Palette92::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 28, 28, 24
@@ -2118,7 +2250,9 @@ Palette92::
 
 ; applied to the duel results screen animations
 Palette93::
-	db 1, %11001001
+	db 1
+	gbpal SHADE_LIGHT, SHADE_DARK, SHADE_WHITE, SHADE_BLACK ; OBP0
+
 	db 1
 
 	rgb 20, 20, 16
@@ -2738,13 +2872,17 @@ Palette107::
 
 ; used for all of the booster pack scenes
 Palette108::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 0
 
 
 ; used for the 2nd Japanese Title Screen scene
 Palette109::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 0
 
 
@@ -2755,7 +2893,9 @@ Palette110::
 
 ; palettes that are used for the link cable scenes
 Palette111::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 8
 
 	rgb 28, 28, 24
@@ -2801,7 +2941,9 @@ Palette111::
 
 ; palettes that are used for the Game Boy Printer scenes
 Palette112::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 8
 
 	rgb 28, 28, 24
@@ -2847,7 +2989,9 @@ Palette112::
 
 ; palettes that are used for the CardPop! scenes
 Palette113::
-	db 1, %11100100
+	db 1
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+
 	db 8
 
 	rgb 28, 28, 24
@@ -2893,7 +3037,10 @@ Palette113::
 
 ; palettes that are used for some of the link cable scenes
 Palette114::
-	db 2, %11100100, %00000011
+	db 2
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+	gbpal SHADE_BLACK, SHADE_WHITE, SHADE_WHITE, SHADE_WHITE ; OBP1
+
 	db 4
 
 	rgb  0,  0,  0
@@ -2919,7 +3066,10 @@ Palette114::
 
 ; palettes that are used for the Game Boy Printer scenes
 Palette115::
-	db 2, %11100100, %00000011
+	db 2
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP0
+	gbpal SHADE_BLACK, SHADE_WHITE, SHADE_WHITE, SHADE_WHITE ; OBP1
+
 	db 4
 
 	rgb 28, 28, 24
@@ -2945,7 +3095,10 @@ Palette115::
 
 ; palettes that are used for the CardPop! scenes
 Palette116::
-	db 2, %11010010, %11100100
+	db 2
+	gbpal SHADE_DARK, SHADE_WHITE, SHADE_LIGHT, SHADE_BLACK ; OBP0
+	gbpal SHADE_WHITE, SHADE_LIGHT, SHADE_DARK, SHADE_BLACK ; OBP1
+
 	db 4
 
 	rgb 28, 28, 24

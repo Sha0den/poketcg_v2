@@ -65,7 +65,7 @@ ApplyBackgroundScroll::
 	push hl
 	call DisableInt_LYCoincidence
 	ld hl, rSTAT
-	res STAT_LYCFLAG, [hl] ; reset coincidence flag
+	res B_STAT_LYCF, [hl] ; reset coincidence flag
 	ei
 	ld hl, wApplyBGScroll
 	ld a, [hl]
@@ -88,7 +88,7 @@ ApplyBackgroundScroll::
 	call GetNextBackgroundScroll
 	ld hl, rSTAT
 .wait_hblank_or_vblank
-	bit STAT_BUSY, [hl]
+	bit B_STAT_BUSY, [hl]
 	jr nz, .wait_hblank_or_vblank
 	ldh [rSCX], a
 	ldh a, [rLY]
@@ -153,10 +153,10 @@ GetNextBackgroundScroll::
 EnableInt_LYCoincidence::
 	push hl
 	ld hl, rSTAT
-	set STAT_LYC, [hl]
+	set B_STAT_LYC, [hl]
 	xor a
 	ld hl, rIE
-	set INT_LCD_STAT, [hl]
+	set B_IE_STAT, [hl]
 	pop hl
 	ret
 
@@ -166,9 +166,9 @@ EnableInt_LYCoincidence::
 DisableInt_LYCoincidence::
 	push hl
 	ld hl, rSTAT
-	res STAT_LYC, [hl]
+	res B_STAT_LYC, [hl]
 	xor a
 	ld hl, rIE
-	res INT_LCD_STAT, [hl]
+	res B_IE_STAT, [hl]
 	pop hl
 	ret
