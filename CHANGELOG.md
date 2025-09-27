@@ -12,6 +12,11 @@
 <br/>
 
 ## Bug Fixes For Base Game
+- **September 27, 2025:** 1 File Changed
+    - Fix `Func_fc279` in src/audio/sfx.asm, to make it write to the relevant hardware registers instead of read from them
+
+<br/>
+
 - **[December 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/6cb8f87e0433424b3f0b59ee83fa595a59a84838):** 5 Files Changed
     - Have AI compare amount of attached Energy with each of a Pokémon's attacks when deciding whether a Pokémon is set up, rather than checking if its second attack is usable
         - *this avoids the problem of some Pokémon not having a second attack and also ignores looking at temporary effects that prevent attacking, such as status/substatus/amnesia*
@@ -86,6 +91,7 @@
 
 - **[May 6, 2024](https://github.com/Sha0den/improvedpoketcg/commit/4da8cb3a494cfec17fbe2de9a57e4c2e3c6924c6):** 9 Files Changed (8 are Code Optimization)
     - Fix "Ninetails" typo
+    - *A lot more typos were fixed on [May 21, 2024](https://github.com/Sha0den/poketcg_v2/commit/4ac1004d0f7b04743060b5fb916a9fb7640f7cea), [June 7, 2024](https://github.com/Sha0den/poketcg_v2/commit/2414fbf2b12b0fed4b4a3b5fb40cbde95f443ef0), [June 8, 2025](https://github.com/Sha0den/poketcg_v2/commit/f17fcbab1f162220e3cccd2dbdf6eb217a534831), [June 23, 2025](https://github.com/Sha0den/poketcg_v2/commit/6499592040fd7aa41c10a291737bb1d55fc8f6e8), [June 26, 2025](https://github.com/Sha0den/poketcg_v2/commit/7bba92a147bf110ca356f0b7685ae155cf653c50), and [September 26, 2025](https://github.com/Sha0den/poketcg_v2/commit/97f5158c992b3dba198991775d77959f665fd599)*
 
 <br/>
 

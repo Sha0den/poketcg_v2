@@ -466,18 +466,16 @@ SFX_end:
 	pop hl
 	ret
 
-; bug, these instructions are supposed to be
-; loading to hardware registers, not loading from them
 Func_fc279:
 	ld a, $8
-	ldh a, [rAUD1ENV]
-	ldh a, [rAUD2ENV]
-	ldh a, [rAUD3LEVEL]
-	ldh a, [rAUD4ENV]
+	ldh [rAUD1ENV], a
+	ldh [rAUD2ENV], a
+	ldh [rAUD3LEVEL], a
+	ldh [rAUD4ENV], a
 	ld a, $80
-	ldh a, [rAUD1HIGH]
-	ldh a, [rAUD2HIGH]
-	ldh a, [rAUD4GO]
+	ldh [rAUD1HIGH], a
+	ldh [rAUD2HIGH], a
+	ldh [rAUD4GO], a
 	xor a
 	ld [wdd8c], a
 	ret
