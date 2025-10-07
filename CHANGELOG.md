@@ -12,7 +12,7 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **September 27, 2025:** 1 File Changed
+- **[September 27, 2025](https://github.com/Sha0den/poketcg_v2/commit/a2f7df8d521655fa22a13e21c3713ffb5b101c72):** 1 File Changed
     - Fix `Func_fc279` in src/audio/sfx.asm, to make it write to the relevant hardware registers instead of read from them
 
 <br/>
@@ -979,12 +979,18 @@
 
 
 ## Miscellaneous Changes
+- **October 7, 2025:** 5 Files Changed
+    - Free up another text symbol by removing the reference mark (※); it's still in the fullwidth3 fonts
+    - Adjust attack menu to display a centered ellipsis (•••) below the attack name when an attack has an effect (rather than a reference mark to the far right)
+    - Create `CountEnergyInAttackCost` and add it to the Unreferenced Functions section in src/engine/duel/core.asm (I decided not to adjust attack cost printing)
+
+<br/>
+
 - **[September 26, 2025](https://github.com/Sha0den/poketcg_v2/commit/97f5158c992b3dba198991775d77959f665fd599):** 7 Files Changed
     - Print the default `ReceivedPromotionalCardText` upon receiving a Flying/Surfing Pikachu and delete their custom text entries
         - This effectively just replaces "Flyin' Pikachu" with "Flying Pikachu Lv12" and "Surfin' Pikachu" with "Surfing Pikachu Lv13!"
     - Undo changes to one of the lines of text in the practice duel and recapitalize various instances of the phrase "Card Master"
     - Also fix a lot more typos from the original game
-
 
 <br/>
 

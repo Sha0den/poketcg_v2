@@ -4845,15 +4845,19 @@ PrintAttackOrPkmnPowerInformation:
 	ld a, [hli]
 	or [hl]
 	jr z, .print_damage
-	; if in Attack menu and attack 1 description exists, print at 18,e:
-	ld b, 18
-	ld c, e
-	ld a, SYM_ATK_DESCR
-	call WriteByteToBGMap0
+	; if in Attack menu and attack 1 description exists,
+	; print centered ellipsis (...) below attack name
+	push hl
+	ld d, 9
+	inc e
+	ldtx hl, AttackDescriptionEllipsisText
+	call InitTextPrinting_ProcessTextFromID
+	dec e
+	pop hl ; wLoadedAttackDescription + 1
 .print_damage
 	inc hl
 	inc hl
-	inc hl
+	inc hl ; wLoadedAttackDamage
 	ld a, [hli]
 	push hl
 	or a
@@ -4864,7 +4868,7 @@ PrintAttackOrPkmnPowerInformation:
 	inc c
 	call WriteOneByteNumberInTxSymbolFormat_TrimLeadingZeros
 .print_category
-	pop hl
+	pop hl ; wLoadedAttackCategory
 	ld a, [hl]
 	and $ff ^ RESIDUAL
 	jr z, .print_energy_cost
@@ -9168,12 +9172,12 @@ HandleStrikesBack_AgainstNormalAttack:
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; Before this function can be used again, SYM_HP_OK must be returned to gfx/fonts/symbols.png
-; and the TX_SYMBOL constant must also be redefined in constants/charmaps.asm
-; preserves de
-; input:
-;	d = maximum HP value
-;	e = current HP value
+;; Before this function can be used again, SYM_HP_OK must be returned to gfx/fonts/symbols.png
+;; and the TX_SYMBOL constant must also be redefined in constants/charmaps.asm
+;; preserves de
+;; input:
+;;	d = maximum HP value
+;;	e = current HP value
 ;DrawHPBar:
 ;	ld a, MAX_HP
 ;	ld c, SYM_SPACE
@@ -9200,6 +9204,30 @@ HandleStrikesBack_AgainstNormalAttack:
 ;	ret
 ;
 ;
+;; preserves de
+;; input:
+;;	hl = attack cost (e.g. wLoadedAttackEnergyCost)
+;; output:
+;;	a & b = total amount of Energy needed to use the given attack
+;;	hl = attack name (e.g. wLoadedAttackName)
+;CountEnergyInAttackCost:
+;	ld b, 0 ; initial counter
+;	ld c, NUM_TYPES / 2
+;.loop
+;	ld a, [hl]
+;	swap a
+;	and $0f
+;	add b
+;	ld b, a
+;	ld a, [hli]
+;	and $0f
+;	add b
+;	ld b, a
+;	dec c
+;	jr nz, .loop
+;	ret
+;
+;
 ;UnreferencedDrawCardFromDeckToHand:
 ;	call DrawCardFromDeck
 ;	call nc, AddCardToHand
@@ -9220,7 +9248,7 @@ HandleStrikesBack_AgainstNormalAttack:
 ;	jp DisplayCardList
 ;
 ;
-; colorizes both card images in the main duel scene
+;; colorizes both card images in the main duel scene
 ;Func_5a81:
 ;	ld a, [wConsole]
 ;	or a ; CONSOLE_DMG
@@ -9259,10 +9287,10 @@ HandleStrikesBack_AgainstNormalAttack:
 ;	jp InitAndPrintPlayAreaCardInformationAndLocation
 ;
 ;
-; prints 8 (Energy) symbols in a row that were previously stored in wDefaultText
-; input:
-;	bc = screen coordinates at which to begin printing the symbols
-;	wDefaultText = list of (TX_SYMBOL) tiles to print
+;; prints 8 (Energy) symbols in a row that were previously stored in wDefaultText
+;; input:
+;;	bc = screen coordinates at which to begin printing the symbols
+;;	wDefaultText = list of (TX_SYMBOL) tiles to print
 ;Func_6423:
 ;	ld hl, wDefaultText
 ;	ld e, $08
@@ -9283,12 +9311,12 @@ HandleStrikesBack_AgainstNormalAttack:
 ;	jp WaitForWideTextBoxInput
 ;
 ;
-; used for testing
-; enters computer opponent selection screen
-; handles input to select/cancel/scroll through deck IDs
-; loads the NPC duel configurations if one was selected
-; output:
-;	carry = set:  if the selection was cancelled with the B button
+;; used for testing
+;; enters computer opponent selection screen
+;; handles input to select/cancel/scroll through deck IDs
+;; loads the NPC duel configurations if one was selected
+;; output:
+;;	carry = set:  if the selection was cancelled with the B button
 ;Func_7364:
 ;	xor a
 ;	ld [wTileMapFill], a
@@ -9367,8 +9395,8 @@ HandleStrikesBack_AgainstNormalAttack:
 ;	ret
 ;
 ;
-; draws the current opponent to be selected (his/her portrait and name)
-; and creates a text box for selection
+;; draws the current opponent to be selected (his/her portrait and name)
+;; and creates a text box for selection
 ;DrawOpponentSelectionScreen:
 ;	ld a, [wOpponentDeckID]
 ;	ld [wNPCDuelDeckID], a
@@ -9447,7 +9475,7 @@ HandleStrikesBack_AgainstNormalAttack:
 ;	jr .card_loop
 ;
 ;
-; reloads a list of cards, except don't print their names
+;; reloads a list of cards, except don't print their names
 ;Func_2827:
 ;	ld a, $01
 ;	ldh [hffb0], a

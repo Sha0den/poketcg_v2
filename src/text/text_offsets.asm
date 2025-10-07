@@ -53,7 +53,7 @@ TextOffsets::
 	textpointer DiscardName                                        ; 0x0031
 	textpointer NumberSymbolText                                   ; 0x0032
 	textpointer UsedText                                           ; 0x0033
-	textpointer UnusedText0034                                     ; 0x0034
+	textpointer AttackDescriptionEllipsisText                      ; 0x0034
 	textpointer PokemonsAttackText                                 ; 0x0035
 	textpointer ResistanceLessDamageText                           ; 0x0036
 	textpointer WeaknessMoreDamageText                             ; 0x0037

@@ -212,8 +212,8 @@ UsedText:
 	text " Used <RAMTEXT>."
 	done
 
-UnusedText0034: ; Unused
-	text "Received damage"
+AttackDescriptionEllipsisText:
+	text "•••"
 	done
 
 PokemonsAttackText:

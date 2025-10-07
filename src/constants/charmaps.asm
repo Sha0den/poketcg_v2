@@ -832,11 +832,11 @@ ENDM
 	txsymbol "PARALYZED"      ; $0b
 	txsymbol "CURSOR_U"       ; $0c
 	txsymbol "POKEMON"        ; $0d
-	txsymbol "ATK_DESCR"      ; $0e
+	txsymbol "UNUSED_0e"      ; $0e
 	txsymbol "CURSOR_R"       ; $0f
-	txsymbol "UNUSED_1"       ; $10
-	txsymbol "UNUSED_2"       ; $11
-	txsymbol "UNUSED_3"       ; $12
+	txsymbol "UNUSED_10"      ; $10
+	txsymbol "UNUSED_11"      ; $11
+	txsymbol "UNUSED_12"      ; $12
 	txsymbol "DAMAGE_COUNTER" ; $13
 	txsymbol "PLUSPOWER"      ; $14
 	txsymbol "DEFENDER"       ; $15
