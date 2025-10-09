@@ -348,20 +348,18 @@ Script_EnterLabFirstTime:
 ;	save_game 0
 ;	quit_script_fully ; SKIP PRACTICE DUEL END
 
-	print_npc_text NewIntroText1
+	print_npc_text Text05e3
 	close_advanced_text_box
 	move_npc NPC_SAM, NPCMovement_d880
-	ask_question_jump NewIntroText2, .accepted_practice_game
+	ask_question_jump DoYouWantToTryAPracticeGameText, .accepted_practice_duel
 	
-	; declined practice game
-	print_npc_text NewIntroText3
+; declined practice duel
+	print_npc_text DeclinedPracticeDuelText
 	close_advanced_text_box
 	move_npc NPC_SAM, NPCMovement_d882
 	script_jump Script_AfterPracticeDuel.building_the_starter_deck
-	end_script
-	ret
 
-.accepted_practice_game
+.accepted_practice_duel
 	set_next_npc_and_script NPC_SAM, .ows_d779
 	end_script
 	ret

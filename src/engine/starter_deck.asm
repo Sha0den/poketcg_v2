@@ -124,8 +124,9 @@ InitSaveData::
 ; saved configuration options
 	ld a, 2
 	ld [sPrinterContrastLevel], a
-;	ld a, TEXT_SPEED_3 ; default text speed at start of game
-	ld a, TEXT_SPEED_5 ; default text speed at start of game
+	; set default text speed for a new game
+;	xor a ; TEXT_SPEED_5 (no delay)
+	ld a, TEXT_SPEED_4 ; fastest text speed with actual scrolling (1 extra frame per text tile)
 	ld [sTextSpeed], a
 	ld [wTextSpeed], a
 

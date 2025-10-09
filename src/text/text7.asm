@@ -95,23 +95,18 @@ Text05e2:
 Text05e3:
 	text "Oh! Why the rush, <RAMNAME>?"
 	line "What?"
-	line "You want to learn how to play"
+	line "So you're interested in playing"
 	line "the Pokémon Trading Card Game?"
-	line "So you, too, finally want to"
-	line "start playing the card game."
-	line "Well, dueling is more fun than"
-	line "just collecting cards!"
+	line "Well, dueling is certainly more fun"
+	line "than simply collecting the cards!"
 	line "First, you should try playing"
 	line "with a practice deck."
-	line "Here, I'll give you this deck."
-	line "And now you need an opponent..."
 	line "Hey, Sam!"
-	line "Play with him for a while!"
+	line "Come over here for a minute!"
 	done
 
-Text05e4:
-	text "Yes, Dr. Mason."
-	line "Hello, <RAMNAME>."
+DoYouWantToTryAPracticeGameText:
+	text "Do you want to try a practice game?"
 	done
 
 Text05e5:

@@ -979,7 +979,15 @@
 
 
 ## Miscellaneous Changes
-- **October 7, 2025:** 5 Files Changed
+- **October 9, 2025:** 6 Files Changed
+    - Various improvements from my [Speed up the start of the game tutorial](https://github.com/pret/poketcg/wiki/Speed-up-the-start-of-the-game)
+        - Revise the optional tutorial changes from [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/b37fdd04d9d228a46be2e27ecf64407bcf1a5302)
+        - Pressing the B button will now skip the delay for all Message Speeds other than 1
+        - I also decreased the default text speed to 4 (1 extra frame per font tile)
+
+<br/>
+
+- **[October 7, 2025](https://github.com/Sha0den/poketcg_v2/commit/f3b054372fcc8772b6edd73cedbea3cbc0a54cbe):** 5 Files Changed
     - Free up another text symbol by removing the reference mark (※); it's still in the fullwidth3 fonts
     - Adjust attack menu to display a centered ellipsis (•••) below the attack name when an attack has an effect (rather than a reference mark to the far right)
     - Create `CountEnergyInAttackCost` and add it to the Unreferenced Functions section in src/engine/duel/core.asm (I decided not to adjust attack cost printing)
@@ -1185,6 +1193,7 @@
 
 - **[May 12, 2024](https://github.com/Sha0den/improvedpoketcg/commit/a22046c5fd4ddf967e4ea0793a79abbdf80cc7aa):** 4 Files Changed
     - Add text speed constants and increase the default text speed to the fastest setting
+    - *The default text speed was eventually decreased to 4 in a later commit*
 
 <br/>
 
@@ -1277,6 +1286,7 @@
 
 - **[May 14, 2024](https://github.com/Sha0den/improvedpoketcg/commit/b37fdd04d9d228a46be2e27ecf64407bcf1a5302):** 3 Files Changed
     - The practice game with Sam at the start of the game is now optional
+        - *Please reference my tutorial at [https://github.com/pret/poketcg/wiki/Speed-up-the-start-of-the-game](https://github.com/pret/poketcg/wiki/Speed-up-the-start-of-the-game) if attempting to copy this change to another repository (the original code isn't optimized)*
 
 <br/>
 
@@ -1293,7 +1303,7 @@
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/ae0ee380fe2c32211f527c5a6d395c6484121a49):** 1 File Changed
     - Replace damage counter display with "current HP/max HP"
     - The maximum HP value of a Pokémon is now 250 (was 120)
-        - *Please reference [This Tutorial](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
+        - *Please reference my tutorial at [https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)](https://github.com/pret/poketcg/wiki/Replace-damage-counters-with-numbers-to-allow-higher-HP-values-(120-→-250)) if attempting to copy this change to another repository (the original code isn't optimized)*
 
 <br/>
 
