@@ -12,10 +12,6 @@
 <br/>
 
 ## Bug Fixes For Base Game
-- **[September 27, 2025](https://github.com/Sha0den/poketcg_v2/commit/a2f7df8d521655fa22a13e21c3713ffb5b101c72):** 1 File Changed
-    - Fix `Func_fc279` in src/audio/sfx.asm, to make it write to the relevant hardware registers instead of read from them
-
-<br/>
 
 - **[December 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/6cb8f87e0433424b3f0b59ee83fa595a59a84838):** 5 Files Changed
     - Have AI compare amount of attached Energy with each of a Pokémon's attacks when deciding whether a Pokémon is set up, rather than checking if its second attack is usable
@@ -129,6 +125,7 @@
 
 
 ## Code Optimization
+
 - **[September 22, 2025](https://github.com/Sha0den/poketcg_v2/commit/6fc7f1ef380ed7c2e525f9ec133f483a3e7be361):** 2 Files Changed
     - Merge effect commands for Leer and Tail Wag
     - Rename various effect commands to make them more obvious (e.g. "MayDrawCard" -> "FlipToDrawCard")
@@ -979,8 +976,9 @@
 
 
 ## Miscellaneous Changes
-- **October 9, 2025:** 6 Files Changed
-    - Various improvements from my [Speed up the start of the game tutorial](https://github.com/pret/poketcg/wiki/Speed-up-the-start-of-the-game)
+
+- **[October 9, 2025](https://github.com/Sha0den/poketcg_v2/commit/b2931545551de449bfccf76c90f6e67ff230272b):** 6 Files Changed
+    - Various improvements from my [Speed up the start of the game tutorial](https://github.com/pret/poketcg/wiki/Speed-up-the-start-of-the-game):
         - Revise the optional tutorial changes from [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/b37fdd04d9d228a46be2e27ecf64407bcf1a5302)
         - Pressing the B button will now skip the delay for all Message Speeds other than 1
         - I also decreased the default text speed to 4 (1 extra frame per font tile)
@@ -1249,6 +1247,7 @@
 
 
 ## New Features
+
 - **[November 23, 2024](https://github.com/Sha0den/poketcg_v2/commit/1ddbd58ad2236e388cd5cfc7c7d2b50ad42de644):** 12 Files Changed
     - Redesign the deck naming screen to allow more variety when naming
         - *Keyboard now has 3 layouts (switch between them by pressing SELECT or the Uppercase/Lowercase/Accents buttons)*
@@ -1318,6 +1317,13 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+
+- **October 9, 2025:** 1 File Changed
+    - Undo "bugfix" for `Func_fc279` in src/audio/sfx.asm (which actually caused audio glitches), and instead delete the function and inline the 1 relevant load
+    - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/a2f7df8d521655fa22a13e21c3713ffb5b101c72)*
+
+<br/>
+
 - **September 25 2025:** 2 Files Changed
     - Implement a few fixes related to loading opponent's card data without first calling `SwapTurn` (AI will now correctly use Conversion 2 once more)
         - The instance in src/engine/duel/ai/retreat.asm was actually present in the base game

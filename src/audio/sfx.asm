@@ -7,8 +7,11 @@ SFX_PlaySFX:
 	ld b, $0
 	ld a, [wSFXIsPlaying]
 	or a
-	call nz, Func_fc279
-	ld a, TRUE
+	jr z, .no_sfx_playing
+	xor a
+	ld [wdd8c], a
+.no_sfx_playing
+	inc a ; TRUE
 	ld [wSFXIsPlaying], a
 	ld hl, SFXHeaderPointers
 	add hl, bc
@@ -466,19 +469,6 @@ SFX_end:
 	pop hl
 	ret
 
-Func_fc279:
-	ld a, $8
-	ldh [rAUD1ENV], a
-	ldh [rAUD2ENV], a
-	ldh [rAUD3LEVEL], a
-	ldh [rAUD4ENV], a
-	ld a, $80
-	ldh [rAUD1HIGH], a
-	ldh [rAUD2HIGH], a
-	ldh [rAUD4GO], a
-	xor a
-	ld [wdd8c], a
-	ret
 
 INCLUDE "audio/sfx_headers.asm"
 
