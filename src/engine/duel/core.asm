@@ -525,8 +525,8 @@ DuelMenu_Retreat:
 	cp CONFUSED
 	ldh [hTemp_ffa0], a
 	jr nz, .not_confused
-	ld a, [wConfusionRetreatCheckWasUnsuccessful]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and UNABLE_TO_RETREAT_THIS_TURN
 	jr nz, .unable_to_retreat
 	call DisplayRetreatScreen
 	jr c, .exit
@@ -540,6 +540,7 @@ DuelMenu_Retreat:
 	call SetOppAction_SerialSendDuelData
 	call AttemptRetreat
 	jr nc, .exit
+	; retreat unsuccessful due to confusion
 	call DrawDuelMainScene
 
 .unable_to_retreat
@@ -848,14 +849,14 @@ PlayEnergyCard:
 	jr nc, .rain_dance_active
 
 .rain_dance_not_active
-	ld a, [wAlreadyPlayedEnergy]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and PLAYED_ENERGY_THIS_TURN
 	jr nz, .already_played_energy
 	call InitVarsAndOpenPlayAreaScreenForSelection ; choose Pokemon to attach Energy card to
 	jr c, .exit ; exit if the B button was pressed
 .play_energy_set_played
-	ld a, TRUE
-	ld [wAlreadyPlayedEnergy], a
+	ld hl, wOncePerTurnFlags
+	set PLAYED_ENERGY_THIS_TURN_F, [hl]
 .play_energy
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
@@ -881,8 +882,8 @@ PlayEnergyCard:
 	cp TYPE_ENERGY_WATER
 	jr z, .play_energy ; ignore once per turn restriction if a Water Energy is being attached to a Water Pokémon
 .no_rain_dance
-	ld a, [wAlreadyPlayedEnergy]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and PLAYED_ENERGY_THIS_TURN
 	jr z, .play_energy_set_played
 	ldtx hl, MayOnlyAttachOneEnergyCardText
 	call DrawWideTextBox_WaitForInput
@@ -1142,13 +1143,13 @@ DisplayRetreatScreen:
 
 ; discards Retreat Cost Energy cards and attempts retreat of the Active Pokemon.
 ; if successful, the retreating Pokemon is replaced with a Benched Pokemon card.
+; if unsuccessful, sets UNABLE_TO_RETREAT_THIS_TURN_F in wOncePerTurnFlags and returns carry.
 ; input:
 ;	[hTemp_ffa0] = Active Pokémon's Special Conditions status (from DUELVARS_ARENA_CARD_STATUS)
 ;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Benched Pokémon to switch with
 ;	hTempRetreatCostCards = $ff terminated list with deck indices of cards to discard
 ; output:
 ;	carry = set:  if unable to retreat this turn due to a failed confusion check
-;	[wConfusionRetreatCheckWasUnsuccessful] = 1:  if the above condition is true (otherwise 0)
 AttemptRetreat:
 	call DiscardRetreatCostCards
 	ldh a, [hTemp_ffa0]
@@ -1158,16 +1159,16 @@ AttemptRetreat:
 	ldtx de, ConfusionCheckRetreatText
 	call TossCoin
 	jr c, .success
-	ld a, TRUE
-	ld [wConfusionRetreatCheckWasUnsuccessful], a
+	ld hl, wOncePerTurnFlags
+	set UNABLE_TO_RETREAT_THIS_TURN_F, [hl]
 	scf
 	ret
 .success
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ld e, a
-	call SwapArenaWithBenchPokemon
-	xor a ; FALSE
-	ld [wConfusionRetreatCheckWasUnsuccessful], a
+	call SwapArenaWithBenchPokemon ; resets carry flag
+	ld hl, wOncePerTurnFlags
+	res UNABLE_TO_RETREAT_THIS_TURN_F, [hl]
 	ret
 
 
@@ -6983,8 +6984,8 @@ OppAction_PlayEnergyCard:
 	call LoadCardDataToBuffer1_FromDeckIndex
 	call DrawLargePictureOfCard
 	call PrintAttachedEnergyToPokemon
-	ld a, TRUE
-	ld [wAlreadyPlayedEnergy], a
+	ld hl, wOncePerTurnFlags
+	set PLAYED_ENERGY_THIS_TURN_F, [hl]
 	jp DrawDuelMainScene
 
 
@@ -7344,8 +7345,7 @@ SetAllPlayAreaPokemonCanEvolve:
 ; preserves all registers except af
 InitVariablesToBeginTurn:
 	xor a
-	ld [wAlreadyPlayedEnergy], a
-	ld [wConfusionRetreatCheckWasUnsuccessful], a
+	ld [wOncePerTurnFlags], a
 	ld [wGotHeadsFromSmokescreenCheck], a
 	ldh a, [hWhoseTurn]
 	ld [wWhoseTurn], a
@@ -8888,17 +8888,16 @@ CheckSelfConfusionDamage:
 	and CNF_SLP_PRZ
 	cp CONFUSED
 	jr z, .confused
-.no_carry
 	or a
 	ret
 .confused
 	ldtx de, ConfusionCheckDamageText
 	call TossCoin
-	jr c, .no_carry ; return nc if heads
+	ccf
+	ret nc ; return without carry set if heads
 	ld a, TRUE
 	ld [wConfusionAttackCheckWasUnsuccessful], a
-	scf
-	ret
+	ret ; c
 
 
 ; called when an Attacking Pokemon deals damage to itself due to confusion.

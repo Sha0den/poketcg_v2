@@ -82,8 +82,8 @@ AIDoTurn_LegendaryZapdos:
 	ld a, AI_TRAINER_CARD_PHASE_10
 	call AIProcessHandTrainerCards
 ; play Energy card if possible.
-	ld a, [wAlreadyPlayedEnergy]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and PLAYED_ENERGY_THIS_TURN
 	jr nz, .skip_energy_attach
 
 ; if the Active Pokémon is a Voltorb and there's an ElectrodeLv35 in hand,

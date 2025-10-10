@@ -2,8 +2,8 @@
 ; output:
 ;	carry = set:  if the AI decided to retreat
 AIDecideWhetherToRetreat:
-	ld a, [wConfusionRetreatCheckWasUnsuccessful]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and UNABLE_TO_RETREAT_THIS_TURN
 	ret nz ; return no carry if flipped tails after trying to retreat while Confused
 	ld [wAIPlayEnergyCardForRetreat], a ; FALSE
 	call LoadDefendingPokemonColorWRAndPrizeCards
@@ -747,8 +747,8 @@ AITryToRetreat:
 ; finally, check if there are any Energy cards in the AI's hand.
 ; if all of the checks are successful, then attach an Energy card
 ; to the Active Pokémon before moving on to the next section.
-	ld a, [wAlreadyPlayedEnergy]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and PLAYED_ENERGY_THIS_TURN
 	jr nz, .check_id
 	xor a ; PLAY_AREA_ARENA
 	ldh [hTempPlayAreaLocation_ff9d], a

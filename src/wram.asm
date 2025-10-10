@@ -644,11 +644,13 @@ wDuelType:: ; cc09
 wGotHeadsFromSmokescreenCheck:: ; cc0a
 	ds $1
 
-wAlreadyPlayedEnergy:: ; cc0b
+; a series of bit flags that are reset each turn in a duel
+;	bit 0 (PLAYED_ENERGY_THIS_TURN_F):     set if an Energy card is played from the hand
+;	bit 1 (UNABLE_TO_RETREAT_THIS_TURN_F): set if retreat is unsuccessful because of confusion
+wOncePerTurnFlags:: ; cc0b
 	ds $1
 
-; set to TRUE if the confusion check coin toss in AttemptRetreat is tails
-wConfusionRetreatCheckWasUnsuccessful:: ; cc0c
+; Unused wram byte, included when saving and loading duel data
 	ds $1
 
 ; DUELIST_TYPE_* of the turn holder
@@ -660,6 +662,7 @@ wDuelistType:: ; cc0d
 wOpponentDeckID:: ; cc0e
 	ds $1
 
+; maybe unused, is written to but never read
 wcc0f:: ; cc0f
 	ds $1
 
@@ -776,6 +779,7 @@ wNumberPrizeCardsToTake:: ; ccc8
 	ds $1
 
 ; set to TRUE if the coin toss in the confusion check is tails (CheckSelfConfusionDamage)
+; maybe unused, is written to but never read
 wConfusionAttackCheckWasUnsuccessful:: ; ccc9
 	ds $1
 
@@ -798,6 +802,7 @@ wStatusConditionQueue:: ; ccce
 wIsDamageToSelf:: ; cce6
 	ds $1
 
+; maybe unused, is written to but never read
 wcce7:: ; cce7
 	ds $1
 

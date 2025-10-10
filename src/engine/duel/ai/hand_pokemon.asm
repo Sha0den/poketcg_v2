@@ -202,8 +202,8 @@ AIDecideEvolution:
 	jr z, .check_evolution_ko
 	ld a, 2
 	call AIDiscourage
-	ld a, [wAlreadyPlayedEnergy]
-	or a
+	ld a, [wOncePerTurnFlags]
+	and PLAYED_ENERGY_THIS_TURN
 	jr nz, .check_evolution_ko
 	call LookForEnergyNeededInHand
 	ld a, 7

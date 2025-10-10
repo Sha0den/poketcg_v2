@@ -977,6 +977,12 @@
 
 ## Miscellaneous Changes
 
+- **October 10, 2025:** 13 Files Changed
+    - Make `wAlreadyPlayedEnergy` and `wConfusionRetreatCheckWasUnsuccessful` into bit flags on a single wram byte (wOncePerTurnFlags)
+    - Plus a minor optimization in `CheckSelfConfusionDamage` and a few extra comments in src/wram.asm
+
+<br/>
+
 - **[October 9, 2025](https://github.com/Sha0den/poketcg_v2/commit/b2931545551de449bfccf76c90f6e67ff230272b):** 6 Files Changed
     - Various improvements from my [Speed up the start of the game tutorial](https://github.com/pret/poketcg/wiki/Speed-up-the-start-of-the-game):
         - Revise the optional tutorial changes from [This Commit](https://github.com/Sha0den/improvedpoketcg/commit/b37fdd04d9d228a46be2e27ecf64407bcf1a5302)
@@ -1318,7 +1324,7 @@
 
 ## Other Bug Fixes And Commit Reversions
 
-- **October 9, 2025:** 1 File Changed
+- **[October 9, 2025](https://github.com/Sha0den/poketcg_v2/commit/dd19fa91a96f86da2a85af35e17a4d16477573b7):** 1 File Changed
     - Undo "bugfix" for `Func_fc279` in src/audio/sfx.asm (which actually caused audio glitches), and instead delete the function and inline the 1 relevant load
     - *This completely undoes [This Commit](https://github.com/Sha0den/poketcg_v2/commit/a2f7df8d521655fa22a13e21c3713ffb5b101c72)*
 
