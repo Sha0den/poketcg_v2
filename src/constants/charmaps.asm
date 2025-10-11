@@ -831,8 +831,8 @@ ENDM
 	txsymbol "CONFUSED"       ; $0a
 	txsymbol "PARALYZED"      ; $0b
 	txsymbol "CURSOR_U"       ; $0c
-	txsymbol "POKEMON"        ; $0d
-	txsymbol "UNUSED_0e"      ; $0e
+	txsymbol "CURSOR_D"       ; $0d
+	txsymbol "CURSOR_L"       ; $0e
 	txsymbol "CURSOR_R"       ; $0f
 	txsymbol "UNUSED_10"      ; $10
 	txsymbol "UNUSED_11"      ; $11
@@ -865,7 +865,7 @@ ENDM
 	txsymbol "MINUS"          ; $2c
 	txsymbol "CROSS"          ; $2d
 	txsymbol "SLASH"          ; $2e
-	txsymbol "CURSOR_D"       ; $2f
+	txsymbol "POKEMON"        ; $2f
 	txsymbol "PRIZE"          ; $30
 
 SETCHARMAP main

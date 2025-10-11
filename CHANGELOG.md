@@ -977,7 +977,13 @@
 
 ## Miscellaneous Changes
 
-- **October 10, 2025:** 13 Files Changed
+- **October 11, 2025:** 2 Files Changed
+    - Create a left-facing cursor icon and add it to the text symbols (`CURSOR_L`)
+    - Relocate `CURSOR_D` and `POKEMON` text symbols so that all 4 cursors are grouped together after the status symbols
+
+<br/>
+
+- **[October 10, 2025](https://github.com/Sha0den/poketcg_v2/commit/931b668efad1476731b25b2082b68c57563df7d2):** 13 Files Changed
     - Make `wAlreadyPlayedEnergy` and `wConfusionRetreatCheckWasUnsuccessful` into bit flags on a single wram byte (wOncePerTurnFlags)
     - Plus a minor optimization in `CheckSelfConfusionDamage` and a few extra comments in src/wram.asm
 
