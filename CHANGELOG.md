@@ -466,6 +466,7 @@
     - Update various comments in the effect functions files (also correct `RemoveCardFromDuelTempList`'s output comments in home/duel.asm)
     - Reorder a lot of the individual effect commands (EFFECTCMDTYPE_*) to reflect the actual order of execution
     - *This commit made it impossible for the AI to properly use Porygon's Conversion 2 attack ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/ed452d2ef754469d53ba8d608803cf620e90524f))*
+    - *This commit also made it impossible for the AI to handle a forced switch (e.g. Terror Strike, Whirlwind, etc.)*
 
 <br/>
 
@@ -977,7 +978,7 @@
 
 ## Miscellaneous Changes
 
-- **October 11, 2025:** 2 Files Changed
+- **[October 11, 2025](https://github.com/Sha0den/poketcg_v2/commit/9261880af434b4074709323b8daceaddd9f15df5):** 2 Files Changed
     - Create a left-facing cursor icon and add it to the text symbols (`CURSOR_L`)
     - Relocate `CURSOR_D` and `POKEMON` text symbols so that all 4 cursors are grouped together after the status symbols
 
@@ -1329,6 +1330,12 @@
 
 
 ## Other Bug Fixes And Commit Reversions
+
+- **October 14 2025:** 1 File Changed
+    - Fix AI output for `DuelistSelectForcedSwitch` function (AI will now switch after being attacked with Ram, Terror Strike, or Whirlwind)
+    - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/3fe70f141410ba19fc361755f4e83b2beeb99f0f)*
+
+<br/>
 
 - **[October 9, 2025](https://github.com/Sha0den/poketcg_v2/commit/dd19fa91a96f86da2a85af35e17a4d16477573b7):** 1 File Changed
     - Undo "bugfix" for `Func_fc279` in src/audio/sfx.asm (which actually caused audio glitches), and instead delete the function and inline the 1 relevant load
