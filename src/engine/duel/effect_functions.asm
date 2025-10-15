@@ -593,7 +593,7 @@ Reordering:
 	ld a, [hli]
 	cp $ff
 	jr z, .place_top_deck
-	call SearchCardInDeckAndAddToHand
+	call RemoveCardFromDeck
 	inc c
 	jr .loop_place_hand
 
@@ -706,8 +706,7 @@ ProfessorOakEffect:
 	ld a, [hli]
 	cp $ff
 	jr z, .draw_cards
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 	jr .discard_loop
 .draw_cards
 	ld a, 7
@@ -739,8 +738,7 @@ AddCardFromDeckToHandEffect:
 	jr z, ShuffleCardsInDeck ; shuffle and return if no card was selected
 
 ; add to hand
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 
 ; show the selected card on the screen if this effect wasn't initiated by the Player
 	call IsPlayerTurn
@@ -797,8 +795,7 @@ AttachBasicEnergyFromDeck_AttachEffect:
 	jr z, ShuffleCardsInDeck ; shuffle and return if no card was selected
 
 ; add card to the hand and attach it to the selected Pokemon
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ld e, a
 	ldh a, [hTemp_ffa0]
@@ -878,8 +875,7 @@ CallForF_PutInPlayAreaEffect:
 	ldh a, [hTemp_ffa0]
 	cp -1
 	jp z, ShuffleCardsInDeck ; shuffle and return if no card was selected
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	call PutHandPokemonCardInPlayArea
 
 ; show the selected card on the screen if this effect wasn't initiated by the Player
@@ -1013,8 +1009,7 @@ CallForRandomBasic50PercentEffect:
 	jp ShuffleCardsInDeck
 
 .put_in_bench
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	call PutHandPokemonCardInPlayArea
 	ld a, ATK_ANIM_FRIENDSHIP_SONG
 	call PlayAttackAnimationOverAttackingPokemon
@@ -1102,8 +1097,7 @@ RandomlyFillBothBenchesEffect:
 ; place card onto the Bench
 	push hl
 	ldh a, [hTempCardIndex_ff98]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	call PutHandPokemonCardInPlayArea
 	pop hl
 	jr .check_bench
@@ -1337,8 +1331,7 @@ Scavenge_TrainerPlayerSelection:
 ;	[hTempPlayAreaLocation_ffa1] = deck index of the discarded Trainer card to move to the hand (0-59)
 Scavenge_MoveToHandEffect:
 	ldh a, [hTempPlayAreaLocation_ffa1]
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 
 ; show the selected card on the screen if this effect wasn't initiated by the Player
 	call IsPlayerTurn
@@ -1440,8 +1433,7 @@ EnergyConversion_RecoilAndMoveCardsToHand:
 	inc de
 	cp $ff
 	jr z, .done
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 	jr .loop_cards
 
 ; show the selected card(s) on the screen if this effect wasn't initiated by the Player
@@ -1465,7 +1457,7 @@ EnergyAbsorption_AttachEffect:
 	cp $ff
 	ret z ; reached the end of the list
 	push hl
-	call MoveDiscardPileCardToHand
+	call RemoveCardFromDiscardPile
 	get_turn_duelist_var
 	ld [hl], CARD_LOCATION_ARENA
 	pop hl
@@ -5477,8 +5469,7 @@ OpponentHand_ReplacePokemonInEffect:
 ; found a Pokemon card to place in the deck
 	inc c
 	ld a, [hl]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 .next_hand
 	inc hl
 	jr .loop_hand
@@ -5507,8 +5498,7 @@ OpponentHand_ReplacePokemonInEffect:
 	jr nc, .next_deck ; skip if not a Pokemon
 	dec c
 	ld a, [hl]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 .next_deck
 	inc hl
 	ld a, c
@@ -6532,8 +6522,7 @@ Firegiver_AddToHandEffect:
 
 ; load Fire Energy card index and add to hand
 	ld a, [hli]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	dec c
 	jr nz, .loop_energy
 
@@ -6607,8 +6596,7 @@ Cowardice_RemoveFromPlayAreaEffect:
 .skip_switch
 ; return card to the hand and adjust the Play Area screen
 	pop af
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 	call ShiftAllPokemonToFirstPlayAreaSlots
 
 	xor a
@@ -7385,16 +7373,13 @@ ComputerSearch_DiscardAddToHandEffect:
 ; discard 2 cards from the hand
 	ld hl, hTempList
 	ld a, [hli]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 	ld a, [hli]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 
 ; add a card from the deck to the hand
 	ld a, [hl]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	jp ShuffleCardsInDeck
 
 
@@ -7869,8 +7854,7 @@ EnergyRetrieval_DiscardAndAddToHandEffect:
 	ld hl, hTempList
 .discard
 	ld a, [hli]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 	ld de, wDuelTempList
 .loop
 	ld a, [hli]
@@ -7878,8 +7862,7 @@ EnergyRetrieval_DiscardAndAddToHandEffect:
 	inc de
 	cp $ff
 	jr z, .done
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 	jr .loop
 
 ; show the selected cards on the screen if this effect wasn't initiated by the Player
@@ -7948,8 +7931,7 @@ SuperEnergyRetrieval_DiscardAndAddToHandEffect:
 ; discard 2 cards selected from the hand
 	ld hl, hTempList
 	ld a, [hli]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 	jr EnergyRetrieval_DiscardAndAddToHandEffect.discard
 
 
@@ -7964,8 +7946,7 @@ GamblerEffect:
 
 ; discard the Trainer card being played from the turn holder's hand
 	ldh a, [hTempCardIndex_ff9f]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 
 ; shuffle the hand cards into the deck
 	call CreateHandCardList
@@ -7975,8 +7956,7 @@ GamblerEffect:
 	ld a, [hli]
 	cp $ff
 	jr z, .check_coin_toss
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 	jr .loop_return_deck
 
 .check_coin_toss
@@ -8028,16 +8008,13 @@ ItemFinder_DiscardAddToHandEffect:
 ; discard cards from the hand
 	ld hl, hTempList
 	ld a, [hli]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 	ld a, [hli]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 
 ; place the card from the discard pile into the hand
 	ld a, [hl]
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 
 ; show the selected card on the screen if this effect wasn't initiated by the Player
 	call IsPlayerTurn
@@ -8084,8 +8061,7 @@ ImposterProfessorOakEffect:
 	ld a, [hli]
 	cp $ff
 	jr z, .done_return
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 	jr .loop_return_deck
 
 ; then draw 7 cards from the deck.
@@ -8103,8 +8079,7 @@ ImposterProfessorOakEffect:
 LassEffect:
 ; first discard the Trainer card being played from the turn holder's hand
 	ldh a, [hTempCardIndex_ff9f]
-	call RemoveCardFromHand
-	call PutCardInDiscardPile
+	call MoveCardFromHandToDiscardPile
 
 	ldtx hl, PleaseCheckTheOpponentsHandText
 	call DrawWideTextBox_WaitForInput
@@ -8133,8 +8108,7 @@ LassEffect:
 	cp TYPE_TRAINER
 	jr nz, .loop_hand
 	ldh a, [hTempCardIndex_ff98]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 	push hl
 	ld hl, hCurSelectionItem
 	inc [hl]
@@ -8201,11 +8175,9 @@ Maintenance_PlayerSelection:
 Maintenance_ReturnToDeckAndDrawEffect:
 ; return both selected cards to the deck
 	ldh a, [hTempList]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 	ldh a, [hTempList + 1]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 	call ShuffleCardsInDeck
 
 ; draw one card
@@ -8633,8 +8605,7 @@ PokemonFlute_PlaceInPlayAreaText:
 ; place the selected card on the opponent's Bench
 	rst SwapTurn
 	ldh a, [hTemp_ffa0]
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 	call PutHandPokemonCardInPlayArea
 	rst SwapTurn
 
@@ -8692,8 +8663,7 @@ PokemonTrader_PlayerDeckSelection:
 ; temporarily place the chosen card from the hand into the deck
 ; because it is a potential search target
 	ldh a, [hTemp_ffa0]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 
 ; display the list of cards from the deck
 	ldtx hl, ChoosePokemonFromDeckText
@@ -8717,8 +8687,7 @@ PokemonTrader_PlayerDeckSelection:
 	ldh a, [hTempCardIndex_ff98]
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ldh a, [hTemp_ffa0]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	or a
 	ret
 
@@ -8730,13 +8699,11 @@ PokemonTrader_PlayerDeckSelection:
 PokemonTrader_TradeCardsEffect:
 ; place the card from the hand into the deck
 	ldh a, [hTemp_ffa0]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 
 ; place the card from the deck into the hand
 	ldh a, [hTempPlayAreaLocation_ffa1]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 
 ; show the selected cards on the screen if this effect wasn't initiated by the Player
 	call IsPlayerTurn
@@ -8907,7 +8874,7 @@ Recycle_AddToHandEffect:
 	ldh a, [hTemp_ffa0]
 	cp -1
 	ret z ; return if no card was selected
-	call MoveDiscardPileCardToHand
+	call RemoveCardFromDiscardPile
 	call ReturnCardToDeck
 
 ; show the selected card on the screen if this effect wasn't initiated by the Player
@@ -8958,8 +8925,7 @@ Revive_PlayerSelection:
 Revive_PlaceInPlayAreaEffect:
 ; place selected Pokemon onto the Bench
 	ldh a, [hTemp_ffa0]
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 	call PutHandPokemonCardInPlayArea
 
 ; set HP to half, rounded up

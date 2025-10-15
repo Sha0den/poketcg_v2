@@ -2471,7 +2471,7 @@ PrintNumberValueInCursorYPos:
 ; input:
 ;	e = card ID
 RemoveCardFromDeckAndUpdateCount:
-	call RemoveCardFromDeck
+	call RemoveCardFromCurDeckCards
 	ret nc
 	push de
 	call PrintCardTypeCounts
@@ -2487,7 +2487,7 @@ RemoveCardFromDeckAndUpdateCount:
 ; input:
 ;	e = ID of the card to remove from the deck
 ;	carry = set:  if the card was removed from the deck
-RemoveCardFromDeck:
+RemoveCardFromCurDeckCards:
 	call GetCountOfCardInCurDeck
 	or a
 	ret z ; card is not in the deck

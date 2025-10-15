@@ -1021,7 +1021,7 @@ PlayTrainerCard:
 	ld a, EFFECTCMDTYPE_BEFORE_DAMAGE
 	call TryExecuteEffectCommandFunction
 	ldh a, [hTempCardIndex_ff9f]
-	call MoveHandCardToDiscardPile
+	call TryToDiscardCardFromHand
 	call ExchangeRNG
 .done
 	or a
@@ -1199,8 +1199,7 @@ ReturnRetreatCostCardsToArena:
 	cp $ff
 	ret z
 	push hl
-	call MoveDiscardPileCardToHand
-	call AddCardToHand
+	call MoveCardFromDiscardPileToHand
 	ld e, PLAY_AREA_ARENA
 	call PutHandCardInPlayArea
 	pop hl
@@ -7066,7 +7065,7 @@ OppAction_ExecuteTrainerCardEffectCommands:
 	call TryExecuteEffectCommandFunction
 	call DrawDuelMainScene
 	ldh a, [hTempCardIndex_ff9f]
-	call MoveHandCardToDiscardPile
+	call TryToDiscardCardFromHand
 	call ExchangeRNG
 	jp DrawDuelMainScene
 
@@ -8911,7 +8910,7 @@ HandleConfusionDamageToSelf:
 	ld a, ATK_ANIM_CONFUSION_HIT
 	ld [wLoadedAttackAnimation], a
 	ld a, 20 ; damage
-	call DealConfusionDamageToSelf
+	call DealDamageToSelf
 	call Func_1bb4
 	call HandleDestinyBondAndBetweenTurnKnockOuts
 	call ClearNonTurnTemporaryDuelvars

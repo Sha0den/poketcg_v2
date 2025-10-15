@@ -9,8 +9,7 @@ SetUpBossStartingHandAndDeck:
 	ld b, STARTING_HAND_SIZE
 .loop_hand
 	ld a, [hl]
-	call RemoveCardFromHand
-	call ReturnCardToDeck
+	call MoveCardFromHandToTopOfDeck
 	dec b
 	jr nz, .loop_hand
 	jr .count_energy_basic
@@ -78,8 +77,7 @@ SetUpBossStartingHandAndDeck:
 	ld b, STARTING_HAND_SIZE
 .draw_loop
 	ld a, [hli]
-	call SearchCardInDeckAndAddToHand
-	call AddCardToHand
+	call MoveCardFromDeckToHand
 	dec b
 	jr nz, .draw_loop
 	ret

@@ -93,7 +93,8 @@
 
 - **[April 15, 2024](https://github.com/Sha0den/improvedpoketcg/commit/2a907f7c823e298803449fb872d10db0aff2d1d6):** 1 File Changed
     - Fix the AI not checking the Unable_Retreat substatus before retreating (credit to Oats)
-    - This was updated in [this commit](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37) (it no longer prevents Switch from being played)
+    - *This was updated in [this commit](https://github.com/Sha0den/poketcg_v2/commit/2c24787cac54a6e85f9f4914c733ab8a980d9a37) (it no longer prevents Switch from being played)*
+        - *Check out [bugs_and_glitches.md](https://github.com/pret/poketcg/blob/master/bugs_and_glitches.md) for specific instructions*
 
 <br/>
 
@@ -125,6 +126,19 @@
 
 
 ## Code Optimization
+
+- **October 14, 2025:** 5 Files Changed
+    - Rename `RemoveCardFromDeck` in src/engine/menus/deck_configuration.asm to `RemoveCardFromCurDeckCards`
+    - Rename `SearchCardInDeckAndAddToHand` in src/home/duel.asm to `RemoveCardFromDeck`
+    - Rename `MoveDiscardPileCardToHand` in src/home/duel.asm to `RemoveCardFromDiscardPile`
+    - Rename `MoveHandCardToDiscardPile` in src/home/duel.asm to `TryToDiscardCardFromHand`
+    - Rename `DealConfusionDamageToSelf` in src/home/duel.asm to `DealDamageToSelf`
+    - Create `MoveCardFromDeckToHand` function in src/home/duel.asm and use it to replace `call RemoveCardFromDeck` + `call AddCardToHand`
+    - Create `MoveCardFromDiscardPileToHand` function in src/home/duel.asm and use it to replace `call RemoveCardFromDiscardPile` + `call AddCardToHand`
+    - Create `MoveCardFromHandToDiscardPile` function in src/home/duel.asm and use it to replace `call RemoveCardFromHand` + `call PutCardInDiscardPile`
+    - Create `MoveCardFromHandToTopOfDeck` function in src/home/duel.asm and use it to replace `call RemoveCardFromHand` + `call ReturnCardToDeck`
+
+<br/>
 
 - **[September 22, 2025](https://github.com/Sha0den/poketcg_v2/commit/6fc7f1ef380ed7c2e525f9ec133f483a3e7be361):** 2 Files Changed
     - Merge effect commands for Leer and Tail Wag
@@ -466,7 +480,7 @@
     - Update various comments in the effect functions files (also correct `RemoveCardFromDuelTempList`'s output comments in home/duel.asm)
     - Reorder a lot of the individual effect commands (EFFECTCMDTYPE_*) to reflect the actual order of execution
     - *This commit made it impossible for the AI to properly use Porygon's Conversion 2 attack ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/ed452d2ef754469d53ba8d608803cf620e90524f))*
-    - *This commit also made it impossible for the AI to handle a forced switch (e.g. Terror Strike, Whirlwind, etc.)*
+    - *This commit also made it impossible for the AI to handle a forced switch from an attack like Whirlwind ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/141cff8fd083f30a7f3142f00148e6359ce36f00))*
 
 <br/>
 
@@ -1331,7 +1345,7 @@
 
 ## Other Bug Fixes And Commit Reversions
 
-- **October 14 2025:** 1 File Changed
+- **[October 14 2025](https://github.com/Sha0den/poketcg_v2/commit/141cff8fd083f30a7f3142f00148e6359ce36f00):** 1 File Changed
     - Fix AI output for `DuelistSelectForcedSwitch` function (AI will now switch after being attacked with Ram, Terror Strike, or Whirlwind)
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/3fe70f141410ba19fc361755f4e83b2beeb99f0f)*
 

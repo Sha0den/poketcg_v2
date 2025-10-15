@@ -89,6 +89,7 @@ CountPrizes::
 ; AddCardToHand is meant to be called next (unless this function returned carry).
 ; preserves all registers except af
 ; output:
+;	a = deck index (0-59) of the top card of the deck, if any
 ;	carry = set:  if a card couldn't be drawn because the deck was empty
 DrawCardFromDeck::
 	push hl
@@ -112,8 +113,17 @@ DrawCardFromDeck::
 	ret
 
 
-; adds a card to the top of the turn holder's deck
-; preserves all registers except f (flags)
+; searches the turn holder's hand for a card, removes it,
+; and then puts that card on top of the turn holder's deck.
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to move from the hand to the deck
+MoveCardFromHandToTopOfDeck::
+	call RemoveCardFromHand
+;	fallthrough
+
+; puts the given card on top of the turn holder's deck
+; preserves all registers
 ; input:
 ;	a = deck index (0-59) of the card to return to the deck
 ReturnCardToDeck::
@@ -126,9 +136,9 @@ ReturnCardToDeck::
 	add DUELVARS_DECK_CARDS
 	ld l, a ; point to top deck card
 	pop af
-	ld [hl], a ; set top deck card
+	ld [hl], a ; add card from input to the top of the deck
 	ld l, a
-	ld [hl], CARD_LOCATION_DECK
+	ld [hl], CARD_LOCATION_DECK ; also change its card location byte
 	ld a, l
 	pop hl
 	ret
@@ -136,11 +146,10 @@ ReturnCardToDeck::
 
 ; searches the turn holder's deck for a card, removes it,
 ; and sets its location to CARD_LOCATION_JUST_DRAWN.
-; AddCardToHand is meant to be called next.
 ; preserves all registers
 ; input:
 ;	a = deck index (0-59) of the card to remove from the deck
-SearchCardInDeckAndAddToHand::
+RemoveCardFromDeck::
 	push af
 	push hl
 	push de
@@ -152,13 +161,14 @@ SearchCardInDeckAndAddToHand::
 	sub [hl]
 	or a
 	jr z, .done ; done if no cards in deck
-	inc [hl] ; increment number of cards not in deck
+	inc [hl] ; increment number of cards not in deck (assumes card from input will be found)
 	ld b, a ; DECK_SIZE - [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK] (number of cards in deck)
 	ld l, c
 	set CARD_LOCATION_JUST_DRAWN_F, [hl]
 	ld l, DUELVARS_DECK_CARDS + DECK_SIZE - 1
 	ld e, l
-	ld d, h ; hl = de = DUELVARS_DECK_CARDS + DECK_SIZE - 1 (last card)
+	ld d, h
+	; de & hl = last card in wPlayerDeckCards/wOpponentDeckCards array (bottom card in deck)
 .loop
 	ld a, [hld]
 	cp c
@@ -176,7 +186,25 @@ SearchCardInDeckAndAddToHand::
 	ret
 
 
-; adds a card to the turn holder's hand and increments the number of cards in the hand
+; searches the turn holder's discard pile for a card, removes it,
+; and then adds that card to the turn holder's hand.
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to move from the discard pile to the hand
+MoveCardFromDiscardPileToHand::
+	call RemoveCardFromDiscardPile
+	jr AddCardToHand
+
+; searches the turn holder's deck for a card, removes it,
+; and then adds that card to the turn holder's hand.
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to move from the deck to the hand
+MoveCardFromDeckToHand::
+	call RemoveCardFromDeck
+;	fallthrough
+
+; adds the given card to the turn holder's hand and increments the number of cards in the hand
 ; preserves all registers
 ; input:
 ;	a = deck index (0-59) of the card to add to the hand
@@ -243,21 +271,30 @@ RemoveCardFromHand::
 	ret
 
 
-; moves a card to the turn holder's discard pile, as long as it is in the hand
+; puts the given card into the turn holder's discard pile,
+; but only if it is currently in the turn holder's hand
 ; preserves bc and de
 ; input:
 ;	a = deck index (0-59) of the hand card to move to the discard pile
-MoveHandCardToDiscardPile::
+TryToDiscardCardFromHand::
 	get_turn_duelist_var
 	ld a, [hl]
 	and $ff ^ CARD_LOCATION_JUST_DRAWN
 	cp CARD_LOCATION_HAND
 	ret nz ; return if card not in hand
 	ld a, l
+;	fallthrough
+
+; searches the turn holder's hand for a card, removes it,
+; and then puts that card into the turn holder's discard pile.
+; preserves all registers
+; input:
+;	a = deck index (0-59) of the card to move from the hand to the discard pile
+MoveCardFromHandToDiscardPile::
 	call RemoveCardFromHand
 ;	fallthrough
 
-; puts the turn holder's card with deck index a into the discard pile
+; adds the given card to the turn holder's discard pile and increments the number of cards in the discard pile
 ; preserves all registers
 ; input:
 ;	a = deck index (0-59) of the card to put in the discard pile
@@ -282,11 +319,11 @@ PutCardInDiscardPile::
 
 ; searches the turn holder's discard pile for a card, removes it,
 ; and set its location to CARD_LOCATION_JUST_DRAWN.
-; AddCardToHand is meant to be called next.
-; preserves all registers except f (flags)
+; preserves all registers
 ; input:
-;	a = deck index (0-59) of the card to move
-MoveDiscardPileCardToHand::
+;	a = deck index (0-59) of the card to remove from the discard pile
+RemoveCardFromDiscardPile::
+	push af
 	push hl
 	push de
 	push bc
@@ -298,7 +335,7 @@ MoveDiscardPileCardToHand::
 	or a
 	jr z, .done ; done if no cards in discard pile
 	ld c, a
-	dec [hl] ; decrement number of cards in discard pile
+	dec [hl] ; decrement number of cards in discard pile (assumes card from input will be found)
 	ld l, DUELVARS_DECK_CARDS
 	ld e, l
 	ld d, h ; de = hl = DUELVARS_DECK_CARDS
@@ -311,11 +348,11 @@ MoveDiscardPileCardToHand::
 .match
 	dec c
 	jr nz, .next_card
-	ld a, b
 .done
 	pop bc
 	pop de
 	pop hl
+	pop af
 	ret
 
 
@@ -1473,12 +1510,12 @@ DealRecoilDamageToSelf::
 	pop af
 ;	fallthrough
 
-; the turn holder's Active Pokemon does a given amount of damage to itself (because it's Confused).
+; the turn holder's Active Pokemon does a given amount of damage to itself.
 ; also displays the animation at wLoadedAttackAnimation (e.g. ATK_ANIM_CONFUSION_HIT)
 ; input:
 ;	a = damage to deal to self
 ;	[wLoadedAttackAnimation] = which attack animation to play (ATK_ANIM_* constant)
-DealConfusionDamageToSelf::
+DealDamageToSelf::
 	ld hl, wDamage
 	ld [hli], a
 	ld [hl], 0
@@ -2008,12 +2045,40 @@ InitPlayAreaScreenVars_OnlyBench::
 ;        UNREFERENCED FUNCTIONS
 ;----------------------------------------
 ;
-; returns in the z flag whether the turn holder's prize in a (0-7) has been drawn or not
-; preserves bc
-; input:
-;	a = Prize card (0-7)
-; output:
-;	z = set:  if the Prize card has already been drawn
+;; searches the turn holder's discard pile for a card, removes it,
+;; and then puts that card on top of the turn holder's deck.
+;; preserves all registers
+;; input:
+;;	a = deck index (0-59) of the discarded card to return to the deck
+;MoveCardFromDiscardPileToTopOfDeck::
+;	call RemoveCardFromDiscardPile
+;	jp ReturnCardToDeck
+;
+;
+;; searches the turn holder's deck for a card, removes it,
+;; and then puts that card into the turn holder's discard pile.
+;; preserves all registers
+;; input:
+;;	a = deck index (0-59) of the card to discard from the deck
+;MoveCardFromDeckToDiscardPile::
+;	call RemoveCardFromDeck
+;	jp PutCardInDiscardPile
+;
+;
+;; puts the top card of the turn holder's deck into the turn holder's discard pile
+;; preserves all registers except af
+;DiscardACardFromTopOfDeck::
+;	call DrawCardFromDeck
+;	ret c ; return if there are no cards in the deck
+;	jp PutCardInDiscardPile
+;
+;
+;; returns in the z flag whether the turn holder's prize in a (0-7) has been drawn or not
+;; preserves bc
+;; input:
+;;	a = Prize card (0-7)
+;; output:
+;;	z = set:  if the Prize card has already been drawn
 ;CheckPrizeTaken::
 ;	ld e, a
 ;	ld d, 0
@@ -2029,8 +2094,8 @@ InitPlayAreaScreenVars_OnlyBench::
 ;	ret
 ;
 ;
-; input:
-;	hl = ID for notification text
+;; input:
+;;	hl = ID for notification text
 ;Func_17ed::
 ;	call DrawWideTextBox_WaitForInput
 ;	xor a
