@@ -40,6 +40,11 @@ DEF DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK      EQUS "LOW(wPlayerNumberOfCardsNotI
 DEF DUELVARS_ARENA_CARD                       EQUS "LOW(wPlayerArenaCard)"                   ; bb
 DEF DUELVARS_BENCH                            EQUS "LOW(wPlayerBench)"                       ; bc
 DEF DUELVARS_ARENA_CARD_FLAGS                 EQUS "LOW(wPlayerArenaCardFlags)"              ; c2
+DEF DUELVARS_BENCH1_CARD_FLAGS                EQUS "LOW(wPlayerBench1CardFlags)"             ; c3
+DEF DUELVARS_BENCH2_CARD_FLAGS                EQUS "LOW(wPlayerBench2CardFlags)"             ; c4
+DEF DUELVARS_BENCH3_CARD_FLAGS                EQUS "LOW(wPlayerBench3CardFlags)"             ; c5
+DEF DUELVARS_BENCH4_CARD_FLAGS                EQUS "LOW(wPlayerBench4CardFlags)"             ; c6
+DEF DUELVARS_BENCH5_CARD_FLAGS                EQUS "LOW(wPlayerBench5CardFlags)"             ; c7
 DEF DUELVARS_ARENA_CARD_HP                    EQUS "LOW(wPlayerArenaCardHP)"                 ; c8
 DEF DUELVARS_BENCH1_CARD_HP                   EQUS "LOW(wPlayerBench1CardHP)"                ; c9
 DEF DUELVARS_BENCH2_CARD_HP                   EQUS "LOW(wPlayerBench2CardHP)"                ; ca
