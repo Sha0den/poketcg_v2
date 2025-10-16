@@ -127,7 +127,17 @@
 
 ## Code Optimization
 
-- **October 14, 2025:** 5 Files Changed
+- **October 16, 2025:** 5 Files Changed
+    - Various optimizations and comment changes in src/home/duel.asm. Significant changes include:
+        - Refactor `RemoveCardFromDeck`, `RemoveCardFromHand`, and `RemoveCardFromDiscardPile` so that they work better and more similarly
+        - Delete the `GetCardIDFromDeckIndex_bc` function and refactor the former calls in `ShuffleDeck`
+        - Delete the `CopyAttackDataAndDamage_FromCardID` function and replace the single call in effect functions
+    - Rework `CARD_LOCATION_JUST_DRAWN` into a normal 8-bit ID rather than a bit flag
+    - Also fix a typo in `ParalyzeBookText` and add further input comments to the `HandleEnergyBurn` function in src/home/card_color.asm
+
+<br/>
+
+- **[October 14, 2025](https://github.com/Sha0den/poketcg_v2/commit/cf02a1af01e796a3c9a290dec747bbbebac8fda0):** 5 Files Changed
     - Rename `RemoveCardFromDeck` in src/engine/menus/deck_configuration.asm to `RemoveCardFromCurDeckCards`
     - Rename `SearchCardInDeckAndAddToHand` in src/home/duel.asm to `RemoveCardFromDeck`
     - Rename `MoveDiscardPileCardToHand` in src/home/duel.asm to `RemoveCardFromDiscardPile`

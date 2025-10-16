@@ -133,6 +133,8 @@ InvertedPowersOf2::
 ; preserves de
 ; input:
 ;	e = Pokémon's play area location offset (PLAY_AREA_* constant)
+;	[wAttachedEnergies] (8 bytes) = how many Energy of each type is attached to the Active Pokémon
+;	[wTotalAttachedEnergies] = total amount of Energy attached to the Active Pokémon
 HandleEnergyBurn::
 	ld a, DUELVARS_ARENA_CARD
 	add e

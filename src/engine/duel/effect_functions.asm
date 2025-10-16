@@ -2945,8 +2945,7 @@ DuelistSelectForcedSwitch:
 	ld e, a
 	ld a, [wPlayerAttackingCardIndex]
 	ld d, a
-	ld a, [wPlayerAttackingCardID]
-	call CopyAttackDataAndDamage_FromCardID
+	call CopyAttackDataAndDamage_FromDeckIndex
 	bank1call UpdateArenaCardIDsAndClearTwoTurnDuelVars
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ret

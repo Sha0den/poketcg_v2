@@ -480,7 +480,7 @@ ParalyzeBookText:
 	line "still play cards from their hand."
 	line "This condition lasts until the end"
 	line "of the Paralyzed player's turn."
-	line "Paralyzed Pokemon will also recover"
+	line "Paralyzed Pokémon will also recover"
 	line "with evolution or a Full Heal card."
 	done
 
