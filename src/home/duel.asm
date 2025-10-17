@@ -128,15 +128,18 @@ MoveCardFromHandToTopOfDeck::
 ReturnCardToDeck::
 	push hl
 	push af
+	; add card to deck array (listed top to bottom at end of w*DeckCards)
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	get_turn_duelist_var
 	dec [hl] ; decrement number of cards not in deck
-	add DUELVARS_DECK_CARDS - 1 ; point to next unused deck byte
+	add DUELVARS_DECK_CARDS - 1
 	ld l, a
+	; hl = pointer for next byte in deck array (top of deck)
 	pop af
-	ld [hl], a ; add card from input to the top of the deck
-	ld l, a
-	ld [hl], CARD_LOCATION_DECK ; also change its card location byte
+	ld [hl], a
+	; overwrite this card's location variable
+	ld l, a ; DUELVARS_CARD_LOCATIONS + index for card from input
+	ld [hl], CARD_LOCATION_DECK
 	pop hl
 	ret
 
@@ -217,24 +220,21 @@ MoveCardFromDeckToHand::
 ; input:
 ;	a = deck index (0-59) of the card to add to the hand
 AddCardToHand::
-	push af
 	push hl
-	push de
-	ld e, a
+	push af
+	; add card to hand array (listed oldest to newest at start of w*Hand)
+	ld a, DUELVARS_NUMBER_OF_CARDS_IN_HAND
 	get_turn_duelist_var
-	; write CARD_LOCATION_HAND into the location of this card
-	ld [hl], CARD_LOCATION_HAND
-	; increment number of cards in hand
-	ld l, DUELVARS_NUMBER_OF_CARDS_IN_HAND
-	inc [hl]
-	; add card to hand
-	ld a, DUELVARS_HAND - 1
-	add [hl]
+	inc [hl] ; increment number of cards in hand
+	add DUELVARS_HAND
 	ld l, a
-	ld [hl], e
-	pop de
-	pop hl
+	; hl = pointer for next byte in hand array (first card in hand)
 	pop af
+	ld [hl], a
+	; overwrite this card's location variable
+	ld l, a ; DUELVARS_CARD_LOCATIONS + index for card from input
+	ld [hl], CARD_LOCATION_HAND
+	pop hl
 	ret
 
 
@@ -316,21 +316,21 @@ MoveCardFromHandToDiscardPile::
 ; input:
 ;	a = deck index (0-59) of the card to put in the discard pile
 PutCardInDiscardPile::
-	push af
 	push hl
-	push de
-	ld e, a
+	push af
+	; add card to discard pile array (listed oldest to newest at start of w*DeckCards)
+	ld a, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
 	get_turn_duelist_var
-	ld [hl], CARD_LOCATION_DISCARD_PILE
-	ld l, DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE
-	inc [hl]
-	ld a, DUELVARS_DECK_CARDS - 1
-	add [hl]
+	inc [hl] ; increment number of cards in discard pile
+	add DUELVARS_DECK_CARDS
 	ld l, a
-	ld [hl], e ; save card to DUELVARS_DECK_CARDS + [DUELVARS_NUMBER_OF_CARDS_IN_DISCARD_PILE]
-	pop de
-	pop hl
+	; hl = pointer for next byte in discard pile array (top of discard pile)
 	pop af
+	ld [hl], a
+	; overwrite this card's location variable
+	ld l, a ; DUELVARS_CARD_LOCATIONS + index for card from input
+	ld [hl], CARD_LOCATION_DISCARD_PILE
+	pop hl
 	ret
 
 
@@ -423,8 +423,8 @@ CreateDeckCardList::
 	sub [hl]
 	ld c, a
 	ld b, a ; c = b = DECK_SIZE - [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK]
-	ld a, [hl]
-	add DUELVARS_DECK_CARDS
+	ld a, DUELVARS_DECK_CARDS
+	add [hl]
 	ld l, a ; l = DUELVARS_DECK_CARDS + [DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK]
 	ld de, wDuelTempList
 	call CopyNBytesFromHLToDE
@@ -1010,6 +1010,7 @@ EvolvePokemonCard::
 ; clears the status, all substatuses, and temporary duelvars of the turn holder's
 ; Active Pokémon. called when sending a new Pokémon into the Arena.
 ; does not reset Headache, since it targets a player rather than a Pokémon.
+; relies on the temporary Arena card variables being listed in a certain order.
 ; preserves all registers except af
 ClearAllStatusConditions::
 	push hl
@@ -1044,6 +1045,7 @@ ClearAllStatusConditions::
 ; Removes a Pokémon from the hand and places it in the Arena or else
 ; the first available Bench slot. If the Pokémon is placed in the Arena,
 ; then the status conditions affecting the player's Active Pokémon are cleared.
+; Relies on the play area location variables being listed in a certain order.
 ; preserves bc and d
 ; input:
 ;	a = deck index of the Pokémon to put into play
@@ -1052,11 +1054,14 @@ ClearAllStatusConditions::
 ;	carry = set:  if there wasn't space for the Pokémon (i.e. already 6 Pokémon in the play area)
 PutHandPokemonCardInPlayArea::
 	push af
+	; check if there's an open play area slot
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	cp MAX_PLAY_AREA_POKEMON
 	jr nc, .already_max_pkmn_in_play
-	inc [hl]
+
+	; remove card from hand and set new card location
+	inc [hl] ; increment number of play area Pokémon
 	ld e, a ; play area offset to place card
 	pop af
 	push af
@@ -1067,32 +1072,38 @@ PutHandPokemonCardInPlayArea::
 	pop af
 	ld [hl], a ; set card in arena or benchx
 	call LoadCardDataToBuffer2_FromDeckIndex
-	ld a, DUELVARS_ARENA_CARD_HP
-	add e
-	ld l, a
+
+	; reset variable for specific card flags (e.g. CAN_EVOLVE_THIS_TURN_F)
+	push de
+	ld de, DUELVARS_ARENA_CARD_FLAGS - DUELVARS_ARENA_CARD
+	add hl, de ; l = DUELVARS_ARENA_CARD_FLAGS + e
+	ld [hl], d ; [w*CardFlags] = $00 (all flags unset)
+
+	; set Pokémon HP variable
+	ld e, MAX_PLAY_AREA_POKEMON ; offset for all other play area location variables
+	add hl, de ; l = DUELVARS_ARENA_CARD_HP + e
 	ld a, [wLoadedCard2HP]
-	ld [hl], a ; set card's HP
-	ld a, DUELVARS_ARENA_CARD_FLAGS
-	add e
-	ld l, a
-	ld [hl], $0
-	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
-	add e
-	ld l, a
-	ld [hl], $0
-	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
-	add e
-	ld l, a
-	ld [hl], $0
-	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
-	add e
-	ld l, a
-	ld [hl], $0
-	ld a, DUELVARS_ARENA_CARD_STAGE
-	add e
-	ld l, a
+	ld [hl], a ; [w*CardHP] = max HP value of card being played
+
+	; set Pokémon Stage variable
+	add hl, de ; l = DUELVARS_ARENA_CARD_STAGE + e
 	ld a, [wLoadedCard2Stage]
-	ld [hl], a ; set card's evolution stage
+	ld [hl], a ; [w*CardStage] = CARD_DATA_STAGE constant of card being played
+
+	; reset changed type/color variable
+	add hl, de ; l = DUELVARS_ARENA_CARD_CHANGED_TYPE + e
+	ld [hl], d ; [w*CardChangedType] = $00
+
+	; reset variable for the number of attached Defender cards
+	add hl, de ; l = DUELVARS_ARENA_CARD_ATTACHED_DEFENDER + e
+	ld [hl], d ; [w*CardAttachedDefender] = $00
+
+	; reset variable for the number of attached PlusPower cards
+	add hl, de ; l = DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER + e
+	ld [hl], d ; [w*CardAttachedPluspower] = $00
+	pop de
+
+	; check if this card is the new Active Pokémon, and if so, clear temporary status
 	ld a, e
 	or a ; cp PLAY_AREA_ARENA
 	call z, ClearAllStatusConditions ; only call if Pokémon is being placed in the Arena
@@ -1117,6 +1128,7 @@ PutHandPokemonCardInPlayArea::
 ;	a = CARD_LOCATION_PLAY_AREA + e
 PutHandCardInPlayArea::
 	call RemoveCardFromHand
+	; a = DUELVARS_CARD_LOCATIONS + index for card from input
 	get_turn_duelist_var
 	ld a, e
 	or CARD_LOCATION_PLAY_AREA
@@ -1125,7 +1137,7 @@ PutHandCardInPlayArea::
 
 
 ; moves the turn holder's Pokémon in location e to the discard pile
-; preserves bc and e
+; preserves bc and de
 ; input:
 ;	e = play area location offset (PLAY_AREA_* constant)
 MovePlayAreaCardToDiscardPile::
@@ -1148,38 +1160,47 @@ MovePlayAreaCardToDiscardPile::
 	ret
 
 
-; initializes a turn holder's play area slot to empty
-; which slot (arena or benchx) is determined by the play area location offset in e
-; preserves bc and e
+; initializes a turn holder's play area slot to empty.
+; which slot (arena or benchx) is determined by the input in e.
+; relies on the play area location variables being listed in a certain order.
+; preserves bc and de
 ; input:
 ;	e = play area location offset (PLAY_AREA_* constant)
 EmptyPlayAreaSlot::
+	push de
+	; clear Pokémon card's deck index
 	ld d, -1
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var
-	ld [hl], d
-	inc d ; 0
-	ld a, DUELVARS_ARENA_CARD_HP
-	add e
-	ld l, a
-	ld [hl], d
-	ld a, DUELVARS_ARENA_CARD_STAGE
-	add e
-	ld l, a
-	ld [hl], d
-	ld a, DUELVARS_ARENA_CARD_CHANGED_TYPE
-	add e
-	ld l, a
-	ld [hl], d
-	ld a, DUELVARS_ARENA_CARD_ATTACHED_DEFENDER
-	add e
-	ld l, a
-	ld [hl], d
-	ld a, DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER
-	add e
-	ld l, a
-	ld [hl], d
+	ld [hl], d ; [w*Card] = -1 (empty)
+
+	; reset variable for specific card flags (e.g. CAN_EVOLVE_THIS_TURN_F)
+	ld de, DUELVARS_ARENA_CARD_FLAGS - DUELVARS_ARENA_CARD
+	add hl, de ; l = DUELVARS_ARENA_CARD_FLAGS + e
+	ld [hl], d ; [w*CardFlags] = $00 (all flags unset)
+
+	; reset Pokémon HP variable
+	ld e, MAX_PLAY_AREA_POKEMON ; offset for all other play area location variables
+	add hl, de ; l = DUELVARS_ARENA_CARD_HP + e
+	ld [hl], d ; [w*CardHP] = $00 (0 HP)
+
+	; reset Pokémon Stage variable
+	add hl, de ; l = DUELVARS_ARENA_CARD_STAGE + e
+	ld [hl], d ; [w*CardStage] = $00 (BASIC)
+
+	; reset changed type/color variable
+	add hl, de ; l = DUELVARS_ARENA_CARD_CHANGED_TYPE + e
+	ld [hl], d ; [w*CardChangedType] = $00
+
+	; reset variable for the number of attached Defender cards
+	add hl, de ; l = DUELVARS_ARENA_CARD_ATTACHED_DEFENDER + e
+	ld [hl], d ; [w*CardAttachedDefender] = $00
+
+	; reset variable for the number of attached PlusPower cards
+	add hl, de ; l = DUELVARS_ARENA_CARD_ATTACHED_PLUSPOWER + e
+	ld [hl], d ; [w*CardAttachedPluspower] = $00
+	pop de
 	ret
 
 

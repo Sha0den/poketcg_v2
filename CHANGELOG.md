@@ -127,7 +127,13 @@
 
 ## Code Optimization
 
-- **October 16, 2025:** 5 Files Changed
+- **October 17, 2025:** 1 File Changed
+    - Refactor `AddCardToHand` and `PutCardInDiscardPile` to match the more optimized `ReturnCardToDeck`
+    - Refactor `EmptyPlayAreaSlot` and `PutHandPokemonCardInPlayArea` to make better use of the fact that the play area duel variables are placed together
+
+<br/>
+
+- **[October 16, 2025](https://github.com/Sha0den/poketcg_v2/commit/eace7a43c072901a0fd6ae853e74e3e2bfeaf4e2):** 5 Files Changed
     - Various optimizations and comment changes in src/home/duel.asm. Significant changes include:
         - Refactor `RemoveCardFromDeck`, `RemoveCardFromHand`, and `RemoveCardFromDiscardPile` so that they work better and more similarly
         - Delete the `GetCardIDFromDeckIndex_bc` function and refactor the former calls in `ShuffleDeck`
