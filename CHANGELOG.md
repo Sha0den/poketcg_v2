@@ -127,7 +127,15 @@
 
 ## Code Optimization
 
-- **October 17, 2025:** 1 File Changed
+- **October 18, 2025:** 5 Files Changed
+    - Move `CheckSkipDelayAllowed` function from src/engine/duel/core.asm to src/home/frames.asm and add `WaitAFrames_AllowSkipDelay` function in same file
+    - Add `WaitForAnimationToFinish_AllowSkipDelay` function to src/home/duel.asm
+    - Replace some frequently used code in src/engine/duel/core.asm with calls to the above functions
+    - Reference the above functions to allow players to skip even more duel delays by holding the B button (e.g. coin flip animations, artificial AI delays, etc.)
+
+<br/>
+
+- **[October 17, 2025](https://github.com/Sha0den/poketcg_v2/commit/e2d701aeb193a385fc6938146b27ef4cadf547d9):** 1 File Changed
     - Refactor `AddCardToHand` and `PutCardInDiscardPile` to match the more optimized `ReturnCardToDeck`
     - Refactor `EmptyPlayAreaSlot` and `PutHandPokemonCardInPlayArea` to make better use of the fact that the play area duel variables are placed together
 

@@ -120,9 +120,7 @@ _TossCoin::
 	ld e, a
 	jr .done_toss_anim
 .wait_anim
-	call DoFrame
-	call CheckAnyAnimationPlaying
-	jr c, .wait_anim
+	call WaitForAnimationToFinish_AllowSkipDelay
 	ld a, e
 	call Func_72ff
 
@@ -246,10 +244,7 @@ Func_7310:
 	ld a, [wDuelType]
 	cp DUELTYPE_LINK
 	jr z, Func_7338
-.loop_anim
-	call DoFrame
-	call CheckAnyAnimationPlaying
-	jr c, .loop_anim
+	call WaitForAnimationToFinish_AllowSkipDelay
 	ldh a, [hff96]
 	ret
 
@@ -261,8 +256,8 @@ Func_7324:
 	jr z, Func_7338
 
 ; delay coin flip for AI opponent
-	ld a, 30
-	call DoAFrames
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	ldh a, [hff96]
 	ret
 

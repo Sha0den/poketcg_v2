@@ -61,7 +61,7 @@ CopyDeckData::
 	add hl, bc
 	ld a, [hl]
 	or a
-	ret nz
+	ret nz ; return no carry if there's a card ID in slot #60
 	scf
 	ret
 
@@ -1010,7 +1010,7 @@ EvolvePokemonCard::
 ; clears the status, all substatuses, and temporary duelvars of the turn holder's
 ; Active Pokémon. called when sending a new Pokémon into the Arena.
 ; does not reset Headache, since it targets a player rather than a Pokémon.
-; relies on the temporary Arena card variables being listed in a certain order.
+; relies on some of the temporary Arena card variables being listed sequentially.
 ; preserves all registers except af
 ClearAllStatusConditions::
 	push hl
@@ -1706,7 +1706,7 @@ PrintKnockedOut::
 	ldtx hl, WasKnockedOutText
 	call DrawWideTextBox_PrintText
 	ld a, 40 ; frames to delay
-	call DoAFrames
+	call WaitAFrames_AllowSkipDelay
 	scf
 	ret
 
@@ -1942,11 +1942,29 @@ WaitAttackAnimation::
 	ld a, [wLoadedAttackAnimation]
 	or a
 	ret z
-.anim_loop
+;	fallthrough
+
+; waits for all animations to end and then returns
+; preserves all registers except af
+WaitForAnimationToFinish::
 	call DoFrame
 	call CheckAnyAnimationPlaying
-	jr c, .anim_loop
+	jr c, WaitForAnimationToFinish
 	ret
+
+
+; waits for all animations to end, but returns early (with carry set)
+; if wSkipDelayAllowed is non-0 and B button is held
+; preserves all registers except af
+; output:
+;	carry = set:  if any of the delay was skipped
+WaitForAnimationToFinish_AllowSkipDelay::
+	call CheckAnyAnimationPlaying
+	ret nc
+	call CheckSkipDelayAllowed
+	ret c
+	call DoFrame
+	jr WaitForAnimationToFinish_AllowSkipDelay
 
 
 ; checks if a flag of wLoadedAttack is set
@@ -2003,9 +2021,8 @@ CheckDeckIndexForBasicPokemon::
 	cp TYPE_ENERGY
 	ret nc ; return if it isn't a Pokémon
 	ld a, [wLoadedCard2Stage]
-	or a
-	ret nz ; return if its Stage isn't Basic
-	; is Basic
+	or a ; cp BASIC
+	ret nz ; return without carry if its Stage isn't Basic
 	scf
 	ret
 

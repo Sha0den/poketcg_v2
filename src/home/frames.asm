@@ -12,28 +12,6 @@ SetDoFrameFunction::
 	ret
 
 
-; calls DoFrame a times
-; preserves all registers except af
-; input:
-;	a = number of times to run the DoFrame function
-DoAFrames::
-.loop
-	call DoFrame
-	dec a
-	jr nz, .loop
-	ret
-
-
-; preserves all registers
-DoFrameIfLCDEnabled::
-	push af
-	ldh a, [rLCDC]
-	bit B_LCDC_ENABLE, a
-	call nz, DoFrame
-	pop af
-	ret
-
-
 ; updates background, sprites and other game variables, halts until vblank, and reads user input
 ; if wDebugPauseAllowed is not 0, the game can be paused (and resumed) by pressing the SELECT button
 ; preserves all registers
@@ -65,6 +43,65 @@ DoFrame::
 	pop de
 	pop hl
 	pop af
+	ret
+
+
+; preserves all registers
+DoFrameIfLCDEnabled::
+	push af
+	ldh a, [rLCDC]
+	bit B_LCDC_ENABLE, a
+	call nz, DoFrame
+	pop af
+	ret
+
+
+; calls DoFrame a times
+; preserves all registers except af
+; input:
+;	a = number of times to run the DoFrame function
+DoAFrames::
+.loop
+	call DoFrame
+	dec a
+	jr nz, .loop
+	ret
+
+
+; calls DoFrame a times, but returns early (with carry set)
+; if wSkipDelayAllowed is non-0 and B button is held
+; preserves all registers except af
+; input:
+;	a = number of times to run the DoFrame function
+; output:
+;	carry = set:  if any of the delay was skipped
+WaitAFrames_AllowSkipDelay::
+	push bc
+	ld c, a
+.wait_loop
+	call DoFrame
+	call CheckSkipDelayAllowed
+	jr c, .done
+	dec c
+	jr nz, .wait_loop
+.done
+	pop bc
+	ret
+
+
+; returns carry if wSkipDelayAllowed is non-0 and B is being held,
+; in order to branch out of the caller's wait frames loop.
+; preserves all registers except af
+; output:
+;	carry = set:  if wSkipDelayAllowed is non-0 and the B button is being held
+CheckSkipDelayAllowed::
+	ld a, [wSkipDelayAllowed]
+	or a
+	ret z
+	ldh a, [hKeysHeld]
+	and PAD_B
+	ret z
+	scf
 	ret
 
 

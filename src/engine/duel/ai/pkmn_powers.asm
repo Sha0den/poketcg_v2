@@ -490,10 +490,8 @@ HandleAIStrangeBehavior:
 	call ConvertHPToDamageCounters_Bank8
 	ld e, a
 .loop_counters
-	; 30 frame delay
-	ld a, 30
-	call DoAFrames
-
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	push de
 	ld a, OPPACTION_6B15
 	bank1call AIMakeDecision
@@ -502,8 +500,8 @@ HandleAIStrangeBehavior:
 	jr nz, .loop_counters
 
 ; return to main scene after a 60 frame delay
-	ld a, 60
-	call DoAFrames
+	ld a, 60 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret
@@ -753,8 +751,8 @@ HandleAIEnergyTrans:
 	ldh [hAIEnergyTransEnergyCard], a
 
 	; 30 frame delay
-	ld a, 30
-	call DoAFrames
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 
 	push de
 	ld a, OPPACTION_6B15
@@ -769,11 +767,10 @@ HandleAIEnergyTrans:
 	cp e
 	jr nz, .loop_deck_locations
 
-; transfer is done, perform delay
-; and return to main scene.
+; transfer is done, perform delay and return to main scene.
 .done_transfer
-	ld a, 60
-	call DoAFrames
+	ld a, 60 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret
@@ -995,8 +992,8 @@ AIEnergyTransTransferEnergyToBench:
 	ldh [hAIEnergyTransPlayAreaLocation], a
 
 	; 30 frame delay
-	ld a, 30
-	call DoAFrames
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 
 	ld a, [wAIVenusaurLv67DeckIndex]
 	ldh [hTempCardIndex_ff9f], a
@@ -1013,11 +1010,10 @@ AIEnergyTransTransferEnergyToBench:
 	cp e
 	jr nz, .loop_deck_locations
 
-; transfer is done, perform delay
-; and return to main scene.
+; transfer is done, perform delay and return to main scene.
 .done_transfer
-	ld a, 60
-	call DoAFrames
+	ld a, 60 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret
@@ -1093,9 +1089,8 @@ HandleAIDamageSwap:
 	ld a, [wce06]
 	ld e, a
 .loop_damage
-	; 30 frame delay
-	ld a, 30
-	call DoAFrames
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 
 	push de
 	call .CheckForDamageSwapTargetInBench
@@ -1112,8 +1107,8 @@ HandleAIDamageSwap:
 
 .done
 ; return to main scene after a 60 frame delay
-	ld a, 60
-	call DoAFrames
+	ld a, 60 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	ret

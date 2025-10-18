@@ -1677,13 +1677,9 @@ DisplayDrawNCardsScreen:
 	ld hl, wNumCardsTryingToDraw
 	cp [hl]
 	jr c, .anim_drawing_cards_loop
-	ld c, 30
-.wait_loop
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .done
-	dec c
-	jr nz, .wait_loop
+	; wait up to 30 frames before finishing
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 .done
 	pop bc
 	pop de
@@ -1702,14 +1698,7 @@ PlayTurnDuelistDrawAnimation:
 .got_duelist
 	ld a, e
 	call PlayDuelAnimation
-
-.loop_anim
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .done
-	call CheckAnyAnimationPlaying
-	jr c, .loop_anim
-.done
+	call WaitForAnimationToFinish_AllowSkipDelay
 	jp FinishQueuedAnimations
 
 
@@ -2144,14 +2133,10 @@ HandleDuelSetup:
 	ld d, a
 
 .place_prize
-	ld b, 20 ; frames to delay
-.loop_delay
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .skip_delay
-	dec b
-	jr nz, .loop_delay
-.skip_delay
+	; wait up to 20 frames before placing each Prize card
+	ld a, 20 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
+
 	call .DrawPrizeTile
 	call .DrawPrizeTile
 
@@ -2448,14 +2433,7 @@ PlayShuffleAndDrawCardsAnimation:
 	call PlayDuelAnimation
 	ld a, [hl]
 	call PlayDuelAnimation
-
-.loop_shuffle_anim
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .done_shuffle
-	call CheckAnyAnimationPlaying
-	jr c, .loop_shuffle_anim
-.done_shuffle
+	call WaitForAnimationToFinish_AllowSkipDelay
 	call FinishQueuedAnimations
 
 .print_deck_info
@@ -2470,14 +2448,8 @@ PlayShuffleAndDrawCardsAnimation:
 	ld hl, sp+$00
 	ld a, [hl]
 	call PlayDuelAnimation
-
-.loop_drawing_anim
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .done
-	call CheckAnyAnimationPlaying
-	jr c, .loop_drawing_anim
-
+	call WaitForAnimationToFinish_AllowSkipDelay
+	jr c, .done ; skip ahead if delay was skipped
 	ld hl, wNumCardsBeingDrawn
 	inc [hl]
 	ld hl, sp+$00
@@ -2489,20 +2461,13 @@ PlayShuffleAndDrawCardsAnimation:
 	jr .check_num_cards
 .one_duelist_shuffled
 	call PrintNumberOfHandAndDeckCards
-
 .check_num_cards
 	ld a, [wNumCardsBeingDrawn]
 	cp 7
 	jr c, .draw_card
-
-	ld c, 10
-.wait_loop
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .done
-	dec c
-	jr nz, .wait_loop
-
+	; wait up to 10 frames before finishing
+	ld a, 10 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 .done
 	call FinishQueuedAnimations
 	pop bc
@@ -2547,15 +2512,7 @@ PlayDeckShuffleAnimation:
 	call PlayDuelAnimation
 	ld a, e
 	call PlayDuelAnimation
-
-.loop_anim
-	call DoFrame
-	call CheckSkipDelayAllowed
-	jr c, .done_anim
-	call CheckAnyAnimationPlaying
-	jr c, .loop_anim
-
-.done_anim
+	call WaitForAnimationToFinish_AllowSkipDelay
 	call FinishQueuedAnimations
 	ld a, $01
 	ret
@@ -2569,8 +2526,8 @@ PlayDeckShuffleAnimation:
 	ldtx hl, DeckHasXCardsText
 	call DrawWideTextBox_PrintText
 	call EnableLCD
-	ld a, 60
-	call DoAFrames
+	ld a, 60 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	ld a, $01
 	ret
 
@@ -6658,22 +6615,6 @@ LoadOpponentDeck:
 	ret
 
 
-; returns carry if wSkipDelayAllowed is non-0 and B is being held in order to branch
-; out of the caller's wait frames loop. probably only used for debugging.
-; preserves all registers except af
-; output:
-;	carry = set:  if wSkipDelayAllowed is non-0 and the B button is being held
-CheckSkipDelayAllowed:
-	ld a, [wSkipDelayAllowed]
-	or a
-	ret z
-	ldh a, [hKeysHeld]
-	and PAD_B
-	ret z
-	scf
-	ret
-
-
 ; handles menu for when player is waiting for
 ; Link Opponent to make a decision, where it's
 ; possible to examine the hand or duel main scene
@@ -7078,8 +7019,8 @@ OppAction_ExecuteTrainerCardEffectCommands:
 OppAction_BeginUseAttack:
 	; I added a 30 frame delay to better transition from the previous action.
 	; Feel free to delete the following 2 lines.
-	ld a, 30
-	call DoAFrames
+	ld a, 30 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 
 	ldh a, [hTempCardIndex_ff9f]
 	ld d, a
@@ -7568,10 +7509,7 @@ PlayBetweenTurnsAnimation:
 
 ; play animation
 	call PlayDuelAnimation
-.loop_anim
-	call DoFrame
-	call CheckAnyAnimationPlaying
-	jr c, .loop_anim
+	call WaitForAnimationToFinish_AllowSkipDelay
 ;	fallthrough
 
 RedrawTurnDuelistsDuelHUD:
@@ -8206,8 +8144,8 @@ TurnDuelistTakePrizes:
 	get_turn_duelist_var
 	cp DUELIST_TYPE_LINK_OPP
 	jr z, .link_opponent
-	ld a, 60
-	call DoAFrames
+	ld a, 60 ; frames to delay
+	call WaitAFrames_AllowSkipDelay
 	call AIDoAction_TakePrize
 	jr .asm_586f
 
