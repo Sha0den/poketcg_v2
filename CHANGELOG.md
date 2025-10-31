@@ -127,7 +127,7 @@
 
 ## Code Optimization
 
-- **October 18, 2025:** 5 Files Changed
+- **[October 18, 2025](https://github.com/Sha0den/poketcg_v2/commit/34597c85041dc4956a33b833d85c70f47dc1aeab):** 5 Files Changed
     - Move `CheckSkipDelayAllowed` function from src/engine/duel/core.asm to src/home/frames.asm and add `WaitAFrames_AllowSkipDelay` function in same file
     - Add `WaitForAnimationToFinish_AllowSkipDelay` function to src/home/duel.asm
     - Replace some frequently used code in src/engine/duel/core.asm with calls to the above functions
@@ -1369,6 +1369,14 @@
 
 ## Other Bug Fixes And Commit Reversions
 
+- **October 30 2025:** 2 Files Changed
+    - Fix a small glitch in `HandleStrikesBack_AgainstNormalAttack` (I messed up the ordering for a push/pop during one of the optimizations)
+        - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f7a85492e5f41651962c34b31d88123e2e979956)*
+    - Fix a small glitch in `PokemonBreeder_EvolveEffect` (since `EvolvePokemonCard` needed to return with hl pointing to w*CardStage)
+        - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/eace7a43c072901a0fd6ae853e74e3e2bfeaf4e2)*
+
+<br/>
+
 - **[October 14 2025](https://github.com/Sha0den/poketcg_v2/commit/141cff8fd083f30a7f3142f00148e6359ce36f00):** 1 File Changed
     - Fix AI output for `DuelistSelectForcedSwitch` function (AI will now switch after being attacked with Ram, Terror Strike, or Whirlwind)
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/3fe70f141410ba19fc361755f4e83b2beeb99f0f)*
@@ -1381,7 +1389,7 @@
 
 <br/>
 
-- **September 25 2025:** 2 Files Changed
+- **[September 25 2025](https://github.com/Sha0den/poketcg_v2/commit/ed452d2ef754469d53ba8d608803cf620e90524f):** 2 Files Changed
     - Implement a few fixes related to loading opponent's card data without first calling `SwapTurn` (AI will now correctly use Conversion 2 once more)
         - The instance in src/engine/duel/ai/retreat.asm was actually present in the base game
     - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/3fe70f141410ba19fc361755f4e83b2beeb99f0f)*

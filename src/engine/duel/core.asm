@@ -9090,8 +9090,8 @@ HandleStrikesBack_AgainstNormalAttack:
 	call LoadTxRam2
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
-	push af
 	pop de
+	push af
 	call SubtractHP
 	ldtx hl, ReceivesDamageDueToStrikesBackText
 	call DrawWideTextBox_PrintText

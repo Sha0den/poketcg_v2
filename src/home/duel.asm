@@ -962,6 +962,8 @@ EvolvePokemonCardIfPossible::
 ;	[hTempCardIndex_ff98] = deck index of the Evolution card (0-59)
 ;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokémon being evolved (PLAY_AREA_* constant)
 ; output:
+;	e = play area location offset of the Evolved Pokémon (PLAY_AREA_* constant)
+;	hl = wram address containing the Evolved Pokémon's stage (w*CardStage)
 ;	[wPreEvolutionPokemonCard] = deck index of the play area Pokémon that was evolved
 EvolvePokemonCard::
 ; place the evolution card in the play area location of the pre-evolution
@@ -976,12 +978,6 @@ EvolvePokemonCard::
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ldh a, [hTempCardIndex_ff98]
 	call PutHandCardInPlayArea
-	; set the new evolution stage of the card
-	ld a, e
-	add DUELVARS_ARENA_CARD_STAGE
-	get_turn_duelist_var
-	ld a, [wLoadedCard1Stage]
-	ld [hl], a
 	; update the Pokémon's HP with the difference
 	ld a, e
 	add DUELVARS_ARENA_CARD_HP
@@ -1001,6 +997,12 @@ EvolvePokemonCard::
 	add DUELVARS_ARENA_CARD_CHANGED_TYPE
 	ld l, a
 	ld [hl], $00
+	; set the new evolution stage of the card
+	ld a, e
+	add DUELVARS_ARENA_CARD_STAGE
+	get_turn_duelist_var
+	ld a, [wLoadedCard1Stage]
+	ld [hl], a
 	; reset status and Arena-specific variables if evolving the Active Pokémon
 	ld a, e
 	or a ; cp PLAY_AREA_ARENA
