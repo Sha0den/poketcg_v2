@@ -536,6 +536,7 @@ AIDecide_Defender_Phase13:
 ; prevent its Active Pokémon from being KO'd in the following turn.
 .check_if_defender_prevents_ko
 	sub 20 - 1 ; Defender's damage reduction minus 1 (so carry will be set if final HP = 0)
+	ret c ; play Defender if the KOing attack's damage was only 10
 	ld d, a
 	ld a, DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
