@@ -13,6 +13,13 @@
 
 ## Bug Fixes For Base Game
 
+- **December 14, 2025:** 5 Files Changed
+    - Account for Pokémon Powers being disabled when deciding if a Haunter's Transparency or Mew's Neutralizing Shield can prevent Ninetales or Victreebel's Lure attack
+    - Account for Pokémon Powers being disabled when running some AI checks for retreating and for playing PlusPower or an Evolution card (mainly Invisible Wall)
+    - Have AI use the Evolved Pokémon's actual HP when running checks to determine if it should play an Evolution card
+
+<br/>
+
 - **[December 6, 2024](https://github.com/Sha0den/poketcg_v2/commit/6cb8f87e0433424b3f0b59ee83fa595a59a84838):** 5 Files Changed
     - Have AI compare amount of attached Energy with each of a Pokémon's attacks when deciding whether a Pokémon is set up, rather than checking if its second attack is usable
         - *this avoids the problem of some Pokémon not having a second attack and also ignores looking at temporary effects that prevent attacking, such as status/substatus/amnesia*
@@ -148,6 +155,7 @@
         - Delete the `CopyAttackDataAndDamage_FromCardID` function and replace the single call in effect functions
     - Rework `CARD_LOCATION_JUST_DRAWN` into a normal 8-bit ID rather than a bit flag
     - Also fix a typo in `ParalyzeBookText` and add further input comments to the `HandleEnergyBurn` function in src/home/card_color.asm
+    - *This commit caused a problem with `PokemonBreeder_EvolveEffect` ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/bbd34879eca53454b381665d0d5725676bbf0ed0))*
 
 <br/>
 
@@ -496,6 +504,7 @@
 - **[October 9, 2024](https://github.com/Sha0den/poketcg_v2/commit/f7a85492e5f41651962c34b31d88123e2e979956):** 3 Files Changed
     - Thoroughly review engine/duel/core.asm, updating comments, code, and even some labels
     - Change the name of a subroutine in home/copy.asm into `CopyNBytesFromDEToHL` and use it in a couple of other files
+    - *This commit mishandled a push/pop in `HandleStrikesBack_AgainstNormalAttack` ([Link to Bug Fix](https://github.com/Sha0den/poketcg_v2/commit/bbd34879eca53454b381665d0d5725676bbf0ed0))*
 
 <br/>
 
@@ -1369,7 +1378,7 @@
 
 ## Other Bug Fixes And Commit Reversions
 
-- **October 30 2025:** 2 Files Changed
+- **[October 30 2025](https://github.com/Sha0den/poketcg_v2/commit/bbd34879eca53454b381665d0d5725676bbf0ed0):** 2 Files Changed
     - Fix a small glitch in `HandleStrikesBack_AgainstNormalAttack` (I messed up the ordering for a push/pop during one of the optimizations)
         - *This is a bug fix for [This Commit](https://github.com/Sha0den/poketcg_v2/commit/f7a85492e5f41651962c34b31d88123e2e979956)*
     - Fix a small glitch in `PokemonBreeder_EvolveEffect` (since `EvolvePokemonCard` needed to return with hl pointing to w*CardStage)

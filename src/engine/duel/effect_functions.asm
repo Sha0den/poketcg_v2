@@ -7206,9 +7206,12 @@ HealingWind_PlayAreaHealEffect:
 ; input:
 ;	e = play area location offset of the Pokémon being checked (PLAY_AREA_* constant)
 ; output:
-;	carry = set:  if the turn holder's Active Pokémon is MEW_LV8 or HAUNTER_LV17
+;	carry = set:  if the chosen Pokémon's Pokémon Power prevented the attack
 HandleNShieldAndTransparency:
 	push de
+	ld a, e
+	call CheckIsIncapableOfUsingPkmnPower
+	jr c, .done
 	ld a, DUELVARS_ARENA_CARD
 	add e
 	get_turn_duelist_var

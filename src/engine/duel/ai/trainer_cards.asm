@@ -753,16 +753,17 @@ AIDecide_Pluspower_Phase14:
 	ld a, [wDamage]
 	add 10 ; add PlusPower boost
 	cp 30 ; minimum damage prevented by Invisible Wall
-	ret c
+	ret c ; play PlusPower if the attack's damage is still less than 30
 	rst SwapTurn
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	call _GetCardIDFromDeckIndex
-	rst SwapTurn
 	cp MR_MIME
-	ret z
-; damage is >= 30 but Defending Pokémon isn't Mr. Mime
 	scf
+	jr nz, .done ; play PlusPower if the Defending Pokémon isn't a Mr. Mime
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+.done
+	rst SwapTurn
 	ret
 
 

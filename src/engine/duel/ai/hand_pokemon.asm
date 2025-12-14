@@ -178,12 +178,26 @@ AIDecideEvolution:
 ; increase the AI score if it can. if it can't, then decrease the score, and
 ; if an Energy card that is needed can be played from the hand, then increase the score.
 .check_evolution_attacks
+	; temporarily replace the evolving Pokémon's deck index and HP
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	push af
+	call LoadCardDataToBuffer2_FromDeckIndex
 	ld a, [wTempAIPokemonCard]
 	ld [hl], a
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	add DUELVARS_ARENA_CARD_HP
+	get_turn_duelist_var
+	push af
+	ld a, [wLoadedCard2HP]
+	ld c, a
+	ld a, [wLoadedCard1HP]
+	sub c
+	add [hl]
+	ld [hl], a
+
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	ld [wSelectedAttack], a
 	call CheckIfSelectedAttackIsUnusable
@@ -247,11 +261,17 @@ AIDecideEvolution:
 
 ; increase the AI score if the Defending Pokémon can KO the current card.
 	ld a, [wTempAI]
+	ld e, a
+	add DUELVARS_ARENA_CARD_HP
+	get_turn_duelist_var
+	pop af
+	ld [hl], a
+	ld a, e
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
 	pop af
 	ld [hl], a
-	ld a, [wTempAI]
+	ld a, e
 	or a ; cp PLAY_AREA_ARENA
 	jr nz, .check_2nd_stage_hand
 	ldh [hTempPlayAreaLocation_ff9d], a ; PLAY_AREA_ARENA

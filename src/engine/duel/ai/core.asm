@@ -1152,8 +1152,8 @@ TrySetUpBossStartingPlayArea:
 ; input:
 ;	a = AI Pokémon's play area location offset (PLAY_AREA_* constant)
 ; output:
-;	carry = set:  if the Player's Active Pokémon isn't a Mr. Mime or
-;	              if the Pokémon in the given location can damage it anyway
+;	carry = set:  if the Player's Active Pokémon isn't a Mr. Mime with a working Invisible Wall
+;	           OR if the Pokémon in the given location can damage it anyway
 CheckDamageToMrMime:
 	ld b, a
 	rst SwapTurn
@@ -1164,6 +1164,10 @@ CheckDamageToMrMime:
 	cp MR_MIME
 	scf
 	ret nz ; return carry if the Defending Pokémon isn't a Mr. Mime
+	rst SwapTurn
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+	rst SwapTurn
+	ret c ; return carry if Invisible Wall isn't working
 	ld a, b
 	jp CheckIfCanDamageDefendingPokemon
 

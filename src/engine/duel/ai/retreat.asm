@@ -276,7 +276,11 @@ AIDecideWhetherToRetreat:
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp MR_MIME
-	jr nz, .check_retreat_cost
+	jr nz, .check_retreat_cost ; skip ahead if the Defending Pokémon isn't Mr. Mime
+	rst SwapTurn
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+	rst SwapTurn
+	jr c, .check_retreat_cost ; skip ahead if Mr. Mime's Invisible Wall isn't working
 
 ; if the Active Pokémon can't damage the opponent's Mr. Mime,
 ; then look for a Pokémon on the AI's Bench that can damage it.
@@ -524,7 +528,11 @@ AIDecideBenchPokemonToSwitchTo:
 	call _GetCardIDFromDeckIndex
 	rst SwapTurn
 	cp MR_MIME
-	jr nz, .check_defending_weak
+	jr nz, .check_defending_weak ; skip ahead if the Defending Pokémon isn't Mr. Mime
+	rst SwapTurn
+	call CheckIsIncapableOfUsingPkmnPower_ArenaCard
+	rst SwapTurn
+	jr c, .check_defending_weak ; skip ahead if Mr. Mime's Invisible Wall isn't working
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
@@ -642,6 +650,8 @@ AIDecideBenchPokemonToSwitchTo:
 
 ; increase this Pokémon's score by 5 if it's a Mr Mime or
 ; if it's a MewLv8 and the Defending Pokémon's stage isn't Basic.
+	call CheckIfPkmnPowersAreCurrentlyDisabled
+	jr c, .check_if_has_bench_utility
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
