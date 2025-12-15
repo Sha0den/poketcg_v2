@@ -602,7 +602,7 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea:
 
 ; look for card ID #1 in the deck
 	ld e, a
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
 	ret nc
 
@@ -642,7 +642,7 @@ LookForCardIDInDeck_GivenCardIDInHand:
 
 ; look for card ID #1 in the deck
 	ld e, a
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
 	ret nc
 
@@ -762,7 +762,7 @@ LookForCardIDToTradeWithDifferentHandCard:
 ; if card ID #1 is not in the deck, return no carry.
 	ld a, [wTempAI]
 	ld e, a
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank8
 	ret nc
 

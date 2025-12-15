@@ -13,7 +13,7 @@
 
 ## Bug Fixes For Base Game
 
-- **December 14, 2025:** 5 Files Changed
+- **[December 14, 2025](https://github.com/Sha0den/poketcg_v2/commit/d77dc82d0dec8e1a840b58cf40d78382e566fafb):** 5 Files Changed
     - Account for Pokémon Powers being disabled when deciding if a Haunter's Transparency or Mew's Neutralizing Shield can prevent Ninetales or Victreebel's Lure attack
     - Account for Pokémon Powers being disabled when running some AI checks for retreating and for playing PlusPower or an Evolution card (mainly Invisible Wall)
     - Have AI use the Evolved Pokémon's actual HP when running checks to determine if it should play an Evolution card
@@ -133,6 +133,11 @@
 
 
 ## Code Optimization
+
+- **December 15, 2025:** 6 Files Changed
+    - Replace `ld a, CARD_LOCATION_DECK` and `cp CARD_LOCATION_DECK` with `xor a` and `or a`
+
+<br/>
 
 - **[October 18, 2025](https://github.com/Sha0den/poketcg_v2/commit/34597c85041dc4956a33b833d85c70f47dc1aeab):** 5 Files Changed
     - Move `CheckSkipDelayAllowed` function from src/engine/duel/core.asm to src/home/frames.asm and add `WaitAFrames_AllowSkipDelay` function in same file

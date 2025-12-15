@@ -6431,7 +6431,7 @@ Firegiver_AddToHandEffect:
 	; hl = starting address for turn holder's card location data
 .loop_cards
 	ld a, [hl]
-	cp CARD_LOCATION_DECK
+	or a ; cp CARD_LOCATION_DECK
 	jr nz, .next
 	ld a, l
 	call GetCardTypeFromDeckIndex_SaveDE

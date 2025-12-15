@@ -1544,7 +1544,7 @@ CheckForEvolutionInDeck:
 	dec d ; go through deck indices in reverse order
 	ld a, d ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
-	cp CARD_LOCATION_DECK
+	or a ; cp CARD_LOCATION_DECK
 	jr nz, .not_in_deck
 	call CheckIfCanEvolveInto
 	jr nc, CheckForEvolutionInList.set_carry
@@ -1580,7 +1580,7 @@ CheckCardEvolutionInHandOrDeck:
 	dec d ; go through deck indices in reverse order
 	ld a, d ; DUELVARS_CARD_LOCATIONS + current deck index
 	get_turn_duelist_var
-	cp CARD_LOCATION_DECK
+	or a ; cp CARD_LOCATION_DECK
 	jr z, .deck_or_hand
 	cp CARD_LOCATION_HAND
 	jr nz, .next

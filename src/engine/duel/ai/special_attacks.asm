@@ -74,7 +74,7 @@ HandleSpecialAIAttacks:
 ; return a score of $80 + slots available on the Bench.
 ; otherwise, dismiss the attack.
 .CallForFamily:
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr nc, .zero_score
 ;	fallthrough
@@ -96,11 +96,11 @@ HandleSpecialAIAttacks:
 ; otherwise, dismiss the attack.
 .NidoranFCallForFamily:
 	ld e, NIDORANM
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr c, .bench_space_bonus_score
 	ld e, NIDORANF
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr c, .bench_space_bonus_score
 	xor a
@@ -113,19 +113,19 @@ HandleSpecialAIAttacks:
 ; otherwise, dismiss the attack.
 .CallForFriend:
 	ld e, GEODUDE
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr c, .bench_space_bonus_score
 	ld e, ONIX
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr c, .bench_space_bonus_score
 	ld e, CUBONE
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr c, .bench_space_bonus_score
 	ld e, RHYHORN
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	call LookForCardIDInLocation_Bank5
 	jr c, .bench_space_bonus_score
 
@@ -431,7 +431,7 @@ HandleSpecialAIAttacks:
 ; if there are any Lightning Energy cards in the deck,
 ; return a score of $80 + 3. otherwise, dismiss the attack.
 .EnergySpike:
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	ld e, LIGHTNING_ENERGY
 	call LookForCardIDInLocation_Bank5
 	jr nc, .zero_score2
@@ -472,7 +472,7 @@ CheckIfAnyBasicPokemonInDeck:
 .loop
 	dec l ; go through deck indices in reverse order
 	ld a, [hl]
-	cp CARD_LOCATION_DECK
+	or a ; cp CARD_LOCATION_DECK
 	jr nz, .next
 	ld a, l
 	call CheckDeckIndexForBasicPokemon
@@ -599,7 +599,7 @@ AISelectSpecialAttackParameters:
 	ret z ; return no carry if the Active Pokémon is using its first attack
 
 ; try to target a Lightning Energy in the deck.
-	ld a, CARD_LOCATION_DECK
+	xor a ; CARD_LOCATION_DECK
 	ld e, LIGHTNING_ENERGY
 	call LookForCardIDInLocation_Bank5
 	ret nc ; return no carry if there are no Lightning Energy in the deck
