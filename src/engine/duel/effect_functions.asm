@@ -1761,6 +1761,93 @@ RemoveSpecialConditionsEffect:
 	ret
 
 
+; handles the Player's selection of a damaged Pokémon in their play area
+; output:
+;	carry = set:  if the operation was cancelled by the Player (with B button)
+;	[hTempPlayAreaLocation_ffa1] = target Pokémon's location (PLAY_AREA_* constant, -1 if none)
+MayChoosePokemonToHeal_PlayerSelection:
+	ld a, -1
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ldtx hl, ChoosePokemonToHealText
+	call DrawWideTextBox_WaitForInput
+	call InitPlayAreaScreenVars
+.read_input
+	bank1call OpenPlayAreaScreenForSelection
+	ret c ; exit if the B button was pressed
+;	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld e, a
+	call GetCardDamageAndMaxHP
+	or a
+	jr z, .read_input ; restart selection if that Pokémon has no damage counters
+	ld a, e
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ret ; nc
+
+
+; input:
+;	[hTempPlayAreaLocation_ffa1] = target Pokémon's play area location offset (PLAY_AREA_* constant)
+Heal20FromChosenPokemonEffect:
+	ld a, 20
+;	fallthrough
+
+; heals a given amount of damage from the Pokémon in a given location.
+; also plays the healing animation and prints text with the Pokémon's name.
+; input:
+;	a = amount of HP to heal
+;	[hTempPlayAreaLocation_ffa1] = target Pokémon's play area location offset (PLAY_AREA_* constant)
+HealPlayAreaCardHP:
+	ld d, a
+	ldh a, [hTempPlayAreaLocation_ffa1]
+	cp -1
+	ret z ; return immediately if no Pokémon was selected
+	ld e, a
+	call GetCardDamageAndMaxHP
+	cp d
+	jr nc, .heal_damage
+	; need to cap healing amount, since it exceeds the number of damage counters on this Pokémon
+	ld d, a
+.heal_damage
+	ld a, DUELVARS_ARENA_CARD_HP
+	add e
+	get_turn_duelist_var
+	add d
+	ld [hl], a
+
+; play the heal animation
+	ld e, d
+	ld d, $00
+	push de
+	xor a ; FALSE
+	ld [wAttackAnimationIsPlaying], a
+	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
+	ld [wLoadedAttackAnimation], a
+	ldh a, [hTempPlayAreaLocation_ffa1]
+	ld b, a
+	ld c, $01 ; WEAKNESS
+	ldh a, [hWhoseTurn]
+	ld h, a
+	call PlayAttackAnimation
+	call WaitAttackAnimation
+	pop hl
+
+; print the Pokémon's card name and damage that was healed
+	call LoadTxRam3
+	ldh a, [hTempPlayAreaLocation_ffa1]
+	add DUELVARS_ARENA_CARD
+	get_turn_duelist_var
+	call LoadCardDataToBuffer1_FromDeckIndex
+	ld a, 18
+	call CopyCardNameAndLevel
+	xor a ; TX_END
+	ld [hl], a ; terminate the text string at wDefaultText
+	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
+	ld hl, wTxRam2
+	ld [hli], a
+	ld [hl], a
+	ldtx hl, PokemonHealedDamageText
+	jp DrawWideTextBox_WaitForInput
+
+
 ;---------------------------------------------------------------------------------
 ; (6) ATTACK EFFECTS THAT CAUSE SPECIAL CONDITIONS ARE NEXT
 ;---------------------------------------------------------------------------------
@@ -8522,7 +8609,7 @@ PokemonCenter_HealDiscardEnergyEffect:
 .loop_play_area
 ; check its damage
 	ld a, e
-	ldh [hTempPlayAreaLocation_ff9d], a
+	ldh [hTempPlayAreaLocation_ffa1], a
 	call GetCardDamageAndMaxHP
 	or a
 	jr z, .next_pkmn ; skip the Pokemon if it doesn't have any damage
@@ -8533,7 +8620,7 @@ PokemonCenter_HealDiscardEnergyEffect:
 
 ; loop all cards in the deck and discard all Energy cards
 ; that are attached to this Play Area location's Pokemon.
-	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh a, [hTempPlayAreaLocation_ffa1]
 	or CARD_LOCATION_PLAY_AREA
 	ld e, a
 	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
@@ -8545,9 +8632,8 @@ PokemonCenter_HealDiscardEnergyEffect:
 	ld a, l
 	call GetCardTypeFromDeckIndex_SaveDE
 	and TYPE_ENERGY
-	jr z, .next_card_deck ; skip if not an Energy
 	ld a, l
-	call PutCardInDiscardPile
+	call nz, PutCardInDiscardPile ; discard this card if it's an Energy
 .next_card_deck
 	ld a, l
 	or a
@@ -8754,95 +8840,6 @@ CreatePokemonCardListFromHand:
 	ret
 
 
-; handles the Player's selection of a damaged Pokemon in their play area
-; and sets the amount of damage to heal
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = amount of HP to heal (usually 20, 10 if capped)
-;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
-Potion_PlayerSelection:
-	call InitPlayAreaScreenVars
-.read_input
-	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit if the B button was pressed
-	ldh [hTempPlayAreaLocation_ffa1], a
-	ld e, a
-	call GetCardDamageAndMaxHP
-	or a
-	jr z, .read_input ; no damage, loop back to start
-; cap damage
-	ld c, 20
-	cp 20
-	jr nc, .skip_cap
-	ld c, a
-.skip_cap
-	ld a, c
-	ldh [hTemp_ffa0], a
-	or a
-	ret
-
-
-; input:
-;	[hTemp_ffa0] = amount of HP to heal
-;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
-HealEffect:
-	ldh a, [hTempPlayAreaLocation_ffa1]
-	ldh [hTempPlayAreaLocation_ff9d], a
-	ldh a, [hTemp_ffa0]
-;	fallthrough
-
-; heals a given amount of damage from the Pokemon in a given location.
-; also plays the healing animation and prints text with the Pokemon's name.
-; input:
-;	a = amount of HP to heal
-;	[hTempPlayAreaLocation_ff9d] = play area location offset of the Pokemon to heal (PLAY_AREA_* constant)
-HealPlayAreaCardHP:
-	ld e, a
-	ld d, $00
-
-; play the heal animation
-	push de
-	xor a ; FALSE
-	ld [wAttackAnimationIsPlaying], a
-	ld a, ATK_ANIM_HEALING_WIND_PLAY_AREA
-	ld [wLoadedAttackAnimation], a
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld b, a
-	ld c, $01 ; WEAKNESS
-	ldh a, [hWhoseTurn]
-	ld h, a
-	call PlayAttackAnimation
-	call WaitAttackAnimation
-	pop hl
-
-; print the Pokemon's card name and damage that was healed
-	push hl
-	call LoadTxRam3
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD
-	get_turn_duelist_var
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, 18
-	call CopyCardNameAndLevel
-	xor a ; TX_END
-	ld [hl], a ; terminate the text string at wDefaultText
-	; zero wTxRam2 so that the name & level text just loaded to wDefaultText is printed
-	ld hl, wTxRam2
-	ld [hli], a
-	ld [hl], a
-	ldtx hl, PokemonHealedDamageText
-	call DrawWideTextBox_WaitForInput
-	pop de
-
-; heal the target Pokemon
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	add DUELVARS_ARENA_CARD_HP
-	get_turn_duelist_var
-	add e
-	ld [hl], a
-	ret
-
-
 ; flips a coin and handles the Player's selection of a card from their discard pile if heads
 ; output:
 ;	[hTemp_ffa0] = deck index of a card in the Player's discard pile (0-59, -1 if coin was tails)
@@ -9046,13 +9043,12 @@ SuperPotion_DamageEnergyCheck:
 	ret
 
 
-; handles the Player's selection of a Pokemon in their play area with both
-; damage counters and attached Energy, then sets the amount of damage to heal
+; handles the Player's selection of a Pokémon in their play area
+; with both damage counters and attached Energy
 ; output:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
 ;	[hTemp_ffa0] = deck index of an Energy card attached to the target Pokémon (0-59)
 ;	[hTempPlayAreaLocation_ffa1] = target Pokémon's play area location offset (PLAY_AREA_* constant)
-;	[hPlayAreaEffectTarget] = amount of HP to heal (up to 40)
 SuperPotion_PlayerSelection:
 	ldtx hl, ChoosePokemonToHealText
 	call DrawWideTextBox_WaitForInput
@@ -9061,58 +9057,42 @@ SuperPotion_PlayerSelection:
 .read_input
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
-	ld e, a
+;	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld e, a ; store the chosen play area location in e
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .read_input ; loop back if Pokemon has no damage
-	ldh a, [hCurMenuItem]
-	ld e, a
+	jr z, .read_input ; loop back if Pokémon has no damage counters
 	call GetPlayAreaCardAttachedEnergies
-;	ld a, [wTotalAttachedEnergies] ; already loaded
+;	ld a, [wTotalAttachedEnergies]
 	or a
-	jr nz, .got_pkmn
-	; no Energy cards attached to that Pokemon
+	jr nz, .got_pkmn ; move on if at least 1 Energy card is attached
+	; no Energy cards attached to that Pokémon, so restart selection
 	ldtx hl, NoEnergyCardsAttachedText
 	call DrawWideTextBox_WaitForInput
 	jr .start
 
 .got_pkmn
-; Pokemon has damage and Energy cards attached to it,
-; so prompt the Player to select an Energy to discard.
-	ldh a, [hCurMenuItem]
+; a Pokémon was chosen, so prompt the Player to select an Energy to discard.
+	ld a, e
 	call CreateArenaOrBenchEnergyCardList
-	ldh a, [hCurMenuItem]
+	ldh a, [hTempPlayAreaLocation_ff9d]
 	bank1call DisplayEnergyDiscardScreen
 	bank1call HandleEnergyDiscardMenuInput
-	ret c ; exit if the B button was pressed
+;	ret c ; exit if the B button was pressed
+;	ldh a, [hTempCardIndex_ff98]
 	ldh [hTemp_ffa0], a
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTempPlayAreaLocation_ffa1], a
-	ld e, a
-
-; cap the healing if it would exceed the Pokemon's max HP.
-	call GetCardDamageAndMaxHP
-	ld c, 40
-	cp 40
-	jr nc, .heal
-	ld c, a
-.heal
-	ld a, c
-	ldh [hPlayAreaEffectTarget], a
-	or a
 	ret
 
 
 ; input:
 ;	[hTemp_ffa0] = deck index of the (Energy) card that should be discarded (0-59)
 ;	[hTempPlayAreaLocation_ffa1] = target Pokémon's play area location offset (PLAY_AREA_* constant)
-;	[hPlayAreaEffectTarget] = amount of HP to heal
 SuperPotion_HealEffect:
 	ldh a, [hTemp_ffa0]
 	call PutCardInDiscardPile
-	ldh a, [hTempPlayAreaLocation_ffa1]
-	ldh [hTempPlayAreaLocation_ff9d], a
-	ldh a, [hPlayAreaEffectTarget]
+	ld a, 40
 	jp HealPlayAreaCardHP
 
 

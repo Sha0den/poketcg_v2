@@ -1642,8 +1642,7 @@ UnusedText014f: ; Unused
 	done
 
 ChoosePokemonToHealText:
-	text "Choose the Pokémon from which"
-	line "to remove the damage counter."
+	text "Which Pokémon do you wish to heal?"
 	done
 
 ChooseCardToDiscardFromHandText:

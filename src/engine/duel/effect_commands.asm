@@ -1078,8 +1078,8 @@ PokemonTraderEffectCommands:
 
 PotionEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, YourPokemon_DamageCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Potion_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, HealEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, MayChoosePokemonToHeal_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Heal20FromChosenPokemonEffect
 	db  $00
 
 ProfessorOakEffectCommands:

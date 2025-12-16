@@ -134,7 +134,12 @@
 
 ## Code Optimization
 
-- **December 15, 2025:** 6 Files Changed
+- **December 16, 2025:** 4 Files Changed
+    - Refactor the effect functions for Potion *(and Super Potion)*, creating more generic functions that could be used for other similar effects
+
+<br/>
+
+- **[December 15, 2025](https://github.com/Sha0den/poketcg_v2/commit/5eabe6308e88b9ed453f399853498b22247bbb21):** 6 Files Changed
     - Replace `ld a, CARD_LOCATION_DECK` and `cp CARD_LOCATION_DECK` with `xor a` and `or a`
 
 <br/>

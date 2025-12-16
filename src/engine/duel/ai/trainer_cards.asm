@@ -165,14 +165,13 @@ AIPlay_TrainerCard_TwoVars:
 
 
 
-; Potion uses 'AIPlay_TrainerCard_TwoVars'
+; Potion uses 'AIPlay_TrainerCard_TwoVars' but hTemp_ffa0 isn't used
 
 
 ; if there are no plans to retreat the Active Pokémon and the AI doesn't intend
 ; to use a high recoil attack, then it will use Potion on the Active Pokémon,
 ; but only if doing so will prevent that Pokémon from being KO'd in the following turn.
 ; output:
-;	a = amount of damage to heal, if any (usually 20)
 ;	[wce1a] = PLAY_AREA_ARENA:  if the AI decided to play Potion
 ;	carry = set:  if the AI decided to play Potion
 AIDecide_Potion_Phase07:
@@ -216,7 +215,6 @@ AIDecide_Potion_Phase07:
 ; play Potion on the Active Pokémon if it will prevent the KO.
 	ld a, e ; PLAY_AREA_ARENA
 	ld [wce1a], a
-	ld a, l
 	ccf
 	ret
 
@@ -224,7 +222,6 @@ AIDecide_Potion_Phase07:
 ; AI still prioritizes the Active Pokémon, especially if it can prevent a KO,
 ; but it's now willing to consider Benched Pokémon as possible targets.
 ; output:
-;	a = amount of damage to heal, if any (usually 20)
 ;	[wce1a] = target Pokémon's play area location offset (PLAY_AREA_* constant)
 ;	carry = set:  if the AI decided to play Potion
 AIDecide_Potion_Phase10:
@@ -283,23 +280,19 @@ AIDecide_Potion_Phase10:
 	call CountPrizes
 	rst SwapTurn
 	dec a ; cp 1
-	jr z, .skip_random
+	scf
+	ret z ; play Potion if the Player has 1 Prize left
 	; randomly decide to not play Potion 30% of the time.
 	ld a, 10
 	call Random
 	cp 3
 	ccf
-	ret nc
-.skip_random
-	ld a, 20
-	scf
 	ret
 
 ; only decide to use Potion on the Active Pokémon
 ; if the AI does not intend to use a High Recoil recoil.
 .active_card
 	call AICheckIfAttackIsHighRecoil
-	ld a, 20
 	ccf
 	ret
 
@@ -339,14 +332,6 @@ AIPlay_SuperPotion:
 	ldh [hTempPlayAreaLocation_ffa1], a
 	call AIPickEnergyCardToDiscard
 	ldh [hTemp_ffa0], a
-	ld a, [wAITrainerCardParameter]
-	ld e, a
-	call GetCardDamageAndMaxHP
-	cp 40
-	jr c, .play_card
-	ld a, 40
-.play_card
-	ldh [hPlayAreaEffectTarget], a
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
