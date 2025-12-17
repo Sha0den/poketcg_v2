@@ -625,35 +625,12 @@ DrawCard50PercentEffect:
 	ret nc ; return if tails
 ;	fallthrough
 
-; Used with EFFECTCMDTYPE_AFTER_DAMAGE for the effect of an attack
 DrawCardEffect:
-	ldtx hl, Draw1CardFromTheDeckText
-	call DrawWideTextBox_WaitForInput
-;	fallthrough
-
-; Used with EFFECTCMDTYPE_BEFORE_DAMAGE for the effect of a Trainer card
-Draw1CardFromDeck:
-	bank1call DisplayDrawOneCardScreen
-	call DrawCardFromDeck
-	ret c ; return if the deck is empty
-	call AddCardToHand
-	call LoadCardDataToBuffer1_FromDeckIndex
-	ld a, [wDuelistType]
-	cp DUELIST_TYPE_PLAYER
-	ret nz ; return if it isn't the Player's turn
-	; show card on screen if it was Player
-	bank1call OpenCardPage_FromHand
-	ret
+	ld a, 1
+	jr DrawNCards_ShowCardDetails
 
 
-; Used with EFFECTCMDTYPE_AFTER_DAMAGE for the effect of an attack
 Draw2CardsEffect:
-	ldtx hl, Draw2CardsText
-	call DrawWideTextBox_WaitForInput
-;	fallthrough
-
-; Used with EFFECTCMDTYPE_BEFORE_DAMAGE for the effect of a Trainer card
-Draw2CardsFromDeck:
 	ld a, 2
 ;	fallthrough
 
@@ -669,8 +646,8 @@ DrawNCards_ShowCardDetails:
 	ret c ; return if the deck is empty
 	ldh [hTempCardIndex_ff98], a
 	call AddCardToHand
-	call IsPlayerTurn
-	jr nc, .skip_display_screen ; don't show card(s) on screen if it's the opponent's turn
+	call CheckIfDrawnCardsShouldBeShown
+	jr nc, .skip_display_screen
 	push bc
 	bank1call DisplayPlayerDrawCardScreen
 	pop bc
@@ -679,28 +656,12 @@ DrawNCards_ShowCardDetails:
 	jr nz, .loop_draw
 	ret
 
-; You can replace the question marks (?) in the following functions
-; with whatever number of cards that you want to have the player draw.
-; Obviously, the first function isn't necessary if you're creating a Trainer effect.
-; After adding the numbers, remove a semicolon from each of the lines and create the new text.
-;; Used with EFFECTCMDTYPE_AFTER_DAMAGE for the effect of an attack
-;Draw?CardsEffect:
-;	ldtx hl, Draw?CardsText
-;	call DrawWideTextBox_WaitForInput
-;;	fallthrough
-;
-;; Used with EFFECTCMDTYPE_BEFORE_DAMAGE for the effect of a Trainer card
-;Draw?CardsFromDeck:
-;	ld a, ?
-;	jr DrawNCards_ShowCardDetails
-
 
 ; discards all cards in the turn holder's hand and
 ; then, the turn holder draws 7 cards from their deck.
 ProfessorOakEffect:
 ; discard every card in the hand
 	call CreateHandCardList
-	call SortCardsInDuelTempListByID
 	ld hl, wDuelTempList
 .discard_loop
 	ld a, [hli]
@@ -726,6 +687,26 @@ DrawNCards_NoCardDetails:
 	call AddCardToHand
 	dec c
 	jr nz, .loop_draw
+	ret
+
+
+; checks to see if cards added to the hand from the deck should be displayed onscreen.
+; if this function returns carry, then the z flag denotes the reason why:
+;	- z flag set if the Player is drawing the card(s)
+;	- z flag not set if the opponent is drawing the card(s) but the Player
+;	  is able to see the opponent's hand because of a card effect
+; preserves bc and de
+; output:
+;	carry  = set:  if any drawn cards need to be shown on the screen
+CheckIfDrawnCardsShouldBeShown:
+	ld a, DUELVARS_DUELIST_TYPE
+	get_turn_duelist_var
+	or a ; cp DUELIST_TYPE_PLAYER
+	scf
+	ret z ; return carry if it's the Player's turn
+	rst SwapTurn
+	call IsClairvoyanceActive
+	rst SwapTurn
 	ret
 
 
@@ -7469,6 +7450,16 @@ ComputerSearch_DiscardAddToHandEffect:
 ; add a card from the deck to the hand
 	ld a, [hl]
 	call MoveCardFromDeckToHand
+
+; reveal the card being added to the hand if this effect was initiated by the opponent
+; while the Player is able to view the opponent's hand due to a card effect.
+	call CheckIfDrawnCardsShouldBeShown
+	jr nc, .done ; skip notification if drawn cards shouldn't be shown
+	jr z, .done ; skip notification if the Player was the one who used this effect
+	ldh a, [hTempList + 2]
+	ldtx hl, WasPlacedInTheHandText
+	bank1call DisplayCardDetailScreen
+.done
 	jp ShuffleCardsInDeck
 
 
@@ -8276,8 +8267,9 @@ Maintenance_ReturnToDeckAndDrawEffect:
 	call AddCardToHand
 
 ; show the drawn card on the screen if this effect was initiated by the Player
-	call IsPlayerTurn
-	ret nc ; return if it isn't the Player's turn
+; or if the Player is able to view the opponent's hand.
+	call CheckIfDrawnCardsShouldBeShown
+	ret nc
 	bank1call DisplayPlayerDrawCardScreen
 	ret
 

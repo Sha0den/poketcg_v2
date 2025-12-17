@@ -1661,11 +1661,14 @@ DisplayDrawNCardsScreen:
 	call DrawWideTextBox_WaitForInput
 	jr .done
 .can_draw
+	ldtx hl, Draw1CardFromTheDeckText
+	cp 1
+	jr z, .print_text
 	ld hl, wTxRam3
 	ld [hli], a
-	xor a
-	ld [hl], a
+	ld [hl], $00
 	ldtx hl, DrawCardsFromTheDeckText
+.print_text
 	call DrawWideTextBox_PrintText
 	call EnableLCD
 .anim_drawing_cards_loop

@@ -1312,7 +1312,7 @@ ChangedTheColorOfText:
 	done
 
 Draw1CardFromTheDeckText:
-	text "Draw a card."
+	text " Draw 1 card."
 	done
 
 DrawCardsFromTheDeckText:

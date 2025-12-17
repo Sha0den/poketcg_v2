@@ -134,7 +134,13 @@
 
 ## Code Optimization
 
-- **December 16, 2025:** 4 Files Changed
+- **December 17, 2025:** 6 Files Changed
+    - Refactor effect functions for drawing cards from the deck to both simplify things and to account for Omanyte's Clairvoyance Pokémon Power
+    - Fix the "Draw 1 cards." text glitch
+
+<br/>
+
+- **[December 16, 2025](https://github.com/Sha0den/poketcg_v2/commit/3187aa268853ca7e4c2bb506fb40a9421d84d35a):** 4 Files Changed
     - Refactor the effect functions for Potion *(and Super Potion)*, creating more generic functions that could be used for other similar effects
 
 <br/>

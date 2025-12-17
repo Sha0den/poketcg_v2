@@ -50,7 +50,3 @@ ChooseTrainerCardFromDeckText:
 	text "Choose a Trainer card from"
 	line "your deck."
 	done
-
-Draw2CardsText:
-	text "Draw 2 cards."
-	done

@@ -951,7 +951,7 @@ DiscardTrainerPokemonEffectCommands:
 	db  $00
 
 BillEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Draw2CardsFromDeck
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, Draw2CardsEffect
 	db  $00
 
 ComputerSearchEffectCommands:

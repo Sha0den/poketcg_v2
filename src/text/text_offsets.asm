@@ -3001,4 +3001,3 @@ TextOffsets::
 	textpointer ChooseEvolutionCardFromDeckText                    ; 0x0bb5
 	textpointer ChooseTrainerCardText                              ; 0x0bb6
 	textpointer ChooseTrainerCardFromDeckText                      ; 0x0bb7
-	textpointer Draw2CardsText                                     ; 0x0bb8
