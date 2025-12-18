@@ -134,7 +134,12 @@
 
 ## Code Optimization
 
-- **December 17, 2025:** 6 Files Changed
+- **December 18, 2025:** 1 File Changed
+    - Further optimize deck search effect functions and clean up `ConvertSpecialTrainerCardToPokemon` in src/engine/duel/effect_functions2.asm
+
+<br/>
+
+- **[December 17, 2025](https://github.com/Sha0den/poketcg_v2/commit/51ffbb115a94fb2650584ec4123adb29a775c44c):** 6 Files Changed
     - Refactor effect functions for drawing cards from the deck to both simplify things and to account for Omanyte's Clairvoyance Pokémon Power
     - Fix the "Draw 1 cards." text glitch
 
