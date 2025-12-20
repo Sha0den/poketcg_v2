@@ -134,7 +134,12 @@
 
 ## Code Optimization
 
-- **December 18, 2025:** 1 File Changed
+- **December 20, 2025:** 3 Files Changed
+    - Create `LoadLoaded1CardGfx_UseDefaultSettings` function in src/engine/duel/core.asm to save some space and cut a few bank1calls
+
+<br/>
+
+- **[December 18, 2025](https://github.com/Sha0den/poketcg_v2/commit/958734f73b49ad63037b6818a69d3f1800208134):** 1 File Changed
     - Further optimize deck search effect functions and clean up `ConvertSpecialTrainerCardToPokemon` in src/engine/duel/effect_functions2.asm
 
 <br/>

@@ -3993,19 +3993,6 @@ CardListFunction:
 	ret
 
 
-; loads the tiles and palette of the card selected in a card list screen
-; input:
-;	[hCurMenuItem] = index for wDuelTempList
-LoadSelectedCardGfx:
-	ldh a, [hCurMenuItem]
-	call GetCardInDuelTempList
-	call LoadCardDataToBuffer1_FromCardID
-	ld de, v0Tiles1 + $20 tiles
-	call LoadLoaded1CardGfx
-	call SetBGP6OrSGB3ToCardPalette
-	jp FlushAllPalettesOrSendPal23Packet
-
-
 ; uses a list index to retrieve the deck index and card ID of a card in wDuelTempList.
 ; preserves bc and hl
 ; input:
@@ -4451,6 +4438,24 @@ LoadLoaded1CardGfx:
 	jp LoadCardGfx
 
 
+; loads the tiles and palette of the card selected in a card list screen
+; input:
+;	[hCurMenuItem] = index for wDuelTempList
+LoadSelectedCardGfx:
+	ldh a, [hCurMenuItem]
+	call GetCardInDuelTempList
+	call LoadCardDataToBuffer1_FromCardID
+;	fallthrough
+
+; loads the tile graphics of the card loaded in wLoadedCard1
+; to vram tiles $a0-cf and its palette to BGP6/SGB3.
+LoadLoaded1CardGfx_UseDefaultSettings:
+	ld de, v0Tiles1 + $20 tiles
+	call LoadLoaded1CardGfx
+	call SetBGP6OrSGB3ToCardPalette
+	jp FlushAllPalettesOrSendPal23Packet
+
+
 SetBGP7OrSGB2ToCardPalette:
 	ld a, [wConsole]
 	or a ; CONSOLE_DMG
@@ -4466,7 +4471,6 @@ SetSGB2ToCardPalette:
 	ld de, wTempSGBPacket + 1 ; PAL Packet color #0 (PAL23's SGB2)
 	ld b, PAL_SIZE
 	jp CopyNBytesFromHLToDE
-
 
 
 SetBGP6OrSGB3ToCardPalette:
@@ -5220,10 +5224,7 @@ DrawLargePictureOfCard:
 .draw
 	ld a, e
 	call LoadCardTypeHeaderTiles
-	ld de, v0Tiles1 + $20 tiles
-	call LoadLoaded1CardGfx
-	call SetBGP6OrSGB3ToCardPalette
-	call FlushAllPalettesOrSendPal23Packet
+	call LoadLoaded1CardGfx_UseDefaultSettings
 	ld hl, LargeCardTileData
 	call WriteDataBlocksToBGMap0
 	lb de, 6, 3

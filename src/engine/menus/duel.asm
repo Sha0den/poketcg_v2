@@ -669,15 +669,7 @@ DrawYourOrOppPlayArea_ActiveCardGfx:
 	rst SwapTurn
 
 .draw
-	ld de, v0Tiles1 + $20 tiles ; destination offset of loaded gfx
-	ld hl, wLoadedCard1Gfx
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	lb bc, $30, TILE_SIZE
-	call LoadCardGfx
-	bank1call SetBGP6OrSGB3ToCardPalette
-	bank1call FlushAllPalettesOrSendPal23Packet
+	bank1call LoadLoaded1CardGfx_UseDefaultSettings
 	pop de
 
 ; draw card gfx

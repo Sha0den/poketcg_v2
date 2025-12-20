@@ -2679,15 +2679,7 @@ HandleColorChangeScreen:
 	call LoadCardDataToBuffer1_FromDeckIndex
 
 ; draw card gfx
-	ld de, v0Tiles1 + $20 tiles ; destination offset of loaded gfx
-	ld hl, wLoadedCard1Gfx
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
-	lb bc, $30, TILE_SIZE
-	call LoadCardGfx
-	bank1call SetBGP6OrSGB3ToCardPalette
-	bank1call FlushAllPalettesOrSendPal23Packet
+	bank1call LoadLoaded1CardGfx_UseDefaultSettings
 	ld a, $a0
 	lb hl, 6, 1
 	lb de, 9, 2
