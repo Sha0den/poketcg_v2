@@ -134,7 +134,12 @@
 
 ## Code Optimization
 
-- **December 20, 2025:** 3 Files Changed
+- **December 22, 2025:** 5 Files Changed
+    - Further optimize functions related to Pokémon Powers, mainly src/engine/duel/ai/pkmn_powers.asm and src/engine/duel/effect_functions.asm
+
+<br/>
+
+- **[December 20, 2025](https://github.com/Sha0den/poketcg_v2/commit/4c90ebbd182eea9acee65cc74f58a3a973cc929b):** 3 Files Changed
     - Create `LoadLoaded1CardGfx_UseDefaultSettings` function in src/engine/duel/core.asm to save some space and cut a few bank1calls
 
 <br/>

@@ -6125,8 +6125,7 @@ EnergyTransCheck:
 	ld l, DUELVARS_CARD_LOCATIONS + DECK_SIZE
 .loop_deck
 	dec l ; go through deck indices in reverse order
-	ld a, [hl]
-	and CARD_LOCATION_PLAY_AREA
+	bit CARD_LOCATION_PLAY_AREA_F, [hl]
 	jr z, .next
 	ld a, l
 	call GetCardTypeFromDeckIndex_SaveDE
@@ -6143,17 +6142,10 @@ EnergyTransCheck:
 	ret
 
 
-EnergyTrans_PrintProcedureText:
-	ldtx hl, ProcedureForEnergyTransferText
-	call DrawWholeScreenTextBox
-	or a
-	ret
-
-
 EnergyTrans_TransferEffect:
 	ld a, DUELVARS_DUELIST_TYPE
 	get_turn_duelist_var
-	cp DUELIST_TYPE_PLAYER
+	or a ; cp DUELIST_TYPE_PLAYER
 	jr z, .player
 ; not player
 	call SetupPlayAreaScreen
@@ -6161,6 +6153,8 @@ EnergyTrans_TransferEffect:
 	ret
 
 .player
+	ldtx hl, ProcedureForEnergyTransferText
+	call DrawWholeScreenTextBox
 	xor a
 	ldh [hCurSelectionItem], a
 	call SetupPlayAreaScreen
@@ -6211,17 +6205,17 @@ EnergyTrans_TransferEffect:
 	cp -1
 	jr z, .remove_symbol ; revert the play area screen if B button was pressed
 
-; A button was pressed
+; A button was pressed, so attach the chosen Energy card to the chosen Pokémon
 	ldh [hCurSelectionItem], a
 	ldh [hAIEnergyTransPlayAreaLocation], a
 	ld a, OPPACTION_6B15
 	call SetOppAction_SerialSendDuelData
-	ldh a, [hAIEnergyTransPlayAreaLocation]
-	ld e, a
 	ldh a, [hAIEnergyTransEnergyCard]
-	; give Energy card being held to this Pokemon
-	call AddCardToHand
-	call PutHandCardInPlayArea
+	; a = DUELVARS_CARD_LOCATIONS + this card's deck index
+	get_turn_duelist_var
+	ldh a, [hAIEnergyTransPlayAreaLocation]
+	or CARD_LOCATION_PLAY_AREA
+	ld [hl], a
 
 .remove_symbol
 	ldh a, [hAIPkmnPowerEffectParam]
@@ -6269,11 +6263,12 @@ CheckIfCardHasGrassEnergyAttached:
 ;	[hAIEnergyTransPlayAreaLocation] = play area location offset of the Pokemon
 ;	                                   receiving the Grass Energy card (PLAY_AREA_* constant)
 EnergyTrans_AIEffect:
-	ldh a, [hAIEnergyTransPlayAreaLocation]
-	ld e, a
 	ldh a, [hAIEnergyTransEnergyCard]
-	call AddCardToHand
-	call PutHandCardInPlayArea
+	; a = DUELVARS_CARD_LOCATIONS + this card's deck index
+	get_turn_duelist_var
+	ldh a, [hAIEnergyTransPlayAreaLocation]
+	or CARD_LOCATION_PLAY_AREA
+	ld [hl], a
 	bank1call PrintPlayAreaCardList_EnableLCD
 	ret
 
@@ -6357,8 +6352,8 @@ Heal_RemoveDamageEffect:
 	get_turn_duelist_var
 	cp DUELIST_TYPE_LINK_OPP
 	jr z, .link_opp
-	and DUELIST_TYPE_AI_OPP
-	jr nz, .done
+	or a ; cp DUELIST_TYPE_PLAYER
+	jr nz, .done ; AI opponent?
 
 ; player
 	ldtx hl, ChoosePokemonToHealText
@@ -6371,8 +6366,12 @@ Heal_RemoveDamageEffect:
 	ld e, a
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .loop_input ; has no damage counters
-	ldh a, [hTempPlayAreaLocation_ff9d]
+	jr nz, .found_target ; select this Pokémon if it has any damage counters
+	call PlaySFX_InvalidChoice
+	jr .loop_input
+
+.found_target
+	ld a, e
 	call SerialSend8Bytes
 	jr .done
 
@@ -6466,7 +6465,7 @@ Shift_ChangeColorEffect:
 
 	ld a, e
 	add DUELVARS_ARENA_CARD_FLAGS
-	get_turn_duelist_var
+	ld l, a
 	set USED_PKMN_POWER_THIS_TURN_F, [hl]
 
 	ld a, e
@@ -6534,7 +6533,7 @@ Firegiver_AddToHandEffect:
 ; load the correct attack animation, depending on whose turn it is
 	ld d, ATK_ANIM_FIREGIVER_PLAYER
 	ld a, [wDuelistType]
-	cp DUELIST_TYPE_PLAYER
+	or a ; cp DUELIST_TYPE_PLAYER
 	jr z, .player_1
 ; opponent
 	ld d, ATK_ANIM_FIREGIVER_OPP
@@ -6589,8 +6588,7 @@ Firegiver_AddToHandEffect:
 	ldh a, [hCurSelectionItem]
 	ld hl, wTxRam3
 	ld [hli], a
-	xor a
-	ld [hl], a
+	ld [hl], $00
 	ldtx hl, DrewFireEnergyFromTheHandText
 	call DrawWideTextBox_WaitForInput
 	jp ShuffleCardsInDeck
@@ -6607,21 +6605,17 @@ CowardiceCheck:
 	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; can't use due to status or Toxic Gas
 
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	ldtx hl, YouNoBenchedPokemonText
-	cp 2
+	call BenchedPokemonCheck
 	ret c ; can't use if there are no other Pokemon in the play area
 
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	add DUELVARS_ARENA_CARD_FLAGS
 	get_turn_duelist_var
-	ldtx hl, CannotBeUsedInTurnWhichWasPlayedText
 	and CAN_EVOLVE_THIS_TURN
+	ret nz
+	; can't use if the Pokemon was played this turn
+	ldtx hl, CannotBeUsedInTurnWhichWasPlayedText
 	scf
-	ret z ; can't use if the Pokemon was played this turn
-
-	or a
 	ret
 
 
@@ -6633,14 +6627,10 @@ CowardiceCheck:
 ;	[hTempPlayAreaLocation_ffa1] = play area location offset of the chosen Benched Pokemon
 Cowardice_RemoveFromPlayAreaEffect:
 	ldh a, [hTemp_ffa0]
+	ld e, a
 	add DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-
-; temporarily put card in the discard pile,
-; so that all attached cards are discarded as well.
-	push af
-	ldh a, [hTemp_ffa0]
-	ld e, a
+	call AddCardToHand
 	call MovePlayAreaCardToDiscardPile
 
 ; if it was the Active Pokemon, move selected
@@ -6653,11 +6643,8 @@ Cowardice_RemoveFromPlayAreaEffect:
 	call SwapArenaWithBenchPokemon
 
 .skip_switch
-; return card to the hand and adjust the Play Area screen
-	pop af
-	call MoveCardFromDiscardPileToHand
+; cycle the empty slot and make sure the screen gets refreshed
 	call ShiftAllPokemonToFirstPlayAreaSlots
-
 	xor a
 	ld [wDuelDisplayedScreen], a
 	ret
@@ -6714,7 +6701,7 @@ Peek_SelectEffect:
 	get_turn_duelist_var
 	cp DUELIST_TYPE_LINK_OPP
 	jr z, .link_opp
-	and DUELIST_TYPE_AI_OPP
+	or a ; cp DUELIST_TYPE_PLAYER
 	jr nz, .ai_opp
 
 ; player
@@ -6758,7 +6745,8 @@ Peek_SelectEffect:
 	rst SwapTurn
 	ldtx hl, PeekWasUsedToLookInYourHandText
 	bank1call DisplayCardDetailScreen
-	jp SwapTurn
+	rst SwapTurn
+	ret
 
 
 ; output:
@@ -6780,7 +6768,7 @@ DamageSwapCheck:
 DamageSwap_SelectAndSwapEffect:
 	ld a, DUELVARS_DUELIST_TYPE
 	get_turn_duelist_var
-	cp DUELIST_TYPE_PLAYER
+	or a ; cp DUELIST_TYPE_PLAYER
 	jr z, .player
 ; not the Player
 	call SetupPlayAreaScreen
@@ -6813,14 +6801,17 @@ DamageSwap_SelectAndSwapEffect:
 
 ; A button was pressed
 	ldh [hTempPlayAreaLocation_ffa1], a
-	ldh [hCurSelectionItem], a
 
 ; if a card has no damage, play sfx and return to start
+	ld e, a
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .no_damage
+	jr nz, .adjust_display ; move on if this Pokémon has at least 1 damage counter
+	call PlaySFX_InvalidChoice
+	jr .loop_input_first
 
 ; temporarily take damage away to draw UI
+.adjust_display
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
@@ -6850,8 +6841,10 @@ DamageSwap_SelectAndSwapEffect:
 
 ; A button was pressed, so try to give the selected Pokemon
 ; the damage counter, unless doing so would KO that Pokemon.
+	ld hl, hTempPlayAreaLocation_ffa1
+	cp [hl]
+	jr z, .loop_input_second ; loop back if the same Pokémon was chosen twice
 	ldh [hPlayAreaEffectTarget], a
-	ldh [hCurSelectionItem], a
 	call TryGiveDamageCounter
 	jr c, .loop_input_second
 
@@ -6865,10 +6858,6 @@ DamageSwap_SelectAndSwapEffect:
 	call EraseCursor
 	jr .start
 
-.no_damage
-	call PlaySFX_InvalidChoice
-	jr .loop_input_first
-
 
 ; tries to give damage counter to hPlayAreaEffectTarget and updates UI screen if successful
 ; input:
@@ -6876,7 +6865,7 @@ DamageSwap_SelectAndSwapEffect:
 ;	[hPlayAreaEffectTarget] = play area location offset of the Pokemon gaining the damage counter
 ; output:
 ;	carry = set:  if adding the damage counter would KO the Pokemon
-DamageSwap_SwapEffect:
+MoveDamageCounter_AIEffect:
 	ldh a, [hPlayAreaEffectTarget]
 	call TryGiveDamageCounter
 	ret c ; return if the Pokemon would be KO'd
@@ -6902,9 +6891,8 @@ TryGiveDamageCounter:
 	ld [hl], a
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	add DUELVARS_ARENA_CARD_HP
-	ld l, a
-	ld a, 10
-	add [hl]
+	get_turn_duelist_var
+	add 10
 	ld [hl], a
 	or a
 	ret
@@ -6936,9 +6924,13 @@ StrangeBehaviorCheck:
 ; input:
 ;	[hTemp_ffa0] = play area location offset of the user (PLAY_AREA_* constant)
 StrangeBehavior_SelectAndSwapEffect:
+; backup user's location for MoveDamageCounter_AIEffect
+	ldh a, [hTemp_ffa0]
+	ldh [hPlayAreaEffectTarget], a
+
 	ld a, DUELVARS_DUELIST_TYPE
 	get_turn_duelist_var
-	cp DUELIST_TYPE_PLAYER
+	or a ; cp DUELIST_TYPE_PLAYER
 	jr z, .player
 
 ; not the Player
@@ -6970,7 +6962,6 @@ StrangeBehavior_SelectAndSwapEffect:
 	ret z ; exit if the B button was pressed
 
 ; A button was pressed
-	ldh [hCurSelectionItem], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld hl, hTemp_ffa0
 	cp [hl]
@@ -6992,21 +6983,6 @@ StrangeBehavior_SelectAndSwapEffect:
 	jr .loop_input
 
 
-; tries to give damage counter to the user and updates UI screen if successful
-; input:
-;	[hTemp_ffa0] = play area location offset of the user (PLAY_AREA_* constant)
-;	[hTempPlayAreaLocation_ffa1] = play area location offset of the Pokémon losing a damage counter
-; output:
-;	carry = set:  if adding the damage counter would KO the user
-StrangeBehavior_SwapEffect:
-	ldh a, [hTemp_ffa0]
-	call TryGiveDamageCounter
-	ret c ; return if the Pokemon would be KO'd
-	bank1call PrintPlayAreaCardList_EnableLCD
-	or a
-	ret
-
-
 ; output:
 ;	hl = ID for notification text
 ;	carry = set:  if Curse cannot be used or
@@ -7024,7 +7000,8 @@ CurseCheck:
 	; returns carry if none of the opponent's Pokemon have any damage counters
 	rst SwapTurn
 	call YourPokemon_DamageCheck
-	jp SwapTurn
+	rst SwapTurn
+	ret
 
 
 ; handles the Player's selection for moving a damage counter in the opponent's play area
@@ -7057,7 +7034,6 @@ Curse_PlayerSelection:
 	jr z, .cancel ; exit if the B button was pressed
 
 ; A button was pressed
-	ldh [hCurSelectionItem], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 	call GetCardDamageAndMaxHP
 	or a
@@ -7107,19 +7083,18 @@ Curse_PlayerSelection:
 	ld hl, hTempPlayAreaLocation_ffa1
 	cp [hl]
 	jr z, .loop_input_second ; same as first?
-; a different Pokemon was picked,
-; so store this play area location offset
-; and erase the damage counter by the cursor.
+; done
+	rst SwapTurn
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	ld b, SYM_SPACE
 	call DrawSymbolOnPlayAreaCursor
-	call EraseCursor
-	jp SwapTurn
+	jp EraseCursor
 
 ; returns carry if the operation was cancelled
 .cancel
+	rst SwapTurn
 	scf
-	jp SwapTurn
+	ret
 
 
 ; transfers a damage counter between 2 of the opponent's Pokemon
@@ -7136,16 +7111,14 @@ Curse_TransferDamageEffect:
 
 ; figure out the type of duelist that used Curse.
 ; if it was the player, no need to draw the Play Area screen.
-	rst SwapTurn
-	ld a, DUELVARS_DUELIST_TYPE
-	call GetNonTurnDuelistVariable
-	cp DUELIST_TYPE_PLAYER
-	jr z, .vs_player
+	ld l, DUELVARS_DUELIST_TYPE
+	ld a, [hl]
+	or a ; cp DUELIST_TYPE_PLAYER
+	push af
+	call nz, SetupPlayAreaScreen
 
-; vs. opponent
-	call SetupPlayAreaScreen
-.vs_player
 ; transfer the damage counter between the targets that were selected
+	rst SwapTurn
 	ldh a, [hPlayAreaEffectTarget]
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
@@ -7153,17 +7126,15 @@ Curse_TransferDamageEffect:
 	ld [hl], a
 	ldh a, [hTempPlayAreaLocation_ffa1]
 	add DUELVARS_ARENA_CARD_HP
-	ld l, a
-	ld a, 10
-	add [hl]
+	get_turn_duelist_var
+	add 10
 	ld [hl], a
 
+; print the updated play area screen and if the Player didn't activate this effect,
+; use the cursor to indicate which Pokémon received the damage counter
 	bank1call PrintPlayAreaCardList_EnableLCD
-	ld a, DUELVARS_DUELIST_TYPE
-	call GetNonTurnDuelistVariable
-	cp DUELIST_TYPE_PLAYER
+	pop af
 	jr z, .done
-; vs. opponent
 	ldh a, [hPlayAreaEffectTarget]
 	ldh [hTempPlayAreaLocation_ff9d], a
 	bank1call InitAndPrintPlayAreaCardInformationAndLocation_WithTextBox
@@ -7184,10 +7155,10 @@ StepInCheck:
 ; first check if this Pokemon is on the Bench
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
-	ldtx hl, CanOnlyBeUsedOnTheBenchText
 	or a ; cp PLAY_AREA_ARENA
 	jp nz, OncePerTurnPokePowerCheck
 	; return carry if this is the Active Pokémon
+	ldtx hl, CanOnlyBeUsedOnTheBenchText
 	scf
 	ret
 
@@ -7224,7 +7195,6 @@ HealingWind_PlayAreaHealEffect:
 	ld d, a
 	ld e, PLAY_AREA_ARENA
 .loop_play_area
-	push de
 	ld a, e
 	ldh [hTempPlayAreaLocation_ff9d], a
 	call GetCardDamageAndMaxHP
@@ -7232,6 +7202,7 @@ HealingWind_PlayAreaHealEffect:
 	jr z, .next_pkmn ; skip if no damage
 
 ; if less than 20 damage, cap recovery at 10 damage
+	push de
 	ld de, 20
 	cp e
 	jr nc, .heal
@@ -7253,8 +7224,8 @@ HealingWind_PlayAreaHealEffect:
 	ld h, a
 	call PlayAttackAnimation
 	call WaitAttackAnimation
-.next_pkmn
 	pop de
+.next_pkmn
 	inc e
 	dec d
 	jr nz, .loop_play_area

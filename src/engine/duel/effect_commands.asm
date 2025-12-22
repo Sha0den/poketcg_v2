@@ -785,7 +785,6 @@ MirrorMoveEffectCommands:
 ; also handled in engine/duel/ai/pkmn_powers.asm
 VenusaurEnergyTransEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, EnergyTransCheck
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, EnergyTrans_PrintProcedureText
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, EnergyTrans_TransferEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyTrans_AIEffect
 	db  $00
@@ -877,14 +876,14 @@ AerodactylPrehistoricPowerEffectCommands:
 AlakazamDamageSwapEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DamageSwapCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, DamageSwap_SelectAndSwapEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageSwap_SwapEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MoveDamageCounter_AIEffect
 	db  $00
 
 ; also handled in engine/duel/ai/pkmn_powers.asm
 SlowbroStrangeBehaviorEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, StrangeBehaviorCheck
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, StrangeBehavior_SelectAndSwapEffect
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, StrangeBehavior_SwapEffect
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, MoveDamageCounter_AIEffect
 	db  $00
 
 ; actual effect handled in home/substatus.asm and engine/duel/effect_functions.asm

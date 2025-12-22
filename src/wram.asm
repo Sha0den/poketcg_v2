@@ -847,7 +847,7 @@ wNoEffectFromWhichStatus:: ; ccf1
 	ds $1
 
 ; when non-0, allows the player to skip some delays during a duel by pressing B.
-; value read from sSkipDelayAllowed. probably only used for debugging.
+; value read from sSkipDelayAllowed.
 wSkipDelayAllowed:: ; ccf2
 	ds $1
 
@@ -1268,7 +1268,8 @@ wAIRetreatedThisTurn:: ; ce03
 ; used by AI to store information of VenusaurLv67 while handling Energy Trans logic.
 wAIVenusaurLv67DeckIndex:: ; ce04
 	ds $1
-wAIVenusaurLv67PlayAreaLocation:: ; ce05
+
+; Unused wram byte
 	ds $1
 
 wce06:: ; ce06

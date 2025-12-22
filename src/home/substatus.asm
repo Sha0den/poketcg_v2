@@ -533,7 +533,7 @@ CheckIsIncapableOfUsingPkmnPower_ArenaCard::
 ;	hl = ID for notification text
 ;	carry = set:  if the Pokémon in the given location is unable to use its Pokémon Power
 CheckIsIncapableOfUsingPkmnPower::
-	or a
+	or a ; cp PLAY_AREA_ARENA
 	jr nz, .check_toxic_gas
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	get_turn_duelist_var
@@ -542,7 +542,6 @@ CheckIsIncapableOfUsingPkmnPower::
 	scf
 	ret nz ; return carry if it's Asleep, Confused, or Paralyzed
 .check_toxic_gas
-	ld a, MUK
-	call CountPokemonWithActivePkmnPowerInBothPlayAreas
+	call CheckIfPkmnPowersAreCurrentlyDisabled
 	ldtx hl, UnableDueToToxicGasText
 	ret
