@@ -134,8 +134,15 @@
 
 ## Code Optimization
 
-- **December 22, 2025:** 5 Files Changed
+- **December 29, 2025:** 3 Files Changed
+    - Merge and optimize a variety of selection effects in src/engine/duel/effect_functions.asm
+    - Return a handful of loads to hCurSelectionItem that were mistakenly removed in the previous commit
+
+<br/>
+
+- **[December 22, 2025](https://github.com/Sha0den/poketcg_v2/commit/2b7901085ea8be6451ad72956ac08bfd8ee3cf27):** 5 Files Changed
     - Further optimize functions related to Pokémon Powers, mainly src/engine/duel/ai/pkmn_powers.asm and src/engine/duel/effect_functions.asm
+    - *A handful of mistakenly removed loads to hCurSelectionItem were restored in the following commit (I mixed up that label with hCurMenuItem)*
 
 <br/>
 

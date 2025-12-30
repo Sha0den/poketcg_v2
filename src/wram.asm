@@ -1521,24 +1521,50 @@ wPrinterStatus:: ; ce6f
 wSerialDataPtr:: ; ce70
 	ds $2
 
-; determines whether only Basic Energy cards are included in a list of Energy cards
-wEnergyCardListFilter:: ; ce72
-
-; keeps track of which Benched Pokemon is pointed
-; by the cursor during Gigashock selection screen
-wCurGigashockItem:: ; ce72
-	ds $1
-
 ; card index and its attack index chosen to be used by Metronome.
-wMetronomeSelectedAttack:: ; ce73
+wMetronomeSelectedAttack:: ; ce72
 	ds $2
 
-; stores the amount of cards that are being ordered.
-wNumberOfCardsToOrder:: ; ce75
+; Unused wram bytes
+	ds $2
+
+UNION
+
+; determines whether only Basic Energy cards are included in a list of Energy cards
+wEnergyCardListFilter:: ; ce76
 	ds $1
 
+; used in ChooseMultiplePokemon_PlayerSelection to keep track of
+; which item should be selected by the cursor after the previous selection is canceled.
+wPreviousSelectionItem:: ; ce77
+	ds $1
+
+; used in ChooseMultiplePokemon_PlayerSelection to keep track of
+; whether or not the Active Pokémon may be chosen (either TRUE or FALSE).
+wIgnoreActiveDuringSelection:: ; ce78
+	ds $1
+
+; used in ChooseMultiplePokemon_PlayerSelection and TargetMultiplePokemon_AISelection.
+; total number of Pokémon that need to be chosen during some selection effect functions.
+wNumPokemonToChoose:: ; ce79
+	ds $1
+
+; used in ChooseMultiplePokemon_PlayerSelection to keep track of
+; which symbol (tile ID) to draw next to the cursor after making a selection.
+wSelectionMarkerTile:: ; ce7a
+	ds $1
+
+; stores the amount of cards that are being ordered.
+wNumberOfCardsToOrder:: ; ce7b
+	ds $1
+
+NEXTU
+
+; only ever used in unreferenced effect functions
 wBackupPlayerAreaHP:: ; ce76
 	ds MAX_PLAY_AREA_POKEMON ; ds $6
+
+ENDU
 
 ; used in CountPokemonIDInPlayArea
 wTempPokemonID_ce7c:: ; ce7c

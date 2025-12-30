@@ -158,17 +158,13 @@ EnergyAbsorptionEffectCommands:
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, EnergyAbsorption_AttachEffect
 	db  $00
 
+; attack can only be used if there is a Pokémon on the Bench to switch with the Active.
+; remove the 1st effect command (BenchedPokemonCheck) to be able to use the attack regardless.
 SwitchAfterAttackEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchAfterAttack_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchAfterAttack_AISelection
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchAfterAttack_SwitchEffect
-	db  $00
-
-AlsoSwitchAfterAttackEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, AlsoSwitchAfterAttack_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchAfterAttack_AISelection
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchAfterAttack_SwitchEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchActivePokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, SwitchActivePokemon_AISelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchActivePokemon_SwitchEffect
 	db  $00
 
 RandomlySwitchBothActiveEffectCommands:
@@ -392,7 +388,7 @@ PreventTrainersNextTurnEffectCommands:
 	db  $00
 
 DiscardEnergyDefendingPokemonEffectCommands:
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, DiscardEnergyDefendingPokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DiscardEnergyDefendingPokemon_PlayerSelection
 	dbw EFFECTCMDTYPE_AI_SELECTION, DiscardEnergyDefendingPokemon_AISelection
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DefendingPokemonEnergy_DiscardEffect
 	db  $00
@@ -404,21 +400,21 @@ FlipToMakeOpponentSwitchActiveEffectCommands:
 	db  $00
 
 OpponentSwitchesActiveAnd20DamageToSelfEffectCommands:
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_BenchCheck
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_BenchCheck
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_SelectEffect
+	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_SelectEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Recoil20OpponentSwitchesActiveEffect
 	db  $00
 
 OpponentSwitchesActiveEffectCommands:
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_BenchCheck
-	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_BenchCheck
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, OpponentSwitchesActive_SelectEffect
+	dbw EFFECTCMDTYPE_AI_SWITCH_DEFENDING_PKMN, OpponentSwitchesActive_SelectEffect
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, OpponentSwitchesActive_SwitchEffect
 	db  $00
 
 SwitchDefendingPokemonEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, SwitchDefendingPokemon_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, ChooseWeakestBenchedPokemon_AISelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchDefendingPokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, TargetWeakestBenchedPokemon_AISelection
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, SwitchDefendingPokemon_SwitchEffect
 	db  $00
 
@@ -690,15 +686,15 @@ Selfdestruct100And20EffectCommands:
 	db  $00
 
 Also10DamageTo1BenchedEffectCommands:
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AlsoDamageTo1Benched_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, AlsoChooseWeakestBenchedPokemon_AISelection
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Also10DamageTo1Benched_DamageEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DamageTo1Benched_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, TargetWeakestBenchedPokemon_AISelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Target1Pokemon_10DamageEffect
 	db  $00
 
 Also10DamageTo3BenchedEffectCommands:
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, AlsoDamageTo3Benched_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, AlsoDamageTo3Benched_AISelection
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, AlsoDamageTo3Benched_10DamageEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Target3BenchedPokemonForLightningAttack_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, Target3BenchedPokemon_AISelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, TargetMultiplePokemon_10DamageEffect
 	db  $00
 
 ChainLightningEffectCommands:
@@ -711,9 +707,9 @@ ThunderstormEffectCommands:
 
 Benched20DamageEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, DamageTo1Benched_PlayerSelection
-	dbw EFFECTCMDTYPE_AI_SELECTION, ChooseWeakestBenchedPokemon_AISelection
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, DamageTo1Benched_20DamageEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, DamageTo1Benched_PlayerSelection
+	dbw EFFECTCMDTYPE_AI_SELECTION, TargetWeakestBenchedPokemon_AISelection
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, Target1Pokemon_20DamageEffect
 	db  $00
 
 RandomEnemy20DamageEffectCommands:
@@ -1001,7 +997,7 @@ GamblerEffectCommands:
 
 GustOfWindEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, Opponent_BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, GustOfWind_PlayerSelection
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchDefendingPokemon_PlayerSelection
 	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, GustOfWind_SwitchEffect
 	db  $00
 
@@ -1124,8 +1120,8 @@ SuperPotionEffectCommands:
 
 SwitchEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, BenchedPokemonCheck
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, Switch_PlayerSelection
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SwitchEffect
+	dbw EFFECTCMDTYPE_INITIAL_EFFECT_2, SwitchActivePokemon_PlayerSelection
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, SwitchActivePokemon_SwitchEffect
 	db  $00
 
 

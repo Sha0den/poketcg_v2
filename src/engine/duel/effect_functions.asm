@@ -1382,13 +1382,12 @@ Choose2EnergyFromDiscardPile_AISelection:
 	ld c, 2 ; need 2 Energy
 .loop
 	ld a, [hli]
-	cp $ff
-	jr z, .done
 	ld [de], a
+	cp $ff
+	ret z ; exit if there are no more Energy cards to select
 	inc de
 	dec c
 	jr nz, .loop
-.done
 	ld a, $ff ; terminating byte
 	ld [de], a
 	ret
@@ -1470,29 +1469,38 @@ PossibleSwitch_PlayerSelection:
 	ret
 
 
-; handles the Player's selection of a Benched Pokémon for a damage-dealing attack (which doesn't use BenchedPokemonCheck)
 ; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of a Pokémon on own Bench (PLAY_AREA_* constant, -1 if none)
-AlsoSwitchAfterAttack_PlayerSelection:
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	get_turn_duelist_var
-	cp 1
-	jr z, SwitchAfterAttack_AISelection.no_bench
+;	carry = set:  if the operation was canceled by the Player (with B button)
+;	[hTemp_ffa0] = chosen Benched Pokémon's play area location offset (PLAY_AREA_* constant)
+MrFuji_PlayerSelection:
+	ldtx hl, ChoosePokemonToReturnToTheDeckText
+	jr Choose1BenchedPokemon
+
+; handles the Player's selection of a Benched Pokémon to switch with their Active Pokémon.
+; output:
+;	carry = set:  if the operation was canceled by the Player (with B button)
+;	[hTemp_ffa0] = chosen Benched Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+SwitchActivePokemon_PlayerSelection:
+	ldtx hl, SelectNewActivePokemonText
 ;	fallthrough
 
-; handles the Player's selection of a Benched Pokémon for an attack that has BenchedPokemonCheck as an Initial_Effect_1 command
+; handles the Player's selection of a Benched Pokémon
+; input:
+;	hl = ID of the text containing the instructions
 ; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of a Pokémon on own Bench (PLAY_AREA_* constant)
-SwitchAfterAttack_PlayerSelection:
-	ldtx hl, SelectNewActivePokemonText
+;	carry = set:  if the operation was canceled by the Player (with B button)
+;	[hTemp_ffa0] = chosen Benched Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+Choose1BenchedPokemon:
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	push hl
+	get_turn_duelist_var
+	pop hl
+	cp 1
+	jr z, SwitchActivePokemon_AISelection.no_bench ; store empty variable and return if there are no Benched Pokémon
 	call DrawWideTextBox_WaitForInput
-	call InitPlayAreaScreenVars_OnlyBench
-	inc a ; $00 -> $01
-	ld [hl], a ; wPlayAreaSelectAction = FORCED_SWITCH_CHECK_MENU
-	bank1call OpenPlayAreaScreenForSelection
+	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
 ;	ret c ; exit if the B button was pressed
+;	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
 	ret
 
@@ -1503,7 +1511,7 @@ SwitchAfterAttack_PlayerSelection:
 ; preserves bc and de
 ; output:
 ;	[hTemp_ffa0] = play area location offset of a random Benched Pokemon (PLAY_AREA_* constant, -1 if none)
-SwitchAfterAttack_AISelection:
+SwitchActivePokemon_AISelection:
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
 	dec a ; can't select the Active Pokémon
@@ -1522,15 +1530,14 @@ SwitchAfterAttack_AISelection:
 ; preserves bc and hl
 ; input:
 ;	[hTemp_ffa0] = location of the Benched Pokémon to switch with Active (PLAY_AREA_* constant, -1 if none)
-SwitchAfterAttack_SwitchEffect:
+SwitchActivePokemon_SwitchEffect:
 	ldh a, [hTemp_ffa0]
 	ld e, a
 	inc a ; cp -1
 	ret z
-	call SwapArenaWithBenchPokemon
 	xor a
 	ld [wDuelDisplayedScreen], a
-	ret
+	jp SwapArenaWithBenchPokemon
 
 
 ; preserves all registers except af
@@ -1580,11 +1587,9 @@ RandomlySwitchBothActivePokemon:
 	call Random
 	inc a
 	ld e, a
-	call SwapArenaWithBenchPokemon
-
 	xor a
 	ld [wDuelDisplayedScreen], a
-	ret
+	jp SwapArenaWithBenchPokemon
 
 
 ; flips a coin, and if tails, cancels the attack effect/animation
@@ -1759,7 +1764,11 @@ MayChoosePokemonToHeal_PlayerSelection:
 	ld e, a
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .read_input ; restart selection if that Pokémon has no damage counters
+	jr nz, .store_selection ; choose this Pokémon if it has at least 1 damage counter
+	; that Pokémon has no damage counters, so play SFX and restart selection
+	call PlaySFX_InvalidChoice
+	jr .read_input
+.store_selection
 	ld a, e
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ret ; nc
@@ -2331,27 +2340,26 @@ Amnesia_AISelection:
 	get_turn_duelist_var
 	ld d, a
 	call LoadCardDataToBuffer2_FromDeckIndex
-	ld hl, wLoadedCard2Atk1Name
+	ld hl, wLoadedCard2Atk2Name
 	ld a, [hli]
 	or [hl]
-	jr z, .second_attack ; done if card doesn't have an attack 1 name
+	; e = PLAY_AREA_ARENA = FIRST_ATTACK_OR_PKMN_POWER
+	jr z, .chosen ; choose 1st attack if card doesn't have a 2nd attack
 
 ; if the Defending Pokemon has enough Energy for its second attack, choose it
-	ld e, SECOND_ATTACK
+	inc e ; SECOND_ATTACK
 	bank1call _CheckIfEnoughEnergiesToAttack
 	jr nc, .chosen
 ; otherwise, choose the first attack, unless its a Pokemon Power
-	ld e, FIRST_ATTACK_OR_PKMN_POWER
 	ld a, [wLoadedCard2Atk1Category]
 	cp POKEMON_POWER
-	jr nz, .chosen
-; if it's a Pokemon Power, choose the second attack.
-.second_attack
-	ld e, SECOND_ATTACK
+	jr z, .chosen ; choose 2nd attack if there's a Pokémon Power
+	dec e ; FIRST_ATTACK_OR_PKMN_POWER
 .chosen
 	ld a, e
 	ldh [hTemp_ffa0], a
-	jp SwapTurn
+	rst SwapTurn
+	ret
 
 
 ; applies Amnesia effect on the Defending Pokemon for attack index in hTemp_ffa0
@@ -2415,7 +2423,8 @@ HandleDefendingPokemonAttackSelection:
 	call DoFrame
 	ldh a, [hKeysPressed]
 	bit B_PAD_B, a
-	jr nz, .set_carry ; exit if the B button was pressed
+	scf
+	jr nz, .done ; return with carry set if the B button was pressed
 	and PAD_START
 	jr nz, .open_atk_page
 	call HandleMenuInput
@@ -2433,11 +2442,9 @@ HandleDefendingPokemonAttackSelection:
 	inc hl
 	ld e, [hl]
 	or a
-	jp SwapTurn
-
-.set_carry
-	scf
-	jp SwapTurn
+.done
+	rst SwapTurn
+	ret
 
 .open_atk_page
 	ldh a, [hCurMenuItem]
@@ -2626,7 +2633,7 @@ PrintActivePokemonNameAndColorText:
 ;	a = selected type/color (TYPE_PKMN_* constant)
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
 HandleColorChangeScreen:
-	or a
+	bit 7, a
 	call z, SwapTurn
 	push af
 	call .DrawScreen
@@ -2649,7 +2656,7 @@ HandleColorChangeScreen:
 ; A button was pressed
 	ld e, a
 	ld d, $00
-	ld hl, ShiftListItemToColor
+	ld hl, .ShiftListItemToColor
 	add hl, de
 	ld a, [hl]
 	or a
@@ -2658,10 +2665,18 @@ HandleColorChangeScreen:
 .menu_params
 	db 1, 1 ; cursor x, cursor y
 	db 2 ; y displacement between items
-	db MAX_PLAY_AREA_POKEMON ; number of items
+	db NUM_COLORED_TYPES ; number of items
 	db SYM_CURSOR_R ; cursor tile number
 	db SYM_SPACE ; tile behind cursor
 	dw NULL ; function pointer if non-0
+
+.ShiftListItemToColor
+	db GRASS
+	db FIRE
+	db WATER
+	db LIGHTNING
+	db FIGHTING
+	db PSYCHIC
 
 .DrawScreen
 	push hl
@@ -2678,6 +2693,14 @@ HandleColorChangeScreen:
 	get_turn_duelist_var
 	call LoadCardDataToBuffer1_FromDeckIndex
 
+; print card name and level at the top
+	ld a, 16
+	call CopyCardNameAndLevel
+	ld [hl], TX_END
+	lb de, 7, 0
+	ld hl, wDefaultText
+	call InitTextPrinting_ProcessText
+
 ; draw card gfx
 	bank1call LoadLoaded1CardGfx_UseDefaultSettings
 	ld a, $a0
@@ -2686,14 +2709,6 @@ HandleColorChangeScreen:
 	lb bc, 8, 6
 	call FillRectangle
 	bank1call ApplyBGP6OrSGB3ToCardImage
-
-; print card name and level at the top
-	ld a, 16
-	call CopyCardNameAndLevel
-	ld [hl], TX_END
-	lb de, 7, 0
-	ld hl, wDefaultText
-	call InitTextPrinting_ProcessText
 
 ; list all the colors
 	ld hl, ShiftMenuData
@@ -2714,16 +2729,9 @@ HandleColorChangeScreen:
 	lb bc, 15, 11
 	bank1call PrintCardPageWeaknessesOrResistances
 
-	call DrawWideTextBox
-
 ; print list of color names on all list items
 	lb de, 4, 1
 	ldtx hl, ColorListText
-	call InitTextPrinting_ProcessTextFromID
-
-; print input hl to text box
-	lb de, 1, 14
-	pop hl
 	call InitTextPrinting_ProcessTextFromID
 
 ; draw and apply palette to color icons
@@ -2760,15 +2768,10 @@ HandleColorChangeScreen:
 	inc e
 	dec c
 	jr nz, .loop_colors
-	ret
 
-ShiftListItemToColor:
-	db GRASS
-	db FIRE
-	db WATER
-	db LIGHTNING
-	db FIGHTING
-	db PSYCHIC
+; finally, print the instructions in a text box
+	pop hl ; use text ID from input
+	jp DrawWideTextBox_PrintText
 
 ShiftMenuData:
 	; x, y, text ID
@@ -2930,23 +2933,21 @@ DiscardEnergyDefendingPokemon_PlayerSelection:
 	rst SwapTurn
 	xor a ; PLAY_AREA_ARENA
 	call CreateArenaOrBenchEnergyCardList
-	jr c, .no_energy
+	ld a, -1
+	ccf
+	jr nc, .store_selection ; use -1 instead of a deck index if Defending Pokémon has no attached Energy
 
 	ldtx hl, ChooseDiscardEnergyCardFromOpponentText
 	call DrawWideTextBox_WaitForInput
 	xor a ; PLAY_AREA_ARENA
 	bank1call DisplayEnergyDiscardScreen
-.loop_input
 	bank1call HandleEnergyDiscardMenuInput
-	jr c, .loop_input ; must choose, B button can't be used to exit
+;	ret c ; exit if the B button was pressed
 
+.store_selection
 	ldh [hTemp_ffa0], a ; store selected card to discard
-	jp SwapTurn
-
-.no_energy
-	ld a, -1
-	ldh [hTemp_ffa0], a
-	jp SwapTurn
+	rst SwapTurn
+	ret
 
 
 ; AI tries to pick an attached Double Colorless Energy. if none are found,
@@ -3040,14 +3041,12 @@ DuelistSelectForcedSwitch:
 ; ouput:
 ;	carry = set:  if the opponent doesn't have any Benched Pokemon
 ;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant, -1 if none)
-OpponentSwitchesActive_BenchCheck:
+OpponentSwitchesActive_SelectEffect:
+	call Opponent_BenchedPokemonCheck
 	ld a, -1
-	ldh [hTemp_ffa0], a
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetNonTurnDuelistVariable
-	cp 2
-	ret c ; return with the default variable if the opponent's Bench is empty
+	jr c, .store_selection ; use -1 if the opponent has no Benched Pokémon
 	call DuelistSelectForcedSwitch
+.store_selection
 	ldh [hTemp_ffa0], a
 	ret
 
@@ -3060,9 +3059,7 @@ OpponentSwitchesActive_BenchCheck:
 OpponentSwitchesActive50Percent_SelectEffect:
 	ld a, -1
 	ldh [hTemp_ffa0], a
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetNonTurnDuelistVariable
-	cp 2
+	call Opponent_BenchedPokemonCheck
 	ret c ; return with the default variable if the opponent's Bench is empty
 
 ; toss a coin and proceed with the switch if heads
@@ -3117,28 +3114,18 @@ OpponentSwitchesActive_SwitchEffect:
 	ret
 
 
-; output:
-;	carry = set:  if the opponent doesn't have any Benched Pokemon
-;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant, -1 if none)
-AlsoDamageTo1Benched_PlayerSelection:
-	ld a, -1
-	ldh [hTemp_ffa0], a
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetNonTurnDuelistVariable
-	cp 2
-	ret c ; return if no Pokemon on opponent's Bench
-;	fallthrough
-
 ; opens the Play Area screen to select a Benched Pokemon to damage
 ; output:
+;	carry = set:  if the operation was canceled by the Player (with B button)
 ;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
 DamageTo1Benched_PlayerSelection:
 	ldtx hl, ChoosePkmnInTheBenchToGiveDamageText
-	jr MustChooseOpposingBenchedPokemon
+	jr Choose1PokemonOnOpponentsBench
 
 
 ; opens the Play Area screen to select a Benched Pokemon to switch with the Defending Pokemon
 ; output:
+;	carry = set:  if the operation was canceled by the Player (with B button)
 ;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
 SwitchDefendingPokemon_PlayerSelection:
 	ldtx hl, SelectNewDefendingPokemonText
@@ -3147,71 +3134,61 @@ SwitchDefendingPokemon_PlayerSelection:
 ; handles the Player's selection of a Pokemon on the opponent's Bench
 ; input:
 ;	hl = ID for the text instructions
-MustChooseOpposingBenchedPokemon:
-	call DrawWideTextBox_WaitForInput
-	rst SwapTurn
-	call InitPlayAreaScreenVars_OnlyBench
-.loop_input
-	bank1call OpenPlayAreaScreenForSelection
-	jr c, .loop_input ; must choose, B button can't be used to exit
-	ldh [hTemp_ffa0], a
-	jp SwapTurn
-
-
-; AI picks the Benched Pokemon with the lowest remaining HP
 ; output:
-;	carry = set:  if the opponent doesn't have any Benched Pokemon
-;	[hTemp_ffa0] = play area location offset of a Pokémon on the opponent's Bench (PLAY_AREA_* constant, -1 if none)
-AlsoChooseWeakestBenchedPokemon_AISelection:
-	ld a, -1
-	ldh [hTemp_ffa0], a
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetNonTurnDuelistVariable
-	cp 2
-	ret c ; return if no Pokemon on opponent's Bench
-;	fallthrough
+;	carry = set:  if the operation was canceled by the Player (with B button)
+;	[hTemp_ffa0] = chosen Benched Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+Choose1PokemonOnOpponentsBench:
+	rst SwapTurn
+	call Choose1BenchedPokemon
+	rst SwapTurn
+	ret
+
 
 ; AI picks the Benched Pokemon with the lowest remaining HP
 ; output:
 ;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
-ChooseWeakestBenchedPokemon_AISelection:
-	call GetBenchPokemonWithLowestHP
+TargetWeakestBenchedPokemon_AISelection:
+	ld e, PLAY_AREA_BENCH_1
+	call GetOpponentsPokemonWithLowestHP
 	ldh [hTemp_ffa0], a
 	ret
 
 
-; finds the non-turn holder's Benched Pokemon with the lowest (remaining) HP.
-; if multiple cards are tied for the lowest HP, the one with the highest PLAY_AREA_* is returned.
+; outputs in a the location of the opponent's Pokémon with the lowest remaining HP.
+; includes the Active Pokémon in the selection process if e = PLAY_AREA_ARENA.
+; if multiple cards are tied for the lowest HP, the one with the lowest PLAY_AREA_* is returned.
+; input:
+;	e = 0 (PLAY_AREA_ARENA):   if able to choose any Pokémon, even the Active
+;	  = 1 (PLAY_AREA_BENCH_1): if only Benched Pokémon may be chosen
 ; output:
-;	a = play area location offset of the Benched Pokemon with the least HP (PLAY_AREA_* constant)
-GetBenchPokemonWithLowestHP:
+;	a = chosen Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+GetOpponentsPokemonWithLowestHP:
 	rst SwapTurn
+	lb bc, $ff, -1
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	ld c, a
-	lb de, PLAY_AREA_ARENA, $ff
-	ld b, d
-	ld a, DUELVARS_BENCH1_CARD_HP
-	get_turn_duelist_var
-	jr .start
-
-; find the location of the Pokemon with the least amount of remaining HP
-.loop_bench
-	ld a, e
+	sub e ; may need to exclude the Active Pokémon
+	jr z, .done ; if there are no viable targets, then return with -1
+	ld d, a
+	ld a, DUELVARS_ARENA_CARD_HP
+	add e
+	ld l, a
+.loop_play_area
+	ld a, b
+	dec a ; subtract 1 so carry will be set if both Pokémon have the same HP
 	cp [hl]
 	jr c, .next ; skip if HP is higher
-	ld e, [hl]
-	ld d, b
-
+	ld b, [hl]
+	ld c, e
 .next
 	inc hl
-.start
-	inc b
-	dec c
-	jr nz, .loop_bench
-
-	ld a, d
-	jp SwapTurn
+	inc e
+	dec d
+	jr nz, .loop_play_area
+.done
+	ld a, c
+	rst SwapTurn
+	ret
 
 
 ; switches the opponent's Active Pokemon with a given Pokemon on their Bench,
@@ -3219,30 +3196,16 @@ GetBenchPokemonWithLowestHP:
 ; input:
 ;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
 SwitchDefendingPokemon_SwitchEffect:
-	rst SwapTurn
 	ldh a, [hTemp_ffa0]
+	cp -1
+	ret z ; return without switching if no Pokémon was selected
 	ld e, a
+	rst SwapTurn
 	call HandleNShieldAndTransparency
 	call nc, SwapArenaWithBenchPokemon
+	rst SwapTurn
 	xor a
 	ld [wDuelDisplayedScreen], a
-	jp SwapTurn
-
-
-; identical to SwitchDefendingPokemon_PlayerSelection
-; except the player can choose not to play the card
-; by canceling the selection with the B button
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
-GustOfWind_PlayerSelection:
-	ldtx hl, SelectNewDefendingPokemonText
-	call DrawWideTextBox_WaitForInput
-	rst SwapTurn
-	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
-	rst SwapTurn
-;	ret c ; exit if the B button was pressed
-	ldh [hTemp_ffa0], a
 	ret
 
 
@@ -3287,45 +3250,32 @@ DevolutionBeam_PlayerSelection:
 
 ; a play area was selected
 	ldh a, [hCurMenuItem]
+	ldh [hTemp_ffa0], a ; store which player's play area was selected
 	or a
-	jr nz, .opp_chosen
-
-; own play area was chosen
-	call HandleEvolvedCardSelection
-	jr c, .start
-
-	xor a
-.store_selection
-	ld hl, hTemp_ffa0
-	ld [hli], a ; store which player's play area was selected
-	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld [hl], a ; store which card was selected
-	or a
-	ret
-
-.opp_chosen
-	rst SwapTurn
-	call HandleEvolvedCardSelection
-	rst SwapTurn
-	jr c, .start
-	ld a, $01
-	jr .store_selection
-
-
-; handles the Player's selection of an Evolved Pokemon in the turn holder's play area
-; input:
-;	[hTempPlayAreaLocation_ff9d] = chosen Pokémon's play area location offset (PLAY_AREA_* constant)
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-HandleEvolvedCardSelection:
+	call nz, SwapTurn ; swap duel variables if opponent's play area was chosen
 	call InitPlayAreaScreenVars
 .loop
 	bank1call OpenPlayAreaScreenForSelection
-	ret c ; exit if the B button was pressed
+	jr nc, .check_selection
+	; B button was pressed, so jump back to the beginning
+	call .reset_turn_holder
+	jr .start
+.check_selection
 	add DUELVARS_ARENA_CARD_STAGE
 	get_turn_duelist_var
+	or a ; cp BASIC
+	jr nz, .store_selection
+	; it's a Basic Pokémon, so play SFX and return to selection
+	call PlaySFX_InvalidChoice
+	jr .loop
+
+.store_selection
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh [hTempPlayAreaLocation_ffa1], a
+.reset_turn_holder
+	ldh a, [hTemp_ffa0]
 	or a
-	jr z, .loop ; if Basic, reset loop
+	jp nz, SwapTurn
 	ret
 
 
@@ -4511,31 +4461,6 @@ CreateListOfEnergyAttachedToActive:
 	ret
 
 
-; handles the Player's selection of a Fire Energy attached to their Active Pokemon
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = deck index of a Fire Energy attached to the turn holder's Active Pokémon (0-59)
-DiscardAttachedFireEnergy_PlayerSelection:
-	call CreateListOfFireEnergyAttachedToActive
-	xor a ; PLAY_AREA_ARENA
-	bank1call DisplayEnergyDiscardScreen
-	bank1call HandleEnergyDiscardMenuInput
-;	ret c ; exit if the B button was pressed
-	ldh [hTemp_ffa0], a
-	ret
-
-
-; makes a list of every Fire Energy attached to the AI's Active Pokemon
-; and the AI picks the first card in that list
-; output:
-;	[hTemp_ffa0] = deck index of a Fire Energy attached to the turn holder's Active Pokémon (0-59)
-DiscardAttachedFireEnergy_AISelection:
-	call CreateListOfFireEnergyAttachedToActive
-	ld a, [wDuelTempList]
-	ldh [hTemp_ffa0], a
-	ret
-
-
 ; AI always chooses to discard 0 Fire Energy cards.
 ; this function isn't normally used. the real selection effect is located in
 ; engine/duel/ai/core.asm under the AISelectSpecialAttackParameters function.
@@ -4685,6 +4610,14 @@ Discard2AttachedFireEnergy_AISelection:
 	ret
 
 
+; handles the Player's selection of a Fire Energy attached to their Active Pokemon
+; output:
+;	carry = set:  if the operation was cancelled by the Player (with B button)
+;	[hTemp_ffa0] = deck index of a Fire Energy attached to the turn holder's Active Pokémon (0-59)
+DiscardAttachedFireEnergy_PlayerSelection:
+	ld a, TYPE_ENERGY_FIRE
+	jr DiscardAnAttachedEnergyOfSpecifiedType
+
 ; output:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
 ;	[hTemp_ffa0] = deck index of a Water Energy attached to the turn holder's Active Pokémon (0-59)
@@ -4715,6 +4648,14 @@ DiscardAnAttachedEnergyOfSpecifiedType:
 	ldh [hTemp_ffa0], a ; store chosen card
 	ret
 
+
+; makes a list of every Fire Energy attached to the AI's Active Pokemon
+; and the AI picks the first card in that list.
+; output:
+;	[hTemp_ffa0] = deck index of a Fire Energy attached to the turn holder's Active Pokémon (0-59)
+DiscardAttachedFireEnergy_AISelection:
+	ld a, TYPE_ENERGY_FIRE
+	jr DiscardFirstAttachedEnergyOfSpecifiedType
 
 ; output:
 ;	[hTemp_ffa0] = deck index of a Water Energy attached to the turn holder's Active Pokémon (0-59)
@@ -4928,54 +4869,102 @@ DamageBothBenches_20DamageEffect:
 ; (12) ATTACK EFFECTS THAT DAMAGE THE OPPONENT'S BENCH ARE NEXT.
 ;---------------------------------------------------------------------------------
 
-; does 10 damage to a given Benched Pokemon
+; does 20 damage to 1 of the opponent's Pokémon
 ; preserves hl
 ; input:
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant, -1 if none)
-Also10DamageTo1Benched_DamageEffect:
+;	[hTemp_ffa0] = target Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+Target1Pokemon_20DamageEffect:
+	ld de, 20
+	jr DamageTargetPokemon
+
+; does 10 damage to 1 of the opponent's Pokémon
+; preserves hl
+; input:
+;	[hTemp_ffa0] = target Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+Target1Pokemon_10DamageEffect:
+	ld de, 10 ; damage being dealt
+;	fallthrough
+
+; does a given amount of damage to a given Pokémon in the opponent's play area.
+; preserves de and hl
+; input:
+;	de = amount of damage being done to the target Pokémon
+;	[hTemp_ffa0] = target Pokémon's play area location offset (PLAY_AREA_* constant, -1 if none)
+DamageTargetPokemon:
 	ldh a, [hTemp_ffa0]
 	cp -1
 	ret z ; return if there's no target
 	rst SwapTurn
 	ld b, a
-	ld de, 10 ; damage being dealt
 	call DealDamageToPlayAreaPokemon_RegularAnim
-	jp SwapTurn
+	rst SwapTurn
+	ret
 
 
 ; handles the Player's selection of up to 3 Pokemon on the opponent's Bench
 ; output:
+;	carry = set:  if the operation was canceled by the Player (with B button)
 ;	hTempList = $ff-terminated list with play area location offsets of opponent's Pokémon
-AlsoDamageTo3Benched_PlayerSelection:
-; return with an empty list if there are no Benched Pokémon to target
+Target3BenchedPokemonForLightningAttack_PlayerSelection:
+	ld hl, wIgnoreActiveDuringSelection
+	ld a, TRUE
+	ld [hli], a
+	ld a, 3
+	ld [hli], a ; wNumPokemonToChoose
+	ld [hl], SYM_LIGHTNING ; wSelectionMarkerTile
+	ldtx hl, ChooseUpTo3PkmnOnBenchToGiveDamageText
 	rst SwapTurn
+	call ChooseMultiplePokemon_PlayerSelection
+	rst SwapTurn
+	ret
+
+
+; handles the Player's selection of a given number of Pokémon in the turn holder's play area.
+; input:
+;	hl = ID of the text containing the instructions
+;	[wIgnoreActiveDuringSelection] = TRUE: if only Benched Pokémon may be chosen (otherwise FALSE)
+;	[wNumPokemonToChoose] = how many Pokémon need to be chosen by the Player
+;	[wSelectionMarkerTile] = tile ID to mark which Pokémon have been selected (SYM_* constant)
+; output:
+;	carry = set:  if the operation was canceled by the Player (with B button)
+;	hTempList = $ff-terminated list with play area location offsets of the chosen Pokémon
+ChooseMultiplePokemon_PlayerSelection:
+	ld a, [wIgnoreActiveDuringSelection]
+	or a ; cp FALSE
+	jr z, .print_instructions ; skip ahead if able to target the Active Pokémon
+	; can't choose the Active Pokémon, so check if there are any Benched Pokémon to choose
+	ld a, $ff ; list terminator
+	ldh [hTempList], a
+	push hl
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	cp 2
-	jr nc, .has_bench
-	ld a, $ff
-	ldh [hTempList], a
-	jp SwapTurn
+	pop hl
+	cp 1
+	ret z ; return no carry with an empty list if there are no other Pokémon in the play area
 
-.has_bench
-	ldtx hl, ChooseUpTo3PkmnOnBenchToGiveDamageText
+.print_instructions
 	call DrawWideTextBox_WaitForInput
-
 ; init number of items in list and cursor position
 	xor a
 	ldh [hCurSelectionItem], a
-	ld [wCurGigashockItem], a
+	ld [wPreviousSelectionItem], a
 	call SetupPlayAreaScreen
 .start
 	bank1call PrintPlayAreaCardList_EnableLCD
 	push af
-	ld a, [wCurGigashockItem]
-	ld hl, BenchSelectionMenuParameters
+	ld a, [wPreviousSelectionItem]
+	ld hl, PlayAreaSelectionMenuParameters
 	call InitializeMenuParameters
+	ld a, [wIgnoreActiveDuringSelection]
+	ld d, a
+	or a ; cp FALSE
+	jr z, .use_normal_parameters ; skip ahead if able to choose any Pokémon
+	; adjust selection parameters to ignore the Active Pokémon
+	ld a, 3
+	ld [wMenuCursorYOffset], a
+.use_normal_parameters
 	pop af
-
-; exclude the Active Pokemon from the number of items
-	dec a
+	sub d ; may need to exclude the Active Pokémon
 	ld [wNumMenuItems], a
 
 .loop_input
@@ -4983,56 +4972,70 @@ AlsoDamageTo3Benched_PlayerSelection:
 	call HandleMenuInput
 	jr nc, .loop_input
 	cp -1
-	jr z, .try_cancel ; try to exit if the B button was pressed
+	jr z, .try_cancel ; try to cancel last selection if the B button was pressed
 
 ; A button was pressed
-	ld [wCurGigashockItem], a
-	call .CheckIfChosenAlready
-	jr nc, .not_chosen
-	; play SFX
-	call PlaySFX_InvalidChoice
-	jr .loop_input
+	ld hl, wIgnoreActiveDuringSelection
+	ld d, [hl]
+	add d ; increment list index if Active Pokémon is being excluded
+	ld e, a ; play area location offset
+	ldh a, [hCurSelectionItem]
+	or a
+	jr z, .store_selection ; no need to check if this is the first selection
+	ld b, a
+	ld hl, hTempList
+.check_if_already_chosen
+	ld a, [hli]
+	cp e
+	jr z, .invalid_choice ; ; play SFX and return to selection if this Pokémon was already chosen
+	dec b
+	jr nz, .check_if_already_chosen
 
-.not_chosen
-; mark this Play Area location
-	ldh a, [hCurMenuItem]
-	inc a ; ignore the Active Pokémon
-	ld b, SYM_LIGHTNING
-	call DrawSymbolOnPlayAreaCursor
-; store it in the list of chosen Benched Pokemon
+.store_selection
+; store it in hTempList and mark that Pokémon on the screen
 	call GetNextPositionInTempList
+	ld [hl], e ; store play area location offset of chosen Pokémon in hTempList
 	ldh a, [hCurMenuItem]
-	inc a ; ignore the Active Pokémon
-	ld [hl], a
+	ld [wPreviousSelectionItem], a ; store unadjusted list index for cursor position
+	ld a, [wSelectionMarkerTile]
+	ld b, a
+	ld a, e ; play area location offset of chosen Pokémon
+	call DrawSymbolOnPlayAreaCursor
 
-; check if 3 were chosen already
+; check if enough Pokémon have been chosen
 	ldh a, [hCurSelectionItem]
 	ld c, a
-	cp 3
+	ld hl, wNumPokemonToChoose
+	cp [hl]
 	jr nc, .chosen
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	get_turn_duelist_var
-	dec a ; ignore the Active Pokémon
+	sub d ; may need to exclude the Active Pokémon
 	cp c
 	jr nz, .start ; if more options are available, loop back
 	; fallthrough if no other options available to choose
 
 .chosen
-	ldh a, [hCurMenuItem]
-	inc a ; ignore the Active Pokémon
+	ld a, e
 	call DrawPlayAreaScreenToShowChanges
 	ldh a, [hKeysPressed]
 	and PAD_B
 	jr nz, .try_cancel
 	call GetNextPositionInTempList
 	ld [hl], $ff ; terminating byte
-	jp SwapTurn
+	or a
+	ret
+
+.invalid_choice
+	call PlaySFX_InvalidChoice
+	jr .loop_input
 
 .try_cancel
 	ldh a, [hCurSelectionItem]
 	or a
-	jr z, .start ; none selected, can safely loop back to start
+	scf
+	ret z ; return carry if nothing is currently selected
 
 ; undo last selection made
 	dec a
@@ -5041,96 +5044,63 @@ AlsoDamageTo3Benched_PlayerSelection:
 	ld d, $00
 	ld hl, hTempList
 	add hl, de
-	ld a, [hl]
+	ld e, [hl] ; retrieve play area location offset from list
+	ld hl, wIgnoreActiveDuringSelection
+	ld a, e
+	sub [hl] ; decrement play area location offset if Active Pokémon is being excluded
+	ld [wPreviousSelectionItem], a
 
-	push af
+	ld a, e
 	ld b, SYM_SPACE
 	call DrawSymbolOnPlayAreaCursor
 	call EraseCursor
-	pop af
-
-	dec a
-	ld [wCurGigashockItem], a
-	jr .start
-
-; preserves de
-; input:
-;	a = list index for the chosen Pokémon (index = play area location offset - 1)
-; output:
-;	carry = set:  if the given Pokémon was already chosen
-.CheckIfChosenAlready
-	inc a
-	ld c, a
-	ldh a, [hCurSelectionItem]
-	or a
-	ret z ; return no carry if this is the first selection
-	ld b, a
-	ld hl, hTempList
-.check_chosen
-	ld a, [hli]
-	cp c
-	scf
-	ret z ; return if already chosen
-	dec b
-	jr nz, .check_chosen
-	or a
-	ret
-
-BenchSelectionMenuParameters:
-	db 0, 3 ; cursor x, cursor y
-	db 3 ; y displacement between items
-	db MAX_PLAY_AREA_POKEMON ; number of items
-	db SYM_CURSOR_R ; cursor tile number
-	db SYM_SPACE ; tile behind cursor
-	dw NULL ; function pointer if non-0
+	jp .start
 
 
 ; AI picks the 3 Pokemon on the Player's Bench with the least amount of HP
 ; output:
 ;	hTempList = $ff-terminated list with play area location offsets of opponent's Pokémon
-AlsoDamageTo3Benched_AISelection:
-; if Bench has 3 Pokemon or less, no need for selection,
-; since AI will choose them all.
+Target3BenchedPokemon_AISelection:
+	ld e, PLAY_AREA_BENCH_1
+	ld a, 3
+;	fallthrough
+
+; handles the AI's selection of a given number of the Player's Pokémon.
+; includes the Active Pokémon in the selection process if e = PLAY_AREA_ARENA.
+; Pokémon are chosen according to their remaining HP, from lowest to highest.
+; input:
+;	a = how many Pokémon need to be chosen
+;	e = 0 (PLAY_AREA_ARENA):   if able to choose any Pokémon, even the Active
+;	  = 1 (PLAY_AREA_BENCH_1): if only Benched Pokémon may be chosen
+; output:
+;	hTempList = $ff-terminated list with play area location offsets of opponent's Pokémon
+TargetMultiplePokemon_AISelection:
+	ld [wNumPokemonToChoose], a
+	ld b, a
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetNonTurnDuelistVariable
-	cp MAX_PLAY_AREA_POKEMON - 1
-	jr nc, .start_selection
-
-; select them all
-	ld hl, hTempList
-	ld b, PLAY_AREA_ARENA
-	jr .next_bench
-.select_bench
-	ld [hl], b
-	inc hl
-.next_bench
-	inc b
-	dec a
-	jr nz, .select_bench
-	ld [hl], $ff ; terminating byte
-	ret
-
-; there are more than 3 Benched Pokemon,
-; so sort them from lowest remaining HP to highest,
-; and pick the first 3 in the list.
-.start_selection
-	rst SwapTurn
-	dec a ; ignore the Active Pokémon
+	sub e ; may need to exclude the Active Pokémon
 	ld c, a
-	ld b, PLAY_AREA_BENCH_1
-
-; first, select all of the Benched Pokemon and add them to the list
 	ld hl, hTempList
-.loop_all
-	ld [hl], b
-	inc hl
-	inc b
-	dec c
-	jr nz, .loop_all
-	ld [hl], $00 ; terminating byte
+	jr z, .terminate_list ; if there are no viable targets, then skip adding any entries
 
-; then check every Benched Pokemon's current HP,
-; and sort them from lowest to highest.
+; first, add all non-empty play area locations to hTempList
+	ld d, c ; number of viable targets
+	ld a, e ; first play area location offset to add to the list
+.loop_all
+	ld [hli], a
+	inc a
+	dec d
+	jr nz, .loop_all
+.terminate_list
+	ld [hl], $ff ; terminating byte
+	ld a, b ; wNumPokemonToChoose
+	cp c ; number of viable targets
+	ret nc ; return with current list if number of choices <= amount being chosen
+
+; will need to select, so use each Pokémon's remaining HP
+; to sort the list entries from lowest HP to highest.
+	rst SwapTurn
 	ld de, hTempList
 .loop_outer
 	ld a, [de]
@@ -5143,8 +5113,8 @@ AlsoDamageTo3Benched_AISelection:
 
 .loop_inner
 	ld a, [hli]
-	or a
-	jr z, .next ; reaching $00 means it's end of list
+	cp $ff
+	jr z, .next ; move on to the next entry if there are no other entries to compare
 
 	push hl
 	add DUELVARS_ARENA_CARD_HP
@@ -5152,7 +5122,8 @@ AlsoDamageTo3Benched_AISelection:
 	pop hl
 	cp c
 	jr c, .loop_inner
-	; a Benched Pokemon was found with less HP
+	jr z, .loop_inner
+	; a Pokémon was found with less HP
 	ld c, a ; store its HP
 
 ; switch the two
@@ -5167,19 +5138,25 @@ AlsoDamageTo3Benched_AISelection:
 .next
 	inc de
 	ld a, [de]
-	or a
+	inc a ; cp $ff
 	jr nz, .loop_outer
 
-; done
+; list is now reordered according to the remaining HP of each Pokémon that was able to chosen.
+; use list terminator to make the number of entries equal to wNumPokemonToChoose.
+	ld a, LOW(hTempList)
+	ld hl, wNumPokemonToChoose
+	add [hl]
+	ld c, a
 	ld a, $ff ; terminating byte
-	ldh [hTempList + 3], a
-	jp SwapTurn
+	ld [$ff00+c], a
+	rst SwapTurn
+	ret
 
 
-; does 10 damage to a number of given Pokemon on the opponent's Bench
+; does 10 damage to a given number of the opponent's Pokémon
 ; input:
 ;	hTempList = $ff-terminated list with play area location offsets of opponent's Pokémon
-AlsoDamageTo3Benched_10DamageEffect:
+TargetMultiplePokemon_10DamageEffect:
 	rst SwapTurn
 	ld hl, hTempList
 .loop_selection
@@ -6800,6 +6777,7 @@ DamageSwap_SelectAndSwapEffect:
 	ret z ; exit if the B button was pressed
 
 ; A button was pressed
+	ldh [hCurSelectionItem], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 
 ; if a card has no damage, play sfx and return to start
@@ -6844,6 +6822,7 @@ DamageSwap_SelectAndSwapEffect:
 	ld hl, hTempPlayAreaLocation_ffa1
 	cp [hl]
 	jr z, .loop_input_second ; loop back if the same Pokémon was chosen twice
+	ldh [hCurSelectionItem], a
 	ldh [hPlayAreaEffectTarget], a
 	call TryGiveDamageCounter
 	jr c, .loop_input_second
@@ -6903,10 +6882,12 @@ TryGiveDamageCounter:
 ;	carry = set:  if Strange Behavior cannot be used or if none of the turn holder's
 ;	              Pokemon have any damage counters on them
 ;	[hTemp_ffa0] = play area location offset of the user (PLAY_AREA_* constant)
+;	[hPlayAreaEffectTarget] = play area location offset of the user (PLAY_AREA_* constant)
 StrangeBehaviorCheck:
 ; can Pokemon Power be used?
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ldh [hTemp_ffa0], a
+	ldh [hPlayAreaEffectTarget], a ; backup user's location for MoveDamageCounter_AIEffect
 	call CheckIsIncapableOfUsingPkmnPower
 	ret c ; return if the user has a Special Condition or if Toxic Gas is active
 ; can Slowbro receive any damage counters without KO-ing?
@@ -6924,10 +6905,6 @@ StrangeBehaviorCheck:
 ; input:
 ;	[hTemp_ffa0] = play area location offset of the user (PLAY_AREA_* constant)
 StrangeBehavior_SelectAndSwapEffect:
-; backup user's location for MoveDamageCounter_AIEffect
-	ldh a, [hTemp_ffa0]
-	ldh [hPlayAreaEffectTarget], a
-
 	ld a, DUELVARS_DUELIST_TYPE
 	get_turn_duelist_var
 	or a ; cp DUELIST_TYPE_PLAYER
@@ -6962,6 +6939,7 @@ StrangeBehavior_SelectAndSwapEffect:
 	ret z ; exit if the B button was pressed
 
 ; A button was pressed
+	ldh [hCurSelectionItem], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 	ld hl, hTemp_ffa0
 	cp [hl]
@@ -6992,10 +6970,8 @@ StrangeBehavior_SelectAndSwapEffect:
 CurseCheck:
 	call OncePerTurnPokePowerCheck
 	ret c ; already used power or can't use due to status or Toxic Gas
-	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
-	call GetNonTurnDuelistVariable
+	call Opponent_BenchedPokemonCheck
 	ldtx hl, CannotUseSinceTheresOnly1PkmnText
-	cp 2
 	ret c ; return if the opponent only has 1 Pokemon
 	; returns carry if none of the opponent's Pokemon have any damage counters
 	rst SwapTurn
@@ -7034,6 +7010,7 @@ Curse_PlayerSelection:
 	jr z, .cancel ; exit if the B button was pressed
 
 ; A button was pressed
+	ldh [hCurSelectionItem], a
 	ldh [hTempPlayAreaLocation_ffa1], a
 	call GetCardDamageAndMaxHP
 	or a
@@ -7481,24 +7458,26 @@ DevolutionSpray_PlayerSelection:
 	bank1call OpenPlayAreaScreenForSelection
 	ret c ; exit if the B button was pressed
 	call GetCardOneStageBelow
-	jr c, .read_input ; can't select a Basic Pokemon
+	jr nc, .found_target
+	; it's a Basic Pokémon, so play SFX and restart selection
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
-; get pre-evolution card data
+.found_target
 	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld c, a
 	add DUELVARS_ARENA_CARD_HP
 	get_turn_duelist_var
 	push hl
 	push af
-	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld a, c
 	add DUELVARS_ARENA_CARD_STAGE
-	ld l, a
-	ld a, [hl]
+	get_turn_duelist_var
 	push hl
 	push af
-	ldh a, [hTempPlayAreaLocation_ff9d]
+	ld a, c
 	add DUELVARS_ARENA_CARD
-	ld l, a
-	ld a, [hl]
+	get_turn_duelist_var
 	push hl
 	push af
 	jr .update_data
@@ -7535,29 +7514,26 @@ DevolutionSpray_PlayerSelection:
 ; update the Play Area location display of this Pokemon
 	call EmptyScreen
 	ldh a, [hTempPlayAreaLocation_ff9d]
-	ld hl, wHUDEnergyAndHPBarsX
+	ld hl, wCurPlayAreaSlot
 	ld [hli], a
-	ld [hl], $00
+	ld [hl], 0 ; wCurPlayAreaY
 	bank1call PrintPlayAreaCardInformationAndLocation
 	call EnableLCD
-	pop bc
-	pop hl
 
 ; rewrite all duelvars from before the selection was done.
 ; this is so that if "No" is selected in the confirmation menu,
 ; then the Pokemon isn't devolved and remains unchanged.
+	pop bc
+	pop hl
+	ld [hl], b
+	pop bc
+	pop hl
+	ld [hl], b
+	pop bc
+	pop hl
 	ld [hl], b
 	ldtx hl, IsThisOKText
-	call YesOrNoMenuWithText
-	pop bc
-	pop hl
-
-	ld [hl], b
-	pop bc
-	pop hl
-
-	ld [hl], b
-	ret
+	jp YesOrNoMenuWithText
 
 
 ; discards a specified number of Evolution cards from a given
@@ -8364,8 +8340,10 @@ PokemonBreeder_PlayerSelection:
 	ldh a, [hTemp_ffa0]
 	ld d, a
 	call CheckIfCanEvolveInto_BasicToStage2
-	jr c, .read_input ; loop back if this card is not able to evolve
-	ret ; nc
+	ret nc ; return if this Pokémon is able to evolve into the previously chosen Stage 2
+	; otherwise, play SFX and return to the selection of an in-play Pokémon
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 
 ; evolves an in-play Pokemon with a Stage 2 Evolution card in the turn holder's hand
@@ -8636,9 +8614,10 @@ PokemonFlute_PlayerSelection:
 	ldtx de, OpponentsDiscardPileText
 	call SetCardListHeaderText
 	bank1call DisplayCardList
+	rst SwapTurn
 ;	ret c ; exit if the B button was pressed
 	ldh [hTemp_ffa0], a
-	jp SwapTurn
+	ret
 
 
 ; puts a Pokemon from the opponent's discard pile onto their Bench
@@ -8799,9 +8778,11 @@ CreatePokemonCardListFromHand:
 ; output:
 ;	[hTemp_ffa0] = deck index of a card in the Player's discard pile (0-59, -1 if coin was tails)
 Recycle_PlayerSelection:
+	ld a, -1
+	ldh [hTemp_ffa0], a
 	ldtx de, TrainerCardSuccessCheckText
 	call TossCoin
-	jr nc, .tails
+	ret nc ; return without selection if tails
 
 	call CreateDiscardPileCardList
 	bank1call InitAndDrawCardListScreenLayout_WithSelectCheckMenu
@@ -8812,11 +8793,6 @@ Recycle_PlayerSelection:
 	bank1call DisplayCardList
 	jr c, .read_input ; must choose, B button can't be used to exit
 	; a card was chosen from the discard pile
-	ldh [hTemp_ffa0], a
-	ret
-
-.tails
-	ld a, -1
 	ldh [hTemp_ffa0], a
 	ret
 
@@ -9016,7 +8992,7 @@ SuperPotion_PlayerSelection:
 	ld e, a ; store the chosen play area location in e
 	call GetCardDamageAndMaxHP
 	or a
-	jr z, .read_input ; loop back if Pokémon has no damage counters
+	jr z, .invalid_choice ; play SFX and restart selection if Pokémon has no damage counters
 	call GetPlayAreaCardAttachedEnergies
 ;	ld a, [wTotalAttachedEnergies]
 	or a
@@ -9025,6 +9001,9 @@ SuperPotion_PlayerSelection:
 	ldtx hl, NoEnergyCardsAttachedText
 	call DrawWideTextBox_WaitForInput
 	jr .start
+.invalid_choice
+	call PlaySFX_InvalidChoice
+	jr .read_input
 
 .got_pkmn
 ; a Pokémon was chosen, so prompt the Player to select an Energy to discard.
@@ -9049,44 +9028,6 @@ SuperPotion_HealEffect:
 	call PutCardInDiscardPile
 	ld a, 40
 	jp HealPlayAreaCardHP
-
-
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
-MrFuji_PlayerSelection:
-	ldtx hl, ChoosePokemonToReturnToTheDeckText
-	jr ChooseBenchedPokemon
-
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
-Switch_PlayerSelection:
-	ldtx hl, SelectNewActivePokemonText
-;	fallthrough
-
-; handles the Player's selection of a Benched Pokemon
-; input:
-;	hl = ID of the text containing the instructions
-; output:
-;	carry = set:  if the operation was cancelled by the Player (with B button)
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokemon (PLAY_AREA_* constant)
-ChooseBenchedPokemon:
-	call DrawWideTextBox_WaitForInput
-	bank1call InitVarsAndOpenPlayAreaScreenForSelection_OnlyBench
-;	ret c ; exit if the B button was pressed
-	ldh [hTemp_ffa0], a
-	ret
-
-
-; switches a given Pokemon on the turn holder's Bench with their Active Pokemon
-; preserves bc and hl
-; input:
-;	[hTemp_ffa0] = play area location offset of the chosen Benched Pokémon (PLAY_AREA_* constant)
-SwitchEffect:
-	ldh a, [hTemp_ffa0]
-	ld e, a
-	jp SwapArenaWithBenchPokemon
 
 
 ;----------------------------------------
