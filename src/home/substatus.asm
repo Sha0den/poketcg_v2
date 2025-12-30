@@ -384,7 +384,7 @@ CheckUnableToRetreatDueToEffect::
 CheckCantUseTrainerDueToEffect::
 	ld a, DUELVARS_ARENA_CARD_SUBSTATUS3
 	get_turn_duelist_var
-	bit SUBSTATUS3_HEADACHE_F, a
+	and SUBSTATUS3_HEADACHE
 	ret z
 	ldtx hl, UnableToUseTrainerDueToHeadacheText
 	scf
