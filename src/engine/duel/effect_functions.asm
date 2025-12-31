@@ -7408,7 +7408,7 @@ ComputerSearch_DiscardAddToHandEffect:
 ;	carry = set:  if the operation was cancelled by the Player (with B button)
 ;	[hTemp_ffa0] = play area location offset of the chosen Pokemon (PLAY_AREA_* constant)
 Defender_PlayerSelection:
-	ldtx hl, ChoosePokemonToAttachDefenderToText
+	ldtx hl, YouMustAttachThisCardTo1OfYourPokemonText
 	call DrawWideTextBox_WaitForInput
 	bank1call InitVarsAndOpenPlayAreaScreenForSelection
 ;	ret c ; exit if the B button was pressed

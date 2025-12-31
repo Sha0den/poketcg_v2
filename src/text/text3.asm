@@ -617,8 +617,7 @@ PlayerDiarySaveQuestionText:
 	done
 
 PlayerDiarySaveConfirmText:
-	text "<RAMNAME>"
-	line "wrote in the diary."
+	text "<RAMNAME> wrote in the diary."
 	done
 
 PlayerDiarySaveCancelText:
@@ -679,13 +678,11 @@ PCMenuOptionsText:
 	done
 
 TurnedPCOnText:
-	text "<RAMNAME>"
-	line "turned the PC on!"
+	text "<RAMNAME> turned on the PC!"
 	done
 
 TurnedPCOffText:
-	text "<RAMNAME>"
-	line "turned the PC off!"
+	text "<RAMNAME> turned off the PC!"
 	done
 
 GiftCenterMenuText:

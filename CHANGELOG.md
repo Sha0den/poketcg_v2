@@ -134,7 +134,7 @@
 
 ## Code Optimization
 
-- **December 29, 2025:** 3 Files Changed
+- **[December 29, 2025](https://github.com/Sha0den/poketcg_v2/commit/ebd50b15f152dc621d9341eae7a88fc8ad25b39a):** 3 Files Changed
     - Merge and optimize a variety of selection effects in src/engine/duel/effect_functions.asm
     - Return a handful of loads to hCurSelectionItem that were mistakenly removed in the previous commit
 
@@ -1062,6 +1062,11 @@
 
 
 ## Miscellaneous Changes
+
+- **December 31, 2025:** 6 Files Changed
+    - Further edit a variety of texts (mostly duel-related), adjusting line breaks, correcting a few errors, and even rewriting some texts to be more descriptive
+
+<br/>
 
 - **[October 11, 2025](https://github.com/Sha0den/poketcg_v2/commit/9261880af434b4074709323b8daceaddd9f15df5):** 2 Files Changed
     - Create a left-facing cursor icon and add it to the text symbols (`CURSOR_L`)

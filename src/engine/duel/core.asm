@@ -7987,7 +7987,7 @@ ReplaceKnockedOutPokemon:
 	call SwapPlayAreaPokemon
 	ld a, DUELVARS_ARENA_CARD
 	get_turn_duelist_var
-	ldtx hl, DuelistPlacedACardText
+	ldtx hl, PlacedInTheArenaText
 	call DisplayCardDetailScreen
 	call ExchangeRNG
 	or a

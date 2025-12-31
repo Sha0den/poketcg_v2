@@ -21,6 +21,7 @@ DeclinedPracticeDuelText:
 	line "the card table to your left."
 	done
 
+; printed in a narrow text box (10 tiles per line)
 ChooseBasicPokemonText:
 	text "Choose a"
 	line "Basic Pokémon."
@@ -31,6 +32,7 @@ ChooseBasicPokemonFromDeckText:
 	line "your deck."
 	done
 
+; printed in a narrow text box (10 tiles per line)
 ChooseEvolutionCardText:
 	text "Choose an"
 	line "Evolution card."
@@ -41,6 +43,7 @@ ChooseEvolutionCardFromDeckText:
 	line "your deck."
 	done
 
+; printed in a narrow text box (10 tiles per line)
 ChooseTrainerCardText:
 	text "Choose a"
 	line "Trainer card."
